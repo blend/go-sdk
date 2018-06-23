@@ -29,6 +29,9 @@ const (
 
 	// Query is a logging flag.
 	Query Flag = "db.query"
+
+	// FrontendAction flag is a frontend action
+	FrontendAction Flag = "frontend.action"
 )
 
 // Flag represents an event type that can be enabled or disabled.
