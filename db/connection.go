@@ -118,9 +118,6 @@ func (dbc *Connection) fireEvent(flag logger.Flag, query string, elapsed time.Du
 		}
 
 		dbc.log.Trigger(logger.NewQueryEvent(query, elapsed).WithFlag(flag).WithDatabase(dbc.config.GetDatabase()).WithQueryLabel(queryLabel).WithEngine("postgres").WithErr(err))
-		if err != nil {
-			dbc.log.Error(err)
-		}
 	}
 }
 
