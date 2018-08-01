@@ -509,6 +509,9 @@ func (r *Request) WithPostBody(body []byte) *Request {
 
 // ApplyTransport applies the request settings to a transport.
 func (r *Request) ApplyTransport(transport *http.Transport) error {
+	if transport == nil {
+		return nil
+	}
 	if r.responseHeaderTimeout > 0 {
 		transport.ResponseHeaderTimeout = r.responseHeaderTimeout
 	}
@@ -665,9 +668,6 @@ func (r *Request) Response() (*http.Response, error) {
 
 	client := &http.Client{}
 	if r.RequiresTransport() {
-		if r.transport == nil {
-			r.transport = &http.Transport{}
-		}
 		err := r.ApplyTransport(r.transport)
 		if err != nil {
 			return nil, exception.New(err)
