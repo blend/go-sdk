@@ -182,7 +182,6 @@ func main() {
 	covered, total, err := parseFullCoverProfile(pwd, *temporaryOutputPath, fileTotals)
 	maybeFatal(err)
 	finalCoverage := (float64(covered) / float64(total)) * 100
-	maybeFatal(writeCoverage(pwd, formatCoverage(finalCoverage)))
 
 	fmt.Fprintf(os.Stdout, "final coverage: %s%%\n", colorCoverage(finalCoverage))
 	fmt.Fprintf(os.Stdout, "compiling coverage report: %s\n", *reportOutputPath)
