@@ -32,6 +32,14 @@ func OptPut() Option {
 	}
 }
 
+// OptPatch sets the request method.
+func OptPatch() Option {
+	return func(r *Request) error {
+		r.Method = "PATCH"
+		return nil
+	}
+}
+
 // OptDelete sets the request method.
 func OptDelete() Option {
 	return func(r *Request) error {

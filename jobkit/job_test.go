@@ -8,6 +8,7 @@ import (
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/cron"
+	"github.com/blend/go-sdk/ref"
 	"github.com/blend/go-sdk/slack"
 	"github.com/blend/go-sdk/uuid"
 )
@@ -79,11 +80,11 @@ func TestJobLifecycleHooksNotificationsSetDisabled(t *testing.T) {
 	job := &Job{
 		slackClient: slack.MockWebhookSender(slackMessages),
 		config: &JobConfig{
-			NotifyOnStart:   OptBool(false),
-			NotifyOnSuccess: OptBool(false),
-			NotifyOnFailure: OptBool(false),
-			NotifyOnBroken:  OptBool(false),
-			NotifyOnFixed:   OptBool(false),
+			NotifyOnStart:   ref.Bool(false),
+			NotifyOnSuccess: ref.Bool(false),
+			NotifyOnFailure: ref.Bool(false),
+			NotifyOnBroken:  ref.Bool(false),
+			NotifyOnFixed:   ref.Bool(false),
 		},
 	}
 
@@ -120,11 +121,11 @@ func TestJobLifecycleHooksNotificationsSetEnabled(t *testing.T) {
 	job := &Job{
 		slackClient: slack.MockWebhookSender(slackMessages),
 		config: &JobConfig{
-			NotifyOnStart:   OptBool(true),
-			NotifyOnSuccess: OptBool(true),
-			NotifyOnFailure: OptBool(true),
-			NotifyOnBroken:  OptBool(true),
-			NotifyOnFixed:   OptBool(true),
+			NotifyOnStart:   ref.Bool(true),
+			NotifyOnSuccess: ref.Bool(true),
+			NotifyOnFailure: ref.Bool(true),
+			NotifyOnBroken:  ref.Bool(true),
+			NotifyOnFixed:   ref.Bool(true),
 		},
 	}
 

@@ -1,9 +1,14 @@
 package cron
 
-import "time"
+import (
+	"fmt"
+	"strings"
+	"time"
+)
 
 var (
-	_ Schedule = (*DailySchedule)(nil)
+	_ Schedule     = (*DailySchedule)(nil)
+	_ fmt.Stringer = (*DailySchedule)(nil)
 )
 
 // WeeklyAtUTC returns a schedule that fires on every of the given days at the given time by hour, minute and second in UTC.
@@ -35,6 +40,19 @@ func WeekendsAtUTC(hour, minute, second int) Schedule {
 type DailySchedule struct {
 	DayOfWeekMask uint
 	TimeOfDayUTC  time.Time
+}
+
+func (ds DailySchedule) String() string {
+	if ds.DayOfWeekMask > 0 {
+		var days []string
+		for _, d := range DaysOfWeek {
+			if ds.checkDayOfWeekMask(d) {
+				days = append(days, d.String())
+			}
+		}
+		return fmt.Sprintf("%s on %s each week", ds.TimeOfDayUTC.Format(time.RFC3339), strings.Join(days, ", "))
+	}
+	return fmt.Sprintf("%s every day", ds.TimeOfDayUTC.Format(time.RFC3339))
 }
 
 func (ds DailySchedule) checkDayOfWeekMask(day time.Weekday) bool {

@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -140,7 +141,8 @@ var (
 
 // Interface assertions.
 var (
-	_ Schedule = (*StringSchedule)(nil)
+	_ Schedule     = (*StringSchedule)(nil)
+	_ fmt.Stringer = (*StringSchedule)(nil)
 )
 
 // StringSchedule is a schedule generated from a cron string.
@@ -156,9 +158,14 @@ type StringSchedule struct {
 	Years       []int
 }
 
-// String returns a fully formed string representation of the schedule's components.
-// It shows fields as expanded.
+// String returns the original string schedule.
 func (ss *StringSchedule) String() string {
+	return ss.Original
+}
+
+// FullString returns a fully formed string representation of the schedule's components.
+// It shows fields as expanded.
+func (ss *StringSchedule) FullString() string {
 	fields := []string{
 		csvOfInts(ss.Seconds, "*"),
 		csvOfInts(ss.Minutes, "*"),

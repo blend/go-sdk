@@ -64,9 +64,9 @@ type JobScheduler struct {
 	Name string `json:"name"`
 	Job  Job    `json:"-"`
 
-	Tracer Tracer     `json:"-"`
-	Log    logger.Log `json:"-"`
-	Config *Config    `json:"-"`
+	Tracer Tracer              `json:"-"`
+	Log    logger.FullReceiver `json:"-"`
+	Config *Config             `json:"-"`
 
 	// Meta Fields
 	Disabled    bool            `json:"disabled"`
@@ -100,7 +100,7 @@ func (js *JobScheduler) WithTracer(tracer Tracer) *JobScheduler {
 }
 
 // WithLogger sets the scheduler logger.
-func (js *JobScheduler) WithLogger(log logger.Log) *JobScheduler {
+func (js *JobScheduler) WithLogger(log logger.FullReceiver) *JobScheduler {
 	js.Log = log
 	return js
 }

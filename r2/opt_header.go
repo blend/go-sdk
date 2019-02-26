@@ -4,8 +4,8 @@ import (
 	"net/http"
 )
 
-// OptHeaders sets the request headers.
-func OptHeaders(headers http.Header) Option {
+// OptHeader sets the request headers.
+func OptHeader(headers http.Header) Option {
 	return func(r *Request) error {
 		r.Header = headers
 		return nil

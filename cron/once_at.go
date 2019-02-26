@@ -1,10 +1,14 @@
 package cron
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 // Interface assertions.
 var (
-	_ Schedule = (*OnceAtUTCSchedule)(nil)
+	_ Schedule     = (*OnceAtUTCSchedule)(nil)
+	_ fmt.Stringer = (*OnceAtUTCSchedule)(nil)
 )
 
 // OnceAtUTC returns a schedule that fires once at a given time.
@@ -16,6 +20,11 @@ func OnceAtUTC(t time.Time) Schedule {
 // OnceAtUTCSchedule is a schedule.
 type OnceAtUTCSchedule struct {
 	Time time.Time
+}
+
+// String returns a string representation of the schedule.
+func (oa OnceAtUTCSchedule) String() string {
+	return fmt.Sprintf("once at %s", oa.Time.Format(time.RFC3339))
 }
 
 // Next returns the next runtime.

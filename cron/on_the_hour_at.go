@@ -1,9 +1,13 @@
 package cron
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 var (
-	_ Schedule = (*OnTheHourAtUTCSchedule)(nil)
+	_ Schedule     = (*OnTheHourAtUTCSchedule)(nil)
+	_ fmt.Stringer = (*OnTheHourAtUTCSchedule)(nil)
 )
 
 // EveryHourOnTheHour returns a schedule that fires every 60 minutes on the 00th minute.
@@ -20,6 +24,11 @@ func EveryHourAtUTC(minute, second int) Schedule {
 type OnTheHourAtUTCSchedule struct {
 	Minute int
 	Second int
+}
+
+// String returns a string representation of the schedule.
+func (o OnTheHourAtUTCSchedule) String() string {
+	return fmt.Sprintf("on the hour at %v:%v", o.Minute, o.Second)
 }
 
 // Next implements the chronometer Schedule api.

@@ -30,6 +30,7 @@ var headerTemplate = `
 		/* For devices larger than 400px */
 		@media (min-width: 400px) {
 		.container {
+			margin-top: 25px;
 			width: 85%;
 			padding: 0; }
 		}
@@ -310,7 +311,7 @@ var headerTemplate = `
 		–––––––––––––––––––––––––––––––––––––––––––––––––– */
 		th,
 		td {
-		padding: 12px 15px;
+		padding: 6px 7px;
 		text-align: left; }
 		th:first-child,
 		td:first-child {
@@ -339,6 +340,7 @@ var headerTemplate = `
 		ul,
 		ol,
 		form { margin: 0; }
+		form { display: inline-block; }
 
 
 		/* Utilities
@@ -439,6 +441,12 @@ var headerTemplate = `
 		}
 		.small-text {
 			font-size: 10px;
+		}
+
+		.job {
+			border: 1px solid #efefef;
+			margin: 10px;
+			padding: 10px;
 		}
 
 		tr.failed {

@@ -17,7 +17,7 @@ func NewStaticFileServer(searchPaths ...http.FileSystem) *StaticFileServer {
 
 // StaticFileServer is a cache of static files.
 type StaticFileServer struct {
-	log          logger.Log
+	log          logger.FullReceiver
 	searchPaths  []http.FileSystem
 	rewriteRules []RewriteRule
 	middleware   Action
@@ -25,12 +25,12 @@ type StaticFileServer struct {
 }
 
 // Log returns a logger reference.
-func (sc *StaticFileServer) Log() logger.Log {
+func (sc *StaticFileServer) Log() logger.FullReceiver {
 	return sc.log
 }
 
 // WithLogger sets the logger reference for the static file cache.
-func (sc *StaticFileServer) WithLogger(log logger.Log) *StaticFileServer {
+func (sc *StaticFileServer) WithLogger(log logger.FullReceiver) *StaticFileServer {
 	sc.log = log
 	return sc
 }

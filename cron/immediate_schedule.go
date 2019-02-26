@@ -1,13 +1,15 @@
 package cron
 
 import (
+	"fmt"
 	"sync/atomic"
 	"time"
 )
 
 // Interface assertions.
 var (
-	_ Schedule = (*ImmediateSchedule)(nil)
+	_ Schedule     = (*ImmediateSchedule)(nil)
+	_ fmt.Stringer = (*ImmediateSchedule)(nil)
 )
 
 // Immediately Returns a schedule that casues a job to run immediately on start,
@@ -20,6 +22,14 @@ func Immediately() *ImmediateSchedule {
 type ImmediateSchedule struct {
 	didRun int32
 	then   Schedule
+}
+
+// String returns a string representation of the schedul.e
+func (i ImmediateSchedule) String() string {
+	if i.then != nil {
+		return fmt.Sprintf("immediately, then %v", i.then)
+	}
+	return "immediately, once"
 }
 
 // Then allows you to specify a subsequent schedule after the first run.

@@ -68,7 +68,7 @@ type App struct {
 	cfg   *Config
 	hsts  *HSTSConfig
 
-	log   logger.Log
+	log   logger.FullReceiver
 	auth  *AuthManager
 	views *ViewCache
 
@@ -387,13 +387,13 @@ func (a *App) BindAddr() string {
 
 // WithLogger sets the app logger agent and returns a reference to the app.
 // It also sets underlying loggers in any child resources like providers and the auth manager.
-func (a *App) WithLogger(log logger.Log) *App {
+func (a *App) WithLogger(log logger.FullReceiver) *App {
 	a.log = log
 	return a
 }
 
 // Logger returns the diagnostics agent for the app.
-func (a *App) Logger() logger.Log {
+func (a *App) Logger() logger.FullReceiver {
 	return a.log
 }
 

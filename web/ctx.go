@@ -46,7 +46,7 @@ type Ctx struct {
 
 	app   *App
 	views *ViewCache
-	log   logger.Log
+	log   logger.FullReceiver
 	auth  *AuthManager
 
 	tracer Tracer
@@ -505,13 +505,13 @@ func (rc *Ctx) ExpireCookie(name string, path string) {
 // --------------------------------------------------------------------------------
 
 // WithLogger sets the logger.
-func (rc *Ctx) WithLogger(log logger.Log) *Ctx {
+func (rc *Ctx) WithLogger(log logger.FullReceiver) *Ctx {
 	rc.log = log
 	return rc
 }
 
 // Logger returns the diagnostics agent.
-func (rc *Ctx) Logger() logger.Log {
+func (rc *Ctx) Logger() logger.FullReceiver {
 	return rc.log
 }
 

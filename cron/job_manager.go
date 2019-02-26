@@ -4,6 +4,7 @@ package cron
 
 import (
 	"fmt"
+	"sort"
 	"sync"
 
 	"github.com/blend/go-sdk/async"
@@ -289,6 +290,7 @@ func (jm *JobManager) Status() *Status {
 			status.Running[job.Name] = append(status.Running[job.Name], job.Current)
 		}
 	}
+	sort.Sort(JobSchedulersByJobNameAsc(status.Jobs))
 	return &status
 }
 
