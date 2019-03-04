@@ -19,4 +19,9 @@ func TestMillis(t *testing.T) {
 	assert.Nil(err)
 	millis = Millis(duration)
 	assert.Equal(float64(0), millis)
+
+	duration, err = time.ParseDuration("-2000000ms")
+	assert.Nil(err)
+	millis = Millis(duration)
+	assert.Equal(float64(-2000000), millis)
 }
