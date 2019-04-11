@@ -96,10 +96,6 @@ func TestMockClientTransit(t *testing.T) {
 	err := client.CreateTransitKey("key1")
 	assert.Nil(err)
 
-	exists, err := client.TransitKeyExists("key1")
-	assert.Nil(err)
-	assert.True(exists)
-
 	cipher, err := client.TransitEncrypt("key1", map[string]interface{}{}, []byte("testo"))
 	assert.Nil(err)
 	assert.NotEmpty(string(cipher))
