@@ -44,6 +44,7 @@ func New(options ...Option) (*VaultClient, error) {
 
 	client.KV1 = &KV1{Client: client}
 	client.KV2 = &KV2{Client: client}
+	client.Transit = &VaultTransit{Client: client}
 
 	for _, option := range options {
 		if err = option(client); err != nil {
@@ -71,13 +72,14 @@ type VaultClient struct {
 	BufferPool *bufferutil.Pool
 	KV1        *KV1
 	KV2        *KV2
+	Transit    Transit
 	Client     HTTPClient
 	CertPool   *CertPool
 }
 
 // Put puts a value.
 func (c *VaultClient) Put(ctx context.Context, key string, data Values, options ...RequestOption) error {
-	backend, err := c.backend(ctx, key)
+	backend, err := c.backendKV(ctx, key)
 	if err != nil {
 		return err
 	}
@@ -87,7 +89,7 @@ func (c *VaultClient) Put(ctx context.Context, key string, data Values, options 
 
 // Get gets a value at a given key.
 func (c *VaultClient) Get(ctx context.Context, key string, options ...RequestOption) (Values, error) {
-	backend, err := c.backend(ctx, key)
+	backend, err := c.backendKV(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +99,7 @@ func (c *VaultClient) Get(ctx context.Context, key string, options ...RequestOpt
 
 // Delete puts a key.
 func (c *VaultClient) Delete(ctx context.Context, key string, options ...RequestOption) error {
-	backend, err := c.backend(ctx, key)
+	backend, err := c.backendKV(ctx, key)
 	if err != nil {
 		return err
 	}
@@ -106,7 +108,7 @@ func (c *VaultClient) Delete(ctx context.Context, key string, options ...Request
 
 // List returns a slice of key and subfolder names at this path.
 func (c *VaultClient) List(ctx context.Context, path string, options ...RequestOption) ([]string, error) {
-	backend, err := c.backend(ctx, path)
+	backend, err := c.backendKV(ctx, path)
 	if err != nil {
 		return nil, err
 	}
@@ -132,11 +134,25 @@ func (c *VaultClient) WriteInto(ctx context.Context, key string, obj interface{}
 	return c.Put(ctx, key, data, options...)
 }
 
+// TransitEncrypt encrypts a given set of data.
+func (c *VaultClient) TransitEncrypt(key string, context map[string]interface{}, data []byte) (string, error) {
+	return c.backendTransit().TransitEncrypt(key, context, data)
+}
+
+// TransitDecrypt decrypts a given set of data.
+func (c *VaultClient) TransitDecrypt(key string, context map[string]interface{}, ciphertext string) ([]byte, error) {
+	return c.backendTransit().TransitDecrypt(key, context, ciphertext)
+}
+
 // --------------------------------------------------------------------------------
 // utility methods
 // --------------------------------------------------------------------------------
 
-func (c *VaultClient) backend(ctx context.Context, key string) (KV, error) {
+func (c *VaultClient) backendTransit() Transit {
+	return c.Transit
+}
+
+func (c *VaultClient) backendKV(ctx context.Context, key string) (KV, error) {
 	version, err := c.getVersion(ctx, key)
 	if err != nil {
 		return nil, err
