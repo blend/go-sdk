@@ -80,7 +80,7 @@ func (c *MockClient) List(_ context.Context, path string, options ...RequestOpti
 
 // CreateTransitKey creates a new transit key.
 func (c *MockClient) CreateTransitKey(name string) error {
-	key, err := crypto.CreateKey(10)
+	key, err := crypto.CreateKey(32)
 	c.TransitKeys[name] = key
 
 	return err

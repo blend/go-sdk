@@ -39,7 +39,7 @@ func TestMockClientList(t *testing.T) {
 	client := NewMockClient()
 	data := map[string]string{"key_123": "value_xyz"}
 
-	f := func(path string) []string{
+	f := func(path string) []string {
 		vals, _ := client.List(todo, path)
 		return vals
 	}
@@ -60,7 +60,6 @@ func TestMockClientList(t *testing.T) {
 	assert.Len(results, 1)
 	assert.True(validate(results, "service/"))
 
-
 	results = f("secret/service/")
 	assert.Len(results, 2)
 	assert.True(validate(results, "abc/", "head"))
@@ -70,7 +69,7 @@ func TestMockClientList(t *testing.T) {
 	assert.True(validate(results, "key1", "key2", "key3", "folder1/", "folder2/"))
 }
 
-func validate(keys []string, values ...string) bool{
+func validate(keys []string, values ...string) bool {
 	m := make(map[string]struct{})
 
 	for _, k := range keys {
@@ -88,4 +87,24 @@ func validate(keys []string, values ...string) bool{
 		}
 	}
 	return true
+}
+
+func TestMockClientTransit(t *testing.T) {
+	assert := assert.New(t)
+	client := NewMockClient()
+
+	err := client.CreateTransitKey("key1")
+	assert.Nil(err)
+
+	exists, err := client.TransitKeyExists("key1")
+	assert.Nil(err)
+	assert.True(exists)
+
+	cipher, err := client.TransitEncrypt("key1", map[string]interface{}{}, []byte("testo"))
+	assert.Nil(err)
+	assert.NotEmpty(string(cipher))
+
+	plaintext, err := client.TransitDecrypt("key1", map[string]interface{}{}, cipher)
+	assert.Nil(err)
+	assert.Equal("testo", plaintext)
 }
