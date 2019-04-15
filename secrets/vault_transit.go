@@ -1,14 +1,15 @@
 package secrets
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"path/filepath"
 )
 
-// assert VaultTransit implements Transit
+// assert VaultTransit implements TransitClient
 var (
-	_ Transit = VaultTransit{}
+	_ TransitClient = VaultTransit{}
 )
 
 // VaultTransit defines vault transit interactions
@@ -16,16 +17,15 @@ type VaultTransit struct {
 	Client *VaultClient
 }
 
-// TransitEncrypt encrypts a given set of data.
-func (vt VaultTransit) TransitEncrypt(key string, context map[string]interface{}, data []byte) (string, error) {
-	req := vt.Client.createRequest(MethodPost, filepath.Join("/v1/transit/encrypt/", key))
+// Encrypt encrypts a given set of data.
+func (vt VaultTransit) Encrypt(ctx context.Context, key string, context, data []byte) (string, error) {
+	req := vt.Client.createRequest(MethodPost, filepath.Join("/v1/transit/encrypt/", key)).WithContext(ctx)
 
 	payload := map[string]interface{}{
 		"plaintext": base64.StdEncoding.EncodeToString(data),
 	}
 	if context != nil {
-		contextJSON, _ := json.Marshal(context)
-		contextEncoded := base64.StdEncoding.EncodeToString(contextJSON)
+		contextEncoded := base64.StdEncoding.EncodeToString(context)
 		payload["context"] = contextEncoded
 	}
 	body, err := vt.Client.jsonBody(payload)
@@ -48,19 +48,15 @@ func (vt VaultTransit) TransitEncrypt(key string, context map[string]interface{}
 	return encryptionResult.Data.Ciphertext, nil
 }
 
-// TransitDecrypt decrypts a given set of data.
-func (vt VaultTransit) TransitDecrypt(key string, context map[string]interface{}, ciphertext string) ([]byte, error) {
-	req := vt.Client.createRequest(MethodPost, filepath.Join("/v1/transit/decrypt/", key))
+// Decrypt decrypts a given set of data.
+func (vt VaultTransit) Decrypt(ctx context.Context, key string, context []byte, ciphertext string) ([]byte, error) {
+	req := vt.Client.createRequest(MethodPost, filepath.Join("/v1/transit/decrypt/", key)).WithContext(ctx)
 
 	payload := map[string]interface{}{
 		"ciphertext": ciphertext,
 	}
 	if context != nil {
-		contextJSON, err := json.Marshal(context)
-		if err != nil {
-			return nil, err
-		}
-		contextEncoded := base64.StdEncoding.EncodeToString(contextJSON)
+		contextEncoded := base64.StdEncoding.EncodeToString(context)
 		payload["context"] = contextEncoded
 	}
 	body, err := vt.Client.jsonBody(payload)

@@ -72,7 +72,7 @@ type VaultClient struct {
 	BufferPool *bufferutil.Pool
 	KV1        *KV1
 	KV2        *KV2
-	Transit    Transit
+	Transit    TransitClient
 	Client     HTTPClient
 	CertPool   *CertPool
 }
@@ -134,21 +134,21 @@ func (c *VaultClient) WriteInto(ctx context.Context, key string, obj interface{}
 	return c.Put(ctx, key, data, options...)
 }
 
-// TransitEncrypt encrypts a given set of data.
-func (c *VaultClient) TransitEncrypt(key string, context map[string]interface{}, data []byte) (string, error) {
-	return c.backendTransit().TransitEncrypt(key, context, data)
+// Encrypt encrypts a given set of data.
+func (c *VaultClient) Encrypt(ctx context.Context, key string, context, data []byte) (string, error) {
+	return c.backendTransit().Encrypt(ctx, key, context, data)
 }
 
-// TransitDecrypt decrypts a given set of data.
-func (c *VaultClient) TransitDecrypt(key string, context map[string]interface{}, ciphertext string) ([]byte, error) {
-	return c.backendTransit().TransitDecrypt(key, context, ciphertext)
+// Decrypt decrypts a given set of data.
+func (c *VaultClient) Decrypt(ctx context.Context, key string, context []byte, ciphertext string) ([]byte, error) {
+	return c.backendTransit().Decrypt(ctx, key, context, ciphertext)
 }
 
 // --------------------------------------------------------------------------------
 // utility methods
 // --------------------------------------------------------------------------------
 
-func (c *VaultClient) backendTransit() Transit {
+func (c *VaultClient) backendTransit() TransitClient {
 	return c.Transit
 }
 

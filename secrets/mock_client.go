@@ -86,8 +86,8 @@ func (c *MockClient) CreateTransitKey(name string) error {
 	return err
 }
 
-// TransitEncrypt encrypts a given set of data.
-func (c *MockClient) TransitEncrypt(name string, context map[string]interface{}, data []byte) (string, error) {
+// Encrypt encrypts a given set of data.
+func (c *MockClient) Encrypt(ctx context.Context, name string, context, data []byte) (string, error) {
 	_, ok := c.TransitKeys[name]
 	if !ok {
 		return "", fmt.Errorf("No key")
@@ -97,8 +97,8 @@ func (c *MockClient) TransitEncrypt(name string, context map[string]interface{},
 	return string(encryptedData), err
 }
 
-// TransitDecrypt decrypts a given set of data.
-func (c *MockClient) TransitDecrypt(name string, context map[string]interface{}, ciphertext string) ([]byte, error) {
+// Decrypt decrypts a given set of data.
+func (c *MockClient) Decrypt(ctx context.Context, name string, context []byte, ciphertext string) ([]byte, error) {
 	_, ok := c.TransitKeys[name]
 	if !ok {
 		return nil, fmt.Errorf("No key")
