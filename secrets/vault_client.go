@@ -136,21 +136,17 @@ func (c *VaultClient) WriteInto(ctx context.Context, key string, obj interface{}
 
 // Encrypt encrypts a given set of data.
 func (c *VaultClient) Encrypt(ctx context.Context, key string, context, data []byte) (string, error) {
-	return c.backendTransit().Encrypt(ctx, key, context, data)
+	return c.Transit.Encrypt(ctx, key, context, data)
 }
 
 // Decrypt decrypts a given set of data.
 func (c *VaultClient) Decrypt(ctx context.Context, key string, context []byte, ciphertext string) ([]byte, error) {
-	return c.backendTransit().Decrypt(ctx, key, context, ciphertext)
+	return c.Transit.Decrypt(ctx, key, context, ciphertext)
 }
 
 // --------------------------------------------------------------------------------
 // utility methods
 // --------------------------------------------------------------------------------
-
-func (c *VaultClient) backendTransit() TransitClient {
-	return c.Transit
-}
 
 func (c *VaultClient) backendKV(ctx context.Context, key string) (KV, error) {
 	version, err := c.getVersion(ctx, key)
