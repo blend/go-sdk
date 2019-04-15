@@ -8,7 +8,7 @@ import (
 	"encoding/pem"
 	"math/big"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // SigningMethodECDSA implements the ECDSA family of signing methods signing methods
@@ -42,11 +42,11 @@ func (m *SigningMethodECDSA) Verify(signingString, signature string, key interfa
 	case *ecdsa.PublicKey:
 		ecdsaKey = k
 	default:
-		return exception.New(ErrInvalidKeyType)
+		return ex.New(ErrInvalidKeyType)
 	}
 
 	if len(sig) != 2*m.KeySize {
-		return exception.New(ErrECDSAVerification)
+		return ex.New(ErrECDSAVerification)
 	}
 
 	r := big.NewInt(0).SetBytes(sig[:m.KeySize])
@@ -54,7 +54,7 @@ func (m *SigningMethodECDSA) Verify(signingString, signature string, key interfa
 
 	// Create hasher
 	if !m.Hash.Available() {
-		return exception.New(ErrHashUnavailable)
+		return ex.New(ErrHashUnavailable)
 	}
 	hasher := m.Hash.New()
 	hasher.Write([]byte(signingString))
@@ -63,7 +63,7 @@ func (m *SigningMethodECDSA) Verify(signingString, signature string, key interfa
 	if verifystatus := ecdsa.Verify(ecdsaKey, hasher.Sum(nil), r, s); verifystatus == true {
 		return nil
 	}
-	return exception.New(ErrECDSAVerification)
+	return ex.New(ErrECDSAVerification)
 }
 
 // Sign implements the Sign method from SigningMethod
@@ -92,7 +92,7 @@ func (m *SigningMethodECDSA) Sign(signingString string, key interface{}) (string
 		curveBits := ecdsaKey.Curve.Params().BitSize
 
 		if m.CurveBits != curveBits {
-			return "", exception.New(ErrInvalidKey)
+			return "", ex.New(ErrInvalidKey)
 		}
 
 		keyBytes := curveBits / 8
@@ -120,8 +120,8 @@ func (m *SigningMethodECDSA) Sign(signingString string, key interface{}) (string
 
 // Common ECDSA errors.
 var (
-	ErrNotECPublicKey  exception.Class = "Key is not a valid ECDSA public key"
-	ErrNotECPrivateKey exception.Class = "Key is not a valid ECDSA private key"
+	ErrNotECPublicKey  ex.Class = "Key is not a valid ECDSA public key"
+	ErrNotECPrivateKey ex.Class = "Key is not a valid ECDSA private key"
 )
 
 // ParseECPrivateKeyFromPEM parses a PEM encoded Elliptic Curve Private Key Structure

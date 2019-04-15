@@ -1,4 +1,4 @@
-package exception
+package ex
 
 // Nest nests an arbitrary number of exceptions.
 func Nest(err ...error) error {

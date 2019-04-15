@@ -9,7 +9,7 @@ import (
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/env"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -23,7 +23,7 @@ func TestViewResultRender(t *testing.T) {
 	buffer := bytes.NewBuffer([]byte{})
 	rc := NewCtx(webutil.NewMockResponse(buffer), nil)
 
-	assert.True(exception.Is((&ViewResult{}).Render(nil), ErrUnsetViewTemplate))
+	assert.True(ex.Is((&ViewResult{}).Render(nil), ErrUnsetViewTemplate))
 
 	testView := template.New("testView")
 	testView.Parse("{{ .ViewModel.Text }}")

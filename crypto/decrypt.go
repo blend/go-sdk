@@ -4,13 +4,13 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // Decrypt decrypts data with the given key.
 func Decrypt(key, cipherText []byte) ([]byte, error) {
 	if len(cipherText) < aes.BlockSize {
-		return nil, exception.New("cannot decrypt string: `cipherText` is smaller than AES block size", exception.OptMessagef("block size: %v", aes.BlockSize))
+		return nil, ex.New("cannot decrypt string: `cipherText` is smaller than AES block size", ex.OptMessagef("block size: %v", aes.BlockSize))
 	}
 
 	iv := cipherText[:aes.BlockSize]

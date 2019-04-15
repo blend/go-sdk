@@ -6,12 +6,12 @@ import (
 	"encoding/pem"
 	"io/ioutil"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // Errors
 const (
-	ErrInvalidCertPEM exception.Class = "failed to add cert to pool as pem"
+	ErrInvalidCertPEM ex.Class = "failed to add cert to pool as pem"
 )
 
 // MustBytes panics on an error or returns the contents.
@@ -23,9 +23,9 @@ func MustBytes(contents []byte, err error) []byte {
 }
 
 // BytesWithError returns a bytes error response with the error
-// as an exception.
+// as an ex.
 func BytesWithError(bytes []byte, err error) ([]byte, error) {
-	return bytes, exception.New(err)
+	return bytes, ex.New(err)
 }
 
 // ReadFiles reads a list of files as bytes.
@@ -34,7 +34,7 @@ func ReadFiles(files ...string) (data [][]byte, err error) {
 	for _, path := range files {
 		contents, err = ioutil.ReadFile(path)
 		if err != nil {
-			return nil, exception.New(err)
+			return nil, ex.New(err)
 		}
 		data = append(data, contents)
 	}
@@ -45,16 +45,16 @@ func ReadFiles(files ...string) (data [][]byte, err error) {
 func ExtendSystemPoolWithKeyPairCerts(keyPairs ...KeyPair) (*x509.CertPool, error) {
 	pool, err := x509.SystemCertPool()
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	var contents []byte
 	for _, keyPair := range keyPairs {
 		contents, err = keyPair.CertBytes()
 		if err != nil {
-			return nil, exception.New(err)
+			return nil, ex.New(err)
 		}
 		if ok := pool.AppendCertsFromPEM(contents); !ok {
-			return nil, exception.New(ErrInvalidCertPEM)
+			return nil, ex.New(ErrInvalidCertPEM)
 		}
 	}
 
@@ -72,7 +72,7 @@ func ExtendEmptyPoolWithKeyPairCerts(keyPairs ...KeyPair) (*x509.CertPool, error
 			return nil, err
 		}
 		if ok := pool.AppendCertsFromPEM(contents); !ok {
-			return nil, exception.New(ErrInvalidCertPEM)
+			return nil, ex.New(ErrInvalidCertPEM)
 		}
 	}
 	return pool, nil
@@ -92,7 +92,7 @@ func ParseCertPEM(certPem []byte) (output []*x509.Certificate, err error) {
 
 		cert, err := x509.ParseCertificate(block.Bytes)
 		if err != nil {
-			err = exception.New(err)
+			err = ex.New(err)
 			continue
 		}
 		output = append(output, cert)
@@ -118,12 +118,12 @@ func CommonNamesForCertPEM(certPEM []byte) ([]string, error) {
 func ReadPrivateKeyPEMFromPath(keyPath string) (*rsa.PrivateKey, error) {
 	contents, err := ioutil.ReadFile(keyPath)
 	if err != nil {
-		return nil, exception.New(err, exception.OptMessagef("key path: %s", keyPath))
+		return nil, ex.New(err, ex.OptMessagef("key path: %s", keyPath))
 	}
 	data, _ := pem.Decode(contents)
 	pk, err := x509.ParsePKCS1PrivateKey(data.Bytes)
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	return pk, nil
 }

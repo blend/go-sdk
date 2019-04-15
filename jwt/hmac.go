@@ -4,7 +4,7 @@ import (
 	"crypto"
 	"crypto/hmac"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // SigningMethodHMAC implements the HMAC-SHA family of signing methods signing methods
@@ -24,7 +24,7 @@ func (m *SigningMethodHMAC) Verify(signingString, signature string, key interfac
 	// Verify the key is the right type
 	keyBytes, ok := key.([]byte)
 	if !ok {
-		return exception.New(ErrInvalidKeyType)
+		return ex.New(ErrInvalidKeyType)
 	}
 
 	// Decode signature, for comparison
@@ -35,7 +35,7 @@ func (m *SigningMethodHMAC) Verify(signingString, signature string, key interfac
 
 	// Can we use the specified hashing method?
 	if !m.Hash.Available() {
-		return exception.New(ErrHashUnavailable)
+		return ex.New(ErrHashUnavailable)
 	}
 
 	// This signing method is symmetric, so we validate the signature
@@ -44,7 +44,7 @@ func (m *SigningMethodHMAC) Verify(signingString, signature string, key interfac
 	hasher := hmac.New(m.Hash.New, keyBytes)
 	hasher.Write([]byte(signingString))
 	if !hmac.Equal(sig, hasher.Sum(nil)) {
-		return exception.New(ErrHMACSignatureInvalid)
+		return ex.New(ErrHMACSignatureInvalid)
 	}
 
 	// No validation errors.  Signature is good.
@@ -56,7 +56,7 @@ func (m *SigningMethodHMAC) Verify(signingString, signature string, key interfac
 func (m *SigningMethodHMAC) Sign(signingString string, key interface{}) (string, error) {
 	if keyBytes, ok := key.([]byte); ok {
 		if !m.Hash.Available() {
-			return "", exception.New(ErrHashUnavailable)
+			return "", ex.New(ErrHashUnavailable)
 		}
 
 		hasher := hmac.New(m.Hash.New, keyBytes)
@@ -65,5 +65,5 @@ func (m *SigningMethodHMAC) Sign(signingString string, key interface{}) (string,
 		return EncodeSegment(hasher.Sum(nil)), nil
 	}
 
-	return "", exception.New(ErrInvalidKeyType)
+	return "", ex.New(ErrInvalidKeyType)
 }

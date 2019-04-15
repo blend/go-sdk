@@ -1,8 +1,8 @@
 package webutil
 
-import "github.com/blend/go-sdk/exception"
+import "github.com/blend/go-sdk/ex"
 
 // Errors
 const (
-	ErrInvalidSameSite exception.Class = "invalid cookie same site string value"
+	ErrInvalidSameSite ex.Class = "invalid cookie same site string value"
 )

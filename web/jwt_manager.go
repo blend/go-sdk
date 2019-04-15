@@ -4,13 +4,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/jwt"
 )
 
 const (
 	// ErrJWTNonstandardClaims can be returned by the jwt manager keyfunc.
-	ErrJWTNonstandardClaims = exception.Class("jwt; invalid claims object; should be standard claims")
+	ErrJWTNonstandardClaims = ex.Class("jwt; invalid claims object; should be standard claims")
 )
 
 // NewJWTManager returns a new jwt manager from a key.

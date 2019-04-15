@@ -90,8 +90,8 @@ func (tf TextOutputFormatter) FormatTimestamp(ts time.Time) string {
 	return tf.Colorize(fmt.Sprintf("%-30s", value), ansi.ColorLightBlack)
 }
 
-// FormatSubContextPath returns the sub-context path section of the message.
-func (tf TextOutputFormatter) FormatSubContextPath(path ...string) string {
+// FormatPath returns the sub-context path section of the message as a string.
+func (tf TextOutputFormatter) FormatPath(path ...string) string {
 	if len(path) == 0 {
 		return ""
 	}
@@ -106,21 +106,32 @@ func (tf TextOutputFormatter) FormatSubContextPath(path ...string) string {
 	return fmt.Sprintf("[%s]", strings.Join(path, " > "))
 }
 
+// FormatFields returns the sub-context fields section of the message as a string.
+func (tf TextOutputFormatter) FormatFields(fields Fields) string {
+	var output []string
+	for key, value := range fields {
+		output = append(output, fmt.Sprintf("%s=%s", tf.Colorize(key, ansi.ColorBlue), value))
+	}
+	return strings.Join(output, " ")
+}
+
 // WriteFormat implements write formatter.
 func (tf TextOutputFormatter) WriteFormat(ctx context.Context, output io.Writer, e Event) error {
 	buffer := tf.BufferPool.Get()
 	defer tf.BufferPool.Put(buffer)
 
 	if !tf.HideTimestamp {
-		buffer.WriteString(tf.FormatTimestamp(e.Timestamp()))
+		buffer.WriteString(tf.FormatTimestamp(e.GetTimestamp()))
 		buffer.WriteString(Space)
 	}
 
-	buffer.WriteString(tf.FormatFlag(e.Flag(), FlagTextColor(e.Flag())))
+	buffer.WriteString(tf.FormatFlag(e.GetFlag(), FlagTextColor(e.GetFlag())))
 	buffer.WriteString(Space)
 
-	if subContextPath := GetSubContextPath(ctx); subContextPath != nil {
-		buffer.WriteString(tf.FormatSubContextPath(subContextPath...))
+	subContextPath, subContextFields := GetSubContextMeta(ctx)
+
+	if subContextPath != nil {
+		buffer.WriteString(tf.FormatPath(subContextPath...))
 		buffer.WriteString(Space)
 	}
 
@@ -128,6 +139,11 @@ func (tf TextOutputFormatter) WriteFormat(ctx context.Context, output io.Writer,
 		typed.WriteText(tf, buffer)
 	} else if stringer, ok := e.(fmt.Stringer); ok {
 		buffer.WriteString(stringer.String())
+	}
+
+	if len(subContextFields) > 0 {
+		buffer.WriteString("\t")
+		buffer.WriteString(tf.FormatFields(subContextFields))
 	}
 
 	buffer.WriteString(Newline)

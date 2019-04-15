@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/reflectutil"
 )
 
@@ -62,7 +62,7 @@ func DecomposeJSON(obj interface{}) (map[string]string, error) {
 
 		contents, err := json.Marshal(fieldValueValue)
 		if err != nil {
-			return nil, exception.New(err)
+			return nil, ex.New(err)
 		}
 		output[outputKey] = string(contents)
 	}
@@ -107,7 +107,7 @@ func RestoreJSON(data map[string]string, obj interface{}) error {
 		}
 		fieldValue = objValue.FieldByName(fieldName)
 		if err := json.Unmarshal([]byte(value), fieldValue.Addr().Interface()); err != nil {
-			return exception.New(err)
+			return ex.New(err)
 		}
 	}
 	return nil

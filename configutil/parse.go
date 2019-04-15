@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 var (
@@ -34,7 +34,7 @@ func (p Parser) Int() (*int, error) {
 	}
 	parsed, err := strconv.Atoi(*value)
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	return &parsed, nil
 }
@@ -50,7 +50,7 @@ func (p Parser) Float64() (*float64, error) {
 	}
 	parsed, err := strconv.ParseFloat(*value, 64)
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	return &parsed, nil
 }
@@ -66,7 +66,7 @@ func (p Parser) Duration() (*time.Duration, error) {
 	}
 	parsed, err := time.ParseDuration(*value)
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	return &parsed, nil
 }

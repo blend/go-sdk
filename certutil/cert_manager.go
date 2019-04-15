@@ -5,7 +5,7 @@ import (
 	"crypto/x509"
 	"sync"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // NewCertManagerWithKeyPairs returns a new cert pool from key pairs.
@@ -39,7 +39,7 @@ func NewCertManagerWithKeyPairs(server KeyPair, authorities []KeyPair, clients .
 			return nil, err
 		}
 		if len(commonNames) == 0 {
-			return nil, exception.New(ErrInvalidCertPEM)
+			return nil, ex.New(ErrInvalidCertPEM)
 		}
 		clientCerts[commonNames[0]] = certPEM
 	}
@@ -115,7 +115,7 @@ func (cm *CertManager) AddClientCert(clientCert []byte) error {
 		return err
 	}
 	if len(commonNames) == 0 {
-		return exception.New(ErrInvalidCertPEM)
+		return ex.New(ErrInvalidCertPEM)
 	}
 	cm.ClientCerts[commonNames[0].Subject.CommonName] = clientCert
 	return cm.RefreshClientCerts()
@@ -142,7 +142,7 @@ func (cm *CertManager) RefreshClientCerts() error {
 	pool := x509.NewCertPool()
 	for uid, cert := range cm.ClientCerts {
 		if ok := pool.AppendCertsFromPEM(cert); !ok {
-			return exception.New("invalid ca cert for client cert pool", exception.OptMessagef("cert uid: %s", uid))
+			return ex.New("invalid ca cert for client cert pool", ex.OptMessagef("cert uid: %s", uid))
 		}
 	}
 	cm.TLSConfig.ClientCAs = pool

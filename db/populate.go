@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"reflect"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // PopulateByName sets the values of an object from the values of a sql.Rows object using column names.
@@ -38,7 +38,7 @@ func PopulateByName(object interface{}, row Rows, cols *ColumnCollection) error 
 		if field, ok = columnLookup[colName]; ok {
 			err = field.SetValue(object, v)
 			if err != nil {
-				return exception.New(Error(err), exception.OptMessagef("column: %s", colName))
+				return ex.New(Error(err), ex.OptMessagef("column: %s", colName))
 			}
 		}
 	}
@@ -57,7 +57,7 @@ func PopulateInOrder(object DatabaseMapped, row Scanner, cols *ColumnCollection)
 	}
 
 	if err = row.Scan(values...); err != nil {
-		err = exception.New(err)
+		err = ex.New(err)
 		return
 	}
 
@@ -66,7 +66,7 @@ func PopulateInOrder(object DatabaseMapped, row Scanner, cols *ColumnCollection)
 	for i, v := range values {
 		field = columns[i]
 		if err = field.SetValue(object, v); err != nil {
-			err = exception.New(err)
+			err = ex.New(err)
 			return
 		}
 	}

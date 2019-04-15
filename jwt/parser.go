@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // Parser is a parser for tokens.
@@ -38,7 +38,7 @@ func (p *Parser) ParseWithClaims(tokenString string, claims Claims, keyFunc Keyf
 			}
 		}
 		if !signingMethodValid {
-			return token, exception.New(ErrValidation, exception.OptInner(ErrInvalidSigningMethod))
+			return token, ex.New(ErrValidation, ex.OptInner(ErrInvalidSigningMethod))
 		}
 	}
 
@@ -46,7 +46,7 @@ func (p *Parser) ParseWithClaims(tokenString string, claims Claims, keyFunc Keyf
 	var key interface{}
 	if keyFunc == nil {
 		// keyFunc was not provided.  short circuiting validation
-		return token, exception.New(ErrValidation, exception.OptInner(ErrKeyfuncUnset))
+		return token, ex.New(ErrValidation, ex.OptInner(ErrKeyfuncUnset))
 	}
 
 	if key, err = keyFunc(token); err != nil {
@@ -57,14 +57,14 @@ func (p *Parser) ParseWithClaims(tokenString string, claims Claims, keyFunc Keyf
 	if !p.SkipClaimsValidation {
 		if err := token.Claims.Valid(); err != nil {
 			// this is strictly an aud, exp, or nbf style validation error.
-			return token, exception.New(ErrValidation, exception.OptInner(err))
+			return token, ex.New(ErrValidation, ex.OptInner(err))
 		}
 	}
 
 	// Perform validation
 	token.Signature = parts[2]
 	if err = token.Method.Verify(strings.Join(parts[0:2], "."), token.Signature, key); err != nil {
-		return token, exception.New(ErrValidation, exception.OptInner(exception.New(ErrValidationSignature, exception.OptInner(err))))
+		return token, ex.New(ErrValidation, ex.OptInner(ex.New(ErrValidationSignature, ex.OptInner(err))))
 	}
 
 	token.Valid = true
@@ -78,7 +78,7 @@ func (p *Parser) ParseWithClaims(tokenString string, claims Claims, keyFunc Keyf
 func (p *Parser) ParseUnverified(tokenString string, claims Claims) (token *Token, parts []string, err error) {
 	parts = strings.Split(tokenString, ".")
 	if len(parts) != 3 {
-		return nil, parts, exception.New(ErrValidation, exception.OptMessage("token contains an invalid number of segments"))
+		return nil, parts, ex.New(ErrValidation, ex.OptMessage("token contains an invalid number of segments"))
 	}
 
 	token = &Token{Raw: tokenString}
@@ -87,12 +87,12 @@ func (p *Parser) ParseUnverified(tokenString string, claims Claims) (token *Toke
 	var headerBytes []byte
 	if headerBytes, err = DecodeSegment(parts[0]); err != nil {
 		if strings.HasPrefix(strings.ToLower(tokenString), "bearer ") {
-			return token, parts, exception.New(ErrValidation, exception.OptMessage("tokenstring should not contain 'bearer '"))
+			return token, parts, ex.New(ErrValidation, ex.OptMessage("tokenstring should not contain 'bearer '"))
 		}
-		return token, parts, exception.New(ErrValidation, exception.OptInner(err))
+		return token, parts, ex.New(ErrValidation, ex.OptInner(err))
 	}
 	if err = json.Unmarshal(headerBytes, &token.Header); err != nil {
-		return token, parts, exception.New(ErrValidation, exception.OptInner(err))
+		return token, parts, ex.New(ErrValidation, ex.OptInner(err))
 	}
 
 	// parse Claims
@@ -100,7 +100,7 @@ func (p *Parser) ParseUnverified(tokenString string, claims Claims) (token *Toke
 	token.Claims = claims
 
 	if claimBytes, err = DecodeSegment(parts[1]); err != nil {
-		return token, parts, exception.New(ErrValidation, exception.OptInner(err))
+		return token, parts, ex.New(ErrValidation, ex.OptInner(err))
 	}
 	dec := json.NewDecoder(bytes.NewBuffer(claimBytes))
 	if p.UseJSONNumber {
@@ -114,15 +114,15 @@ func (p *Parser) ParseUnverified(tokenString string, claims Claims) (token *Toke
 	}
 	// Handle decode error
 	if err != nil {
-		return token, parts, exception.New(ErrValidation, exception.OptInner(err))
+		return token, parts, ex.New(ErrValidation, ex.OptInner(err))
 	}
 
 	// Lookup signature method
 	if method, ok := token.Header["alg"].(string); ok {
 		if token.Method = GetSigningMethod(method); token.Method == nil {
-			return token, parts, exception.New(ErrValidation, exception.OptInner(ErrInvalidSigningMethod))
+			return token, parts, ex.New(ErrValidation, ex.OptInner(ErrInvalidSigningMethod))
 		}
 		return token, parts, nil
 	}
-	return token, parts, exception.New(ErrValidation, exception.OptInner(ErrInvalidSigningMethod))
+	return token, parts, ex.New(ErrValidation, ex.OptInner(ErrInvalidSigningMethod))
 }

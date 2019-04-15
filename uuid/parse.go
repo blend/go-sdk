@@ -1,13 +1,13 @@
 package uuid
 
-import "github.com/blend/go-sdk/exception"
+import "github.com/blend/go-sdk/ex"
 
 // Error Classes
 const (
-	ErrParseInvalidUUIDInput = exception.Class("parse uuid: existing uuid is invalid")
-	ErrParseEmpty            = exception.Class("parse uuid: input is empty")
-	ErrParseInvalidLength    = exception.Class("parse uuid: input is an invalid length")
-	ErrParseIllegalCharacter = exception.Class("parse uuid: illegal character")
+	ErrParseInvalidUUIDInput = ex.Class("parse uuid: existing uuid is invalid")
+	ErrParseEmpty            = ex.Class("parse uuid: input is empty")
+	ErrParseInvalidLength    = ex.Class("parse uuid: input is an invalid length")
+	ErrParseIllegalCharacter = ex.Class("parse uuid: illegal character")
 )
 
 // MustParse parses a uuid and will panic if there is an error.
@@ -35,13 +35,13 @@ func Parse(corpus string) (UUID, error) {
 // ParseExisting parses into an existing UUID.
 func ParseExisting(uuid *UUID, corpus string) error {
 	if len(corpus) == 0 {
-		return exception.New(ErrParseEmpty)
+		return ex.New(ErrParseEmpty)
 	}
 	if len(corpus)%2 == 1 {
-		return exception.New(ErrParseInvalidLength)
+		return ex.New(ErrParseInvalidLength)
 	}
 	if len(*uuid) != 16 {
-		return exception.New(ErrParseInvalidUUIDInput)
+		return ex.New(ErrParseInvalidUUIDInput)
 	}
 	var data = []byte(corpus)
 	var c byte
@@ -56,17 +56,17 @@ func ParseExisting(uuid *UUID, corpus string) error {
 			continue
 		}
 		if c == '{' {
-			return exception.New(ErrParseIllegalCharacter, exception.OptMessagef("at %d: %v", i, string(c)))
+			return ex.New(ErrParseIllegalCharacter, ex.OptMessagef("at %d: %v", i, string(c)))
 		}
 		if c == '}' && i != len(data)-1 {
-			return exception.New(ErrParseIllegalCharacter, exception.OptMessagef("at %d: %v", i, string(c)))
+			return ex.New(ErrParseIllegalCharacter, ex.OptMessagef("at %d: %v", i, string(c)))
 		}
 		if c == '}' {
 			continue
 		}
 
 		if c == '-' && !(di == 8 || di == 12 || di == 16 || di == 20) {
-			return exception.New(ErrParseIllegalCharacter, exception.OptMessagef("at %d: %v", i, string(c)))
+			return ex.New(ErrParseIllegalCharacter, ex.OptMessagef("at %d: %v", i, string(c)))
 		}
 		if c == '-' {
 			continue
@@ -74,7 +74,7 @@ func ParseExisting(uuid *UUID, corpus string) error {
 
 		hexChar, isHexChar = fromHexChar(c)
 		if !isHexChar {
-			return exception.New(ErrParseIllegalCharacter, exception.OptMessagef("at %d: %v", i, string(c)))
+			return ex.New(ErrParseIllegalCharacter, ex.OptMessagef("at %d: %v", i, string(c)))
 		}
 
 		hex[hexIndex] = hexChar
@@ -88,7 +88,7 @@ func ParseExisting(uuid *UUID, corpus string) error {
 		di++
 	}
 	if uuidIndex != 16 {
-		return exception.New(ErrParseInvalidLength)
+		return ex.New(ErrParseInvalidLength)
 	}
 	return nil
 }

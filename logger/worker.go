@@ -2,7 +2,7 @@ package logger
 
 import (
 	"github.com/blend/go-sdk/async"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // NewWorker returns a new worker.
@@ -25,7 +25,7 @@ type Worker struct {
 // Start starts the worker.
 func (w *Worker) Start() error {
 	if !w.CanStart() {
-		return exception.New(async.ErrCannotStart)
+		return ex.New(async.ErrCannotStart)
 	}
 	w.Starting()
 	w.Dispatch()
@@ -58,7 +58,7 @@ func (w *Worker) Dispatch() {
 func (w *Worker) Process(ec EventWithContext) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = exception.New(r)
+			err = ex.New(r)
 			return
 		}
 	}()
@@ -93,7 +93,7 @@ func (w *Worker) Drain() {
 // Stop stops the worker.
 func (w *Worker) Stop() error {
 	if !w.CanStop() {
-		return exception.New(async.ErrCannotStop)
+		return ex.New(async.ErrCannotStop)
 	}
 	w.Stopping()
 	<-w.NotifyStopped()

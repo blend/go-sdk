@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/env"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/stringutil"
 )
 
@@ -15,7 +15,7 @@ import (
 func NewConfigFromDSN(dsn string) (*Config, error) {
 	parsed, err := ParseURL(dsn)
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 
 	var config Config
@@ -38,7 +38,7 @@ func NewConfigFromDSN(dsn string) (*Config, error) {
 		} else if strings.HasPrefix(piece, "connect_timeout=") {
 			config.ConnectTimeout, err = strconv.Atoi(strings.TrimPrefix(piece, "connect_timeout="))
 			if err != nil {
-				return nil, exception.New(err, exception.OptMessage("field: connect_timeout"))
+				return nil, ex.New(err, ex.OptMessage("field: connect_timeout"))
 			}
 		}
 	}
@@ -234,14 +234,14 @@ func (c Config) ValidateProduction() error {
 		stringutil.EqualsCaseless(c.SSLMode, SSLModeRequire) ||
 		stringutil.EqualsCaseless(c.SSLMode, SSLModeVerifyCA) ||
 		stringutil.EqualsCaseless(c.SSLMode, SSLModeVerifyFull)) {
-		return exception.New(ErrUnsafeSSLMode, exception.OptMessagef("sslmode: %s", c.SSLMode))
+		return ex.New(ErrUnsafeSSLMode, ex.OptMessagef("sslmode: %s", c.SSLMode))
 	}
 
 	if len(c.Username) == 0 {
-		return exception.New(ErrUsernameUnset)
+		return ex.New(ErrUsernameUnset)
 	}
 	if len(c.Password) == 0 {
-		return exception.New(ErrPasswordUnset)
+		return ex.New(ErrPasswordUnset)
 	}
 	return nil
 }

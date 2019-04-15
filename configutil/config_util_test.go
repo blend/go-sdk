@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/uuid"
 )
 
@@ -112,13 +112,13 @@ func TestReadPathNotFound(t *testing.T) {
 
 func TestIsUnset(t *testing.T) {
 	assert := assert.New(t)
-	assert.True(IsConfigPathUnset(exception.New(ErrConfigPathUnset)))
-	assert.False(IsConfigPathUnset(exception.New(uuid.V4().String())))
+	assert.True(IsConfigPathUnset(ex.New(ErrConfigPathUnset)))
+	assert.False(IsConfigPathUnset(ex.New(uuid.V4().String())))
 }
 
 func TestIsIgnored(t *testing.T) {
 	assert := assert.New(t)
 	assert.True(IsIgnored(nil))
-	assert.True(IsIgnored(exception.New(ErrConfigPathUnset)))
-	assert.True(IsIgnored(exception.New(ErrInvalidConfigExtension)))
+	assert.True(IsIgnored(ex.New(ErrConfigPathUnset)))
+	assert.True(IsIgnored(ex.New(ErrInvalidConfigExtension)))
 }

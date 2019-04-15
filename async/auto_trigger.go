@@ -5,7 +5,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 /*
@@ -95,7 +95,7 @@ This will start the singleton and wait for it to enter the running state.
 */
 func (a *AutoTrigger) Start() error {
 	if !a.CanStart() {
-		return exception.New(ErrCannotStart)
+		return ex.New(ErrCannotStart)
 	}
 	a.Starting()
 	a.Dispatch()
@@ -132,7 +132,7 @@ func (a *AutoTrigger) Dispatch() {
 // Stop stops the auto-action singleton.
 func (a *AutoTrigger) Stop() error {
 	if !a.CanStop() {
-		return exception.New(ErrCannotStop)
+		return ex.New(ErrCannotStop)
 	}
 	a.Stopping()
 	<-a.NotifyStopped()
@@ -155,7 +155,7 @@ func (a *AutoTrigger) Trigger(ctx context.Context) {
 	defer func() {
 		if r := recover(); r != nil {
 			if a.Errors != nil {
-				a.Errors <- exception.New(r)
+				a.Errors <- ex.New(r)
 			}
 		}
 	}()

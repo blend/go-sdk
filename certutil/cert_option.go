@@ -8,7 +8,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // CertOption is an option for creating certs.
@@ -125,11 +125,11 @@ func OptPrivateKeyFromPath(path string) CertOption {
 	return func(cco *CertOptions) error {
 		contents, err := ioutil.ReadFile(path)
 		if err != nil {
-			return exception.New(err)
+			return ex.New(err)
 		}
 		privateKey, err := x509.ParsePKCS1PrivateKey(contents)
 		if err != nil {
-			return exception.New(err)
+			return ex.New(err)
 		}
 		cco.PrivateKey = privateKey
 		return nil
@@ -156,7 +156,7 @@ func ResolveCertOptions(createOptions *CertOptions, options ...CertOption) error
 	if createOptions.PrivateKey == nil {
 		createOptions.PrivateKey, err = rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
-			return exception.New(err)
+			return ex.New(err)
 		}
 	}
 
@@ -164,7 +164,7 @@ func ResolveCertOptions(createOptions *CertOptions, options ...CertOption) error
 		serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 		createOptions.SerialNumber, err = rand.Int(rand.Reader, serialNumberLimit)
 		if err != nil {
-			return exception.New(err)
+			return ex.New(err)
 		}
 	}
 

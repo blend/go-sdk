@@ -1,36 +1,36 @@
 package jwt
 
-import "github.com/blend/go-sdk/exception"
+import "github.com/blend/go-sdk/ex"
 
 // Error constants.
 var (
 	// ErrValidation will be the top most class in most cases.
-	ErrValidation exception.Class = "validation error"
+	ErrValidation ex.Class = "validation error"
 
-	ErrValidationAudienceUnset exception.Class = "token claims audience unset"
-	ErrValidationExpired       exception.Class = "token expired"
-	ErrValidationIssued        exception.Class = "token issued in future"
-	ErrValidationNotBefore     exception.Class = "token not before"
+	ErrValidationAudienceUnset ex.Class = "token claims audience unset"
+	ErrValidationExpired       ex.Class = "token expired"
+	ErrValidationIssued        ex.Class = "token issued in future"
+	ErrValidationNotBefore     ex.Class = "token not before"
 
-	ErrValidationSignature exception.Class = "signature is invalid"
+	ErrValidationSignature ex.Class = "signature is invalid"
 
-	ErrKeyfuncUnset         exception.Class = "keyfunc is unset"
-	ErrInvalidKey           exception.Class = "key is invalid"
-	ErrInvalidKeyType       exception.Class = "key is of invalid type"
-	ErrInvalidSigningMethod exception.Class = "invalid signing method"
-	ErrHashUnavailable      exception.Class = "the requested hash function is unavailable"
+	ErrKeyfuncUnset         ex.Class = "keyfunc is unset"
+	ErrInvalidKey           ex.Class = "key is invalid"
+	ErrInvalidKeyType       ex.Class = "key is of invalid type"
+	ErrInvalidSigningMethod ex.Class = "invalid signing method"
+	ErrHashUnavailable      ex.Class = "the requested hash function is unavailable"
 
-	ErrHMACSignatureInvalid exception.Class = "hmac signature is invalid"
+	ErrHMACSignatureInvalid ex.Class = "hmac signature is invalid"
 
-	ErrECDSAVerification exception.Class = "crypto/ecdsa: verification error"
+	ErrECDSAVerification ex.Class = "crypto/ecdsa: verification error"
 
-	ErrKeyMustBePEMEncoded exception.Class = "invalid key: key must be pem encoded pkcs1 or pkcs8 private key"
-	ErrNotRSAPrivateKey    exception.Class = "key is not a valid rsa private key"
-	ErrNotRSAPublicKey     exception.Class = "key is not a valid rsa public key"
+	ErrKeyMustBePEMEncoded ex.Class = "invalid key: key must be pem encoded pkcs1 or pkcs8 private key"
+	ErrNotRSAPrivateKey    ex.Class = "key is not a valid rsa private key"
+	ErrNotRSAPublicKey     ex.Class = "key is not a valid rsa public key"
 )
 
 // IsValidation returns if the error is a validation error
 // instead of a more structural error with the key infrastructure.
 func IsValidation(err error) bool {
-	return exception.Is(err, ErrValidation)
+	return ex.Is(err, ErrValidation)
 }

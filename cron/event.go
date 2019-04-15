@@ -98,7 +98,7 @@ type Event struct {
 
 // Complete returns if the event completed.
 func (e Event) Complete() bool {
-	return e.Flag() == FlagComplete
+	return e.GetFlag() == FlagComplete
 }
 
 // IsEnabled is a

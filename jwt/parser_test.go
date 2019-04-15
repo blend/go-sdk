@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/jwt"
 	"github.com/blend/go-sdk/jwt/test"
 )
@@ -247,12 +247,12 @@ func TestParser_Parse(t *testing.T) {
 			if err == nil {
 				t.Errorf("[%v] Expecting error. Didn't get one.", data.name)
 			} else {
-				if !exception.Is(err, data.err) {
+				if !ex.Is(err, data.err) {
 					t.Errorf("[%v] Errors don't match expectation. `%v` != `%v`", data.name, err, data.err)
 				}
 				if data.inner != nil {
-					if typed, ok := err.(*exception.Ex); ok {
-						if !exception.Is(typed.Inner, data.inner) {
+					if typed, ok := err.(*ex.Ex); ok {
+						if !ex.Is(typed.Inner, data.inner) {
 							t.Errorf("[%v] Causing Errors don't match expectation. `%+v` != `%+v`", data.name, typed.Inner, data.inner)
 						}
 					} else {

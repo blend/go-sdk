@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/blend/go-sdk/env"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // ViewResult is a result that renders a view.
@@ -23,7 +23,7 @@ type ViewResult struct {
 func (vr *ViewResult) Render(ctx *Ctx) (err error) {
 	// you must set the template to be rendered.
 	if vr.Template == nil {
-		err = exception.New(ErrUnsetViewTemplate)
+		err = ex.New(ErrUnsetViewTemplate)
 		return
 	}
 
@@ -53,7 +53,7 @@ func (vr *ViewResult) Render(ctx *Ctx) (err error) {
 		ViewModel: vr.ViewModel,
 	})
 	if err != nil {
-		err = exception.New(err)
+		err = ex.New(err)
 		ctx.Response.WriteHeader(http.StatusInternalServerError)
 		ctx.Response.Write([]byte(fmt.Sprintf("%+v\n", err)))
 		return
@@ -62,7 +62,7 @@ func (vr *ViewResult) Render(ctx *Ctx) (err error) {
 	ctx.Response.WriteHeader(vr.StatusCode)
 	_, err = ctx.Response.Write(buffer.Bytes())
 	if err != nil {
-		err = exception.New(err)
+		err = ex.New(err)
 	}
 	return
 }

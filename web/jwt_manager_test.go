@@ -6,7 +6,7 @@ import (
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/crypto"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/jwt"
 	"github.com/blend/go-sdk/uuid"
 )
@@ -79,7 +79,7 @@ func TestNewJWTManagerKeyFunc(t *testing.T) {
 		Claims: jwt.MapClaims{},
 	})
 
-	assert.True(exception.Is(ErrJWTNonstandardClaims, err))
+	assert.True(ex.Is(ErrJWTNonstandardClaims, err))
 
 	claims := &jwt.StandardClaims{
 		ID:        uuid.V4().String(),

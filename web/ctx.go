@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/webutil"
 )
@@ -183,7 +183,7 @@ func (rc *Ctx) PostBody() ([]byte, error) {
 			rc.Body, err = ioutil.ReadAll(rc.Request.Body)
 		}
 		if err != nil {
-			return nil, exception.New(err)
+			return nil, ex.New(err)
 		}
 	}
 	return rc.Body, nil
@@ -205,7 +205,7 @@ func (rc *Ctx) PostBodyAsJSON(response interface{}) error {
 		return err
 	}
 	if err = json.Unmarshal(body, response); err != nil {
-		return exception.New(err)
+		return ex.New(err)
 	}
 	return nil
 }
@@ -217,7 +217,7 @@ func (rc *Ctx) PostBodyAsXML(response interface{}) error {
 		return err
 	}
 	if err = xml.Unmarshal(body, response); err != nil {
-		return exception.New(err)
+		return ex.New(err)
 	}
 	return nil
 }

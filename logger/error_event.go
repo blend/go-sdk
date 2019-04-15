@@ -3,10 +3,9 @@ package logger
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // these are compile time assertions
@@ -15,14 +14,6 @@ var (
 	_ TextWritable   = (*ErrorEvent)(nil)
 	_ json.Marshaler = (*ErrorEvent)(nil)
 )
-
-// Errorf returns a new error event based on format and arguments.
-func Errorf(flag, format string, args ...interface{}) *ErrorEvent {
-	return &ErrorEvent{
-		EventMeta: NewEventMeta(flag),
-		Err:       fmt.Errorf(format, args...),
-	}
-}
 
 // NewErrorEvent returns a new error event.
 func NewErrorEvent(flag string, err error, options ...ErrorEventOption) *ErrorEvent {
@@ -77,7 +68,7 @@ type ErrorEvent struct {
 // WriteText writes the text version of an error.
 func (e ErrorEvent) WriteText(formatter TextFormatter, output io.Writer) {
 	if e.Err != nil {
-		if typed, ok := e.Err.(*exception.Ex); ok {
+		if typed, ok := e.Err.(*ex.Ex); ok {
 			io.WriteString(output, typed.String())
 		} else {
 			io.WriteString(output, e.Err.Error())

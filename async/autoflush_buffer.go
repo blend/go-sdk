@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/collections"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // NewAutoflushBuffer creates a new autoflush buffer.
@@ -92,7 +92,7 @@ This call blocks. To call it asynchronously:
 */
 func (ab *AutoflushBuffer) Start() error {
 	if !ab.CanStart() {
-		return exception.New(ErrCannotStart)
+		return ex.New(ErrCannotStart)
 	}
 	ab.Starting()
 	ab.Contents = collections.NewRingBufferWithCapacity(ab.MaxLen)
@@ -130,7 +130,7 @@ func (ab *AutoflushBuffer) Dispatch() {
 // Stop stops the buffer flusher.
 func (ab *AutoflushBuffer) Stop() error {
 	if !ab.CanStop() {
-		return exception.New(ErrCannotStop)
+		return ex.New(ErrCannotStop)
 	}
 	ab.Stopping()
 	<-ab.NotifyStopped()

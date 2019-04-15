@@ -4,7 +4,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // Listener creates a net listener for a given bind address.
@@ -17,5 +17,5 @@ func Listener(bindAddr string) (net.Listener, error) {
 	} else {
 		socketListener, err = net.Listen("tcp", bindAddr)
 	}
-	return socketListener, exception.New(err)
+	return socketListener, ex.New(err)
 }

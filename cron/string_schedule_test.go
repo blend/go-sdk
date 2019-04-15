@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/assert"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/stringutil"
 )
 
@@ -44,7 +44,7 @@ func TestParseString(t *testing.T) {
 		parsed, err := ParseString(tc.Input)
 		if tc.ExpectedErr != nil {
 			assert.NotNil(err)
-			assert.True(exception.Is(err, tc.ExpectedErr))
+			assert.True(ex.Is(err, tc.ExpectedErr))
 		} else {
 			assert.Nil(err)
 			next := parsed.Next(tc.After)

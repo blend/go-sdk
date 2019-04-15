@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 const (
@@ -28,11 +28,11 @@ func PostedFiles(r *http.Request) ([]PostedFile, error) {
 		for key := range r.MultipartForm.File {
 			fileReader, fileHeader, err := r.FormFile(key)
 			if err != nil {
-				return nil, exception.New(err)
+				return nil, ex.New(err)
 			}
 			bytes, err := ioutil.ReadAll(fileReader)
 			if err != nil {
-				return nil, exception.New(err)
+				return nil, ex.New(err)
 			}
 			files = append(files, PostedFile{Key: key, FileName: fileHeader.Filename, Contents: bytes})
 		}
@@ -43,7 +43,7 @@ func PostedFiles(r *http.Request) ([]PostedFile, error) {
 				if fileReader, fileHeader, err := r.FormFile(key); err == nil && fileReader != nil {
 					bytes, err := ioutil.ReadAll(fileReader)
 					if err != nil {
-						return nil, exception.New(err)
+						return nil, ex.New(err)
 					}
 					files = append(files, PostedFile{Key: key, FileName: fileHeader.Filename, Contents: bytes})
 				}

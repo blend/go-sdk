@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/airbrake/gobrake"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -13,17 +13,17 @@ import (
 func NewNotice(err interface{}, req *http.Request) *gobrake.Notice {
 	var notice *gobrake.Notice
 
-	if ex := exception.As(err); ex != nil {
+	if exErr := ex.As(err); exErr != nil {
 		var errors []gobrake.Error
 		errors = append(errors, gobrake.Error{
-			Type:      exception.ErrClass(ex),
-			Message:   ex.Message,
-			Backtrace: frames(ex.Stack),
+			Type:      ex.ErrClass(exErr),
+			Message:   exErr.Message,
+			Backtrace: frames(exErr.Stack),
 		})
 
-		for inner := exception.As(ex.Inner); inner != nil; inner = exception.As(inner.Inner) {
+		for inner := ex.As(exErr.Inner); inner != nil; inner = ex.As(inner.Inner) {
 			errors = append(errors, gobrake.Error{
-				Type:      exception.ErrClass(inner),
+				Type:      ex.ErrClass(inner),
 				Message:   fmt.Sprintf("%+v", inner),
 				Backtrace: frames(inner.Stack),
 			})
@@ -64,11 +64,11 @@ func NewNotice(err interface{}, req *http.Request) *gobrake.Notice {
 	return notice
 }
 
-func frames(stack exception.StackTrace) (output []gobrake.StackFrame) {
-	if typed, ok := stack.(exception.StackPointers); ok {
-		var frame exception.Frame
+func frames(stack ex.StackTrace) (output []gobrake.StackFrame) {
+	if typed, ok := stack.(ex.StackPointers); ok {
+		var frame ex.Frame
 		for _, ptr := range typed {
-			frame = exception.Frame(ptr)
+			frame = ex.Frame(ptr)
 			output = append(output, gobrake.StackFrame{
 				File: frame.File(),
 				Func: frame.Func(),

@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/blend/go-sdk/env"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/yaml"
 )
 
@@ -63,7 +63,7 @@ func Read(ref Any, options ...Option) (path string, err error) {
 			continue
 		}
 		if err != nil {
-			err = exception.New(err)
+			err = ex.New(err)
 			break
 		}
 		defer f.Close()
@@ -113,10 +113,10 @@ func deserialize(ext string, r io.Reader, ref Any) error {
 	// based off the extension, use the appropriate deserializer
 	switch strings.ToLower(ext) {
 	case ExtensionJSON:
-		return exception.New(json.NewDecoder(r).Decode(ref))
+		return ex.New(json.NewDecoder(r).Decode(ref))
 	case ExtensionYAML, ExtensionYML:
-		return exception.New(yaml.NewDecoder(r).Decode(ref))
+		return ex.New(yaml.NewDecoder(r).Decode(ref))
 	default: // return an error if we're passed a weird extension
-		return exception.New(ErrInvalidConfigExtension, exception.OptMessagef("extension: %s", ext))
+		return ex.New(ErrInvalidConfigExtension, ex.OptMessagef("extension: %s", ext))
 	}
 }

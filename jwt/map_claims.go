@@ -3,7 +3,7 @@ package jwt
 import (
 	"encoding/json"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // MapClaims is a claims type that uses the map[string]interface{} for JSON decoding
@@ -71,15 +71,15 @@ func (m MapClaims) Valid() error {
 	now := TimeFunc().Unix()
 
 	if m.VerifyExpiresAt(now, false) == false {
-		return exception.New(ErrValidationExpired)
+		return ex.New(ErrValidationExpired)
 	}
 
 	if m.VerifyIssuedAt(now, false) == false {
-		return exception.New(ErrValidationIssued)
+		return ex.New(ErrValidationIssued)
 	}
 
 	if m.VerifyNotBefore(now, false) == false {
-		return exception.New(ErrValidationNotBefore)
+		return ex.New(ErrValidationNotBefore)
 	}
 
 	return nil

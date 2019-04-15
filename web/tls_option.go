@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // TLSOption is an option for TLS configs.
@@ -21,7 +21,7 @@ func OptTLSClientCertPool(certPEMs ...[]byte) TLSOption {
 		for _, certPem := range certPEMs {
 			ok := t.ClientCAs.AppendCertsFromPEM(certPem)
 			if !ok {
-				return exception.New("invalid ca cert for client cert pool")
+				return ex.New("invalid ca cert for client cert pool")
 			}
 		}
 		t.BuildNameToCertificate()

@@ -4,13 +4,13 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // CreateServer creates a ca cert bundle.
 func CreateServer(commonName string, ca *CertBundle, options ...CertOption) (*CertBundle, error) {
 	if ca == nil || ca.PrivateKey == nil || len(ca.Certificates) == 0 {
-		return nil, exception.New("provided certificate authority bundle is invalid")
+		return nil, ex.New("provided certificate authority bundle is invalid")
 	}
 
 	createOptions := DefaultOptionsServer
@@ -26,11 +26,11 @@ func CreateServer(commonName string, ca *CertBundle, options ...CertOption) (*Ce
 	output.PublicKey = &createOptions.PrivateKey.PublicKey
 	der, err := x509.CreateCertificate(rand.Reader, &createOptions.Certificate, &ca.Certificates[0], output.PublicKey, ca.PrivateKey)
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	cert, err := x509.ParseCertificate(der)
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	output.CertificateDERs = append([][]byte{der}, ca.CertificateDERs...)
 	output.Certificates = append([]x509.Certificate{*cert}, ca.Certificates...)

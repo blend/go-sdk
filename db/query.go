@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"reflect"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // --------------------------------------------------------------------------------
@@ -43,7 +43,7 @@ func (q *Query) Any() (hasRows bool, err error) {
 		err = q.err
 		return
 	}
-	defer func() { err = exception.Nest(err, q.rows.Close()) }()
+	defer func() { err = ex.Nest(err, q.rows.Close()) }()
 
 	hasRows = q.rows.Next()
 	return
@@ -58,7 +58,7 @@ func (q *Query) None() (hasRows bool, err error) {
 		err = q.err
 		return
 	}
-	defer func() { err = exception.Nest(err, Error(q.rows.Close())) }()
+	defer func() { err = ex.Nest(err, Error(q.rows.Close())) }()
 	hasRows = !q.rows.Next()
 	return
 }
@@ -72,7 +72,7 @@ func (q *Query) Scan(args ...interface{}) (err error) {
 		err = q.err
 		return
 	}
-	defer func() { err = exception.Nest(err, Error(q.rows.Close())) }()
+	defer func() { err = ex.Nest(err, Error(q.rows.Close())) }()
 
 	if q.rows.Next() {
 		if err = q.rows.Scan(args...); err != nil {
@@ -93,7 +93,7 @@ func (q *Query) Out(object interface{}) (err error) {
 		err = q.err
 		return
 	}
-	defer func() { err = exception.Nest(err, Error(q.rows.Close())) }()
+	defer func() { err = ex.Nest(err, Error(q.rows.Close())) }()
 
 	sliceType := ReflectType(object)
 	if sliceType.Kind() != reflect.Struct {
@@ -125,7 +125,7 @@ func (q *Query) OutMany(collection interface{}) (err error) {
 		err = q.err
 		return
 	}
-	defer func() { err = exception.Nest(err, q.rows.Close()) }()
+	defer func() { err = ex.Nest(err, q.rows.Close()) }()
 
 	sliceType := ReflectType(collection)
 	if sliceType.Kind() != reflect.Slice {
@@ -173,7 +173,7 @@ func (q *Query) Each(consumer RowsConsumer) (err error) {
 		err = q.err
 		return
 	}
-	defer func() { err = exception.Nest(err, Error(q.rows.Close())) }()
+	defer func() { err = ex.Nest(err, Error(q.rows.Close())) }()
 
 	for q.rows.Next() {
 		if err = consumer(q.rows); err != nil {
@@ -193,7 +193,7 @@ func (q *Query) First(consumer RowsConsumer) (err error) {
 		err = q.err
 		return
 	}
-	defer func() { err = exception.Nest(err, Error(q.rows.Close())) }()
+	defer func() { err = ex.Nest(err, Error(q.rows.Close())) }()
 
 	if q.rows.Next() {
 		if err = consumer(q.rows); err != nil {
@@ -221,7 +221,7 @@ func (q *Query) query() (rows *sql.Rows, err error) {
 	defer func() { err = q.inv.CloseStatement(stmt, err) }()
 
 	rows, err = stmt.QueryContext(q.context, q.args...)
-	if err != nil && !exception.Is(err, sql.ErrNoRows) {
+	if err != nil && !ex.Is(err, sql.ErrNoRows) {
 		err = Error(err)
 	}
 	return

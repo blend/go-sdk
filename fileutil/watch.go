@@ -4,12 +4,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // Error constants
 const (
-	ErrWatchStopped exception.Class = "watch file should stop"
+	ErrWatchStopped ex.Class = "watch file should stop"
 )
 
 // Watch watches a file for changes and calls the action if there are changes.
@@ -19,7 +19,7 @@ const (
 func Watch(path string, action func(*os.File) error) error {
 	stat, err := os.Stat(path)
 	if err != nil {
-		return exception.New(err)
+		return ex.New(err)
 	}
 
 	lastMod := stat.ModTime()
@@ -30,18 +30,18 @@ func Watch(path string, action func(*os.File) error) error {
 		case <-ticker:
 			stat, err = os.Stat(path)
 			if err != nil {
-				return exception.New(err)
+				return ex.New(err)
 			}
 			if stat.ModTime().After(lastMod) {
 				file, err := os.Open(path)
 				if err != nil {
-					return exception.New(err)
+					return ex.New(err)
 				}
 				if err := action(file); err != nil {
-					if exception.Is(err, ErrWatchStopped) {
+					if ex.Is(err, ErrWatchStopped) {
 						return nil
 					}
-					return exception.New(err)
+					return ex.New(err)
 				}
 				lastMod = stat.ModTime()
 			}

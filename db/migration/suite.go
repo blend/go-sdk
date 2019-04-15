@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/blend/go-sdk/db"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 )
 
@@ -32,7 +32,7 @@ func (s *Suite) Apply(ctx context.Context, c *db.Connection) (err error) {
 	defer s.WriteStats(ctx)
 	defer func() {
 		if r := recover(); r != nil {
-			err = exception.New(r)
+			err = ex.New(r)
 		}
 	}()
 

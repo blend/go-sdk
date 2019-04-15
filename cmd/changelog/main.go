@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/sh"
 	"github.com/blend/go-sdk/stringutil"
 	"github.com/spf13/cobra"
@@ -24,7 +24,7 @@ func command() *cobra.Command {
 func gitCommits() ([]string, error) {
 	contents, err := sh.Output("git", "log", "--pretty=oneline")
 	if err != nil {
-		return nil, exception.New(err, exception.OptMessage(string(contents)))
+		return nil, ex.New(err, ex.OptMessage(string(contents)))
 	}
 	return stringutil.SplitLines(string(contents)), nil
 }
@@ -33,7 +33,7 @@ func gitCommits() ([]string, error) {
 func gitRoot() (string, error) {
 	contents, err := sh.Output("git", "log", "--pretty=oneline")
 	if err != nil {
-		return "", exception.New(err, exception.OptMessage(string(contents)))
+		return "", ex.New(err, ex.OptMessage(string(contents)))
 	}
 	return string(contents), nil
 }
@@ -52,10 +52,10 @@ func gitMerges(revs ...string) ([]string, error) {
 	}
 	r, err := cmd.StdoutPipe()
 	if err != nil {
-		return nil, exception.New("could not pipe output", exception.OptInner(err))
+		return nil, ex.New("could not pipe output", ex.OptInner(err))
 	}
 	if err := cmd.Start(); err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 
 	var revisions []string
@@ -65,7 +65,7 @@ func gitMerges(revs ...string) ([]string, error) {
 		revisions = append(revisions, rev)
 	}
 	if err := cmd.Wait(); err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	return revisions, nil
 }

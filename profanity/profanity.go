@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/blend/go-sdk/ansi"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/yaml"
 )
 
@@ -113,7 +113,7 @@ func (p *Profanity) Process() error {
 		}
 
 		if matches, err := filepath.Match(p.Config.RulesFileOrDefault(), fileBase); err != nil {
-			return exception.New(err)
+			return ex.New(err)
 		} else if matches {
 			if p.Config.VerboseOrDefault() {
 				p.Printf("%s ... skipping (is rules `%s` file)\n", ansi.LightWhite(file), p.Config.RulesFileOrDefault())
@@ -247,13 +247,13 @@ func (p *Profanity) RulesFromPath(path string) (rules Rules, err error) {
 	var contents []byte
 	contents, err = ioutil.ReadFile(path)
 	if err != nil {
-		err = exception.New(err, exception.OptMessagef("file: %s", path))
+		err = ex.New(err, ex.OptMessagef("file: %s", path))
 		return
 	}
 	var fileRules Rules
 	err = yaml.Unmarshal(contents, &fileRules)
 	if err != nil {
-		err = exception.New(err, exception.OptMessagef("file: %s", path))
+		err = ex.New(err, ex.OptMessagef("file: %s", path))
 		return
 	}
 	rules = make(Rules)

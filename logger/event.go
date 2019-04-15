@@ -7,8 +7,8 @@ import (
 
 // Event is an interface representing methods necessary to trigger listeners.
 type Event interface {
-	Flag() string
-	Timestamp() time.Time
+	GetFlag() string
+	GetTimestamp() time.Time
 }
 
 // EventWithContext is an event with a context.

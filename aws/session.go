@@ -4,7 +4,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // MustNewSession creates a new aws session from a config and panics on error.
@@ -21,7 +21,7 @@ func NewSession(cfg Config) (*session.Session, error) {
 	if cfg.IsZero() {
 		session, err := session.NewSession()
 		if err != nil {
-			return nil, exception.New(err)
+			return nil, ex.New(err)
 		}
 		return session, nil
 	}
@@ -32,7 +32,7 @@ func NewSession(cfg Config) (*session.Session, error) {
 	}
 	session, err := session.NewSession(awsConfig)
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	return session, nil
 }

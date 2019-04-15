@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // --------------------------------------------------------------------------------
@@ -137,7 +137,7 @@ func MakeNewDatabaseMapped(t reflect.Type) (DatabaseMapped, error) {
 	if typed, isTyped := newInterface.(DatabaseMapped); isTyped {
 		return typed.(DatabaseMapped), nil
 	}
-	return nil, exception.New("type does not implement DatabaseMapped", exception.OptMessagef("type: %s", t.Name()))
+	return nil, ex.New("type does not implement DatabaseMapped", ex.OptMessagef("type: %s", t.Name()))
 }
 
 // makeNew creates a new object.

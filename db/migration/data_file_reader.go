@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/blend/go-sdk/db"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/stringutil"
 )
 
@@ -130,7 +130,7 @@ func (dfr *DataFileReader) Action(ctx context.Context, c *db.Connection, tx *sql
 func (dfr *DataFileReader) executeCopyLine(line string, c *db.Connection, tx *sql.Tx) (*sql.Stmt, error) {
 	pieces := dfr.extractCopyLine(line)
 	if len(pieces) < 3 {
-		return nil, exception.New("Invalid `COPY ...` line, cannot continue.")
+		return nil, ex.New("Invalid `COPY ...` line, cannot continue.")
 	}
 	tableName := pieces[1]
 	columnCSV := pieces[2]

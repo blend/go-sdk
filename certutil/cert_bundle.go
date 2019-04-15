@@ -8,7 +8,7 @@ import (
 	"encoding/pem"
 	"io"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // NewCertBundle returns a new cert bundle from a given key pair, which can denote the raw PEM encoded
@@ -17,26 +17,26 @@ import (
 func NewCertBundle(keyPair KeyPair) (*CertBundle, error) {
 	certPEM, err := keyPair.CertBytes()
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	if len(certPEM) == 0 {
-		return nil, exception.New("empty cert contents")
+		return nil, ex.New("empty cert contents")
 	}
 
 	keyPEM, err := keyPair.KeyBytes()
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	if len(keyPEM) == 0 {
-		return nil, exception.New("empty key contents")
+		return nil, ex.New("empty key contents")
 	}
 
 	certData, err := tls.X509KeyPair(certPEM, keyPEM)
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	if len(certData.Certificate) == 0 {
-		return nil, exception.New("no certificates")
+		return nil, ex.New("no certificates")
 	}
 
 	var certs []x509.Certificate
@@ -44,7 +44,7 @@ func NewCertBundle(keyPair KeyPair) (*CertBundle, error) {
 	for _, certDataPortion := range certData.Certificate {
 		cert, err := x509.ParseCertificate(certDataPortion)
 		if err != nil {
-			return nil, exception.New(err)
+			return nil, ex.New(err)
 		}
 
 		certs = append(certs, *cert)
@@ -55,7 +55,7 @@ func NewCertBundle(keyPair KeyPair) (*CertBundle, error) {
 	if typed, ok := certData.PrivateKey.(*rsa.PrivateKey); ok {
 		privateKey = typed
 	} else {
-		return nil, exception.New("invalid private key type", exception.OptMessagef("%T", certData.PrivateKey))
+		return nil, ex.New("invalid private key type", ex.OptMessagef("%T", certData.PrivateKey))
 	}
 
 	return &CertBundle{
@@ -112,7 +112,7 @@ func (cb *CertBundle) WithParent(parent *CertBundle) {
 func (cb CertBundle) WriteCertPem(w io.Writer) error {
 	for _, der := range cb.CertificateDERs {
 		if err := pem.Encode(w, &pem.Block{Type: BlockTypeCertificate, Bytes: der}); err != nil {
-			return exception.New(err)
+			return ex.New(err)
 		}
 	}
 	return nil
@@ -144,7 +144,7 @@ func (cb CertBundle) KeyPEM() ([]byte, error) {
 // CommonNames returns the cert bundle common name(s).
 func (cb CertBundle) CommonNames() ([]string, error) {
 	if len(cb.Certificates) == 0 {
-		return nil, exception.New("no certificates returned")
+		return nil, ex.New("no certificates returned")
 	}
 	var output []string
 	for _, cert := range cb.Certificates {
@@ -157,7 +157,7 @@ func (cb CertBundle) CommonNames() ([]string, error) {
 func (cb CertBundle) CertPool() (*x509.CertPool, error) {
 	systemPool, err := x509.SystemCertPool()
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	for index := range cb.Certificates {
 		systemPool.AddCert(&cb.Certificates[index])

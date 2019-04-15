@@ -3,7 +3,7 @@ package stats
 import (
 	"context"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 )
 
@@ -15,8 +15,8 @@ func AddErrorListeners(log logger.Listenable, stats Collector) {
 
 	listener := logger.NewErrorEventListener(func(_ context.Context, ee *logger.ErrorEvent) {
 		stats.Increment(MetricNameError,
-			Tag(TagSeverity, string(ee.Flag())),
-			Tag(TagClass, exception.ErrClass(ee.Err)),
+			Tag(TagSeverity, string(ee.GetFlag())),
+			Tag(TagClass, ex.ErrClass(ee.Err)),
 		)
 	})
 	log.Listen(logger.Warning, ListenerNameStats, listener)

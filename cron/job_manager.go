@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/blend/go-sdk/async"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 )
 
@@ -47,7 +47,7 @@ func (jm *JobManager) LoadJobs(jobs ...Job) error {
 	for _, job := range jobs {
 		jobName := job.Name()
 		if _, hasJob := jm.Jobs[jobName]; hasJob {
-			return exception.New(ErrJobAlreadyLoaded, exception.OptMessagef("job: %s", job.Name()))
+			return ex.New(ErrJobAlreadyLoaded, ex.OptMessagef("job: %s", job.Name()))
 		}
 		jm.Jobs[jobName] = NewJobScheduler(job,
 			OptJobSchedulerTracer(jm.Tracer),
@@ -67,7 +67,7 @@ func (jm *JobManager) DisableJobs(jobNames ...string) error {
 		if job, ok := jm.Jobs[jobName]; ok {
 			job.Disable()
 		} else {
-			return exception.New(ErrJobNotFound, exception.OptMessagef("job: %s", jobName))
+			return ex.New(ErrJobNotFound, ex.OptMessagef("job: %s", jobName))
 		}
 	}
 	return nil
@@ -82,7 +82,7 @@ func (jm *JobManager) EnableJobs(jobNames ...string) error {
 		if job, ok := jm.Jobs[jobName]; ok {
 			job.Enable()
 		} else {
-			return exception.New(ErrJobNotFound, exception.OptMessagef("job: %s", jobName))
+			return ex.New(ErrJobNotFound, ex.OptMessagef("job: %s", jobName))
 		}
 	}
 	return nil
@@ -103,7 +103,7 @@ func (jm *JobManager) Job(jobName string) (job *JobScheduler, err error) {
 	if jobScheduler, hasJob := jm.Jobs[jobName]; hasJob {
 		job = jobScheduler
 	} else {
-		err = exception.New(ErrJobNotLoaded, exception.OptMessagef("job: %s", jobName))
+		err = ex.New(ErrJobNotLoaded, ex.OptMessagef("job: %s", jobName))
 	}
 	return
 }
@@ -142,7 +142,7 @@ func (jm *JobManager) RunJobs(jobNames ...string) error {
 		if job, ok := jm.Jobs[jobName]; ok {
 			job.Run()
 		} else {
-			return exception.New(ErrJobNotLoaded, exception.OptMessagef("job: %s", jobName))
+			return ex.New(ErrJobNotLoaded, ex.OptMessagef("job: %s", jobName))
 		}
 	}
 	return nil
@@ -155,7 +155,7 @@ func (jm *JobManager) RunJob(jobName string) error {
 
 	job, ok := jm.Jobs[jobName]
 	if !ok {
-		return exception.New(ErrJobNotLoaded, exception.OptMessagef("job: %s", jobName))
+		return ex.New(ErrJobNotLoaded, ex.OptMessagef("job: %s", jobName))
 	}
 	go job.Run()
 	return nil
@@ -178,7 +178,7 @@ func (jm *JobManager) CancelJob(jobName string) (err error) {
 
 	job, ok := jm.Jobs[jobName]
 	if !ok {
-		err = exception.New(ErrJobNotFound, exception.OptMessagef("job: %s", jobName))
+		err = ex.New(ErrJobNotFound, ex.OptMessagef("job: %s", jobName))
 		return
 	}
 	job.Cancel()

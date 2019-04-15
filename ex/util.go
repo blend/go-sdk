@@ -1,4 +1,4 @@
-package exception
+package ex
 
 // ErrClass returns the exception class or the error message.
 // This depends on if the err is itself an exception or not.
@@ -28,7 +28,7 @@ func ErrMessage(err interface{}) string {
 	return ""
 }
 
-// Is is a helper function that returns if an error is an exception.
+// Is is a helper function that returns if an error is an ex.
 func Is(err interface{}, cause error) bool {
 	if err == nil || cause == nil {
 		return false
@@ -43,7 +43,7 @@ func Is(err interface{}, cause error) bool {
 
 }
 
-// Inner returns an inner error if the error is an exception.
+// Inner returns an inner error if the error is an ex.
 func Inner(err interface{}) error {
 	if typed := As(err); typed != nil {
 		return typed.Inner
@@ -51,7 +51,7 @@ func Inner(err interface{}) error {
 	return nil
 }
 
-// As is a helper method that returns an error as an exception.
+// As is a helper method that returns an error as an ex.
 func As(err interface{}) *Ex {
 	if typed, typedOk := err.(*Ex); typedOk {
 		return typed

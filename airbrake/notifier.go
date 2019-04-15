@@ -10,7 +10,7 @@ import (
 	"github.com/airbrake/gobrake"
 	"github.com/blend/go-sdk/diagnostics"
 	"github.com/blend/go-sdk/env"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 var (
@@ -35,7 +35,7 @@ func MustNew(cfg Config) *Notifier {
 func New(cfg Config) (*Notifier, error) {
 	parsedProjectID, err := strconv.ParseInt(cfg.ProjectID, 10, 64)
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	// create a new reporter
 	client := gobrake.NewNotifierWithOptions(&gobrake.NotifierOptions{
@@ -67,13 +67,13 @@ type Notifier struct {
 // Notify sends an error.
 func (n *Notifier) Notify(err interface{}) error {
 	_, sendErr := n.Client.SendNotice(NewNotice(err, nil))
-	return exception.New(sendErr)
+	return ex.New(sendErr)
 }
 
 // NotifyWithRequest sends an error with a request.
 func (n *Notifier) NotifyWithRequest(err interface{}, req *http.Request) error {
 	_, sendErr := n.Client.SendNotice(NewNotice(err, req))
-	return exception.New(sendErr)
+	return ex.New(sendErr)
 }
 
 func getDefaultContext() map[string]interface{} {

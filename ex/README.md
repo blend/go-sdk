@@ -18,7 +18,7 @@ Concepts:
 If we want to create a new exception we can use `New`
 
 ```go
-return exception.New("this is a test exception")
+return ex.New("this is a test exception")
 ```
 
 `New` will create a stack trace at the given line. It ignores stack frames within the `exception` package itself. If you'd like to add variable context to an exception, you can use `WithMessagef(...)`:
@@ -28,7 +28,7 @@ If we want to wrap an existing golang `error` all we have to do is call `New` on
 ```go
 file, err := os.ReadFile("my_file.txt")
 if err != nil {
-    return exception.New(err)
+    return ex.New(err)
 }
 ```
 
@@ -37,7 +37,7 @@ If we want to add an inner exception, i.e. a causing exception, we can just add 
 ```go
 file, err := os.ReadFile("my_file.txt")
 if err != nil {
-    return exception.New("problems reading the config").WithInner(err)
+    return ex.New("problems reading the config").WithInner(err)
 }
 ```
 
@@ -48,7 +48,7 @@ A couple properties of `New`:
 
 ## Formatted Output
 
-If we run `fmt.Printf("%+v", exception.New("this is a sample error"))` we will get the following output (assuming we're running the statement in an http server somewhere):
+If we run `fmt.Printf("%+v", ex.New("this is a sample error"))` we will get the following output (assuming we're running the statement in an http server somewhere):
 
 ```text
 Exception: this is a sample error

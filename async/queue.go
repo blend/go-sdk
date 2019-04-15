@@ -4,7 +4,7 @@ import (
 	"context"
 	"runtime"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // NewQueue returns a new parallel queue.
@@ -85,7 +85,7 @@ func (pq *Queue) Enqueue(obj interface{}) {
 // This call blocks.
 func (pq *Queue) Start() error {
 	if !pq.CanStart() {
-		return exception.New(ErrCannotStart)
+		return ex.New(ErrCannotStart)
 	}
 	pq.Starting()
 
@@ -142,7 +142,7 @@ func (pq *Queue) Dispatch() {
 // Stop stops the queue
 func (pq *Queue) Stop() error {
 	if !pq.CanStop() {
-		return exception.New(ErrCannotStop)
+		return ex.New(ErrCannotStop)
 	}
 	for x := 0; x < pq.Parallelism; x++ {
 		worker := <-pq.Workers

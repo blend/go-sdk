@@ -37,10 +37,9 @@ func TestLoggerE2ESubContext(t *testing.T) {
 	assert := assert.New(t)
 
 	output := new(bytes.Buffer)
-	formatter := NewTextOutputFormatter(OptTextHideTimestamp(), OptTextNoColor())
 	log, err := New(
 		OptOutput(output),
-		OptFormatter(formatter),
+		OptText(OptTextHideTimestamp(), OptTextNoColor()),
 	)
 	assert.Nil(err)
 
@@ -58,4 +57,32 @@ func TestLoggerE2ESubContext(t *testing.T) {
 	assert.Contains(output.String(), fmt.Sprintf("[error] [%s] this is errorf", scID))
 	assert.Contains(output.String(), fmt.Sprintf("[fatal] [%s] this is fatalf", scID))
 	assert.Contains(output.String(), fmt.Sprintf("[info] [%s] this is a triggered message", scID))
+}
+
+func TestLoggerE2ESubContextFields(t *testing.T) {
+	assert := assert.New(t)
+
+	output := new(bytes.Buffer)
+	log, err := New(
+		OptOutput(output),
+		OptText(OptTextHideTimestamp(), OptTextNoColor()),
+	)
+	assert.Nil(err)
+
+	fieldKey := uuid.V4().String()
+	fieldValue := uuid.V4().String()
+	sc := log.WithFields(Fields{fieldKey: fieldValue})
+
+	sc.Infof("this is infof")
+	sc.Errorf("this is errorf")
+	sc.Fatalf("this is fatalf")
+
+	sc.Trigger(context.Background(), NewMessageEvent(Info, "this is a triggered message"))
+	assert.Nil(log.Drain())
+
+	assert.Contains(output.String(), fmt.Sprintf("[info] this is infof\t%s=%s", fieldKey, fieldValue))
+	assert.Contains(output.String(), fmt.Sprintf("[error] this is errorf\t%s=%s", fieldKey, fieldValue))
+	assert.Contains(output.String(), fmt.Sprintf("[fatal] this is fatalf\t%s=%s", fieldKey, fieldValue))
+	assert.Contains(output.String(), fmt.Sprintf("[info] this is a triggered message\t%s=%s", fieldKey, fieldValue))
+
 }

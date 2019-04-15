@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/gob"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // State is the oauth state.
@@ -26,12 +26,12 @@ func DeserializeState(raw string) (state State, err error) {
 	var corpus []byte
 	corpus, err = base64.StdEncoding.DecodeString(raw)
 	if err != nil {
-		err = exception.New(err)
+		err = ex.New(err)
 		return
 	}
 	buffer := bytes.NewBuffer(corpus)
 	if err = gob.NewDecoder(buffer).Decode(&state); err != nil {
-		err = exception.New(err)
+		err = ex.New(err)
 		return
 	}
 

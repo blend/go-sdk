@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/async"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 )
 
@@ -239,7 +239,7 @@ func (js *JobScheduler) Run() {
 	// it fires lifecycle events
 	defer func() {
 		if r := recover(); r != nil {
-			err = exception.New(err)
+			err = ex.New(err)
 		}
 		cancel()
 		if tf != nil {
@@ -312,7 +312,7 @@ func (js *JobScheduler) safeAsyncExec(ctx context.Context) chan error {
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
-				errors <- exception.New(r)
+				errors <- ex.New(r)
 			}
 		}()
 		errors <- js.Job.Execute(ctx)

@@ -10,6 +10,6 @@ func TestNewEventMeta(t *testing.T) {
 	assert := assert.New(t)
 
 	em := NewEventMeta(Info)
-	assert.Equal(Info, em.Flag())
-	assert.False(em.Timestamp().IsZero())
+	assert.Equal(Info, em.GetFlag())
+	assert.False(em.GetTimestamp().IsZero())
 }

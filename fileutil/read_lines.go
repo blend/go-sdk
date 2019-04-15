@@ -4,14 +4,14 @@ import (
 	"bufio"
 	"os"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // ReadLines reads a file and calls the handler for each line.
 func ReadLines(filePath string, handler func(string) error) error {
 	f, err := os.Open(filePath)
 	if err != nil {
-		return exception.New(err)
+		return ex.New(err)
 	}
 	defer f.Close()
 
@@ -20,7 +20,7 @@ func ReadLines(filePath string, handler func(string) error) error {
 		line := scanner.Text()
 		err = handler(line)
 		if err != nil {
-			return exception.New(err)
+			return ex.New(err)
 		}
 	}
 	return nil

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/async"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // NewGracefulHTTPServer returns a new graceful http server wrapper.
@@ -47,7 +47,7 @@ type GracefulHTTPServer struct {
 // It is expected to block.
 func (gs *GracefulHTTPServer) Start() (err error) {
 	if !gs.Latch.CanStart() {
-		err = exception.New(async.ErrCannotStart)
+		err = ex.New(async.ErrCannotStart)
 		return
 	}
 	gs.Latch.Starting()
@@ -61,7 +61,7 @@ func (gs *GracefulHTTPServer) Start() (err error) {
 		shutdownErr = gs.Server.ListenAndServe()
 	}
 	if shutdownErr != nil && shutdownErr != http.ErrServerClosed {
-		err = exception.New(shutdownErr)
+		err = ex.New(shutdownErr)
 	}
 	return
 }
@@ -69,7 +69,7 @@ func (gs *GracefulHTTPServer) Start() (err error) {
 // Stop implements graceful.Graceful.Stop.
 func (gs *GracefulHTTPServer) Stop() error {
 	if !gs.Latch.CanStop() {
-		return exception.New(async.ErrCannotStop)
+		return ex.New(async.ErrCannotStop)
 	}
 	gs.Latch.Stopping()
 	gs.Server.SetKeepAlivesEnabled(false)
@@ -79,7 +79,7 @@ func (gs *GracefulHTTPServer) Stop() error {
 		ctx, cancel = context.WithTimeout(ctx, gs.ShutdownGracePeriod)
 		defer cancel()
 	}
-	return exception.New(gs.Server.Shutdown(ctx))
+	return ex.New(gs.Server.Shutdown(ctx))
 }
 
 // NotifyStarted implements part of graceful.

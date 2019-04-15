@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // New returns a new request.
@@ -127,7 +127,7 @@ func (r *Request) Discard() error {
 	}
 	defer res.Body.Close()
 	_, err = io.Copy(ioutil.Discard, res.Body)
-	return exception.New(err)
+	return ex.New(err)
 }
 
 // DiscardWithResponse reads the response fully and discards all data it reads, and returns the response metadata.
@@ -140,7 +140,7 @@ func (r *Request) DiscardWithResponse() (*http.Response, error) {
 	}
 	defer res.Body.Close()
 	_, err = io.Copy(ioutil.Discard, res.Body)
-	return res, exception.New(err)
+	return res, ex.New(err)
 }
 
 // CopyTo copies the response body to a given writer.
@@ -154,7 +154,7 @@ func (r *Request) CopyTo(dst io.Writer) (int64, error) {
 	defer res.Body.Close()
 	count, err := io.Copy(dst, res.Body)
 	if err != nil {
-		return count, exception.New(err)
+		return count, ex.New(err)
 	}
 	return count, nil
 }
@@ -170,7 +170,7 @@ func (r *Request) Bytes() ([]byte, error) {
 	defer res.Body.Close()
 	contents, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	return contents, nil
 }
@@ -186,7 +186,7 @@ func (r *Request) BytesWithResponse() ([]byte, *http.Response, error) {
 	defer res.Body.Close()
 	contents, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, nil, exception.New(err)
+		return nil, nil, ex.New(err)
 	}
 	return contents, res, nil
 }
@@ -200,7 +200,7 @@ func (r *Request) JSON(dst interface{}) error {
 		return err
 	}
 	defer res.Body.Close()
-	return exception.New(json.NewDecoder(res.Body).Decode(dst))
+	return ex.New(json.NewDecoder(res.Body).Decode(dst))
 }
 
 // JSONWithResponse reads the response as json into a given object and returns the response metadata.
@@ -212,7 +212,7 @@ func (r *Request) JSONWithResponse(dst interface{}) (*http.Response, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
-	return res, exception.New(json.NewDecoder(res.Body).Decode(dst))
+	return res, ex.New(json.NewDecoder(res.Body).Decode(dst))
 }
 
 // XML reads the response as json into a given object.
@@ -224,7 +224,7 @@ func (r *Request) XML(dst interface{}) error {
 		return err
 	}
 	defer res.Body.Close()
-	return exception.New(xml.NewDecoder(res.Body).Decode(dst))
+	return ex.New(xml.NewDecoder(res.Body).Decode(dst))
 }
 
 // XMLWithResponse reads the response as json into a given object.
@@ -236,7 +236,7 @@ func (r *Request) XMLWithResponse(dst interface{}) (*http.Response, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
-	return res, exception.New(xml.NewDecoder(res.Body).Decode(dst))
+	return res, ex.New(xml.NewDecoder(res.Body).Decode(dst))
 }
 
 //

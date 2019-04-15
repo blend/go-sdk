@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 )
 
@@ -98,7 +98,7 @@ func (i *Invocation) Get(object DatabaseMapped, ids ...interface{}) (err error) 
 		return
 	}
 	if stmt, err = i.Prepare(queryBody); err != nil {
-		err = exception.New(err)
+		err = ex.New(err)
 		return
 	}
 	defer func() { err = i.CloseStatement(stmt, err) }()
@@ -110,7 +110,7 @@ func (i *Invocation) Get(object DatabaseMapped, ids ...interface{}) (err error) 
 	} else {
 		populateErr = PopulateInOrder(object, row, cols)
 	}
-	if populateErr != nil && !exception.Is(populateErr, sql.ErrNoRows) {
+	if populateErr != nil && !ex.Is(populateErr, sql.ErrNoRows) {
 		err = Error(populateErr)
 		return
 	}
@@ -143,13 +143,13 @@ func (i *Invocation) All(collection interface{}) (err error) {
 		err = Error(err)
 		return
 	}
-	defer func() { err = exception.Nest(err, rows.Close()) }()
+	defer func() { err = ex.Nest(err, rows.Close()) }()
 
 	collectionValue := ReflectValue(collection)
 	for rows.Next() {
 		var obj interface{}
 		if obj, err = MakeNewDatabaseMapped(collectionType); err != nil {
-			err = exception.New(err)
+			err = ex.New(err)
 			return
 		}
 
@@ -367,13 +367,13 @@ func (i *Invocation) Exists(object DatabaseMapped) (exists bool, err error) {
 		return
 	}
 	if stmt, err = i.Prepare(queryBody); err != nil {
-		err = exception.New(err)
+		err = ex.New(err)
 		return
 	}
 	defer func() { err = i.CloseStatement(stmt, err) }()
 
 	var value int
-	if queryErr := stmt.QueryRowContext(i.Context, pks.ColumnValues(object)...).Scan(&value); queryErr != nil && !exception.Is(queryErr, sql.ErrNoRows) {
+	if queryErr := stmt.QueryRowContext(i.Context, pks.ColumnValues(object)...).Scan(&value); queryErr != nil && !ex.Is(queryErr, sql.ErrNoRows) {
 		err = Error(queryErr)
 		return
 	}
@@ -847,7 +847,7 @@ func (i *Invocation) CloseStatement(stmt *sql.Stmt, err error) error {
 		return err
 	}
 	// close the statement.
-	return exception.Nest(err, Error(stmt.Close()))
+	return ex.Nest(err, Error(stmt.Close()))
 }
 
 // Start runs on start steps.
@@ -871,7 +871,7 @@ func (i *Invocation) Finish(statement string, r interface{}, err error) error {
 		i.Cancel()
 	}
 	if r != nil {
-		err = exception.Nest(err, exception.New(r))
+		err = ex.Nest(err, ex.New(r))
 	}
 	if i.Conn.Log != nil {
 

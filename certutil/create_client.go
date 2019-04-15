@@ -4,7 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 /*
@@ -22,7 +22,7 @@ Example:
 */
 func CreateClient(commonName string, ca *CertBundle, options ...CertOption) (*CertBundle, error) {
 	if ca == nil {
-		return nil, exception.New("must provide a ca cert bundle")
+		return nil, ex.New("must provide a ca cert bundle")
 	}
 
 	createOptions := DefaultOptionsClient
@@ -39,11 +39,11 @@ func CreateClient(commonName string, ca *CertBundle, options ...CertOption) (*Ce
 
 	der, err := x509.CreateCertificate(rand.Reader, &createOptions.Certificate, &ca.Certificates[0], output.PublicKey, ca.PrivateKey)
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	cert, err := x509.ParseCertificate(der)
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	output.CertificateDERs = append([][]byte{der}, ca.CertificateDERs...)
 	output.Certificates = append([]x509.Certificate{*cert}, ca.Certificates...)

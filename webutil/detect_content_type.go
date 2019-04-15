@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // KnownExtenions are known extenions mapped to their content types.
@@ -30,13 +30,13 @@ func DetectContentType(path string) (string, error) {
 
 	f, err := os.Open(path)
 	if err != nil {
-		return "", exception.New(err)
+		return "", ex.New(err)
 	}
 	defer f.Close()
 	header := make([]byte, 512)
 	_, err = f.Read(header)
 	if err != nil {
-		return "", exception.New(err)
+		return "", ex.New(err)
 	}
 	return http.DetectContentType(header), nil
 }

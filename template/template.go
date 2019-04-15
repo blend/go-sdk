@@ -8,7 +8,7 @@ import (
 	texttemplate "text/template"
 
 	"github.com/blend/go-sdk/env"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // New creates a new template.
@@ -27,7 +27,7 @@ func New() *Template {
 func NewFromFile(filepath string) (*Template, error) {
 	contents, err := ioutil.ReadFile(filepath)
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 
 	return New().WithName(filepath).WithBody(string(contents)), nil

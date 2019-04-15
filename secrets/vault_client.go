@@ -13,7 +13,7 @@ import (
 
 	"golang.org/x/net/http2"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 )
 
@@ -243,7 +243,7 @@ func (c *VaultClient) send(req *http.Request) (io.ReadCloser, error) {
 		defer c.BufferPool.Put(buf)
 
 		io.Copy(buf, res.Body)
-		return nil, exception.New(ExceptionClassForStatus(res.StatusCode), exception.OptMessagef("status: %d; %v", res.StatusCode, buf.String()))
+		return nil, ex.New(ExceptionClassForStatus(res.StatusCode), ex.OptMessagef("status: %d; %v", res.StatusCode, buf.String()))
 	}
 	return res.Body, nil
 }

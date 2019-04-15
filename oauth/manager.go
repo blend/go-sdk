@@ -11,7 +11,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/r2"
 	"github.com/blend/go-sdk/stringutil"
 	"github.com/blend/go-sdk/uuid"
@@ -106,7 +106,7 @@ func (m *Manager) Finish(r *http.Request) (result *Result, err error) {
 	// Handle the exchange code to initiate a transport.
 	tok, err := m.conf(r).Exchange(r.Context(), code)
 	if err != nil {
-		err = exception.New(ErrFailedCodeExchange, exception.OptInner(err))
+		err = ex.New(ErrFailedCodeExchange, ex.OptInner(err))
 		return
 	}
 
@@ -137,12 +137,12 @@ func (m *Manager) FetchProfile(ctx context.Context, accessToken string) (profile
 		return
 	}
 	if res.StatusCode > 299 {
-		err = exception.New(ErrGoogleResponseStatus, exception.OptMessagef("status code: %d", res.StatusCode))
+		err = ex.New(ErrGoogleResponseStatus, ex.OptMessagef("status code: %d", res.StatusCode))
 		return
 	}
 	defer res.Body.Close()
 	if err = json.NewDecoder(res.Body).Decode(&profile); err != nil {
-		err = exception.New(ErrProfileJSONUnmarshal, exception.OptInner(err))
+		err = ex.New(ErrProfileJSONUnmarshal, ex.OptInner(err))
 		return
 	}
 	return

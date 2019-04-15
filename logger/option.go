@@ -59,13 +59,13 @@ func OptOutput(output io.Writer) Option {
 }
 
 // OptJSON sets the output formatter for the logger as json.
-func OptJSON() Option {
-	return func(l *Logger) error { l.Formatter = NewJSONOutputFormatter(); return nil }
+func OptJSON(opts ...JSONOutputFormatterOption) Option {
+	return func(l *Logger) error { l.Formatter = NewJSONOutputFormatter(opts...); return nil }
 }
 
 // OptText sets the output formatter for the logger as json.
-func OptText() Option {
-	return func(l *Logger) error { l.Formatter = NewTextOutputFormatter(); return nil }
+func OptText(opts ...TextOutputFormatterOption) Option {
+	return func(l *Logger) error { l.Formatter = NewTextOutputFormatter(opts...); return nil }
 }
 
 // OptFormatter sets the output formatter.

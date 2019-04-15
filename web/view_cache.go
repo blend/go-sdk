@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/blend/go-sdk/bufferutil"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	templatehelpers "github.com/blend/go-sdk/template"
 )
 
@@ -89,7 +89,7 @@ func (vc *ViewCache) Parse() (views *template.Template, err error) {
 	if len(vc.Paths) > 0 {
 		views, err = views.ParseFiles(vc.Paths...)
 		if err != nil {
-			err = exception.New(err)
+			err = ex.New(err)
 			return
 		}
 	}
@@ -98,7 +98,7 @@ func (vc *ViewCache) Parse() (views *template.Template, err error) {
 		for _, viewLiteral := range vc.Literals {
 			views, err = views.Parse(viewLiteral)
 			if err != nil {
-				err = exception.New(err)
+				err = ex.New(err)
 				return
 			}
 		}
@@ -225,7 +225,7 @@ func (vc *ViewCache) ViewStatus(statusCode int, viewName string, viewModel inter
 		return vc.viewError(err)
 	}
 	if t == nil {
-		return vc.InternalError(exception.New(ErrUnsetViewTemplate, exception.OptMessagef("viewname: %s", viewName)))
+		return vc.InternalError(ex.New(ErrUnsetViewTemplate, ex.OptMessagef("viewname: %s", viewName)))
 	}
 
 	return &ViewResult{

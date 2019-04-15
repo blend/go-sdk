@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 const newline = "\n"
@@ -24,11 +24,11 @@ type Buffer struct {
 // Writeline is a macro for writing a string to the buffer that ends in \n.
 func (b *Buffer) Writeline(contents ...interface{}) (int, error) {
 	n, err := b.WriteString(fmt.Sprint(contents...) + newline)
-	return n, exception.New(err)
+	return n, ex.New(err)
 }
 
 // Writelinef is a macro for writing a string to the buffer with a given format and args that ends in \n.
 func (b *Buffer) Writelinef(format string, args ...interface{}) (int, error) {
 	n, err := b.WriteString(fmt.Sprintf(format, args...) + newline)
-	return n, exception.New(err)
+	return n, ex.New(err)
 }

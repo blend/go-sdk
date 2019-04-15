@@ -3,7 +3,7 @@ package async
 import (
 	"context"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // NewWorker creates a new worker.
@@ -41,7 +41,7 @@ func (qw *Worker) Enqueue(obj interface{}) {
 // Start starts the worker with a given context.
 func (qw *Worker) Start() error {
 	if !qw.CanStart() {
-		return exception.New(ErrCannotStart)
+		return ex.New(ErrCannotStart)
 	}
 	qw.Starting()
 	qw.Dispatch()
@@ -77,13 +77,13 @@ func (qw *Worker) Execute(ctx context.Context, workItem interface{}) {
 	defer func() {
 		if r := recover(); r != nil {
 			if qw.Errors != nil {
-				qw.Errors <- exception.New(r)
+				qw.Errors <- ex.New(r)
 			}
 		}
 		if qw.Finalizer != nil {
 			if err := qw.Finalizer(ctx, qw); err != nil {
 				if qw.Errors != nil {
-					qw.Errors <- exception.New(err)
+					qw.Errors <- ex.New(err)
 				}
 			}
 		}
@@ -91,7 +91,7 @@ func (qw *Worker) Execute(ctx context.Context, workItem interface{}) {
 	if qw.Action != nil {
 		if err := qw.Action(ctx, workItem); err != nil {
 			if qw.Errors != nil {
-				qw.Errors <- exception.New(err)
+				qw.Errors <- ex.New(err)
 			}
 		}
 	}
@@ -102,7 +102,7 @@ func (qw *Worker) Execute(ctx context.Context, workItem interface{}) {
 // The work left in the queue will remain.
 func (qw *Worker) Stop() error {
 	if !qw.CanStop() {
-		return exception.New(ErrCannotStop)
+		return ex.New(ErrCannotStop)
 	}
 	qw.Stopping()
 	<-qw.NotifyStopped()

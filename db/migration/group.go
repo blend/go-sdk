@@ -5,7 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/blend/go-sdk/db"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // Group creates a new GroupedActions from a given list of actionable.
@@ -29,11 +29,11 @@ func (ga GroupedActions) Action(ctx context.Context, c *db.Connection) (err erro
 	defer func() {
 		if err != nil {
 			if txErr := tx.Rollback(); txErr != nil {
-				err = exception.Nest(err, txErr)
+				err = ex.Nest(err, txErr)
 			}
 		} else {
 			if txErr := tx.Commit(); txErr != nil {
-				err = exception.Nest(err, txErr)
+				err = ex.Nest(err, txErr)
 			}
 		}
 	}()

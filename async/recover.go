@@ -3,7 +3,7 @@ package async
 import (
 	"sync"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 /*
@@ -17,7 +17,7 @@ This call blocks, if you need it to be backgrounded, you should call it like:
 func Recover(action func() error, errors chan error) {
 	defer func() {
 		if r := recover(); r != nil && errors != nil {
-			errors <- exception.New(r)
+			errors <- ex.New(r)
 		}
 	}()
 

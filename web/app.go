@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/blend/go-sdk/async"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 )
 
@@ -96,13 +96,13 @@ func (a *App) Start() (err error) {
 	var listener net.Listener
 	listener, err = net.Listen("tcp", a.Config.BindAddrOrDefault())
 	if err != nil {
-		err = exception.New(err)
+		err = ex.New(err)
 		return
 	}
 	var ok bool
 	a.Listener, ok = listener.(*net.TCPListener)
 	if !ok {
-		err = exception.New("listener returned was not a net.TCPListener")
+		err = ex.New("listener returned was not a net.TCPListener")
 		return
 	}
 
@@ -116,7 +116,7 @@ func (a *App) Start() (err error) {
 		shutdownErr = a.Server.Serve(keepAliveListener)
 	}
 	if shutdownErr != nil && shutdownErr != http.ErrServerClosed {
-		err = exception.New(shutdownErr)
+		err = ex.New(shutdownErr)
 	}
 	logger.MaybeInfof(a.Log, "server exited")
 	a.Stopped()
@@ -127,7 +127,7 @@ func (a *App) Start() (err error) {
 // Stop stops the server.
 func (a *App) Stop() error {
 	if !a.CanStop() {
-		return exception.New(async.ErrCannotStop)
+		return ex.New(async.ErrCannotStop)
 	}
 	a.Stopping()
 
@@ -140,7 +140,7 @@ func (a *App) Stop() error {
 	logger.MaybeInfof(a.Log, "server shutting down")
 	a.Server.SetKeepAlivesEnabled(false)
 	if err := a.Server.Shutdown(ctx); err != nil {
-		return exception.New(err)
+		return ex.New(err)
 	}
 
 	a.Server = nil
@@ -168,7 +168,7 @@ func (a *App) SetStaticRewriteRule(route, match string, action RewriteAction) er
 	if static, hasRoute := a.Statics[mountedRoute]; hasRoute {
 		return static.AddRewriteRule(match, action)
 	}
-	return exception.New("no static fileserver mounted at route", exception.OptMessagef("route: %s", route))
+	return ex.New("no static fileserver mounted at route", ex.OptMessagef("route: %s", route))
 }
 
 // SetStaticHeader adds a header for the given static path.
@@ -179,7 +179,7 @@ func (a *App) SetStaticHeader(route, key, value string) error {
 		static.AddHeader(key, value)
 		return nil
 	}
-	return exception.New("no static fileserver mounted at route", exception.OptMessagef("route: %s", mountedRoute))
+	return ex.New("no static fileserver mounted at route", ex.OptMessagef("route: %s", mountedRoute))
 }
 
 // ServeStatic serves files from the given file system root(s)..
@@ -399,13 +399,13 @@ func (a *App) RenderAction(action Action) Handler {
 			// check for a prerender step
 			if typed, ok := result.(ResultPreRender); ok {
 				if preRenderErr := typed.PreRender(ctx); preRenderErr != nil {
-					err = exception.Nest(err, preRenderErr)
+					err = ex.Nest(err, preRenderErr)
 				}
 			}
 
 			// do the render, log any errors emitted
 			if resultErr := result.Render(ctx); resultErr != nil {
-				err = exception.Nest(err, resultErr)
+				err = ex.Nest(err, resultErr)
 			}
 
 			// check for a render complete step
@@ -413,7 +413,7 @@ func (a *App) RenderAction(action Action) Handler {
 			// the result.
 			if typed, ok := result.(ResultPostRender); ok {
 				if postRenderErr := typed.PostRender(ctx); postRenderErr != nil {
-					err = exception.Nest(err, postRenderErr)
+					err = ex.Nest(err, postRenderErr)
 				}
 			}
 		}
@@ -539,7 +539,7 @@ func (a *App) httpResponseEvent(ctx *Ctx) *logger.HTTPResponseEvent {
 
 func (a *App) recover(w http.ResponseWriter, req *http.Request) {
 	if rcv := recover(); rcv != nil {
-		err := exception.New(rcv)
+		err := ex.New(rcv)
 		a.logFatal(err, req)
 		if a.PanicAction != nil {
 			a.handlePanic(w, req, rcv)

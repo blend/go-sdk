@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 )
 
@@ -104,7 +104,7 @@ func OptRootCAs(rootCAs ...string) Option {
 				client = typed
 			}
 			if client == nil {
-				return exception.New("invalid http client for vault client; cannot set root cas")
+				return ex.New("invalid http client for vault client; cannot set root cas")
 			}
 
 			var xport *http.Transport
@@ -115,7 +115,7 @@ func OptRootCAs(rootCAs ...string) Option {
 				xport = typed
 			}
 			if xport == nil {
-				return exception.New("invalid http transport for vault client; cannot set root cas")
+				return ex.New("invalid http transport for vault client; cannot set root cas")
 			}
 			if xport.TLSClientConfig == nil {
 				xport.TLSClientConfig = &tls.Config{}

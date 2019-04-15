@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // --------------------------------------------------------------------------------
@@ -67,7 +67,7 @@ func (c Column) SetValue(object interface{}, value interface{}) error {
 	field := objValue.FieldByName(c.FieldName)
 	fieldType := field.Type()
 	if !field.CanSet() {
-		return exception.New("hit a field we can't set: '" + c.FieldName + "', did you forget to pass the object as a reference?")
+		return ex.New("hit a field we can't set: '" + c.FieldName + "', did you forget to pass the object as a reference?")
 	}
 
 	valueReflected := ReflectValue(value)
@@ -81,7 +81,7 @@ func (c Column) SetValue(object interface{}, value interface{}) error {
 			fieldAddr := field.Addr().Interface()
 			jsonErr := json.Unmarshal([]byte(valueContents.String), fieldAddr)
 			if jsonErr != nil {
-				return exception.New(jsonErr)
+				return ex.New(jsonErr)
 			}
 			field.Set(reflect.ValueOf(fieldAddr).Elem())
 		}
@@ -110,7 +110,7 @@ func (c Column) SetValue(object interface{}, value interface{}) error {
 			return nil
 		}
 
-		return exception.New("cannot take address of value")
+		return ex.New("cannot take address of value")
 	}
 
 	convertedValue := valueReflected.Convert(fieldType)

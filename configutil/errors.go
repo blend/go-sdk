@@ -3,15 +3,15 @@ package configutil
 import (
 	"os"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 const (
 	// ErrConfigPathUnset is a common error.
-	ErrConfigPathUnset = exception.Class("config path unset")
+	ErrConfigPathUnset = ex.Class("config path unset")
 
 	// ErrInvalidConfigExtension is a common error.
-	ErrInvalidConfigExtension = exception.Class("config extension invalid")
+	ErrInvalidConfigExtension = ex.Class("config extension invalid")
 )
 
 // IsIgnored returns if we should ignore the config read error.
@@ -30,7 +30,7 @@ func IsNotExist(err error) bool {
 	if err == nil {
 		return false
 	}
-	if typed, ok := err.(*exception.Ex); ok && typed != nil {
+	if typed, ok := err.(*ex.Ex); ok && typed != nil {
 		err = typed.Class
 	}
 	return os.IsNotExist(err)
@@ -38,10 +38,10 @@ func IsNotExist(err error) bool {
 
 // IsConfigPathUnset returns if an error is an ErrConfigPathUnset.
 func IsConfigPathUnset(err error) bool {
-	return exception.Is(err, ErrConfigPathUnset)
+	return ex.Is(err, ErrConfigPathUnset)
 }
 
 // IsInvalidConfigExtension returns if an error is an ErrInvalidConfigExtension.
 func IsInvalidConfigExtension(err error) bool {
-	return exception.Is(err, ErrInvalidConfigExtension)
+	return ex.Is(err, ErrInvalidConfigExtension)
 }

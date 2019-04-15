@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 /*
@@ -74,7 +74,7 @@ This call will block.
 */
 func (i *Interval) Start() error {
 	if !i.CanStart() {
-		return exception.New(ErrCannotStart)
+		return ex.New(ErrCannotStart)
 	}
 	i.Starting()
 	i.Dispatch()
@@ -84,7 +84,7 @@ func (i *Interval) Start() error {
 // Stop stops the worker.
 func (i *Interval) Stop() error {
 	if !i.CanStop() {
-		return exception.New(ErrCannotStop)
+		return ex.New(ErrCannotStop)
 	}
 	i.Stopping()
 	<-i.NotifyStopped()

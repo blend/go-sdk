@@ -8,7 +8,7 @@ import (
 	awsSes "github.com/aws/aws-sdk-go/service/ses"
 
 	"github.com/blend/go-sdk/email"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // New returns a new sender.
@@ -64,5 +64,5 @@ func (s *APISender) Send(ctx context.Context, m email.Message) error {
 	}
 
 	_, err := s.client.SendEmailWithContext(ctx, input)
-	return exception.New(err)
+	return ex.New(err)
 }

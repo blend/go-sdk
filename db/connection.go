@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/bufferutil"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 )
 
@@ -134,7 +134,7 @@ func (dbc *Connection) Begin(opts ...*sql.TxOptions) (*sql.Tx, error) {
 // BeginContext starts a new transaction in a givent context.
 func (dbc *Connection) BeginContext(context context.Context, opts ...*sql.TxOptions) (*sql.Tx, error) {
 	if dbc.Connection == nil {
-		return nil, exception.New(ErrConnectionClosed)
+		return nil, ex.New(ErrConnectionClosed)
 	}
 	if len(opts) > 0 {
 		tx, err := dbc.Connection.BeginTx(context, opts[0])

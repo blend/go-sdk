@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 func TestViewCacheProperties(t *testing.T) {
@@ -112,7 +112,7 @@ func TestViewCacheBadRequest(t *testing.T) {
 
 	vc := NewViewCache()
 	assert.Nil(vc.Initialize())
-	vr, _ := vc.BadRequest(exception.Class("only a test")).(*ViewResult)
+	vr, _ := vc.BadRequest(ex.Class("only a test")).(*ViewResult)
 	assert.Equal(vc.BadRequestTemplateName, vr.ViewName)
 	assert.Equal(http.StatusBadRequest, vr.StatusCode)
 	assert.NotNil(vr.Views)
@@ -125,7 +125,7 @@ func TestViewCacheInternalError(t *testing.T) {
 	vc := NewViewCache()
 	assert.Nil(vc.Initialize())
 
-	ler, _ := vc.InternalError(exception.Class("only a test")).(*LoggedErrorResult)
+	ler, _ := vc.InternalError(ex.Class("only a test")).(*LoggedErrorResult)
 	assert.NotNil(ler)
 	vr := ler.Result.(*ViewResult)
 	assert.Equal(vc.InternalErrorTemplateName, vr.ViewName)
@@ -212,11 +212,11 @@ func TestViewCacheViewError(t *testing.T) {
 
 	vc := NewViewCache()
 
-	vcr := vc.viewError(exception.Class("test error")).(*ViewResult)
+	vcr := vc.viewError(ex.Class("test error")).(*ViewResult)
 	assert.NotNil(vcr)
 	assert.Equal(DefaultTemplateNameInternalError, vcr.ViewName)
 	assert.Equal(http.StatusInternalServerError, vcr.StatusCode)
-	assert.Equal(exception.Class("test error"), vcr.ViewModel)
+	assert.Equal(ex.Class("test error"), vcr.ViewModel)
 	assert.NotNil(vcr.Template)
 	assert.NotNil(vcr.Views)
 }

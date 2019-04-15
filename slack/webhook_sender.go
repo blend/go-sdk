@@ -7,7 +7,7 @@ import (
 
 	"net/http"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -55,9 +55,9 @@ func (whs WebhookSender) Send(ctx context.Context, message Message) error {
 	if res.StatusCode > http.StatusOK {
 		contents, err := ioutil.ReadAll(res.Body)
 		if err != nil {
-			return exception.New(err)
+			return ex.New(err)
 		}
-		return exception.New(ErrNon200, exception.OptMessage(string(contents)))
+		return ex.New(ErrNon200, ex.OptMessage(string(contents)))
 	}
 	return nil
 }
@@ -73,11 +73,11 @@ func (whs WebhookSender) SendAndReadResponse(ctx context.Context, message Messag
 	var contents PostMessageResponse
 	err = json.NewDecoder(res.Body).Decode(&contents)
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 
 	if res.StatusCode > http.StatusOK {
-		return &contents, exception.New(ErrNon200, exception.OptMessagef("%#v", contents))
+		return &contents, ex.New(ErrNon200, ex.OptMessagef("%#v", contents))
 	}
 
 	return &contents, nil

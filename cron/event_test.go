@@ -10,9 +10,9 @@ func TestNewEvent(t *testing.T) {
 	assert := assert.New(t)
 
 	e := NewEvent(FlagComplete, "test_task")
-	assert.Equal(FlagComplete, e.Flag())
+	assert.Equal(FlagComplete, e.GetFlag())
 	assert.Equal("test_task", e.JobName)
-	assert.False(e.Timestamp().IsZero())
+	assert.False(e.GetTimestamp().IsZero())
 	assert.True(e.IsEnabled())
 	assert.True(e.IsWritable())
 }

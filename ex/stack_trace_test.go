@@ -1,4 +1,4 @@
-package exception
+package ex
 
 import (
 	"fmt"

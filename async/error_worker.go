@@ -3,7 +3,7 @@ package async
 import (
 	"context"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // NewErrorWorker creates a new worker.
@@ -40,7 +40,7 @@ func (qw *ErrorWorker) Enqueue(obj error) {
 // Start starts the worker with a given context.
 func (qw *ErrorWorker) Start() error {
 	if !qw.CanStart() {
-		return exception.New(ErrCannotStart)
+		return ex.New(ErrCannotStart)
 	}
 	qw.Starting()
 	qw.Dispatch()
@@ -88,7 +88,7 @@ func (qw *ErrorWorker) Execute(ctx context.Context, workItem error) {
 // The work left in the queue will remain.
 func (qw *ErrorWorker) Stop() error {
 	if !qw.CanStop() {
-		return exception.New(ErrCannotStop)
+		return ex.New(ErrCannotStop)
 	}
 	qw.Stopping()
 	<-qw.NotifyStopped()

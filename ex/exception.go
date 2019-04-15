@@ -1,4 +1,4 @@
-package exception
+package ex
 
 import (
 	"bytes"
@@ -85,7 +85,7 @@ func OptStack(stack StackTrace) Option {
 	}
 }
 
-// OptInner sets an inner or wrapped exception.
+// OptInner sets an inner or wrapped ex.
 func OptInner(inner error) Option {
 	return func(ex *Ex) {
 		ex.Inner = NewWithStackDepth(inner, defaultNewStartDepth)
@@ -119,7 +119,7 @@ func (e *Ex) WithMessagef(format string, args ...interface{}) Exception {
 	return e
 }
 
-// WithInner sets the inner exception.
+// WithInner sets the inner ex.
 // Deprecation notice: This method is included as a migraition path from v2, and will be removed after v3.
 func (e *Ex) WithInner(err error) Exception {
 	e.Inner = NewWithStackDepth(err, defaultNewStartDepth)
@@ -205,7 +205,7 @@ func (e *Ex) MarshalJSON() ([]byte, error) {
 	return json.Marshal(e.Decompose())
 }
 
-// String returns a fully formed string representation of the exception.
+// String returns a fully formed string representation of the ex.
 // It's equivalent to calling sprintf("%+v", ex).
 func (e *Ex) String() string {
 	s := new(bytes.Buffer)

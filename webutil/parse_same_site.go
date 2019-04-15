@@ -3,7 +3,7 @@ package webutil
 import (
 	"net/http"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // MustParseSameSite parses a string value for same site and panics on error.
@@ -25,6 +25,6 @@ func ParseSameSite(sameSite string) (http.SameSite, error) {
 	case SameSiteDefault:
 		return http.SameSiteDefaultMode, nil
 	default:
-		return http.SameSite(-1), exception.New(ErrInvalidSameSite, exception.OptMessagef("value: %s", sameSite))
+		return http.SameSite(-1), ex.New(ErrInvalidSameSite, ex.OptMessagef("value: %s", sameSite))
 	}
 }

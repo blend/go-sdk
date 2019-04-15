@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"sync"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // NewPlanCache returns a new `PlanCache`.
@@ -73,7 +73,7 @@ func (pc *PlanCache) InvalidateStatement(planCacheKey string) (err error) {
 // PrepareContext returns a cached expression for a statement, or creates and caches a new one.
 func (pc *PlanCache) PrepareContext(context context.Context, planCacheKey, statement string) (*sql.Stmt, error) {
 	if len(planCacheKey) == 0 {
-		return nil, exception.New(ErrPlanCacheKeyUnset)
+		return nil, ex.New(ErrPlanCacheKeyUnset)
 	}
 
 	if stmt, hasStmt := pc.cache.Load(planCacheKey); hasStmt {

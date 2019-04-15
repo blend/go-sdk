@@ -4,7 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 // CreateCertificateAuthority creates a ca cert bundle from a given set of options.
@@ -21,11 +21,11 @@ func CreateCertificateAuthority(options ...CertOption) (*CertBundle, error) {
 	output.PublicKey = &createOptions.PrivateKey.PublicKey
 	der, err := x509.CreateCertificate(rand.Reader, &createOptions.Certificate, &createOptions.Certificate, output.PublicKey, output.PrivateKey)
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	cert, err := x509.ParseCertificate(der)
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, ex.New(err)
 	}
 	output.CertificateDERs = [][]byte{der}
 	output.Certificates = []x509.Certificate{*cert}

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 )
 
 func TestMustParse(t *testing.T) {
@@ -16,7 +16,7 @@ func TestMustParse(t *testing.T) {
 	func() {
 	defer func() {
 		if r := recover(); r != nil {
-			err = exception.New(r)
+			err = ex.New(r)
 		}
 	}()
 		MustParse("x!!")

@@ -3,7 +3,7 @@ package stats
 import (
 	"context"
 
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 )
 
@@ -24,7 +24,7 @@ func AddQueryListeners(log logger.Listenable, stats Collector) {
 			tags = append(tags, Tag(TagQuery, qe.QueryLabel))
 		}
 		if qe.Err != nil {
-			if ex := exception.As(qe.Err); ex != nil && ex.Class != nil {
+			if ex := ex.As(qe.Err); ex != nil && ex.Class != nil {
 				tags = append(tags, Tag(TagClass, ex.Class.Error()))
 			}
 			tags = append(tags, TagError)

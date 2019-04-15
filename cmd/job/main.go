@@ -18,7 +18,7 @@ import (
 	"github.com/blend/go-sdk/diagnostics"
 	"github.com/blend/go-sdk/email"
 	"github.com/blend/go-sdk/env"
-	"github.com/blend/go-sdk/exception"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/graceful"
 	"github.com/blend/go-sdk/jobkit"
 	"github.com/blend/go-sdk/logger"
@@ -152,7 +152,7 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(cfg.Jobs) == 0 {
-		return exception.New("must supply a command to run with `--exec=...` or `-- command`), or provide a jobs config file")
+		return ex.New("must supply a command to run with `--exec=...` or `-- command`), or provide a jobs config file")
 	}
 
 	// set up myriad of notification targets
@@ -181,7 +181,7 @@ func run(cmd *cobra.Command, args []string) error {
 		log.Infof("adding airbrake notifications")
 	}
 
-	jobs := cron.New(cron.OptConfig(cfg.Config.Config), cron.OptLog(log))
+	jobs := cron.New(cron.OptConfig(cfg.Config.Cron), cron.OptLog(log))
 
 	for _, jobCfg := range cfg.Jobs {
 		job, err := createJobFromConfig(jobCfg)
@@ -219,7 +219,7 @@ func createDefaultJobConfig(args ...string) (*jobConfig, error) {
 
 func createJobFromConfig(cfg jobConfig) (*jobkit.Job, error) {
 	if len(cfg.Exec) == 0 {
-		return nil, exception.New("job exec and command unset", exception.OptMessagef("job: %s", cfg.Name))
+		return nil, ex.New("job exec and command unset", ex.OptMessagef("job: %s", cfg.Name))
 	}
 	action := func(ctx context.Context) error {
 		if cfg.DiscardOutput == nil || (cfg.DiscardOutput != nil && !*cfg.DiscardOutput) {
@@ -230,7 +230,7 @@ func createJobFromConfig(cfg jobConfig) (*jobkit.Job, error) {
 				}
 				cmd.Stdout = io.MultiWriter(jis.Output, os.Stdout)
 				cmd.Stderr = io.MultiWriter(jis.ErrorOutput, os.Stderr)
-				return exception.New(cmd.Run())
+				return ex.New(cmd.Run())
 			}
 		}
 		return sh.ForkContext(ctx, cfg.Exec[0], cfg.Exec[1:]...)
