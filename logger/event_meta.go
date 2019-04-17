@@ -44,6 +44,9 @@ func OptEventMetaFlagColor(color ansi.Color) EventMetaOption {
 // EventMeta is the metadata common to events.
 // It is useful for ensuring you have the minimum required fields on your events, and its typically embedded in types.
 type EventMeta struct {
+	Labels
+	Annotations
+
 	Flag      string
 	Timestamp time.Time
 	FlagColor ansi.Color

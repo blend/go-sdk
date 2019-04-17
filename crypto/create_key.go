@@ -2,6 +2,9 @@ package crypto
 
 import (
 	cryptorand "crypto/rand"
+	"encoding/hex"
+
+	"github.com/blend/go-sdk/ex"
 )
 
 // MustCreateKey creates a key, if an error is returned, it panics.
@@ -21,4 +24,21 @@ func CreateKey(keySize int) ([]byte, error) {
 		return nil, err
 	}
 	return key, nil
+}
+
+// MustCreateKeyString generates a new key and returns it as a string.
+func MustCreateKeyString() string {
+	return hex.EncodeToString(MustCreateKey(KeySize))
+}
+
+// ParseKey parses a key from a string.
+func ParseKey(key string) ([]byte, error) {
+	decoded, err := hex.DecodeString(key)
+	if err != nil {
+		return nil, ex.New(err)
+	}
+	if len(decoded) != KeySize {
+		return nil, ex.New("parse key; invalid key length")
+	}
+	return decoded, nil
 }

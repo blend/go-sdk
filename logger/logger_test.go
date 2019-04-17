@@ -15,7 +15,6 @@ func TestNew(t *testing.T) {
 
 	log, err := New()
 	assert.Nil(err)
-	assert.NotNil(log.Latch)
 	assert.NotNil(log.Context)
 	assert.NotNil(log.Formatter)
 	assert.NotNil(log.Output)
@@ -84,5 +83,49 @@ func TestLoggerE2ESubContextFields(t *testing.T) {
 	assert.Contains(output.String(), fmt.Sprintf("[error] this is errorf\t%s=%s", fieldKey, fieldValue))
 	assert.Contains(output.String(), fmt.Sprintf("[fatal] this is fatalf\t%s=%s", fieldKey, fieldValue))
 	assert.Contains(output.String(), fmt.Sprintf("[info] this is a triggered message\t%s=%s", fieldKey, fieldValue))
+}
 
+func TestLoggerSkipTrigger(t *testing.T) {
+	assert := assert.New(t)
+
+	output := new(bytes.Buffer)
+	log, err := New(
+		OptOutput(output),
+		OptText(OptTextHideTimestamp(), OptTextNoColor()),
+	)
+	assert.Nil(err)
+
+	var wasCalled bool
+	log.Listen(Info, "---", func(ctx context.Context, e Event) {
+		wasCalled = true
+	})
+
+	log.Trigger(WithSkipTrigger(context.Background()), NewMessageEvent(Info, "this is a triggered message"))
+	assert.Nil(log.Drain())
+
+	assert.False(wasCalled)
+	assert.Contains(output.String(), "[info] this is a triggered message")
+}
+
+func TestLoggerSkipWrite(t *testing.T) {
+	assert := assert.New(t)
+
+	output := new(bytes.Buffer)
+	log, err := New(
+		OptOutput(output),
+		OptText(OptTextHideTimestamp(), OptTextNoColor()),
+	)
+	assert.Nil(err)
+
+	var wasCalled bool
+	log.Listen(Info, "---", func(ctx context.Context, e Event) {
+		wasCalled = true
+	})
+	assert.True(log.HasListener(Info, "---"))
+
+	log.Trigger(WithSkipWrite(context.Background()), NewMessageEvent(Info, "this is a triggered message"))
+	assert.Nil(log.Drain())
+
+	assert.True(wasCalled)
+	assert.Empty(output.String())
 }

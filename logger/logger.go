@@ -4,16 +4,13 @@ import (
 	"context"
 	"io"
 	"os"
-
-	"github.com/blend/go-sdk/async"
-	"github.com/blend/go-sdk/ex"
+	"sync"
 )
 
 // New returns a new logger with a given set of enabled flags.
 // By default it uses a text output formatter writing to stdout.
 func New(options ...Option) (*Logger, error) {
 	l := &Logger{
-		Latch:         async.NewLatch(),
 		Formatter:     NewTextOutputFormatter(),
 		Output:        NewInterlockedWriter(os.Stdout),
 		RecoverPanics: DefaultRecoverPanics,
@@ -61,7 +58,7 @@ func Prod(options ...Option) *Logger {
 
 // Logger is a handler for various logging events with descendent handlers.
 type Logger struct {
-	*async.Latch
+	sync.Mutex
 	*Flags
 	Context
 
@@ -188,21 +185,19 @@ func (l *Logger) Trigger(ctx context.Context, e Event) {
 		return
 	}
 
-	if typed, isTyped := e.(EnabledProvider); isTyped && !typed.IsEnabled() {
-		return
-	}
-
-	var listeners map[string]*Worker
-	l.Lock()
-	if l.Listeners != nil {
-		if flagListeners, ok := l.Listeners[flag]; ok {
-			listeners = flagListeners
+	if !IsSkipTrigger(ctx) {
+		var listeners map[string]*Worker
+		l.Lock()
+		if l.Listeners != nil {
+			if flagListeners, ok := l.Listeners[flag]; ok {
+				listeners = flagListeners
+			}
 		}
-	}
-	l.Unlock()
+		l.Unlock()
 
-	for _, listener := range listeners {
-		listener.Work <- EventWithContext{ctx, e}
+		for _, listener := range listeners {
+			listener.Work <- EventWithContext{ctx, e}
+		}
 	}
 
 	l.Write(ctx, e)
@@ -219,21 +214,18 @@ func (l *Logger) SyncTrigger(ctx context.Context, e Event) {
 		return
 	}
 
-	if typed, isTyped := e.(EnabledProvider); isTyped && !typed.IsEnabled() {
-		return
-	}
-
-	var listeners map[string]*Worker
-	l.Lock()
-	if l.Listeners != nil {
-		if flagListeners, ok := l.Listeners[flag]; ok {
-			listeners = flagListeners
+	if !IsSkipTrigger(ctx) {
+		var listeners map[string]*Worker
+		l.Lock()
+		if l.Listeners != nil {
+			if flagListeners, ok := l.Listeners[flag]; ok {
+				listeners = flagListeners
+			}
 		}
-	}
-	l.Unlock()
-
-	for _, listener := range listeners {
-		listener.Listener(ctx, e)
+		l.Unlock()
+		for _, listener := range listeners {
+			listener.Listener(ctx, e)
+		}
 	}
 
 	l.Write(ctx, e)
@@ -246,12 +238,12 @@ func (l *Logger) Write(ctx context.Context, e Event) {
 		return
 	}
 
-	// check if the event controls if it should be written or not.
-	if typed, isTyped := e.(WritableProvider); isTyped && !typed.IsWritable() {
+	if IsSkipWrite(ctx) {
 		return
 	}
 
-	if err := l.Formatter.WriteFormat(ctx, l.Output, e); err != nil && l.Errors != nil {
+	err := l.Formatter.WriteFormat(ctx, l.Output, e)
+	if err != nil && l.Errors != nil {
 		l.Errors <- err
 	}
 }
@@ -262,11 +254,8 @@ func (l *Logger) Write(ctx context.Context, e Event) {
 
 // Close releases shared resources for the agent.
 func (l *Logger) Close() error {
-	if !l.CanStop() {
-		return ex.New(async.ErrCannotStop)
-	}
-
-	l.Stopping()
+	l.Lock()
+	defer l.Lock()
 
 	if l.Flags != nil {
 		l.Flags.SetNone()
@@ -283,9 +272,6 @@ func (l *Logger) Close() error {
 		delete(l.Listeners, key)
 	}
 	l.Listeners = nil
-
-	l.Stopped()
-
 	return nil
 }
 
