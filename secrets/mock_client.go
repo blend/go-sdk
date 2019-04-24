@@ -16,14 +16,14 @@ var (
 func NewMockClient() *MockClient {
 	return &MockClient{
 		SecretValues: make(map[string]Values),
-		TransitKeys:  make(map[string][]byte),
+		TransitKeys:  make(map[string]map[string][]byte),
 	}
 }
 
 // MockClient is a mock events client
 type MockClient struct {
 	SecretValues map[string]Values
-	TransitKeys  map[string][]byte
+	TransitKeys  map[string]map[string][]byte
 }
 
 // Put puts a value.
@@ -78,30 +78,44 @@ func (c *MockClient) List(_ context.Context, path string, options ...RequestOpti
 }
 
 // CreateTransitKey creates a new transit key.
-func (c *MockClient) CreateTransitKey(name string) error {
-	key, err := crypto.CreateKey(32)
-	c.TransitKeys[name] = key
+func (c *MockClient) CreateTransitKey(name string) {
+	c.TransitKeys[name] = make(map[string][]byte)
+}
 
-	return err
+func (c *MockClient) deriveTransitKey(name string, context []byte) ([]byte, error) {
+	contextStr := string(context)
+
+	keyPath, ok := c.TransitKeys[name]
+	if !ok {
+		return nil, fmt.Errorf("No key")
+	}
+
+	key, ok := keyPath[contextStr]
+	if !ok {
+		key, _ = crypto.CreateKey(32)
+		c.TransitKeys[name][contextStr] = key
+	}
+
+	return key, nil
 }
 
 // Encrypt encrypts a given set of data.
 func (c *MockClient) Encrypt(ctx context.Context, name string, context, data []byte) (string, error) {
-	_, ok := c.TransitKeys[name]
-	if !ok {
-		return "", fmt.Errorf("No key")
+	key, err := c.deriveTransitKey(name, context)
+	if err != nil {
+		return "", err
 	}
 
-	encryptedData, err := crypto.Encrypt(c.TransitKeys[name], data)
+	encryptedData, err := crypto.Encrypt(key, data)
 	return string(encryptedData), err
 }
 
 // Decrypt decrypts a given set of data.
 func (c *MockClient) Decrypt(ctx context.Context, name string, context []byte, ciphertext string) ([]byte, error) {
-	_, ok := c.TransitKeys[name]
-	if !ok {
-		return nil, fmt.Errorf("No key")
+	key, err := c.deriveTransitKey(name, context)
+	if err != nil {
+		return nil, err
 	}
 
-	return crypto.Decrypt(c.TransitKeys[name], []byte(ciphertext))
+	return crypto.Decrypt(key, []byte(ciphertext))
 }

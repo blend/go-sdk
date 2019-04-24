@@ -93,14 +93,19 @@ func TestMockClientTransit(t *testing.T) {
 	assert := assert.New(t)
 	client := NewMockClient()
 
-	err := client.CreateTransitKey("key1")
-	assert.Nil(err)
+	client.CreateTransitKey("key1")
 
 	cipher, err := client.Encrypt(context.TODO(), "key1", []byte(""), []byte("testo"))
 	assert.Nil(err)
 	assert.NotEmpty(string(cipher))
 
+	// Decrypt with correct context
 	plaintext, err := client.Decrypt(context.TODO(), "key1", []byte(""), cipher)
 	assert.Nil(err)
 	assert.Equal("testo", plaintext)
+
+	// Decrypt with incorrect context
+	plaintext, err = client.Decrypt(context.TODO(), "key1", []byte("bad"), cipher)
+	assert.Nil(err)
+	assert.NotEqual("testo", plaintext)
 }
