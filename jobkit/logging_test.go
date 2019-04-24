@@ -27,7 +27,7 @@ func TestLoggingDebugf(t *testing.T) {
 
 	var message string
 	log.Listen(logger.Debug, "check-listener", logger.NewMessageEventListener(func(_ context.Context, me *logger.MessageEvent) {
-		defer func() { close(triggered) }()
+		defer close(triggered)
 		message = me.Message
 	}))
 
