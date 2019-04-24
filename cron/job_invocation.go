@@ -5,6 +5,16 @@ import (
 	"time"
 )
 
+// NewJobInvocation returns a new job invocation.
+func NewJobInvocation(jobName string) *JobInvocation {
+	return &JobInvocation{
+		ID:      NewJobInvocationID(),
+		Started: Now(),
+		Status:  JobStatusRunning,
+		JobName: jobName,
+	}
+}
+
 // JobInvocation is metadata for a job invocation (or instance of a job running).
 type JobInvocation struct {
 	ID        string             `json:"id"`

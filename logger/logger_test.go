@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/uuid"
@@ -50,12 +51,15 @@ func TestLoggerE2ESubContext(t *testing.T) {
 	sc.Fatalf("this is fatalf")
 
 	sc.Trigger(context.Background(), NewMessageEvent(Info, "this is a triggered message"))
-	assert.Nil(log.Drain())
 
-	assert.Contains(output.String(), fmt.Sprintf("[info] [%s] this is infof", scID))
-	assert.Contains(output.String(), fmt.Sprintf("[error] [%s] this is errorf", scID))
-	assert.Contains(output.String(), fmt.Sprintf("[fatal] [%s] this is fatalf", scID))
-	assert.Contains(output.String(), fmt.Sprintf("[info] [%s] this is a triggered message", scID))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
+	defer cancel()
+	assert.Nil(log.DrainContext(ctx))
+
+	assert.Contains(output.String(), fmt.Sprintf("[%s] [info] this is infof", scID))
+	assert.Contains(output.String(), fmt.Sprintf("[%s] [error] this is errorf", scID))
+	assert.Contains(output.String(), fmt.Sprintf("[%s] [fatal] this is fatalf", scID))
+	assert.Contains(output.String(), fmt.Sprintf("[%s] [info] this is a triggered message", scID))
 }
 
 func TestLoggerE2ESubContextFields(t *testing.T) {
@@ -77,7 +81,7 @@ func TestLoggerE2ESubContextFields(t *testing.T) {
 	sc.Fatalf("this is fatalf")
 
 	sc.Trigger(context.Background(), NewMessageEvent(Info, "this is a triggered message"))
-	assert.Nil(log.Drain())
+	assert.Nil(log.DrainContext(context.Background()))
 
 	assert.Contains(output.String(), fmt.Sprintf("[info] this is infof\t%s=%s", fieldKey, fieldValue))
 	assert.Contains(output.String(), fmt.Sprintf("[error] this is errorf\t%s=%s", fieldKey, fieldValue))
@@ -101,7 +105,9 @@ func TestLoggerSkipTrigger(t *testing.T) {
 	})
 
 	log.Trigger(WithSkipTrigger(context.Background()), NewMessageEvent(Info, "this is a triggered message"))
-	assert.Nil(log.Drain())
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
+	defer cancel()
+	assert.Nil(log.DrainContext(ctx))
 
 	assert.False(wasCalled)
 	assert.Contains(output.String(), "[info] this is a triggered message")
@@ -124,7 +130,11 @@ func TestLoggerSkipWrite(t *testing.T) {
 	assert.True(log.HasListener(Info, "---"))
 
 	log.Trigger(WithSkipWrite(context.Background()), NewMessageEvent(Info, "this is a triggered message"))
-	assert.Nil(log.Drain())
+
+	// at the very least this cannot cause a deadlock.
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
+	defer cancel()
+	assert.Nil(log.DrainContext(ctx))
 
 	assert.True(wasCalled)
 	assert.Empty(output.String())

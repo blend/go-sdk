@@ -51,12 +51,19 @@ func (qw *Worker) Start() error {
 // Dispatch starts the listen loop for work.
 func (qw *Worker) Dispatch() {
 	qw.Started()
+
 	var workItem interface{}
+	var pausing <-chan struct{}
+	var stopping <-chan struct{}
+
 	for {
+		pausing = qw.NotifyPausing()
+		stopping = qw.NotifyStopping()
+
 		select {
 		case workItem = <-qw.Work:
 			qw.Execute(qw.Background(), workItem)
-		case <-qw.NotifyPausing():
+		case <-pausing:
 			qw.Paused()
 			select {
 			case <-qw.NotifyResuming():
@@ -65,7 +72,7 @@ func (qw *Worker) Dispatch() {
 				qw.Stopped()
 				return
 			}
-		case <-qw.NotifyStopping():
+		case <-stopping:
 			qw.Stopped()
 			return
 		}

@@ -24,7 +24,7 @@ func OptConfig(cfg Config) Option {
 // It will panic if there is an erro.
 func OptConfigFromEnv() Option {
 	return func(l *Logger) error {
-		cfg := Config{}
+		var cfg Config
 		if err := env.Env().ReadInto(&cfg); err != nil {
 			return err
 		}

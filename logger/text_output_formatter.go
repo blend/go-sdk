@@ -125,15 +125,15 @@ func (tf TextOutputFormatter) WriteFormat(ctx context.Context, output io.Writer,
 		buffer.WriteString(Space)
 	}
 
-	buffer.WriteString(tf.FormatFlag(e.GetFlag(), FlagTextColor(e.GetFlag())))
-	buffer.WriteString(Space)
-
 	subContextPath, subContextFields := GetSubContextMeta(ctx)
 
 	if subContextPath != nil {
 		buffer.WriteString(tf.FormatPath(subContextPath...))
 		buffer.WriteString(Space)
 	}
+
+	buffer.WriteString(tf.FormatFlag(e.GetFlag(), FlagTextColor(e.GetFlag())))
+	buffer.WriteString(Space)
 
 	if typed, ok := e.(TextWritable); ok {
 		typed.WriteText(tf, buffer)

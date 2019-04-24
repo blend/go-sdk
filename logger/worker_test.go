@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/blend/go-sdk/assert"
 )
@@ -44,13 +45,18 @@ func TestWorkerDrain(t *testing.T) {
 		didFire = true
 	})
 
-	w.Work <- EventWithContext{context.Background(), NewMessageEvent(Info, "test1")}
-	w.Work <- EventWithContext{context.Background(), NewMessageEvent(Info, "test2")}
-	w.Work <- EventWithContext{context.Background(), NewMessageEvent(Info, "test3")}
-	w.Work <- EventWithContext{context.Background(), NewMessageEvent(Info, "test4")}
+	go w.Start()
+	<-w.NotifyStarted()
+
+	w.Work <- EventWithContext{Event: NewMessageEvent(Info, "test1")}
+	w.Work <- EventWithContext{Event: NewMessageEvent(Info, "test2")}
+	w.Work <- EventWithContext{Event: NewMessageEvent(Info, "test3")}
+	w.Work <- EventWithContext{Event: NewMessageEvent(Info, "test4")}
 
 	go func() {
-		w.Drain()
+		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
+		defer cancel()
+		w.DrainContext(ctx)
 	}()
 	wg.Wait()
 

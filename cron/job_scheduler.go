@@ -176,10 +176,12 @@ func (js *JobScheduler) RunLoop() {
 		return
 	}
 
+	var notifyStopping <-chan struct{}
 	for {
 		if js.NextRuntime.IsZero() {
 			return
 		}
+		notifyStopping = js.NotifyStopping()
 		runAt := time.After(js.NextRuntime.UTC().Sub(Now()))
 		select {
 		case <-runAt:
@@ -187,9 +189,10 @@ func (js *JobScheduler) RunLoop() {
 				// start the job
 				go js.Run()
 			}
+
 			// set up the next runtime.
 			js.NextRuntime = js.Schedule.Next(js.NextRuntime)
-		case <-js.NotifyStopping():
+		case <-notifyStopping:
 			return
 		}
 	}
@@ -204,33 +207,23 @@ func (js *JobScheduler) Run() {
 		return
 	}
 
-	// mark the start time
-	start := Now()
-
 	timeout := js.TimeoutProvider()
-
-	// create the root context.
-	ctx, cancel := js.createContextWithTimeout(timeout)
 
 	// create a job invocation, or a record of each
 	// individual execution of a job.
-	ji := JobInvocation{
-		ID:      NewJobInvocationID(),
-		JobName: js.Name,
-		Status:  JobStatusRunning,
-		Started: start,
-		Context: ctx,
-		Cancel:  cancel,
-	}
+	ji := NewJobInvocation(js.Name)
+	ji.Context, ji.Cancel = js.createContextWithTimeout(timeout)
+
 	if timeout > 0 {
-		ji.Timeout = start.Add(timeout)
+		ji.Timeout = ji.Started.Add(timeout)
 	}
-	js.setCurrent(&ji)
+	js.setCurrent(ji)
 
 	var err error
 	var tf TraceFinisher
+
 	// load the job invocation into the context
-	ctx = WithJobInvocation(ctx, &ji)
+	ji.Context = WithJobInvocation(ji.Context, ji)
 
 	// this defer runs all cleanup actions
 	// it recovers panics
@@ -241,9 +234,9 @@ func (js *JobScheduler) Run() {
 		if r := recover(); r != nil {
 			err = ex.New(err)
 		}
-		cancel()
+		ji.Cancel()
 		if tf != nil {
-			tf.Finish(ctx)
+			tf.Finish(ji.Context)
 		}
 
 		ji.Finished = Now()
@@ -252,31 +245,31 @@ func (js *JobScheduler) Run() {
 
 		if err != nil && IsJobCancelled(err) {
 			ji.Cancelled = ji.Finished
-			js.onCancelled(ctx, &ji)
+			js.onCancelled(ji.Context, ji)
 		} else if ji.Err != nil {
-			js.onFailure(ctx, &ji)
+			js.onFailure(ji.Context, ji)
 		} else {
-			js.onComplete(ctx, &ji)
+			js.onComplete(ji.Context, ji)
 		}
 
-		js.addHistory(ji)
+		js.addHistory(*ji)
 		js.setCurrent(nil)
-		js.setLast(&ji)
+		js.setLast(ji)
 	}()
 
 	// if the tracer is set, create a trace context
 	if js.Tracer != nil {
-		ctx, tf = js.Tracer.Start(ctx)
+		ji.Context, tf = js.Tracer.Start(ji.Context)
 	}
 	// fire the on start event
-	js.onStart(ctx, &ji)
+	js.onStart(ji.Context, ji)
 
 	// check if the job has been canceled
 	// or if it's finished.
 	select {
-	case <-ctx.Done():
+	case <-ji.Context.Done():
 		err = ErrJobCancelled
-	case err = <-js.safeAsyncExec(ctx):
+	case err = <-js.safeAsyncExec(ji.Context):
 	}
 }
 

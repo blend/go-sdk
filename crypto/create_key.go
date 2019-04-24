@@ -27,8 +27,17 @@ func CreateKey(keySize int) ([]byte, error) {
 }
 
 // MustCreateKeyString generates a new key and returns it as a string.
-func MustCreateKeyString() string {
-	return hex.EncodeToString(MustCreateKey(KeySize))
+func MustCreateKeyString(keySize int) string {
+	return hex.EncodeToString(MustCreateKey(keySize))
+}
+
+// CreateKeyString generates a new key and returns it as a string.
+func CreateKeyString(keySize int) (string, error) {
+	key, err := CreateKey(keySize)
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(key), nil
 }
 
 // ParseKey parses a key from a string.
@@ -37,7 +46,7 @@ func ParseKey(key string) ([]byte, error) {
 	if err != nil {
 		return nil, ex.New(err)
 	}
-	if len(decoded) != KeySize {
+	if len(decoded) != DefaultKeySize {
 		return nil, ex.New("parse key; invalid key length")
 	}
 	return decoded, nil

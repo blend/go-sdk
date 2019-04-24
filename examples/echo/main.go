@@ -60,7 +60,7 @@ func (e echo) long(r *web.Ctx) web.Result {
 }
 
 var (
-	flagBindAddress = flag.String("bind-addr", ":8080", "The bind address to use for the server")
+	flagBindAddress = flag.String("bind-addr", "", "The bind address to use for the server")
 	flagConfig      = flag.String("config", "config.yml", "The config file to read")
 )
 

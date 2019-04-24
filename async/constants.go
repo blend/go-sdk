@@ -6,11 +6,12 @@ import "time"
 const (
 	LatchStopped  int32 = 0
 	LatchStarting int32 = 1
-	LatchStarted  int32 = 2
-	LatchPausing  int32 = 3
-	LatchPaused   int32 = 4
-	LatchResuming int32 = 5
-	LatchStopping int32 = 6
+	LatchResuming int32 = 2
+	LatchStarted  int32 = 3
+	LatchActive   int32 = 4
+	LatchPausing  int32 = 5
+	LatchPaused   int32 = 6
+	LatchStopping int32 = 7
 )
 
 // Constants

@@ -1,12 +1,6 @@
-version: 2.1
-general:
-  branches:
-    only:
-     - master
-     - v1.0
-     - v2.0
+version: 2
 jobs:
-  build-test:
+  build:
     working_directory: /go/src/github.com/blend/go-sdk
     docker:
     - image: circleci/golang:1.11
@@ -17,10 +11,6 @@ jobs:
     steps:
     - checkout
     - run:
-        name: Set the upstream
-        command: |
-          eval "git branch --set-upstream-to=origin/`git rev-parse --abbrev-ref HEAD` `git rev-parse --abbrev-ref HEAD`"
-    - run:
         name: new-install
         command: make new-install
     - run:
@@ -29,27 +19,8 @@ jobs:
     - store_artifacts:
         path: coverage.html
         destination: coverage.html
-  release:
-    working_directory: /go/src/github.com/blend/go-sdk
-    docker:
-    - image: circleci/golang:1.11
-    steps:
-    - checkout
-    - run:
-        name: Set the upstream
-        command: |
-          eval "git branch --set-upstream-to=origin/`git rev-parse --abbrev-ref HEAD` `git rev-parse --abbrev-ref HEAD`"
-    - run:
-        name: new-install
-        command: make new-install
-    - run:
-        name: tag
-        command: make tag push-tag
-    - run:
-        name: release-all
-        command: make release-all
 workflows:
   version: 2
-  build-test:
-     jobs:
-      - build-test
+  build:
+    jobs:
+    - build

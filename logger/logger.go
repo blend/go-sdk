@@ -255,7 +255,7 @@ func (l *Logger) Write(ctx context.Context, e Event) {
 // Close releases shared resources for the agent.
 func (l *Logger) Close() error {
 	l.Lock()
-	defer l.Lock()
+	defer l.Unlock()
 
 	if l.Flags != nil {
 		l.Flags.SetNone()
@@ -264,7 +264,6 @@ func (l *Logger) Close() error {
 	for _, listeners := range l.Listeners {
 		for _, listener := range listeners {
 			listener.Stop()
-			<-listener.NotifyStopped()
 		}
 	}
 
@@ -275,11 +274,19 @@ func (l *Logger) Close() error {
 	return nil
 }
 
-// Drain waits for the agent to finish its queue of events before closing.
+// Drain waits for the logger to finish its queue of events.
 func (l *Logger) Drain() error {
+	return l.DrainContext(context.Background())
+}
+
+// DrainContext waits for the logger to finish its queue of events with a given context.
+func (l *Logger) DrainContext(ctx context.Context) error {
+	var err error
 	for _, workers := range l.Listeners {
 		for _, worker := range workers {
-			worker.Drain()
+			if err = worker.DrainContext(ctx); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

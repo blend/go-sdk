@@ -27,6 +27,7 @@ func TestWorker(t *testing.T) {
 	w.Enqueue("hello")
 	wg.Wait()
 	w.Close()
+
 	assert.False(w.IsStarted())
 	assert.True(didWork)
 }

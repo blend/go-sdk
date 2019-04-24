@@ -111,6 +111,7 @@ func (e HTTPResponseEvent) MarshalJSON() ([]byte, error) {
 		"userAgent":       webutil.GetUserAgent(e.Request),
 		"verb":            e.Request.Method,
 		"path":            e.Request.URL.Path,
+		"query":           e.Request.URL.RawQuery,
 		"host":            e.Request.Host,
 		"contentLength":   e.ContentLength,
 		"contentType":     e.ContentType,

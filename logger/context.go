@@ -7,9 +7,9 @@ import (
 )
 
 // NewContext returns a new context.
-func NewContext(log Triggerable, path []string, opts ...ContextOption) Context {
+func NewContext(log *Logger, path []string, opts ...ContextOption) Context {
 	c := Context{
-		Parent: log,
+		Logger: log,
 		Path:   path,
 	}
 	for _, opt := range opts {
@@ -42,19 +42,19 @@ func OptContextFields(fields Fields) ContextOption {
 // It is used to split a logger into functional concerns
 // but retain all the underlying machinery of logging.
 type Context struct {
-	Parent Triggerable
+	Logger *Logger
 	Path   []string
 	Fields Fields
 }
 
 // SubContext returns a new sub context.
 func (sc Context) SubContext(name string, options ...ContextOption) Context {
-	return NewContext(sc.Parent, append(sc.Path, name), options...)
+	return NewContext(sc.Logger, append(sc.Path, name), options...)
 }
 
 // WithFields returns a new sub context.
 func (sc Context) WithFields(fields Fields, options ...ContextOption) Context {
-	return NewContext(sc.Parent, sc.Path, append(options, OptContextFields(fields))...)
+	return NewContext(sc.Logger, sc.Path, append(options, OptContextFields(fields))...)
 }
 
 // --------------------------------------------------------------------------------
@@ -63,7 +63,7 @@ func (sc Context) WithFields(fields Fields, options ...ContextOption) Context {
 
 // Trigger triggers an event in the subcontext.
 func (sc Context) Trigger(ctx context.Context, event Event) {
-	sc.Parent.Trigger(WithSubContextMeta(ctx, sc.Path, sc.Fields), event)
+	sc.Logger.Trigger(WithSubContextMeta(ctx, sc.Path, sc.Fields), event)
 }
 
 // --------------------------------------------------------------------------------

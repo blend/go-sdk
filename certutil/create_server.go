@@ -14,7 +14,9 @@ func CreateServer(commonName string, ca *CertBundle, options ...CertOption) (*Ce
 	}
 
 	createOptions := DefaultOptionsServer
+	// set the default common name
 	createOptions.Subject.CommonName = commonName
+	// it is important to reflect the common name here as well
 	createOptions.DNSNames = []string{commonName}
 
 	if err := ResolveCertOptions(&createOptions, options...); err != nil {

@@ -29,7 +29,6 @@ type MockClient struct {
 // Put puts a value.
 func (c *MockClient) Put(_ context.Context, key string, data Values, options ...RequestOption) error {
 	c.SecretValues[key] = data
-
 	return nil
 }
 

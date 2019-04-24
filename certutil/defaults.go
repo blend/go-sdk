@@ -27,7 +27,7 @@ var DefaultOptionsServer = CertOptions{
 // DefaultOptionsClient are the default create cert options for client certificates.
 var DefaultOptionsClient = CertOptions{
 	Certificate: x509.Certificate{
-		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 		KeyUsage:    x509.KeyUsageDigitalSignature,
 	},
 	NotAfterProvider: func() time.Time { return time.Now().UTC().AddDate(DefaultClientNotAfterYears, 0, 0) },

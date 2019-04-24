@@ -148,7 +148,9 @@ func (cb CertBundle) CommonNames() ([]string, error) {
 	}
 	var output []string
 	for _, cert := range cb.Certificates {
-		output = append(output, cert.Subject.CommonName)
+		if cert.Subject.CommonName != "" {
+			output = append(output, cert.Subject.CommonName)
+		}
 	}
 	return output, nil
 }

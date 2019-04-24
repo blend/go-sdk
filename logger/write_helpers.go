@@ -28,7 +28,7 @@ func WriteHTTPResponse(tf TextFormatter, wr io.Writer, req *http.Request, status
 	io.WriteString(wr, Space)
 	io.WriteString(wr, tf.Colorize(req.Method, ansi.ColorBlue))
 	io.WriteString(wr, Space)
-	io.WriteString(wr, req.URL.Path)
+	io.WriteString(wr, req.URL.String())
 	io.WriteString(wr, Space)
 	io.WriteString(wr, ColorizeStatusCode(statusCode))
 	io.WriteString(wr, Space)

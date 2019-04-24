@@ -6,7 +6,8 @@ import (
 	"time"
 )
 
-// OptDialKeepAlive sets the dial keep alive.
+// OptDialKeepAlive sets the dial keep alive duration.
+// Only use this if you know what you're doing, the defaults are typically sufficient.
 func OptDialKeepAlive(d time.Duration) Option {
 	return func(r *Request) error {
 		if r.Client == nil {

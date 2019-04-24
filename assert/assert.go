@@ -1251,7 +1251,7 @@ func callerInfo() []string {
 		parts := strings.Split(file, "/")
 		dir := parts[len(parts)-2]
 		file = parts[len(parts)-1]
-		if dir != "assert" && dir != "go-assert" && dir != "mock" && dir != "require" {
+		if dir != "assert" && dir != "mock" && dir != "require" {
 			callers = append(callers, fmt.Sprintf("%s:%d", file, line))
 		}
 

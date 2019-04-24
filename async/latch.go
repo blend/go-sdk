@@ -9,10 +9,11 @@ import (
 func NewLatch() *Latch {
 	return &Latch{
 		starting: make(chan struct{}),
+		resuming: make(chan struct{}),
 		started:  make(chan struct{}),
+		active:   make(chan struct{}),
 		pausing:  make(chan struct{}),
 		paused:   make(chan struct{}),
-		resuming: make(chan struct{}),
 		stopping: make(chan struct{}),
 		stopped:  make(chan struct{}),
 	}
@@ -25,11 +26,12 @@ The lifecycle is generally as follows:
 
 	0 - stopped
 	1 - starting
-	2 - started - goto 3, goto 6
-	3 - pausing
-	4 - paused - goto 5, goto 6
-	5 - resuming - goto 2
-	6 - stopping - goto 0
+	2 - started - goto 3, goto 4, goto 6
+	3 - active
+	4 - pausing
+	5 - paused - goto 6, goto 7
+	6 - resuming - goto 2
+	7 - stopping - goto 0
 
 Control flow is coordinated with chan struct{}, which allows waiters to pull from the
 channel and the triggers to close them.
@@ -41,10 +43,11 @@ type Latch struct {
 	state int32
 
 	starting chan struct{}
+	resuming chan struct{}
 	started  chan struct{}
+	active   chan struct{}
 	pausing  chan struct{}
 	paused   chan struct{}
-	resuming chan struct{}
 	stopping chan struct{}
 	stopped  chan struct{}
 }
@@ -54,10 +57,11 @@ func (l *Latch) Reset() {
 	l.Lock()
 	l.state = LatchStopped
 	l.starting = make(chan struct{})
+	l.resuming = make(chan struct{})
 	l.started = make(chan struct{})
+	l.active = make(chan struct{})
 	l.pausing = make(chan struct{})
 	l.paused = make(chan struct{})
-	l.resuming = make(chan struct{})
 	l.stopping = make(chan struct{})
 	l.stopped = make(chan struct{})
 	l.Unlock()
@@ -83,9 +87,19 @@ func (l *Latch) IsStarting() bool {
 	return atomic.LoadInt32(&l.state) == LatchStarting
 }
 
+// IsResuming returns if the latch state is LatchResuming.
+func (l *Latch) IsResuming() bool {
+	return atomic.LoadInt32(&l.state) == LatchResuming
+}
+
 // IsStarted returns if the latch state is LatchStarted.
 func (l *Latch) IsStarted() bool {
 	return atomic.LoadInt32(&l.state) == LatchStarted
+}
+
+// IsActive returns if the latch state is LatchActive.
+func (l *Latch) IsActive() bool {
+	return atomic.LoadInt32(&l.state) == LatchActive
 }
 
 // IsPausing returns if the latch state is LatchPausing.
@@ -96,11 +110,6 @@ func (l *Latch) IsPausing() bool {
 // IsPaused returns if the latch state is LatchPaused.
 func (l *Latch) IsPaused() bool {
 	return atomic.LoadInt32(&l.state) == LatchPaused
-}
-
-// IsResuming returns if the latch state is LatchResuming.
-func (l *Latch) IsResuming() bool {
-	return atomic.LoadInt32(&l.state) == LatchResuming
 }
 
 // IsStopping returns if the latch state is LatchStopping.
@@ -122,11 +131,29 @@ func (l *Latch) NotifyStarting() (notifyStarting <-chan struct{}) {
 	return
 }
 
+// NotifyResuming returns the resuming signal.
+// It is used to coordinate the transition from paused -> running.
+func (l *Latch) NotifyResuming() (notifyResuming <-chan struct{}) {
+	l.Lock()
+	notifyResuming = l.resuming
+	l.Unlock()
+	return
+}
+
 // NotifyStarted returns the started signal.
 // It is used to coordinate the transition from starting -> started.
 func (l *Latch) NotifyStarted() (notifyStarted <-chan struct{}) {
 	l.Lock()
 	notifyStarted = l.started
+	l.Unlock()
+	return
+}
+
+// NotifyActive returns the active signal.
+// It is used to coordinate the transition from started -> active.
+func (l *Latch) NotifyActive() (notifyActive <-chan struct{}) {
+	l.Lock()
+	notifyActive = l.active
 	l.Unlock()
 	return
 }
@@ -145,15 +172,6 @@ func (l *Latch) NotifyPausing() (notifyPausing <-chan struct{}) {
 func (l *Latch) NotifyPaused() (notifyPaused <-chan struct{}) {
 	l.Lock()
 	notifyPaused = l.paused
-	l.Unlock()
-	return
-}
-
-// NotifyResuming returns the resuming signal.
-// It is used to coordinate the transition from paused -> running.
-func (l *Latch) NotifyResuming() (notifyResuming <-chan struct{}) {
-	l.Lock()
-	notifyResuming = l.resuming
 	l.Unlock()
 	return
 }
@@ -182,50 +200,8 @@ func (l *Latch) Starting() {
 	if l.IsStarting() {
 		return
 	}
-	l.Lock()
 	atomic.StoreInt32(&l.state, LatchStarting)
 	close(l.starting)
-	l.starting = make(chan struct{})
-	l.Unlock()
-}
-
-// Started signals that the latch is started and has entered
-// the `IsRunning` state.
-func (l *Latch) Started() {
-	if l.IsStarted() {
-		return
-	}
-	l.Lock()
-	atomic.StoreInt32(&l.state, LatchStarted)
-	close(l.started)
-	l.started = make(chan struct{})
-	l.Unlock()
-}
-
-// Pausing signals that the latch is pausing and has entered
-// the `IsPausing` state.
-func (l *Latch) Pausing() {
-	if l.IsPausing() {
-		return
-	}
-	l.Lock()
-	atomic.StoreInt32(&l.state, LatchPausing)
-	close(l.pausing)
-	l.pausing = make(chan struct{})
-	l.Unlock()
-}
-
-// Paused signals that the latch is paused and has entered
-// the `IsPaused` state.
-func (l *Latch) Paused() {
-	if l.IsPaused() {
-		return
-	}
-	l.Lock()
-	atomic.StoreInt32(&l.state, LatchPaused)
-	close(l.paused)
-	l.paused = make(chan struct{})
-	l.Unlock()
 }
 
 // Resuming signals that the latch is resuming and has entered
@@ -234,11 +210,48 @@ func (l *Latch) Resuming() {
 	if l.IsResuming() {
 		return
 	}
-	l.Lock()
 	atomic.StoreInt32(&l.state, LatchResuming)
 	close(l.resuming)
-	l.resuming = make(chan struct{})
-	l.Unlock()
+}
+
+// Started signals that the latch is started and has entered
+// the `IsRunning` state.
+func (l *Latch) Started() {
+	if l.IsStarted() {
+		return
+	}
+	atomic.StoreInt32(&l.state, LatchStarted)
+	close(l.started)
+}
+
+// Active signals that the latch is active and has entered
+// the `IsActive` state.
+func (l *Latch) Active() {
+	if l.IsActive() {
+		return
+	}
+	atomic.StoreInt32(&l.state, LatchActive)
+	close(l.active)
+}
+
+// Pausing signals that the latch is pausing and has entered
+// the `IsPausing` state.
+func (l *Latch) Pausing() {
+	if l.IsPausing() {
+		return
+	}
+	atomic.StoreInt32(&l.state, LatchPausing)
+	close(l.pausing)
+}
+
+// Paused signals that the latch is paused and has entered
+// the `IsPaused` state.
+func (l *Latch) Paused() {
+	if l.IsPaused() {
+		return
+	}
+	atomic.StoreInt32(&l.state, LatchPaused)
+	close(l.paused)
 }
 
 // Stopping signals the latch to stop.
@@ -247,11 +260,8 @@ func (l *Latch) Stopping() {
 	if l.IsStopping() {
 		return
 	}
-	l.Lock()
 	atomic.StoreInt32(&l.state, LatchStopping)
 	close(l.stopping)
-	l.stopping = make(chan struct{})
-	l.Unlock()
 }
 
 // Stopped signals the latch has stopped.
@@ -259,9 +269,6 @@ func (l *Latch) Stopped() {
 	if l.IsStopped() {
 		return
 	}
-	l.Lock()
 	atomic.StoreInt32(&l.state, LatchStopped)
 	close(l.stopped)
-	l.stopped = make(chan struct{})
-	l.Unlock()
 }

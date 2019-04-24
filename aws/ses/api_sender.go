@@ -11,23 +11,27 @@ import (
 	"github.com/blend/go-sdk/ex"
 )
 
+var (
+	_ Sender = (*APISender)(nil)
+)
+
 // New returns a new sender.
 func New(session *session.Session) email.Sender {
 	return &APISender{
-		session: session,
-		client:  awsSes.New(session),
+		Session: session,
+		Client:  awsSes.New(session),
 	}
 }
 
 // APISender is an aws ses email sender.
 type APISender struct {
-	session *session.Session
-	client  *awsSes.SES
+	Session *session.Session
+	Client  *awsSes.SES
 }
 
 // Send sends a message.
 func (s *APISender) Send(ctx context.Context, m email.Message) error {
-	if s.client == nil {
+	if s.Client == nil {
 		return nil
 	}
 	if err := m.Validate(); err != nil {
@@ -63,6 +67,6 @@ func (s *APISender) Send(ctx context.Context, m email.Message) error {
 		}
 	}
 
-	_, err := s.client.SendEmailWithContext(ctx, input)
+	_, err := s.Client.SendEmailWithContext(ctx, input)
 	return ex.New(err)
 }

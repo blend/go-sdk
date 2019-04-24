@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/blend/go-sdk/certutil"
 	"github.com/blend/go-sdk/graceful"
 	"github.com/blend/go-sdk/logger"
@@ -8,72 +10,77 @@ import (
 	"github.com/blend/go-sdk/web"
 )
 
+func fatal(log logger.FatalReceiver, err error) {
+	log.Fatal(err)
+	os.Exit(1)
+}
+
 func main() {
 	log := logger.All()
 
 	// create the ca
-	ca, err := certutil.CreateCA()
+	ca, err := certutil.CreateCertificateAuthority()
 	if err != nil {
-		log.SyncFatalExit(err)
+		fatal(log, err)
 	}
 
 	caKeyPair, err := ca.GenerateKeyPair()
 	if err != nil {
-		log.SyncFatalExit(err)
+		fatal(log, err)
 	}
 
 	caPool, err := ca.CertPool()
 	if err != nil {
-		log.SyncFatalExit(err)
+		fatal(log, err)
 	}
 
 	// create the server certs
-	server, err := certutil.CreateServer("mtls-example.local", ca, certutil.OptSubjectCommonName("localhost"))
+	server, err := certutil.CreateServer("mtls-example.local", ca, certutil.OptSubjectAlternateNames("localhost"))
 	if err != nil {
-		log.SyncFatalExit(err)
+		fatal(log, err)
 	}
 	serverKeyPair, err := server.GenerateKeyPair()
 	if err != nil {
-		log.SyncFatalExit(err)
+		fatal(log, err)
 	}
 
 	client, err := certutil.CreateClient("mtls-client", ca)
 	if err != nil {
-		log.SyncFatalExit(err)
+		fatal(log, err)
 	}
 	clientKeyPair, err := client.GenerateKeyPair()
 	if err != nil {
-		log.SyncFatalExit(err)
+		fatal(log, err)
 	}
 
 	serverCertManager, err := certutil.NewCertManagerWithKeyPairs(serverKeyPair, []certutil.KeyPair{caKeyPair}, clientKeyPair)
 	if err != nil {
-		log.SyncFatalExit(err)
+		fatal(log, err)
 	}
 
 	// create a server
-	app := web.New().WithLogger(log).WithBindAddr("127.0.0.1:5000")
-	app.WithTLSConfig(serverCertManager.TLSConfig)
+	app := web.New(web.OptLog(log), web.OptBindAddr("127.0.0.1:5000"), web.OptTLSConfig(serverCertManager.TLSConfig))
 	go func() {
 		if err := graceful.Shutdown(app); err != nil {
-			log.SyncFatalExit(err)
+			fatal(log, err)
 		}
 	}()
 	<-app.NotifyStarted()
 
 	// make some requests ...
 
-	log.SyncInfof("making a secure request")
+	log.Info("making a secure request")
+
 	if err := r2.New("https://localhost:5000",
 		r2.OptTLSRootCAs(caPool),
 		r2.OptTLSClientCert([]byte(clientKeyPair.Cert), []byte(clientKeyPair.Key))).Discard(); err != nil {
-		log.SyncFatalExit(err)
+		fatal(log, err)
 	} else {
-		log.SyncInfof("secure request success")
+		log.Info("secure request success")
 	}
 
-	log.SyncInfof("making an insecure request")
+	log.Info("making an insecure request")
 	if err := r2.New("https://localhost:5000", r2.OptTLSRootCAs(caPool)).Discard(); err != nil {
-		log.SyncFatalExit(err)
+		fatal(log, err)
 	}
 }

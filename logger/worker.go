@@ -1,6 +1,8 @@
 package logger
 
 import (
+	"context"
+
 	"github.com/blend/go-sdk/async"
 	"github.com/blend/go-sdk/ex"
 )
@@ -35,26 +37,55 @@ func (w *Worker) Start() error {
 // Dispatch is the main listen loop
 func (w *Worker) Dispatch() {
 	w.Started()
+
 	var e EventWithContext
 	var err error
+	var pausing <-chan struct{}
+	var stopping <-chan struct{}
+
 	for {
+		pausing = w.NotifyPausing()
+		stopping = w.NotifyStopping()
+
+		// we have to do this effectively twice to add precedence to the stop and pause
+		// signals
 		select {
-		case e = <-w.Work:
-			if err = w.Process(e); err != nil && w.Errors != nil {
-				w.Errors <- err
-			}
-		case <-w.NotifyPausing():
+		case <-pausing:
 			w.Paused()
 			select {
 			case <-w.NotifyResuming():
+				w.Reset()
 				w.Started()
+				continue
 			case <-w.NotifyStopping():
 				w.Stopped()
 				return
 			}
-		case <-w.NotifyStopping():
+		case <-stopping:
 			w.Stopped()
 			return
+		default:
+		}
+
+		select {
+		case <-pausing:
+			w.Paused()
+			select {
+			case <-w.NotifyResuming():
+				w.Reset()
+				w.Started()
+				continue
+			case <-w.NotifyStopping():
+				w.Stopped()
+				return
+			}
+		case <-stopping:
+			w.Stopped()
+			return
+		case e = <-w.Work:
+			if err = w.Process(e); err != nil && w.Errors != nil {
+				w.Errors <- err
+			}
 		}
 	}
 }
@@ -71,24 +102,43 @@ func (w *Worker) Process(ec EventWithContext) (err error) {
 	return
 }
 
-// Drain stops the worker and synchronously processes any remaining work.
+// DrainContext pauses the worker and synchronously processes any remaining work.
 // It then restarts the worker.
-func (w *Worker) Drain() {
-	if w.CanPause() {
-		w.Pausing()
-		defer func() {
-			w.Resuming()
-		}()
+func (w *Worker) DrainContext(ctx context.Context) error {
+	// if the worker is currently processing work, wait for it to finish.
+	notifyPaused := w.NotifyPaused()
+	w.Pausing()
+	select {
+	case <-notifyPaused:
+		break
+	case <-ctx.Done():
+		return context.Canceled
 	}
+	defer func() {
+		w.Resuming()
+	}()
 
 	var work EventWithContext
 	var err error
+
 	workLeft := len(w.Work)
-	for index := 0; index < workLeft; index++ {
-		work = <-w.Work
-		if err = w.Process(work); err != nil && w.Errors != nil {
-			w.Errors <- err
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		for index := 0; index < workLeft; index++ {
+			work = <-w.Work
+			work.Context = ctx
+			if err = w.Process(work); err != nil && w.Errors != nil {
+				w.Errors <- err
+			}
 		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		return context.Canceled
+	case <-done:
+		return nil
 	}
 }
 
@@ -97,6 +147,10 @@ func (w *Worker) Stop() error {
 	if !w.CanStop() {
 		return ex.New(async.ErrCannotStop)
 	}
+	if w.IsActive() {
+		<-w.NotifyStarted()
+	}
+
 	w.Stopping()
 	<-w.NotifyStopped()
 
