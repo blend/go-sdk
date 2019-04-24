@@ -36,7 +36,7 @@ type SecretListV1 struct {
 	LeaseDuration int    `json:"lease_duration"`
 	Renewable     bool   `json:"renewable"`
 	// Data is the list of keys and subfolders at this path. Subfolders end with a slash, keys do not
-	Data KeyData`json:"data"`
+	Data KeyData `json:"data"`
 	// Warnings contains any warnings related to the operation. These
 	// are not issues that caused the command to fail, but that the
 	// client should be aware of.
@@ -178,4 +178,12 @@ type MountConfigInput struct {
 	AuditNonHMACResponseKeys  []string          `json:"audit_non_hmac_response_keys,omitempty" mapstructure:"audit_non_hmac_response_keys"`
 	ListingVisibility         string            `json:"listing_visibility,omitempty" mapstructure:"listing_visibility"`
 	PassthroughRequestHeaders []string          `json:"passthrough_request_headers,omitempty" mapstructure:"passthrough_request_headers"`
+}
+
+// TransitResult is the structure returned by vault for transit requests
+type TransitResult struct {
+	Data struct {
+		Ciphertext string `json:"ciphertext"`
+		Plaintext  string `json:"plaintext"`
+	} `json:"data"`
 }

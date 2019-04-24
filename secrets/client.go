@@ -1,6 +1,8 @@
 package secrets
 
-import "context"
+import (
+	"context"
+)
 
 // Client is the general interface for a Secrets client
 type Client interface {
