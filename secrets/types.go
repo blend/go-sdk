@@ -130,3 +130,11 @@ type MountConfigInput struct {
 	ListingVisibility         string            `json:"listing_visibility,omitempty" mapstructure:"listing_visibility"`
 	PassthroughRequestHeaders []string          `json:"passthrough_request_headers,omitempty" mapstructure:"passthrough_request_headers"`
 }
+
+// TransitResult is the structure returned by vault for transit requests
+type TransitResult struct {
+	Data struct {
+		Ciphertext string `json:"ciphertext"`
+		Plaintext  string `json:"plaintext"`
+	} `json:"data"`
+}

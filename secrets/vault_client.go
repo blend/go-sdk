@@ -1,6 +1,7 @@
 package secrets
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -13,7 +14,6 @@ import (
 	"golang.org/x/net/http2"
 
 	"github.com/blend/go-sdk/logger"
-	"github.com/blend/go-sdk/util"
 )
 
 // assert VaultClient implements Client
@@ -63,6 +63,8 @@ func NewVaultClientFromConfig(cfg *Config) (*VaultClient, error) {
 
 	client.kv1 = &kv1{client: client}
 	client.kv2 = &kv2{client: client}
+	client.Transit = &VaultTransit{Client: client}
+
 	return client, nil
 }
 
@@ -90,8 +92,9 @@ type VaultClient struct {
 	mount  string
 	log    *logger.Logger
 
-	kv1 *kv1
-	kv2 *kv2
+	kv1     *kv1
+	kv2     *kv2
+	Transit TransitClient
 
 	bufferPool *BufferPool
 	client     HTTPClient
@@ -160,7 +163,7 @@ func (c *VaultClient) Logger() *logger.Logger {
 
 // Put puts a value.
 func (c *VaultClient) Put(key string, data Values, options ...Option) error {
-	backend, err := c.backend(key)
+	backend, err := c.backendKV(key)
 	if err != nil {
 		return err
 	}
@@ -170,7 +173,7 @@ func (c *VaultClient) Put(key string, data Values, options ...Option) error {
 
 // Get gets a value at a given key.
 func (c *VaultClient) Get(key string, options ...Option) (Values, error) {
-	backend, err := c.backend(key)
+	backend, err := c.backendKV(key)
 	if err != nil {
 		return nil, err
 	}
@@ -180,32 +183,28 @@ func (c *VaultClient) Get(key string, options ...Option) (Values, error) {
 
 // Delete puts a key.
 func (c *VaultClient) Delete(key string, options ...Option) error {
-	backend, err := c.backend(key)
+	backend, err := c.backendKV(key)
 	if err != nil {
 		return err
 	}
 	return backend.Delete(key, options...)
 }
 
-// ReadInto reads a secret into an object.
-func (c *VaultClient) ReadInto(key string, obj interface{}, options ...Option) error {
-	response, err := c.Get(key, options...)
-	if err != nil {
-		return err
-	}
-	return util.Reflection.PatchStrings(ReflectTagName, response, obj)
+// Encrypt encrypts a given set of data.
+func (c *VaultClient) Encrypt(ctx context.Context, key string, context, data []byte) (string, error) {
+	return c.Transit.Encrypt(ctx, key, context, data)
 }
 
-// WriteInto writes an object into a secret at a given key.
-func (c *VaultClient) WriteInto(key string, obj interface{}, options ...Option) error {
-	return c.Put(key, util.Reflection.DecomposeStrings(obj, ReflectTagName), options...)
+// Decrypt decrypts a given set of data.
+func (c *VaultClient) Decrypt(ctx context.Context, key string, context []byte, ciphertext string) ([]byte, error) {
+	return c.Transit.Decrypt(ctx, key, context, ciphertext)
 }
 
 // --------------------------------------------------------------------------------
 // utility methods
 // --------------------------------------------------------------------------------
 
-func (c *VaultClient) backend(key string) (KV, error) {
+func (c *VaultClient) backendKV(key string) (KV, error) {
 	version, err := c.getVersion(key)
 	if err != nil {
 		return nil, err

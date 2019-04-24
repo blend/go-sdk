@@ -9,7 +9,7 @@ import (
 	"github.com/blend/go-sdk/assert"
 )
 
-func TestVaultClientBackend(t *testing.T) {
+func TestVaultClientBackendKV(t *testing.T) {
 	assert := assert.New(t)
 
 	client, err := NewVaultClient()
@@ -20,7 +20,7 @@ func TestVaultClientBackend(t *testing.T) {
 	m := NewMockHTTPClient().WithString("GET", URL("%s/v1/sys/internal/ui/mounts/secret/foo/bar", client.Remote().String()), mountMetaJSON)
 	client.WithHTTPClient(m)
 
-	backend, err := client.backend("foo/bar")
+	backend, err := client.backendKV("foo/bar")
 	assert.Nil(err)
 	assert.NotNil(backend)
 }

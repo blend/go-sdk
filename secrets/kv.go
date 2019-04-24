@@ -6,3 +6,6 @@ type KV interface {
 	Get(key string, options ...Option) (Values, error)
 	Delete(key string, options ...Option) error
 }
+
+// KVClient is a basic key value store client.
+type KVClient = KV
