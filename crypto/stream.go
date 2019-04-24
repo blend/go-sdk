@@ -12,8 +12,8 @@ import (
 	"github.com/blend/go-sdk/ex"
 )
 
-// NewStreamEncryptor creates a new stream encrypter
-func NewStreamEncryptor(key []byte, plainText io.Reader) (*StreamEncryptor, error) {
+// NewStreamEncrypter creates a new stream encrypter
+func NewStreamEncrypter(key []byte, plainText io.Reader) (*StreamEncrypter, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, ex.New(err)
@@ -25,7 +25,7 @@ func NewStreamEncryptor(key []byte, plainText io.Reader) (*StreamEncryptor, erro
 	}
 	stream := cipher.NewCTR(block, iv)
 	mac := hmac.New(sha256.New, key)
-	return &StreamEncryptor{
+	return &StreamEncrypter{
 		Source: plainText,
 		Block:  block,
 		Stream: stream,
@@ -34,15 +34,15 @@ func NewStreamEncryptor(key []byte, plainText io.Reader) (*StreamEncryptor, erro
 	}, nil
 }
 
-// NewStreamDecryptor creates a new stream decrypter
-func NewStreamDecryptor(key []byte, meta StreamMeta, cipherText io.Reader) (*StreamDecryptor, error) {
+// NewStreamDecrypter creates a new stream decrypter
+func NewStreamDecrypter(key []byte, meta StreamMeta, cipherText io.Reader) (*StreamDecrypter, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, ex.New(err)
 	}
 	stream := cipher.NewCTR(block, meta.IV)
 	mac := hmac.New(sha256.New, key)
-	return &StreamDecryptor{
+	return &StreamDecrypter{
 		Source: cipherText,
 		Block:  block,
 		Stream: stream,
@@ -51,8 +51,8 @@ func NewStreamDecryptor(key []byte, meta StreamMeta, cipherText io.Reader) (*Str
 	}, nil
 }
 
-// StreamEncryptor is an encrypter for a stream of data with authentication
-type StreamEncryptor struct {
+// StreamEncrypter is an encrypter for a stream of data with authentication
+type StreamEncrypter struct {
 	Source io.Reader
 	Block  cipher.Block
 	Stream cipher.Stream
@@ -60,8 +60,8 @@ type StreamEncryptor struct {
 	IV     []byte
 }
 
-// StreamDecryptor is a decrypter for a stream of data with authentication
-type StreamDecryptor struct {
+// StreamDecrypter is a decrypter for a stream of data with authentication
+type StreamDecrypter struct {
 	Source io.Reader
 	Block  cipher.Block
 	Stream cipher.Stream
@@ -70,40 +70,40 @@ type StreamDecryptor struct {
 }
 
 // Read encrypts the bytes of the inner reader and places them into p
-func (s *StreamEncryptor) Read(p []byte) (int, error) {
+func (s *StreamEncrypter) Read(p []byte) (int, error) {
 	n, readErr := s.Source.Read(p)
 	if n > 0 {
+		s.Stream.XORKeyStream(p[:n], p[:n])
 		err := writeHash(s.Mac, p[:n])
 		if err != nil {
 			return n, ex.New(err)
 		}
-		s.Stream.XORKeyStream(p[:n], p[:n])
 		return n, readErr
 	}
 	return 0, io.EOF
 }
 
 // Meta returns the encrypted stream metadata for use in decrypting. This should only be called after the stream is finished
-func (s *StreamEncryptor) Meta() StreamMeta {
+func (s *StreamEncrypter) Meta() StreamMeta {
 	return StreamMeta{IV: s.IV, Hash: s.Mac.Sum(nil)}
 }
 
 // Read reads bytes from the underlying reader and then decrypts them
-func (s *StreamDecryptor) Read(p []byte) (int, error) {
+func (s *StreamDecrypter) Read(p []byte) (int, error) {
 	n, readErr := s.Source.Read(p)
 	if n > 0 {
-		s.Stream.XORKeyStream(p[:n], p[:n])
 		err := writeHash(s.Mac, p[:n])
 		if err != nil {
 			return n, ex.New(err)
 		}
+		s.Stream.XORKeyStream(p[:n], p[:n])
 		return n, readErr
 	}
 	return 0, io.EOF
 }
 
 // Authenticate verifys that the hash of the stream is correct. This should only be called after processing is finished
-func (s *StreamDecryptor) Authenticate() error {
+func (s *StreamDecrypter) Authenticate() error {
 	if !hmac.Equal(s.Meta.Hash, s.Mac.Sum(nil)) {
 		return ex.New("authentication failed")
 	}

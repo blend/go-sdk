@@ -58,6 +58,16 @@ func OptOutput(output io.Writer) Option {
 	}
 }
 
+// OptSubContext sets an initial sub-context path.
+func OptSubContext(path ...string) Option {
+	return func(l *Logger) error { l.Context.Path = path; return nil }
+}
+
+// OptFields sets an initial sub-context fields.
+func OptFields(fields Fields) Option {
+	return func(l *Logger) error { l.Context.Fields = fields; return nil }
+}
+
 // OptJSON sets the output formatter for the logger as json.
 func OptJSON(opts ...JSONOutputFormatterOption) Option {
 	return func(l *Logger) error { l.Formatter = NewJSONOutputFormatter(opts...); return nil }

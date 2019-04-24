@@ -8,16 +8,16 @@ import (
 	"github.com/blend/go-sdk/assert"
 )
 
-func TestStreamEncryptorDecryptor(t *testing.T) {
+func TestStreamEncrypterDecrypter(t *testing.T) {
 	assert := assert.New(t)
 	key, err := CreateKey(32)
 	assert.Nil(err)
-	plaintext := "Eleven is the best person in all of Hawkins Indiana. KSHVdyveduytvadsguvdsjgcv"
+	plaintext := "Eleven is the best person in all of Hawkins Indiana. Some more text"
 	pt := []byte(plaintext)
 
 	src := bytes.NewReader(pt)
 
-	se, err := NewStreamEncryptor(key, src)
+	se, err := NewStreamEncrypter(key, src)
 	assert.Nil(err)
 	assert.NotNil(se)
 
@@ -25,7 +25,7 @@ func TestStreamEncryptorDecryptor(t *testing.T) {
 	assert.Nil(err)
 	assert.NotNil(encrypted)
 
-	sd, err := NewStreamDecryptor(key, se.Meta(), bytes.NewReader(encrypted))
+	sd, err := NewStreamDecrypter(key, se.Meta(), bytes.NewReader(encrypted))
 	assert.Nil(err)
 	assert.NotNil(sd)
 
