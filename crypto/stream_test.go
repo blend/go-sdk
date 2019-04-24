@@ -12,7 +12,7 @@ func TestStreamEncrypterDecrypter(t *testing.T) {
 	assert := assert.New(t)
 	key, err := CreateKey(32)
 	assert.Nil(err)
-	plaintext := "Eleven is the best person in all of Hawkins Indiana. KSHVdyveduytvadsguvdsjgcv"
+	plaintext := "Eleven is the best person in all of Hawkins Indiana. Some more text"
 	pt := []byte(plaintext)
 
 	src := bytes.NewReader(pt)
