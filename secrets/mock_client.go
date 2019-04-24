@@ -8,6 +8,7 @@ import (
 )
 
 var _ Client = &MockClient{}
+var _ TransitClient = &MockClient{}
 
 // NewMockClient creates a new mock client.
 func NewMockClient() *MockClient {

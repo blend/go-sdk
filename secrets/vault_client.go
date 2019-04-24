@@ -20,6 +20,9 @@ import (
 // assert VaultClient implements Client
 var _ Client = &VaultClient{}
 
+// assert VaultClient implements TransitClient
+var _ TransitClient = &VaultClient{}
+
 // NewVaultClient returns a new client.
 func NewVaultClient() (*VaultClient, error) {
 	return NewVaultClientFromConfig(&Config{})
