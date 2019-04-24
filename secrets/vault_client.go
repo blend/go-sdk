@@ -14,6 +14,7 @@ import (
 	"golang.org/x/net/http2"
 
 	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/util"
 )
 
 // assert VaultClient implements Client
@@ -188,6 +189,20 @@ func (c *VaultClient) Delete(key string, options ...Option) error {
 		return err
 	}
 	return backend.Delete(key, options...)
+}
+
+// ReadInto reads a secret into an object.
+func (c *VaultClient) ReadInto(key string, obj interface{}, options ...Option) error {
+	response, err := c.Get(key, options...)
+	if err != nil {
+		return err
+	}
+	return util.Reflection.PatchStrings(ReflectTagName, response, obj)
+}
+
+// WriteInto writes an object into a secret at a given key.
+func (c *VaultClient) WriteInto(key string, obj interface{}, options ...Option) error {
+	return c.Put(key, util.Reflection.DecomposeStrings(obj, ReflectTagName), options...)
 }
 
 // Encrypt encrypts a given set of data.
