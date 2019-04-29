@@ -95,7 +95,7 @@ type SecretListV2 struct {
 	WrapInfo *SecretWrapInfo `json:"wrap_info,omitempty"`
 }
 
-// TransitKey is the structure returned for every transit keys within Vault.
+// TransitKey is the structure returned for every transit key within Vault.
 type TransitKey struct {
 	// The request ID that generated this response
 	RequestID     string `json:"request_id"`
