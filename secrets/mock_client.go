@@ -78,8 +78,29 @@ func (c *MockClient) List(_ context.Context, path string, options ...RequestOpti
 }
 
 // CreateTransitKey creates a new transit key.
-func (c *MockClient) CreateTransitKey(name string) {
-	c.TransitKeys[name] = make(map[string][]byte)
+func (c *MockClient) CreateTransitKey(ctx context.Context, key string, params map[string]interface{}) error {
+	c.TransitKeys[key] = make(map[string][]byte)
+
+	return nil
+}
+
+// ConfigureTransitKey configures a transit key path
+func (c *MockClient) ConfigureTransitKey(ctx context.Context, key string, config map[string]interface{}) error {
+	return nil
+}
+
+// ReadTransitKey returns data about a transit key path
+func (c *MockClient) ReadTransitKey(ctx context.Context, key string) (map[string]interface{}, error) {
+	return map[string]interface{}{}, nil
+}
+
+// DeleteTransitKey deletes a transit key path
+func (c *MockClient) DeleteTransitKey(ctx context.Context, key string) error {
+	if _, ok := c.TransitKeys[key]; ok {
+		delete(c.TransitKeys, key)
+	}
+
+	return nil
 }
 
 func (c *MockClient) deriveTransitKey(name string, context []byte) ([]byte, error) {

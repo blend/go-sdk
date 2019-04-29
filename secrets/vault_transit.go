@@ -17,6 +17,83 @@ type VaultTransit struct {
 	Client *VaultClient
 }
 
+// CreateTransitKey creates a transit key path
+func (vt VaultTransit) CreateTransitKey(ctx context.Context, key string, params map[string]interface{}) error {
+	req := vt.Client.createRequest(MethodPost, filepath.Join("/v1/transit/keys/", key)).WithContext(ctx)
+
+	if _, ok := params["type"]; !ok {
+		params["type"] = "aes256-gcm96"
+	}
+
+	if _, ok := params["derived"]; !ok {
+		params["derived"] = true
+	}
+
+	body, err := vt.Client.jsonBody(params)
+	if err != nil {
+		return err
+	}
+	req.Body = body
+
+	res, err := vt.Client.send(req)
+	if err != nil {
+		return err
+	}
+	defer res.Close()
+
+	return nil
+}
+
+// ConfigureTransitKey configures a transit key path
+func (vt VaultTransit) ConfigureTransitKey(ctx context.Context, key string, config map[string]interface{}) error {
+	req := vt.Client.createRequest(MethodPost, filepath.Join("/v1/transit/keys/", key, "config")).WithContext(ctx)
+
+	body, err := vt.Client.jsonBody(config)
+	if err != nil {
+		return err
+	}
+	req.Body = body
+
+	res, err := vt.Client.send(req)
+	if err != nil {
+		return err
+	}
+	defer res.Close()
+
+	return nil
+}
+
+// ReadTransitKey returns data about a transit key path
+func (vt VaultTransit) ReadTransitKey(ctx context.Context, key string) (map[string]interface{}, error) {
+	req := vt.Client.createRequest(MethodGet, filepath.Join("/v1/transit/keys/", key)).WithContext(ctx)
+
+	res, err := vt.Client.send(req)
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+	defer res.Close()
+
+	var keyMetaResult map[string]interface{}
+	if err = json.NewDecoder(res).Decode(&keyMetaResult); err != nil {
+		return nil, err
+	}
+
+	return keyMetaResult, nil
+}
+
+// DeleteTransitKey deletes a transit key path
+func (vt VaultTransit) DeleteTransitKey(ctx context.Context, key string) error {
+	req := vt.Client.createRequest(MethodDelete, filepath.Join("/v1/transit/keys/", key)).WithContext(ctx)
+
+	res, err := vt.Client.send(req)
+	if err != nil {
+		return err
+	}
+	defer res.Close()
+
+	return nil
+}
+
 // Encrypt encrypts a given set of data.
 func (vt VaultTransit) Encrypt(ctx context.Context, key string, context, data []byte) (string, error) {
 	req := vt.Client.createRequest(MethodPost, filepath.Join("/v1/transit/encrypt/", key)).WithContext(ctx)
