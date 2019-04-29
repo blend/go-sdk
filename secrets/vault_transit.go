@@ -73,12 +73,12 @@ func (vt VaultTransit) ReadTransitKey(ctx context.Context, key string) (map[stri
 	}
 	defer res.Close()
 
-	var keyMetaResult map[string]interface{}
-	if err = json.NewDecoder(res).Decode(&keyMetaResult); err != nil {
+	var keyResult TransitKey
+	if err = json.NewDecoder(res).Decode(&keyResult); err != nil {
 		return nil, err
 	}
 
-	return keyMetaResult, nil
+	return keyResult.Data, nil
 }
 
 // DeleteTransitKey deletes a transit key path
