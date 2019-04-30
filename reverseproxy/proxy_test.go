@@ -37,8 +37,10 @@ func TestProxy(t *testing.T) {
 	target, err := url.Parse(mockedEndpoint.URL)
 	assert.Nil(err)
 
-	proxy := New().WithUpstream(NewUpstream(target))
-	proxy.WithUpstreamHeader(webutil.HeaderXForwardedProto, webutil.SchemeHTTP)
+	proxy := NewProxy(
+		OptProxyUpstream(NewUpstream(target)),
+		OptProxyHeaderValue(webutil.HeaderXForwardedProto, webutil.SchemeHTTP),
+	)
 
 	mockedProxy := httptest.NewServer(proxy)
 

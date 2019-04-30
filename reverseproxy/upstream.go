@@ -29,26 +29,31 @@ type Upstream struct {
 	ReverseProxy *httputil.ReverseProxy
 }
 
-// WithName sets the name field of the upstream.
-func (u *Upstream) WithName(name string) *Upstream {
-	u.Name = name
-	return u
-}
-
-// WithLogger sets the logger agent for the upstream.
-func (u *Upstream) WithLogger(log logger.Log) *Upstream {
-	u.Log = log
-	return u
-}
-
 // ServeHTTP
 func (u *Upstream) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	w := NewResponseWriter(rw)
+
 	if u.Log != nil {
 		u.Log.Trigger(req.Context(), logger.NewHTTPRequestEvent(req))
-	}
-	start := time.Now()
 
-	w := NewResponseWriter(rw)
+		start := time.Now()
+		defer func() {
+			wre := logger.NewHTTPResponseEvent(req,
+				logger.OptHTTPResponseStatusCode(w.StatusCode()),
+				logger.OptHTTPResponseContentLength(w.ContentLength()),
+				logger.OptHTTPResponseElapsed(time.Since(start)),
+			)
+
+			if value := w.Header().Get("Content-Type"); len(value) > 0 {
+				wre.ContentType = value
+			}
+			if value := w.Header().Get("Content-Encoding"); len(value) > 0 {
+				wre.ContentEncoding = value
+			}
+
+			u.Log.Trigger(req.Context(), wre)
+		}()
+	}
 
 	// Add extra forwarded headers.
 	// these are required for a majority of services to function correctly behind
@@ -57,21 +62,4 @@ func (u *Upstream) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	w.Header().Set("X-Forwarded-Proto", req.URL.Scheme)
 
 	u.ReverseProxy.ServeHTTP(w, req)
-
-	if u.Log != nil {
-		wre := logger.NewHTTPResponseEvent(req,
-			logger.OptHTTPResponseStatusCode(w.StatusCode()),
-			logger.OptHTTPResponseContentLength(w.ContentLength()),
-			logger.OptHTTPResponseElapsed(time.Since(start)),
-		)
-
-		if value := w.Header().Get("Content-Type"); len(value) > 0 {
-			wre.ContentType = value
-		}
-		if value := w.Header().Get("Content-Encoding"); len(value) > 0 {
-			wre.ContentEncoding = value
-		}
-
-		u.Log.Trigger(req.Context(), wre)
-	}
 }

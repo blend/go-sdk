@@ -10,9 +10,8 @@ import (
 
 // Watch constants
 const (
-	ErrWatchStopped ex.Class = "watch file should stop"
-
-	DefaultWatchPollInterval = 500 * time.Millisecond
+	ErrWatchStopped          ex.Class = "watch file should stop"
+	DefaultWatchPollInterval          = 500 * time.Millisecond
 )
 
 // Watch watches a file for changes and calls the action if there are changes.
@@ -98,6 +97,7 @@ func (w Watcher) Watch() {
 						return
 					}
 					w.handleError(ex.New(err))
+					return
 				}
 				lastMod = stat.ModTime()
 			}

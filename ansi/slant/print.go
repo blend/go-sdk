@@ -3,7 +3,6 @@ package slant
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"unicode"
 )
@@ -44,7 +43,7 @@ func Print(output io.Writer, phrase string) error {
 			charRow = replaceRunes(charRow, font.Hardblank, ' ')
 			row = append(row, charRow...)
 		}
-		_, err = fmt.Fprintln(output, string(row))
+		_, err = io.WriteString(output, string(row)+"\n")
 		if err != nil {
 			return err
 		}
