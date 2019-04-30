@@ -53,6 +53,8 @@ type CertWatcher struct {
 	CertPath     string
 	KeyPath      string
 	PollInterval time.Duration
+
+	OnReload func()
 }
 
 // PollIntervalOrDefault returns the polling interval or a default.
@@ -73,6 +75,10 @@ func (cw *CertWatcher) Reload() error {
 		return ex.New(err)
 	}
 	cw.Certificate = &cert
+
+	if cw.OnReload != nil {
+		cw.OnReload()
+	}
 	return nil
 }
 
