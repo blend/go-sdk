@@ -130,7 +130,10 @@ func (s *Server) Start() error {
 	}
 
 	actions := []func() error{
-		func() error { return s.Server.Serve(serverListener) },
+		func() error {
+			s.Started()
+			return s.Server.Serve(serverListener)
+		},
 	}
 
 	if s.CertWatcher != nil {
@@ -139,7 +142,7 @@ func (s *Server) Start() error {
 	if s.UpgradeServer != nil {
 		actions = append(actions, s.UpgradeServer.ListenAndServe)
 	}
-	s.Started()
+
 	if err = async.RunToError(actions...); err != nil && err != http.ErrServerClosed {
 		return err
 	}

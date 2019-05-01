@@ -10,5 +10,22 @@ type ServerConfig struct {
 	TLSCertPath string   `json:"tlsCertPath" yaml:"tlsCertPath" env:"TLS_CERT_PATH"`
 	TLSCAPaths  []string `json:"tlsCAPaths" yaml:"tlsCAPAths" env:"TLS_CA_PATHS,csv"`
 
-	UseProxyProtocol bool `json:"useProxyProtocol" yaml:"useProxyProtocol"`
+	Upstream         string `json:"upstream" yaml:"upstream"`
+	UseProxyProtocol bool   `json:"useProxyProtocol" yaml:"useProxyProtocol"`
+}
+
+// BindAddrOrDefault returns the bind addr or a default.
+func (c ServerConfig) BindAddrOrDefault() string {
+	if c.BindAddr != "" {
+		return c.BindAddr
+	}
+	return ":8443"
+}
+
+// UpstreamOrDefault returns the upstream or a default.
+func (c ServerConfig) UpstreamOrDefault() string {
+	if c.Upstream != "" {
+		return c.Upstream
+	}
+	return "127.0.0.1:5000"
 }
