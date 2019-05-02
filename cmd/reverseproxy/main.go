@@ -1,15 +1,20 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
 
+	"git.blendlabs.com/blend/warden/pkg/proxyutil"
+	"github.com/blend/go-sdk/certutil"
 	"github.com/blend/go-sdk/graceful"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/reverseproxy"
+	"github.com/blend/go-sdk/webutil"
 )
 
 // linker metadata block
@@ -60,7 +65,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	var listenerOptions []proxyutil.CreateListenerOption
+
 	proxy := reverseproxy.NewProxy()
+	proxy.Log = log
+
+	var servers []graceful.Graceful
 	for _, upstream := range upstreams {
 		log.Infof("upstream: %s", upstream)
 		target, err := url.Parse(upstream)
@@ -71,6 +81,7 @@ func main() {
 
 		proxyUpstream := reverseproxy.NewUpstream(target)
 		proxyUpstream.Log = log
+		proxyUpstream.UseHTTP2()
 		proxy.Upstreams = append(proxy.Upstreams, proxyUpstream)
 	}
 
@@ -92,32 +103,57 @@ func main() {
 		log.Fatal(fmt.Errorf("`--tls-key` is unset, cannot continue"))
 		os.Exit(1)
 	}
-
-	serverOptions := []reverseproxy.ServerOption{
-		reverseproxy.OptServerLog(log),
-		reverseproxy.OptServerBindAddr(addr),
-		reverseproxy.OptServerUseProxyProtocol(useProxyProtocol),
-	}
-
-	if upgradeAddr != "" {
-		log.Infof("reverse proxy upgrader listening: %s", upgradeAddr)
-		serverOptions = append(serverOptions, reverseproxy.OptServerUpgrade(upgradeAddr))
-	}
-
 	if len(tlsCert) > 0 && len(tlsKey) > 0 {
-		log.Info("reverse proxy using tls")
-		log.Infof("reverse proxy watching tls paths: %s, %s", tlsCert, tlsKey)
-		serverOptions = append(serverOptions, reverseproxy.OptServerTLSCertWatcher(tlsCert, tlsKey))
+		certFileWatcher, err := certutil.NewCertFileWatcher(tlsCert, tlsKey)
+		if err != nil {
+			log.Fatal(err)
+			os.Exit(1)
+		}
+
+		log.Infof("watching tls cert/key files for changes")
+		servers = append(servers, certFileWatcher)
+
+		rootCAs, err := certutil.ExtendSystemCertPool()
+		if err != nil {
+			log.Fatal(err)
+			os.Exit(1)
+		}
+
+		proxyServerTLSConfig := &tls.Config{
+			RootCAs:        rootCAs,
+			GetCertificate: certFileWatcher.GetCertificate,
+		}
+		webutil.TLSSecureCipherSuites(proxyServerTLSConfig)
+		listenerOptions = append(listenerOptions, proxyutil.OptTLSConfig(proxyServerTLSConfig))
 	}
 
-	server, err := reverseproxy.NewServer(proxy, serverOptions...)
+	proxyServerListener, err := proxyutil.CreateListener(addr, listenerOptions...)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
 
-	log.Infof("reverse proxy listening: %s", addr)
-	if err := graceful.Shutdown(server); err != nil {
+	proxyServer := &http.Server{
+		Handler: webutil.NestMiddleware(proxy.ServeHTTP, logger.Logged(log)),
+	}
+	servers = append(servers,
+		webutil.NewGracefulHTTPServer(proxyServer, webutil.OptGracefulHTTPServerListener(proxyServerListener)),
+	)
+
+	if upgradeAddr != "" {
+		log.Infof("http upgrader listening on: %s", upgradeAddr)
+		upgrader := reverseproxy.NewHTTPRedirect()
+		upgrader.Log = log
+		servers = append(servers, webutil.NewGracefulHTTPServer(&http.Server{
+			Addr:    upgradeAddr,
+			Handler: http.HandlerFunc(upgrader.ServeHTTP),
+		}))
+	}
+
+	log.Infof("reverse proxy listening on: %s", addr)
+	if err := graceful.Shutdown(
+		servers...,
+	); err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
