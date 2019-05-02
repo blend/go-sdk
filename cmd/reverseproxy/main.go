@@ -9,10 +9,10 @@ import (
 	"os"
 	"strings"
 
-	"git.blendlabs.com/blend/warden/pkg/proxyutil"
 	"github.com/blend/go-sdk/certutil"
 	"github.com/blend/go-sdk/graceful"
 	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/proxyprotocol"
 	"github.com/blend/go-sdk/reverseproxy"
 	"github.com/blend/go-sdk/webutil"
 )
@@ -65,7 +65,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	var listenerOptions []proxyutil.CreateListenerOption
+	var listenerOptions []proxyprotocol.CreateListenerOption
 
 	proxy := reverseproxy.NewProxy()
 	proxy.Log = log
@@ -124,10 +124,10 @@ func main() {
 			GetCertificate: certFileWatcher.GetCertificate,
 		}
 		webutil.TLSSecureCipherSuites(proxyServerTLSConfig)
-		listenerOptions = append(listenerOptions, proxyutil.OptTLSConfig(proxyServerTLSConfig))
+		listenerOptions = append(listenerOptions, proxyprotocol.OptTLSConfig(proxyServerTLSConfig))
 	}
 
-	proxyServerListener, err := proxyutil.CreateListener(addr, listenerOptions...)
+	proxyServerListener, err := proxyprotocol.CreateListener(addr, listenerOptions...)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
