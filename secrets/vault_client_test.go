@@ -2,8 +2,10 @@ package secrets
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
@@ -121,4 +123,96 @@ func TestVaultClientDiscard(t *testing.T) {
 	assert.Nil(client.discard(client.jsonBody(map[string]interface{}{
 		"foo": "bar",
 	})))
+}
+
+func TestVaultCreateTransitKey(t *testing.T) {
+	assert := assert.New(t)
+	todo := context.TODO()
+
+	client, err := NewVaultClient()
+	assert.Nil(err)
+
+	key := "key"
+
+	m := NewMockHTTPClient().
+		With(
+			"POST",
+			URL("%s/v1/transit/keys/%s", client.Remote().String(), key),
+			&http.Response{
+				StatusCode: http.StatusNoContent,
+				Body:       ioutil.NopCloser(bytes.NewBuffer([]byte{})),
+			},
+		)
+	client.WithHTTPClient(m)
+
+	err = client.CreateTransitKey(todo, "key", map[string]interface{}{})
+	assert.Nil(err)
+}
+
+func TestVaultConfigureTransitKey(t *testing.T) {
+	assert := assert.New(t)
+	todo := context.TODO()
+
+	client, err := NewVaultClient()
+	assert.Nil(err)
+
+	key := "key"
+
+	m := NewMockHTTPClient().
+		With(
+			"POST",
+			URL("%s/v1/transit/keys/%s/config", client.Remote().String(), key),
+			&http.Response{
+				StatusCode: http.StatusNoContent,
+				Body:       ioutil.NopCloser(bytes.NewBuffer([]byte{})),
+			},
+		)
+	client.WithHTTPClient(m)
+
+	err = client.ConfigureTransitKey(todo, "key", map[string]interface{}{
+		"deletion_allowed": true,
+	})
+	assert.Nil(err)
+}
+
+func TestVaultReadTransitKey(t *testing.T) {
+	assert := assert.New(t)
+	todo := context.TODO()
+
+	client, err := NewVaultClient()
+	assert.Nil(err)
+
+	key := "key"
+	keyMetaJSON := `{"request_id":"e114c628-6493-28ed-0975-418a75c7976f","lease_id":"","renewable":false,"lease_duration":0,"data":{"deletion_allowed":true,"exportable":false,"allow_plaintext_backup":false,"keys": {"1": 1442851412},"min_decryption_version": 1,"min_encryption_version": 0,"name": "foo"},"wrap_info":null,"warnings":null,"auth":null}`
+
+	m := NewMockHTTPClient().WithString("GET", URL("%s/v1/transit/keys/%s", client.Remote().String(), key), keyMetaJSON)
+	client.WithHTTPClient(m)
+
+	data, err := client.ReadTransitKey(todo, "key")
+	assert.Nil(err)
+	assert.Equal(true, data["deletion_allowed"])
+}
+
+func TestVaultDeleteTransitKey(t *testing.T) {
+	assert := assert.New(t)
+	todo := context.TODO()
+
+	client, err := NewVaultClient()
+	assert.Nil(err)
+
+	key := "key"
+
+	m := NewMockHTTPClient().
+		With(
+			"DELETE",
+			URL("%s/v1/transit/keys/%s", client.Remote().String(), key),
+			&http.Response{
+				StatusCode: http.StatusNoContent,
+				Body:       ioutil.NopCloser(bytes.NewBuffer([]byte{})),
+			},
+		)
+	client.WithHTTPClient(m)
+
+	err = client.DeleteTransitKey(todo, "key")
+	assert.Nil(err)
 }

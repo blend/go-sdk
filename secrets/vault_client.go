@@ -208,6 +208,26 @@ func (c *VaultClient) WriteInto(key string, obj interface{}, options ...Option) 
 	return c.Put(key, util.Reflection.DecomposeStrings(obj, ReflectTagName), options...)
 }
 
+// CreateTransitKey creates a transit key path
+func (c *VaultClient) CreateTransitKey(ctx context.Context, key string, params map[string]interface{}) error {
+	return c.Transit.CreateTransitKey(ctx, key, params)
+}
+
+// ConfigureTransitKey configures a transit key path
+func (c *VaultClient) ConfigureTransitKey(ctx context.Context, key string, config map[string]interface{}) error {
+	return c.Transit.ConfigureTransitKey(ctx, key, config)
+}
+
+// ReadTransitKey returns data about a transit key path
+func (c *VaultClient) ReadTransitKey(ctx context.Context, key string) (map[string]interface{}, error) {
+	return c.Transit.ReadTransitKey(ctx, key)
+}
+
+// DeleteTransitKey deletes a transit key path
+func (c *VaultClient) DeleteTransitKey(ctx context.Context, key string) error {
+	return c.Transit.DeleteTransitKey(ctx, key)
+}
+
 // Encrypt encrypts a given set of data.
 func (c *VaultClient) Encrypt(ctx context.Context, key string, context, data []byte) (string, error) {
 	return c.Transit.Encrypt(ctx, key, context, data)
