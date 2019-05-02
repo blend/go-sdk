@@ -1,6 +1,7 @@
 package certutil
 
 import (
+	"crypto/tls"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -24,17 +25,10 @@ func TestCertFileWatcher(t *testing.T) {
 		os.Remove(tempCert.Name())
 	}()
 
-	ca, err := CreateCertificateAuthority()
+	_, err = tempKey.Write(keyLiteral)
 	assert.Nil(err)
 
-	server, err := CreateServer("local.test", ca)
-	assert.Nil(err)
-
-	pair, err := server.GenerateKeyPair()
-	_, err = tempKey.Write([]byte(pair.Key))
-	assert.Nil(err)
-
-	_, err = tempCert.Write([]byte(pair.Cert))
+	_, err = tempCert.Write(certLiteral)
 	assert.Nil(err)
 
 	assert.Nil(tempKey.Close())
@@ -48,29 +42,27 @@ func TestCertFileWatcher(t *testing.T) {
 	assert.NotNil(w.Certificate)
 
 	reloaded := make(chan struct{})
-	w.OnReload = func() {
+	w.OnReload = func(_ *tls.Certificate, _ error) {
 		close(reloaded)
 	}
 
-	w.PollInterval = time.Microsecond
+	w.PollInterval = 5 * time.Millisecond
+
 	go w.Start()
+	<-w.NotifyStarted()
 	defer w.Stop()
-
-	// recreate the server ...
-	server, err = CreateServer("local.test", ca)
-	assert.Nil(err)
-
-	pair, err = server.GenerateKeyPair()
 
 	kw, err := os.OpenFile(tempKey.Name(), os.O_RDWR, 0644)
 	assert.Nil(err)
-	_, err = kw.WriteAt([]byte(pair.Key), 0)
-	assert.Nil(err)
-	assert.Nil(kw.Close())
 
 	cw, err := os.OpenFile(tempCert.Name(), os.O_RDWR, 0644)
 	assert.Nil(err)
-	_, err = cw.WriteAt([]byte(pair.Cert), 0)
+
+	_, err = kw.WriteAt(alternateKeyLiteral, 0)
+	assert.Nil(err)
+	assert.Nil(kw.Close())
+
+	_, err = cw.WriteAt(alternateCertLiteral, 0)
 	assert.Nil(err)
 	assert.Nil(cw.Close())
 

@@ -54,7 +54,7 @@ type CertFileWatcher struct {
 	KeyPath      string
 	PollInterval time.Duration
 
-	OnReload func()
+	OnReload func(*tls.Certificate, error)
 }
 
 // PollIntervalOrDefault returns the polling interval or a default.
@@ -66,20 +66,22 @@ func (cw *CertFileWatcher) PollIntervalOrDefault() time.Duration {
 }
 
 // Reload forces the reload of the underlying certificate.
-func (cw *CertFileWatcher) Reload() error {
+func (cw *CertFileWatcher) Reload() (err error) {
 	cw.syncRoot.Lock()
 	defer cw.syncRoot.Unlock()
+	defer func() {
+		if cw.OnReload != nil {
+			cw.OnReload(cw.Certificate, err)
+		}
+	}()
 
-	cert, err := tls.LoadX509KeyPair(cw.CertPath, cw.KeyPath)
-	if err != nil {
-		return ex.New(err)
+	cert, loadErr := tls.LoadX509KeyPair(cw.CertPath, cw.KeyPath)
+	if loadErr != nil {
+		err = ex.New(loadErr)
+		return
 	}
 	cw.Certificate = &cert
-
-	if cw.OnReload != nil {
-		cw.OnReload()
-	}
-	return nil
+	return
 }
 
 // GetCertificate gets the cached certificate, it blocks when the `cert` field is being updated
@@ -91,6 +93,8 @@ func (cw *CertFileWatcher) GetCertificate(_ *tls.ClientHelloInfo) (*tls.Certific
 
 // Start watches the cert and triggers a reload on change
 func (cw *CertFileWatcher) Start() error {
+	cw.Starting()
+
 	keyStat, err := os.Stat(cw.KeyPath)
 	if err != nil {
 		return err
@@ -100,13 +104,13 @@ func (cw *CertFileWatcher) Start() error {
 		return err
 	}
 
-	cw.Started()
-
 	keyLastMod := keyStat.ModTime()
 	certLastMod := certStat.ModTime()
-	var didReload bool
 
 	ticker := time.Tick(cw.PollIntervalOrDefault())
+
+	cw.Started()
+	var didReload bool
 	for {
 		select {
 		case <-ticker:
@@ -117,6 +121,7 @@ func (cw *CertFileWatcher) Start() error {
 			if err != nil {
 				return err
 			}
+
 			if keyStat.ModTime().After(keyLastMod) {
 				if err := cw.Reload(); err != nil {
 					return err
@@ -130,6 +135,7 @@ func (cw *CertFileWatcher) Start() error {
 			if err != nil {
 				return err
 			}
+
 			if certStat.ModTime().After(certLastMod) {
 				if !didReload {
 					if err := cw.Reload(); err != nil {
