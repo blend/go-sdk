@@ -39,7 +39,7 @@ func TestProxy(t *testing.T) {
 
 	proxy := NewProxy(
 		OptProxyUpstream(NewUpstream(target)),
-		OptProxyHeaderValue(webutil.HeaderXForwardedProto, webutil.SchemeHTTP),
+		OptProxySetHeaderValue(webutil.HeaderXForwardedProto, webutil.SchemeHTTP),
 	)
 
 	mockedProxy := httptest.NewServer(proxy)

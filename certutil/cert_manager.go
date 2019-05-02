@@ -9,7 +9,7 @@ import (
 )
 
 // NewCertManagerWithKeyPairs returns a new cert pool from key pairs.
-func NewCertManagerWithKeyPairs(server KeyPair, authorities []KeyPair, clients ...KeyPair) (*CertManager, error) {
+func NewCertManagerWithKeyPairs(server KeyPair, certificateAuthorities []KeyPair, clients ...KeyPair) (*CertManager, error) {
 	serverCert, err := server.CertBytes()
 	if err != nil {
 		return nil, err
@@ -23,7 +23,7 @@ func NewCertManagerWithKeyPairs(server KeyPair, authorities []KeyPair, clients .
 	if err != nil {
 		return nil, err
 	}
-	caCertPool, err := ExtendSystemPoolWithKeyPairCerts(authorities...)
+	caCertPool, err := ExtendSystemCertPool(certificateAuthorities...)
 	if err != nil {
 		return nil, err
 	}

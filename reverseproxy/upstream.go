@@ -6,7 +6,9 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
+	"golang.org/x/net/http2"
 )
 
 // NewUpstream returns a new upstram.
@@ -27,6 +29,19 @@ type Upstream struct {
 	URL *url.URL
 	// ReverseProxy is what actually forwards requests.
 	ReverseProxy *httputil.ReverseProxy
+}
+
+// UseHTTP2 sets the upstream to use http2.
+func (u *Upstream) UseHTTP2() error {
+	if u.ReverseProxy.Transport == nil {
+		u.ReverseProxy.Transport = &http.Transport{}
+	}
+	if typed, ok := u.ReverseProxy.Transport.(*http.Transport); ok {
+		if err := http2.ConfigureTransport(typed); err != nil {
+			return ex.New(err)
+		}
+	}
+	return nil
 }
 
 // ServeHTTP

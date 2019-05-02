@@ -9,7 +9,7 @@ import (
 	"github.com/blend/go-sdk/assert"
 )
 
-func TestCertWatcher(t *testing.T) {
+func TestCertFileWatcher(t *testing.T) {
 	assert := assert.New(t)
 
 	tempKey, err := ioutil.TempFile("", "")
@@ -40,7 +40,7 @@ func TestCertWatcher(t *testing.T) {
 	assert.Nil(tempKey.Close())
 	assert.Nil(tempCert.Close())
 
-	w, err := NewCertWatcher(tempCert.Name(), tempKey.Name())
+	w, err := NewCertFileWatcher(tempCert.Name(), tempKey.Name())
 	assert.Nil(err)
 	assert.NotNil(w.Certificate)
 

@@ -1,34 +1,47 @@
 package reverseproxy
 
-import (
-	"net/http"
+import "net/http"
 
-	"github.com/blend/go-sdk/logger"
-)
+// ProxyOption is a function that mutates a proxy.
+type ProxyOption func(*Proxy) error
 
-// ProxyOption is an option for the proxy.
-type ProxyOption func(*Proxy)
-
-// OptProxyLog sets the logger on the proxy.
-func OptProxyLog(log logger.Log) ProxyOption {
-	return func(p *Proxy) {
-		p.Log = log
-	}
-}
-
-// OptProxyUpstream adds an upstream to the proxy.
+// OptProxyUpstream adds a proxy upstream.
 func OptProxyUpstream(upstream *Upstream) ProxyOption {
-	return func(p *Proxy) {
+	return func(p *Proxy) error {
 		p.Upstreams = append(p.Upstreams, upstream)
+		return nil
 	}
 }
 
-// OptProxyHeaderValue sets a header value for all requests to the proxy's upstreams.
-func OptProxyHeaderValue(key, value string) ProxyOption {
-	return func(p *Proxy) {
+// OptProxyAddHeaderValue adds a proxy upstream.
+func OptProxyAddHeaderValue(key, value string) ProxyOption {
+	return func(p *Proxy) error {
+		if p.Headers == nil {
+			p.Headers = http.Header{}
+		}
+		p.Headers.Add(key, value)
+		return nil
+	}
+}
+
+// OptProxySetHeaderValue adds a proxy upstream.
+func OptProxySetHeaderValue(key, value string) ProxyOption {
+	return func(p *Proxy) error {
 		if p.Headers == nil {
 			p.Headers = http.Header{}
 		}
 		p.Headers.Set(key, value)
+		return nil
+	}
+}
+
+// OptProxyDeleteHeader adds a proxy upstream.
+func OptProxyDeleteHeader(key string) ProxyOption {
+	return func(p *Proxy) error {
+		if p.Headers == nil {
+			p.Headers = http.Header{}
+		}
+		p.Headers.Del(key)
+		return nil
 	}
 }
