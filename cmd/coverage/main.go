@@ -32,12 +32,14 @@ const (
 )
 
 var reportOutputPath = flag.String("output", "coverage.html", "the path to write the full html coverage report")
-var temporaryOutputPath = flag.String("tmp", "coverage.cov", "the path to write the intermediate results")
 var update = flag.Bool("update", false, "if we should write the current coverage to `COVERAGE` files")
 var enforce = flag.Bool("enforce", false, "if we should enforce coverage minimums defined in `COVERAGE` files")
 var include = flag.String("include", "", "the include file filter in glob form, can be a csv.")
 var exclude = flag.String("exclude", "", "the exclude file filter in glob form, can be a csv.")
 var timeout = flag.String("timeout", "", "the timeout to pass to the package tests.")
+var covermode = flag.String("covermode", "set", "the go test covermode.")
+var coverprofile = flag.String("coverprofile", "coverage.cov", "the intermediate cover profile.")
+var keepCoverageOut = flag.Bool("keep-coverage-out", false, "if we should keep coverage.out")
 var v = flag.Bool("v", false, "show verbose output")
 
 func verbose() bool {
@@ -66,7 +68,9 @@ func main() {
 	maybeFatal(err)
 
 	fmt.Fprintln(os.Stdout, "coverage starting")
-	fullCoverageData, err := removeAndOpen(*temporaryOutputPath)
+	fmt.Fprintf(os.Stdout, "using covermode: %s\n", *covermode)
+	fmt.Fprintf(os.Stdout, "using coverprofile: %s\n", *coverprofile)
+	fullCoverageData, err := removeAndOpen(*coverprofile)
 	if err != nil {
 		maybeFatal(err)
 	}
@@ -179,7 +183,7 @@ func main() {
 	maybeFatal(fullCoverageData.Close())
 
 	// complete summary steps
-	covered, total, err := parseFullCoverProfile(pwd, *temporaryOutputPath, fileTotals)
+	covered, total, err := parseFullCoverProfile(pwd, *coverprofile, fileTotals)
 	maybeFatal(err)
 	finalCoverage := (float64(covered) / float64(total)) * 100
 	maybeFatal(writeCoverage(pwd, formatCoverage(finalCoverage)))
@@ -189,7 +193,10 @@ func main() {
 
 	// compile coverage.html
 	maybeFatal(execCoverageReportCompile())
-	maybeFatal(removeIfExists(*temporaryOutputPath))
+
+	if !*keepCoverageOut {
+		maybeFatal(removeIfExists(*coverprofile))
+	}
 
 	fmt.Fprintln(os.Stdout, "coverage complete")
 }
@@ -321,9 +328,9 @@ func gobin() string {
 func execCoverage(path string) ([]byte, error) {
 	var cmd *exec.Cmd
 	if *timeout != "" {
-		cmd = exec.Command(gobin(), "test", "-timeout", *timeout, "-short", "-covermode=set", "-coverprofile=profile.cov")
+		cmd = exec.Command(gobin(), "test", "-timeout", *timeout, "-short", fmt.Sprintf("-covermode=%s", *covermode), "-coverprofile=profile.cov")
 	} else {
-		cmd = exec.Command(gobin(), "test", "-short", "-covermode=set", "-coverprofile=profile.cov")
+		cmd = exec.Command(gobin(), "test", "-short", fmt.Sprintf("-covermode=%s", *covermode), "-coverprofile=profile.cov")
 	}
 	cmd.Env = os.Environ()
 	cmd.Dir = path
@@ -331,7 +338,7 @@ func execCoverage(path string) ([]byte, error) {
 }
 
 func execCoverageReportCompile() error {
-	cmd := exec.Command(gobin(), "tool", "cover", fmt.Sprintf("-html=%s", *temporaryOutputPath), fmt.Sprintf("-o=%s", *reportOutputPath))
+	cmd := exec.Command(gobin(), "tool", "cover", fmt.Sprintf("-html=%s", *coverprofile), fmt.Sprintf("-o=%s", *reportOutputPath))
 	cmd.Env = os.Environ()
 	return cmd.Run()
 }
