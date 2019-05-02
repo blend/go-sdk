@@ -8,6 +8,7 @@ import (
 
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/webutil"
 	"golang.org/x/net/http2"
 )
 
@@ -46,7 +47,7 @@ func (u *Upstream) UseHTTP2() error {
 
 // ServeHTTP
 func (u *Upstream) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	w := NewResponseWriter(rw)
+	w := webutil.NewResponseWriter(rw)
 
 	if u.Log != nil {
 		u.Log.Trigger(req.Context(), logger.NewHTTPRequestEvent(req))
@@ -73,8 +74,9 @@ func (u *Upstream) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	// Add extra forwarded headers.
 	// these are required for a majority of services to function correctly behind
 	// a reverse proxy.
-	w.Header().Set("X-Forwarded-Port", req.URL.Port())
-	w.Header().Set("X-Forwarded-Proto", req.URL.Scheme)
+	// We do an add here in case they're already specified.
+	w.Header().Add("X-Forwarded-Port", req.URL.Port())
+	w.Header().Add("X-Forwarded-Proto", req.URL.Scheme)
 
 	u.ReverseProxy.ServeHTTP(w, req)
 }

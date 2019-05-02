@@ -14,7 +14,7 @@ import (
 func TestRedirect(t *testing.T) {
 	assert := assert.New(t)
 
-	redirect := NewHTTPRedirect()
+	var redirect HTTPRedirect
 	mockedRedirect := httptest.NewServer(redirect)
 
 	client := &http.Client{
