@@ -3,7 +3,6 @@ package certutil
 import (
 	"crypto/tls"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/blend/go-sdk/async"
@@ -46,7 +45,6 @@ type CertFileWatcherOption func(*CertFileWatcher) error
 // CertFileWatcher reloads a cert key pair when there is a change, e.g. cert renewal
 type CertFileWatcher struct {
 	*async.Latch
-	syncRoot sync.RWMutex
 
 	Certificate *tls.Certificate
 
@@ -67,8 +65,6 @@ func (cw *CertFileWatcher) PollIntervalOrDefault() time.Duration {
 
 // Reload forces the reload of the underlying certificate.
 func (cw *CertFileWatcher) Reload() (err error) {
-	cw.syncRoot.Lock()
-	defer cw.syncRoot.Unlock()
 	defer func() {
 		if cw.OnReload != nil {
 			cw.OnReload(cw.Certificate, err)
@@ -86,8 +82,6 @@ func (cw *CertFileWatcher) Reload() (err error) {
 
 // GetCertificate gets the cached certificate, it blocks when the `cert` field is being updated
 func (cw *CertFileWatcher) GetCertificate(_ *tls.ClientHelloInfo) (*tls.Certificate, error) {
-	cw.syncRoot.RLock()
-	defer cw.syncRoot.RUnlock()
 	return cw.Certificate, nil
 }
 
