@@ -95,55 +95,27 @@ func (cw *CertFileWatcher) GetCertificate(_ *tls.ClientHelloInfo) (*tls.Certific
 func (cw *CertFileWatcher) Start() error {
 	cw.Starting()
 
-	keyStat, err := os.Stat(cw.KeyPath)
+	certLastMod, keyLastMod, err := cw.keyPairLastModified()
 	if err != nil {
 		return err
 	}
-	certStat, err := os.Stat(cw.CertPath)
-	if err != nil {
-		return err
-	}
-
-	keyLastMod := keyStat.ModTime()
-	certLastMod := certStat.ModTime()
 
 	ticker := time.Tick(cw.PollIntervalOrDefault())
-
 	cw.Started()
-	var didReload bool
+	var certMod, keyMod time.Time
 	for {
 		select {
 		case <-ticker:
-			didReload = false
-
-			// check key
-			keyStat, err = os.Stat(cw.KeyPath)
+			certMod, keyMod, err = cw.keyPairLastModified()
 			if err != nil {
 				return err
 			}
-
-			if keyStat.ModTime().After(keyLastMod) {
-				if err := cw.Reload(); err != nil {
+			if keyMod.After(keyLastMod) || certMod.After(certLastMod) {
+				if err = cw.Reload(); err != nil {
 					return err
 				}
-				didReload = true
-				keyLastMod = keyStat.ModTime()
-			}
-
-			// check cert
-			certStat, err = os.Stat(cw.CertPath)
-			if err != nil {
-				return err
-			}
-
-			if certStat.ModTime().After(certLastMod) {
-				if !didReload {
-					if err := cw.Reload(); err != nil {
-						return err
-					}
-					didReload = true
-				}
-				certLastMod = certStat.ModTime()
+				keyLastMod = keyMod
+				certLastMod = certMod
 			}
 		case <-cw.NotifyStopping():
 			cw.Stopped()
@@ -161,4 +133,20 @@ func (cw *CertFileWatcher) Stop() error {
 	cw.Stopping()
 	<-cw.NotifyStopped()
 	return nil
+}
+
+func (cw *CertFileWatcher) keyPairLastModified() (cert time.Time, key time.Time, err error) {
+	var certStat, keyStat os.FileInfo
+	keyStat, err = os.Stat(cw.KeyPath)
+	if err != nil {
+		return
+	}
+	certStat, err = os.Stat(cw.CertPath)
+	if err != nil {
+		return
+	}
+
+	cert = certStat.ModTime()
+	key = keyStat.ModTime()
+	return
 }

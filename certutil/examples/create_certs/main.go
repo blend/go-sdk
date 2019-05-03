@@ -9,7 +9,14 @@ import (
 )
 
 func main() {
-	ca, _ := certutil.CreateCertificateAuthority()
+	ca, _ := certutil.CreateCertificateAuthority(certutil.OptSubjectCommonName("go-sdk certificate authority"))
+
+	ca.WriteCertPem(os.Stdout)
+	fmt.Println()
+
+	ca.WriteKeyPem(os.Stdout)
+	fmt.Println()
+
 	certBundle, _ := certutil.CreateServer(uuid.V4().String(), ca)
 
 	certBundle.WriteCertPem(os.Stdout)
