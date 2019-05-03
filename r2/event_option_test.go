@@ -11,11 +11,11 @@ import (
 func TestEventOptions(t *testing.T) {
 	assert := assert.New(t)
 
-	e := NewEvent("http.client.request")
+	e := NewEvent(Flag)
 
-	assert.Equal(e.Flag, "http.client.request")
-	OptEventFlag("http.client.response")(e)
-	assert.Equal(e.Flag, "http.client.response")
+	assert.Equal(e.Flag, Flag)
+	OptEventFlag(FlagResponse)(e)
+	assert.Equal(e.Flag, FlagResponse)
 
 	t0 := time.Date(2019, 05, 02, 12, 13, 14, 15, time.UTC)
 	assert.NotEqual(t0, e.Timestamp)

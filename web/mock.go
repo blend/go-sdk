@@ -19,7 +19,7 @@ func Mock(app *App, req *http.Request, options ...r2.Option) *MockResult {
 	result := &MockResult{
 		App: app,
 		Request: &r2.Request{
-			Request: req,
+			Request: *req,
 		},
 	}
 	for _, option := range options {
