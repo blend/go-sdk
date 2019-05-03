@@ -3,6 +3,7 @@ package r2
 import (
 	"bytes"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -36,6 +37,25 @@ func TestRequestDo(t *testing.T) {
 	res, err := New(server.URL).Do()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, res.StatusCode)
+}
+
+func TestRequestDoAbortsOnError(t *testing.T) {
+	assert := assert.New(t)
+
+	var didCallServer bool
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		didCallServer = true
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "OK!\n")
+	}))
+	defer server.Close()
+
+	r := New(server.URL)
+	r.Err = errors.New("this is only a test")
+	_, err := r.Do()
+	assert.NotNil(err)
+	assert.Equal("this is only a test", err.Error())
+	assert.False(didCallServer)
 }
 
 func TestRequestDoHeaders(t *testing.T) {
