@@ -14,9 +14,9 @@ import (
 
 const (
 	// Flag is a logger event flag.
-	Flag = "http.request"
+	Flag = "http.client.request"
 	// FlagResponse is a logger event flag.
-	FlagResponse = "http.request.response"
+	FlagResponse = "http.client.response"
 )
 
 // NewEvent returns a new event.
@@ -62,10 +62,14 @@ func (e *Event) WriteText(tf logger.TextFormatter, wr io.Writer) {
 func (e *Event) MarshalJSON() ([]byte, error) {
 	output := make(map[string]interface{})
 	if e.Request != nil {
+		var url string
+		if e.Request.URL != nil {
+			url = e.Request.URL.String()
+		}
 		output["req"] = map[string]interface{}{
 			"startTime": e.Started,
 			"method":    e.Request.Method,
-			"url":       e.Request.URL.String(),
+			"url":       url,
 			"headers":   e.Request.Header,
 		}
 	}

@@ -48,8 +48,6 @@ type Request struct {
 	Client *http.Client
 	// Closer is an optional step to run as part of the Close() function.
 	Closer func() error
-	// ResponseBodyInterceptor is an optional custom step to alter the response stream.
-	ResponseBodyInterceptor ReaderInterceptor
 	// Tracer is used to report span contexts to a distributed tracing collector.
 	Tracer Tracer
 	// OnRequest is an array of request lifecycle hooks used for logging.
@@ -245,8 +243,5 @@ func (r *Request) XMLWithResponse(dst interface{}) (*http.Response, error) {
 
 // responseBody applies a ResponseBodyInterceptor if it's supplied.
 func (r *Request) responseBody(res *http.Response) io.ReadCloser {
-	if r.ResponseBodyInterceptor != nil {
-		return NewReadCloser(res.Body, r.ResponseBodyInterceptor)
-	}
 	return res.Body
 }

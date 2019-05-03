@@ -1,12 +1,12 @@
 package r2
 
 import (
+	"net"
 	"net/http"
-	"time"
 )
 
-// OptResponseHeaderTimeout sets the client transport ResponseHeaderTimeout.
-func OptResponseHeaderTimeout(d time.Duration) Option {
+// OptDial sets dial options for a request, these must be done all at once.
+func OptDial(opts ...DialOption) Option {
 	return func(r *Request) error {
 		if r.Client == nil {
 			r.Client = &http.Client{}
@@ -15,7 +15,11 @@ func OptResponseHeaderTimeout(d time.Duration) Option {
 			r.Client.Transport = &http.Transport{}
 		}
 		if typed, ok := r.Client.Transport.(*http.Transport); ok {
-			typed.ResponseHeaderTimeout = d
+			dialer := &net.Dialer{}
+			for _, opt := range opts {
+				opt(dialer)
+			}
+			typed.Dial = dialer.Dial
 		}
 		return nil
 	}

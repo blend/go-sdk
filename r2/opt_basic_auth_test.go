@@ -1,6 +1,7 @@
 package r2
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
@@ -16,4 +17,5 @@ func TestOptBasicAuth(t *testing.T) {
 
 	assert.NotNil(req.Header)
 	assert.NotEmpty(req.Header.Get("Authorization"))
+	assert.True(strings.HasPrefix(req.Header.Get("Authorization"), "Basic "))
 }
