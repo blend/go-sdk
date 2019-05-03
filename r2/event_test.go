@@ -41,6 +41,23 @@ func TestEventWriteString(t *testing.T) {
 	assert.Equal("GET http://localhost/http://test.com 200 (1s)\nfoo", output2.String())
 }
 
+// eventJSONSchema is the json schema of the logger event.
+type eventJSONSchema struct {
+	Req struct {
+		StartTime time.Time           `json:"startTime"`
+		Method    string              `json:"method"`
+		URL       string              `json:"url"`
+		Headers   map[string][]string `json:"headers"`
+	} `json:"req"`
+	Res struct {
+		CompleteTime  time.Time           `json:"completeTime"`
+		StatusCode    int                 `json:"statusCode"`
+		ContentLength int                 `json:"contentLength"`
+		Headers       map[string][]string `json:"headers"`
+	} `json:"res"`
+	Body string `json:"body"`
+}
+
 func TestEventMarshalJSON(t *testing.T) {
 	assert := assert.New(t)
 
@@ -56,24 +73,11 @@ func TestEventMarshalJSON(t *testing.T) {
 	assert.Nil(err)
 	assert.NotEmpty(contents)
 
-	var jsonContents struct {
-		Req struct {
-			startTime time.Time
-			Method    string `json:"method"`
-			URL       string `json:"url"`
-			headers   map[string][]string
-		} `json:"req"`
-		Res struct {
-			completeTime  time.Time
-			StatusCode    int `json:"statusCode"`
-			ContentLength int `json:"contentLength"`
-			headers       map[string][]string
-		} `json:"res"`
-	}
-
+	var jsonContents eventJSONSchema
 	assert.Nil(json.Unmarshal(contents, &jsonContents))
 	assert.Equal("http://localhost/foo", jsonContents.Req.URL)
 	assert.Equal("GET", jsonContents.Req.Method)
 	assert.Equal(http.StatusOK, jsonContents.Res.StatusCode)
 	assert.Equal(500, jsonContents.Res.ContentLength)
+	assert.Equal("foo", jsonContents.Body)
 }

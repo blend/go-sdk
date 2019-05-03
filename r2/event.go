@@ -91,6 +91,23 @@ func (e *Event) MarshalJSON() ([]byte, error) {
 	return json.Marshal(logger.MergeDecomposed(e.EventMeta.Decompose(), output))
 }
 
+// EventJSONSchema is the json schema of the logger event.
+type EventJSONSchema struct {
+	Req struct {
+		StartTime time.Time           `json:"startTime"`
+		Method    string              `json:"method"`
+		URL       string              `json:"url"`
+		Headers   map[string][]string `json:"headers"`
+	} `json:"req"`
+	Res struct {
+		CompleteTime  time.Time           `json:"completeTime"`
+		StatusCode    int                 `json:"statusCode"`
+		ContentLength int                 `json:"contentLength"`
+		Headers       map[string][]string `json:"headers"`
+	} `json:"res"`
+	Body string `json:"body"`
+}
+
 func tryHeader(headers http.Header, keys ...string) string {
 	for _, key := range keys {
 		if values, hasValues := headers[key]; hasValues {

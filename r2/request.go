@@ -19,7 +19,7 @@ func New(remoteURL string, options ...Option) *Request {
 	var r Request
 	parsedURL, err := url.Parse(remoteURL)
 	if err != nil {
-		r.Err = err
+		r.Err = ex.New(err)
 		return &r
 	}
 	r.Request = &http.Request{
@@ -100,10 +100,6 @@ func (r *Request) Do() (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// apply the interceptor if supplied.
-	res.Body = r.responseBody(res)
-
 	return res, nil
 }
 
@@ -235,13 +231,4 @@ func (r *Request) XMLWithResponse(dst interface{}) (*http.Response, error) {
 	}
 	defer res.Body.Close()
 	return res, ex.New(xml.NewDecoder(res.Body).Decode(dst))
-}
-
-//
-// utils
-//
-
-// responseBody applies a ResponseBodyInterceptor if it's supplied.
-func (r *Request) responseBody(res *http.Response) io.ReadCloser {
-	return res.Body
 }

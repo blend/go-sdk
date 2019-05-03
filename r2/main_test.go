@@ -1,5 +1,50 @@
 package r2
 
+import (
+	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"time"
+)
+
+type MockTracer struct {
+	StartHandler  func(*http.Request)
+	FinishHandler func(*http.Request, *http.Response, time.Time, error)
+}
+
+func (mt MockTracer) Start(req *http.Request) TraceFinisher {
+	if mt.StartHandler != nil {
+		mt.StartHandler(req)
+	}
+	return MockTraceFinisher{
+		Tracer: mt,
+	}
+}
+
+type MockTraceFinisher struct {
+	Tracer MockTracer
+}
+
+func (mtf MockTraceFinisher) Finish(req *http.Request, res *http.Response, t time.Time, err error) {
+	if mtf.Tracer.FinishHandler != nil {
+		mtf.Tracer.FinishHandler(req, res, t, err)
+	}
+}
+
+func readString(r io.Reader) string {
+	contents, _ := ioutil.ReadAll(r)
+	return string(contents)
+}
+
+func mockServerOK() *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "OK!\n")
+	}))
+}
+
 var clientCert = []byte(`-----BEGIN CERTIFICATE-----
 MIIDCzCCAfOgAwIBAgIQbU6bmWZG5fRA5rxB7jf9czANBgkqhkiG9w0BAQsFADAA
 MCAYDzAwMDEwMTAxMDAwMDAwWhcNMjkwNTAyMDAwMDMzWjArMSkwJwYDVQQDEyAx

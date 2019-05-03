@@ -11,4 +11,8 @@ func TestOptScheme(t *testing.T) {
 
 	r := New("http://foo.com", OptScheme("spdy"))
 	assert.Equal("spdy", r.Request.URL.Scheme)
+
+	var unset Request
+	OptScheme("spdy")(&unset)
+	assert.Equal("spdy", unset.Request.URL.Scheme)
 }
