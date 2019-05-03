@@ -42,6 +42,24 @@ func NewCertFileWatcher(certPath, keyPath string, opts ...CertFileWatcherOption)
 // CertFileWatcherOption is an option for a cert watcher.
 type CertFileWatcherOption func(*CertFileWatcher) error
 
+// OptCertFileWatcherOnReload sets the on reload handler.
+// If you need to capture *every* reload of the cert, including the initial one in the constructor
+// you must use this option.
+func OptCertFileWatcherOnReload(handler func(*CertFileWatcher, error)) CertFileWatcherOption {
+	return func(cfw *CertFileWatcher) error {
+		cfw.OnReload = handler
+		return nil
+	}
+}
+
+// OptCertFileWatcherPollInterval sets the poll interval .
+func OptCertFileWatcherPollInterval(d time.Duration) CertFileWatcherOption {
+	return func(cfw *CertFileWatcher) error {
+		cfw.PollInterval = d
+		return nil
+	}
+}
+
 // CertFileWatcher reloads a cert key pair when there is a change, e.g. cert renewal
 type CertFileWatcher struct {
 	*async.Latch
