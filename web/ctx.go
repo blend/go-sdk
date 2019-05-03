@@ -241,7 +241,9 @@ func (rc *Ctx) Cookie(name string) *http.Cookie {
 
 // WriteNewCookie is a helper method for WriteCookie.
 func (rc *Ctx) WriteNewCookie(cookie *http.Cookie) {
-	cookie.Domain = rc.CookieDomain()
+	if cookie.Domain == "" {
+		cookie.Domain = rc.CookieDomain()
+	}
 	http.SetCookie(rc.Response, cookie)
 }
 
