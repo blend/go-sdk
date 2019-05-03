@@ -1,6 +1,7 @@
 package r2
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -88,6 +89,53 @@ func TestRequestDoPostForm(t *testing.T) {
 	).Do()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, res.StatusCode, readString(res.Body))
+}
+
+func TestRequestDiscard(t *testing.T) {
+	assert := assert.New(t)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "OK!\n")
+	}))
+	defer server.Close()
+	assert.Nil(New(server.URL).Discard())
+}
+
+func TestRequestDiscardWithResponse(t *testing.T) {
+	assert := assert.New(t)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "OK!\n")
+	}))
+	defer server.Close()
+	res, err := New(server.URL).DiscardWithResponse()
+	assert.Nil(err)
+	assert.NotNil(res)
+}
+
+func TestRequestCopyTo(t *testing.T) {
+	assert := assert.New(t)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "OK!\n")
+	}))
+	defer server.Close()
+	buf := new(bytes.Buffer)
+	_, err := New(server.URL).CopyTo(buf)
+	assert.Nil(err)
+	assert.Equal("OK!\n", buf.String())
+}
+
+func TestRequestBytes(t *testing.T) {
+	assert := assert.New(t)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "OK!\n")
+	}))
+	defer server.Close()
+	contents, err := New(server.URL).Bytes()
+	assert.Nil(err)
+	assert.Equal("OK!\n", contents)
 }
 
 func readString(r io.Reader) string {

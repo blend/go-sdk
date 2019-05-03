@@ -47,7 +47,7 @@ func TestEventMarshalJSON(t *testing.T) {
 	e := NewEvent(Flag,
 		OptEventStarted(time.Date(2019, 05, 02, 12, 13, 14, 15, time.UTC)),
 		OptEventCompleted(time.Date(2019, 05, 02, 12, 13, 15, 15, time.UTC)),
-		OptEventRequest(webutil.NewMockRequest("GET", "http://test.com")),
+		OptEventRequest(webutil.NewMockRequest("GET", "/foo")),
 		OptEventResponse(&http.Response{StatusCode: http.StatusOK, ContentLength: 500}),
 		OptEventBody([]byte("foo")),
 	)
@@ -57,23 +57,23 @@ func TestEventMarshalJSON(t *testing.T) {
 	assert.NotEmpty(contents)
 
 	var jsonContents struct {
-		req struct {
+		Req struct {
 			startTime time.Time
-			method    string
-			url       string
+			Method    string `json:"method"`
+			URL       string `json:"url"`
 			headers   map[string][]string
-		}
-		res struct {
+		} `json:"req"`
+		Res struct {
 			completeTime  time.Time
-			statusCode    int
-			contentLength int
+			StatusCode    int `json:"statusCode"`
+			ContentLength int `json:"contentLength"`
 			headers       map[string][]string
-		}
+		} `json:"res"`
 	}
 
 	assert.Nil(json.Unmarshal(contents, &jsonContents))
-	assert.Equal("http://test.com", jsonContents.req.url)
-	assert.Equal("GET", jsonContents.req.method)
-	assert.Equal(http.StatusOK, jsonContents.res.statusCode)
-	assert.Equal(500, jsonContents.res.contentLength)
+	assert.Equal("http://localhost/foo", jsonContents.Req.URL)
+	assert.Equal("GET", jsonContents.Req.Method)
+	assert.Equal(http.StatusOK, jsonContents.Res.StatusCode)
+	assert.Equal(500, jsonContents.Res.ContentLength)
 }
