@@ -8,7 +8,6 @@ import (
 )
 
 // HTTPLogged returns a middleware that logs a request.
-// It also catches panics.
 func HTTPLogged(log Triggerable) webutil.Middleware {
 	return func(action http.HandlerFunc) http.HandlerFunc {
 		return func(rw http.ResponseWriter, req *http.Request) {
