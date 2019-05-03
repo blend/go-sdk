@@ -6,7 +6,10 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/webutil"
+	"golang.org/x/net/http2"
 )
 
 // NewUpstream returns a new upstram.
@@ -29,49 +32,51 @@ type Upstream struct {
 	ReverseProxy *httputil.ReverseProxy
 }
 
-// WithName sets the name field of the upstream.
-func (u *Upstream) WithName(name string) *Upstream {
-	u.Name = name
-	return u
-}
-
-// WithLogger sets the logger agent for the upstream.
-func (u *Upstream) WithLogger(log logger.Log) *Upstream {
-	u.Log = log
-	return u
+// UseHTTP2 sets the upstream to use http2.
+func (u *Upstream) UseHTTP2() error {
+	if u.ReverseProxy.Transport == nil {
+		u.ReverseProxy.Transport = &http.Transport{}
+	}
+	if typed, ok := u.ReverseProxy.Transport.(*http.Transport); ok {
+		if err := http2.ConfigureTransport(typed); err != nil {
+			return ex.New(err)
+		}
+	}
+	return nil
 }
 
 // ServeHTTP
 func (u *Upstream) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	w := webutil.NewResponseWriter(rw)
+
 	if u.Log != nil {
 		u.Log.Trigger(req.Context(), logger.NewHTTPRequestEvent(req))
-	}
-	start := time.Now()
 
-	w := NewResponseWriter(rw)
+		start := time.Now()
+		defer func() {
+			wre := logger.NewHTTPResponseEvent(req,
+				logger.OptHTTPResponseStatusCode(w.StatusCode()),
+				logger.OptHTTPResponseContentLength(w.ContentLength()),
+				logger.OptHTTPResponseElapsed(time.Since(start)),
+			)
+
+			if value := w.Header().Get("Content-Type"); len(value) > 0 {
+				wre.ContentType = value
+			}
+			if value := w.Header().Get("Content-Encoding"); len(value) > 0 {
+				wre.ContentEncoding = value
+			}
+
+			u.Log.Trigger(req.Context(), wre)
+		}()
+	}
 
 	// Add extra forwarded headers.
 	// these are required for a majority of services to function correctly behind
 	// a reverse proxy.
-	w.Header().Set("X-Forwarded-Port", req.URL.Port())
-	w.Header().Set("X-Forwarded-Proto", req.URL.Scheme)
+	// We do an add here in case they're already specified.
+	w.Header().Add("X-Forwarded-Port", req.URL.Port())
+	w.Header().Add("X-Forwarded-Proto", req.URL.Scheme)
 
 	u.ReverseProxy.ServeHTTP(w, req)
-
-	if u.Log != nil {
-		wre := logger.NewHTTPResponseEvent(req,
-			logger.OptHTTPResponseStatusCode(w.StatusCode()),
-			logger.OptHTTPResponseContentLength(w.ContentLength()),
-			logger.OptHTTPResponseElapsed(time.Since(start)),
-		)
-
-		if value := w.Header().Get("Content-Type"); len(value) > 0 {
-			wre.ContentType = value
-		}
-		if value := w.Header().Get("Content-Encoding"); len(value) > 0 {
-			wre.ContentEncoding = value
-		}
-
-		u.Log.Trigger(req.Context(), wre)
-	}
 }

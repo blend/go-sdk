@@ -101,7 +101,7 @@ func (t *Template) WithVars(vars Vars) *Template {
 
 // WithEnvVars sets the environment variables.
 func (t *Template) WithEnvVars(envVars env.Vars) *Template {
-	t.Viewmodel.env = env.MergeVars(t.Viewmodel.env, envVars)
+	t.Viewmodel.env = env.Merge(t.Viewmodel.env, envVars)
 	return t
 }
 

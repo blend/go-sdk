@@ -48,8 +48,12 @@ func (vr *ViewResult) Render(ctx *Ctx) (err error) {
 	}
 
 	err = vr.Template.Execute(buffer, &ViewModel{
-		Env:       env.Env(),
-		Ctx:       ctx,
+		Env: env.Env(),
+		Ctx: ctx,
+		Status: ViewStatus{
+			Text: http.StatusText(vr.StatusCode),
+			Code: vr.StatusCode,
+		},
 		ViewModel: vr.ViewModel,
 	})
 	if err != nil {

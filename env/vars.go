@@ -6,121 +6,19 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/blend/go-sdk/fileutil"
 	"github.com/blend/go-sdk/reflectutil"
 )
 
-var (
-	_env     Vars
-	_envLock = sync.Mutex{}
-)
-
-// Service specific constants
-const (
-	// VarServiceEnv is a common env var name.
-	VarServiceEnv = "SERVICE_ENV"
-	// VarServiceName is a common env var name.
-	VarServiceName = "SERVICE_NAME"
-	// VarServiceSecret is a common env var name.
-	VarServiceSecret = "SERVICE_SECRET"
-	// VarPort is a common env var name.
-	VarPort = "PORT"
-	// VarHostname is a common env var name.
-	VarHostname = "HOSTNAME"
-	// VarSecurePort is a common env var name.
-	VarSecurePort = "SECURE_PORT"
-	// VarTLSCertPath is a common env var name.
-	VarTLSCertPath = "TLS_CERT_PATH"
-	// VarTLSKeyPath is a common env var name.
-	VarTLSKeyPath = "TLS_KEY_PATH"
-	// VarTLSCert is a common env var name.
-	VarTLSCert = "TLS_CERT"
-	// VarTLSKey is a common env var name.
-	VarTLSKey = "TLS_KEY"
-
-	// VarPGIdleConns is a common env var name.
-	VarPGIdleConns = "PG_IDLE_CONNS"
-	// VarPGMaxConns is a common env var name.
-	VarPGMaxConns = "PG_MAX_CONNS"
-
-	// ServiceEnvTest is a service environment.
-	ServiceEnvTest = "test"
-	// ServiceEnvSandbox is a service environment.
-	ServiceEnvSandbox = "sandbox"
-	// ServiceEnvDev is a service environment.
-	ServiceEnvDev = "dev"
-	// ServiceEnvCI is a service environment.
-	ServiceEnvCI = "ci"
-	// ServiceEnvPreprod is a service environment.
-	ServiceEnvPreprod = "preprod"
-	// ServiceEnvBeta is a service environment.
-	ServiceEnvBeta = "beta"
-	// ServiceEnvProd is a service environment.
-	ServiceEnvProd = "prod"
-
-	// TagName is the reflection tag name.
-	TagName = "env"
-)
-
-// Unmarshaler is a type that implements `UnmarshalEnv`.
-type Unmarshaler interface {
-	UnmarshalEnv(vars Vars) error
-}
-
-// Env returns the current env var set.
-func Env() Vars {
-	if _env == nil {
-		_envLock.Lock()
-		defer _envLock.Unlock()
-		if _env == nil {
-			_env = NewVarsFromEnvironment()
-		}
-	}
-	return _env
-}
-
-// SetEnv sets the env vars.
-func SetEnv(vars Vars) {
-	_envLock.Lock()
-	_env = vars
-	_envLock.Unlock()
-}
-
-// Restore sets .Env() to the current os environment.
-func Restore() {
-	SetEnv(NewVarsFromEnvironment())
-}
-
-// NewVars returns a new env var set.
-func NewVars() Vars {
-	return Vars{}
-}
-
-// NewVarsFromEnvironment reads an EnvVar set from the environment.
-func NewVarsFromEnvironment() Vars {
+// New returns a new env var set.
+func New(opts ...Option) Vars {
 	vars := Vars{}
-	envVars := os.Environ()
-	for _, ev := range envVars {
-		parts := strings.SplitN(ev, "=", 2)
-		if len(parts) > 1 {
-			vars[parts[0]] = parts[1]
-		}
+	for _, opt := range opts {
+		opt(vars)
 	}
 	return vars
-}
-
-// MergeVars merges a given set of environment variables.
-func MergeVars(sets ...Vars) Vars {
-	output := Vars{}
-	for _, set := range sets {
-		for key, value := range set {
-			output[key] = value
-		}
-	}
-	return output
 }
 
 // Vars is a set of environment variables.
@@ -412,7 +310,7 @@ func (ev Vars) Must(keys ...string) {
 
 // Union returns the union of the two sets, other replacing conflicts.
 func (ev Vars) Union(other Vars) Vars {
-	newSet := NewVars()
+	newSet := New()
 	for key, value := range ev {
 		newSet[key] = value
 	}

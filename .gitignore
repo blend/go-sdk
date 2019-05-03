@@ -18,6 +18,7 @@ dist/**
 
 profile.cov
 coverage.cov
+coverage.txt
 coverage.html
 
 # IntelliJ-isms

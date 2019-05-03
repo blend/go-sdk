@@ -4,14 +4,15 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
 
+	"github.com/blend/go-sdk/certutil"
 	"github.com/blend/go-sdk/graceful"
 	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/proxyprotocol"
 	"github.com/blend/go-sdk/reverseproxy"
 	"github.com/blend/go-sdk/webutil"
 )
@@ -25,13 +26,13 @@ var (
 	date    = "unknown"
 )
 
-const (
-	// DefaultPort is the default port the proxy listens on.
-	DefaultPort = "8888"
-)
-
 func main() {
-	log, err := logger.New(logger.OptConfigFromEnv(), logger.OptEnabled(logger.HTTPRequest))
+	log, err := logger.New(
+		logger.OptConfigFromEnv(),
+		logger.OptEnabled(logger.HTTPRequest),
+		logger.OptEnabled(logger.HTTPResponse),
+		logger.OptSubContext("reverse-proxy"),
+	)
 	if err != nil {
 		logger.FatalExit(err)
 	}
@@ -45,14 +46,17 @@ func main() {
 	var tlsKey string
 	flag.StringVar(&tlsKey, "tls-key", "", "The path to the tls key file (--tls-cert must also be set)")
 
-	var bindAddr string
-	flag.StringVar(&bindAddr, "listen", ":8080", "The address to listen on.")
+	var addr string
+	flag.StringVar(&addr, "addr", reverseproxy.DefaultAddr, "The address to listen on.")
+
+	var upgradeAddr string
+	flag.StringVar(&upgradeAddr, "upgrade-addr", "", "The upgrade address to listen on.")
+
+	var useProxyProtocol bool
+	flag.BoolVar(&useProxyProtocol, "proxyProtocol", false, "If we should decode proxy protocol.")
 
 	var upstreamHeaders UpstreamHeader
 	flag.Var(&upstreamHeaders, "upstream-header", "Upstream heaeders to add for all requests.")
-
-	var logEvents string
-	flag.StringVar(&logEvents, "log-events", "", "Logger events to enable or disable. Coalesced with `LOG_EVENTS`")
 
 	flag.Parse()
 
@@ -61,14 +65,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	if len(logEvents) > 0 {
-		extraFlags := logger.NewFlags(strings.Split(logEvents, ",")...)
-		log.Flags.MergeWith(extraFlags)
-	}
+	var listenerOptions []proxyprotocol.CreateListenerOption
 
-	reverseProxy := reverseproxy.New()
-	reverseProxy.Log = log
+	proxy := reverseproxy.NewProxy()
+	proxy.Log = log
 
+	var servers []graceful.Graceful
 	for _, upstream := range upstreams {
 		log.Infof("upstream: %s", upstream)
 		target, err := url.Parse(upstream)
@@ -79,7 +81,8 @@ func main() {
 
 		proxyUpstream := reverseproxy.NewUpstream(target)
 		proxyUpstream.Log = log
-		reverseProxy.WithUpstream(proxyUpstream)
+		proxyUpstream.UseHTTP2()
+		proxy.Upstreams = append(proxy.Upstreams, proxyUpstream)
 	}
 
 	for _, header := range upstreamHeaders {
@@ -89,7 +92,7 @@ func main() {
 			os.Exit(1)
 		}
 		log.Infof("proxy using upstream header: %s=%s", pieces[0], pieces[1])
-		reverseProxy.WithUpstreamHeader(pieces[0], pieces[1])
+		proxy.Headers.Add(pieces[0], pieces[1])
 	}
 
 	if len(tlsCert) > 0 && len(tlsKey) == 0 {
@@ -100,35 +103,56 @@ func main() {
 		log.Fatal(fmt.Errorf("`--tls-key` is unset, cannot continue"))
 		os.Exit(1)
 	}
+	if len(tlsCert) > 0 && len(tlsKey) > 0 {
+		certFileWatcher, err := certutil.NewCertFileWatcher(tlsCert, tlsKey)
+		if err != nil {
+			log.Fatal(err)
+			os.Exit(1)
+		}
 
-	server := &http.Server{}
-	server.Handler = reverseProxy
+		log.Infof("watching tls cert/key files for changes")
+		servers = append(servers, certFileWatcher)
 
-	gs := webutil.NewGracefulHTTPServer(server)
+		rootCAs, err := certutil.ExtendSystemCertPool()
+		if err != nil {
+			log.Fatal(err)
+			os.Exit(1)
+		}
 
-	listener, err := net.Listen("tcp", bindAddr)
+		proxyServerTLSConfig := &tls.Config{
+			RootCAs:        rootCAs,
+			GetCertificate: certFileWatcher.GetCertificate,
+		}
+		webutil.TLSSecureCipherSuites(proxyServerTLSConfig)
+		listenerOptions = append(listenerOptions, proxyprotocol.OptTLSConfig(proxyServerTLSConfig))
+	}
+
+	proxyServerListener, err := proxyprotocol.CreateListener(addr, listenerOptions...)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
 
-	if len(tlsCert) > 0 && len(tlsKey) > 0 {
-		log.Infof("proxy using tls cert: %s", tlsCert)
-		log.Infof("proxy using tls key: %s", tlsKey)
-		cert, err := tls.LoadX509KeyPair(tlsCert, tlsKey)
-		if err != nil {
-			log.Fatal(err)
-			os.Exit(1)
-		}
-		gs.Listener = tls.NewListener(listener, &tls.Config{
-			Certificates: []tls.Certificate{cert},
-		})
-	} else {
-		gs.Listener = listener
+	proxyServer := &http.Server{
+		Handler: webutil.NestMiddleware(proxy.ServeHTTP, logger.HTTPLogged(log)),
+	}
+	servers = append(servers,
+		webutil.NewGracefulHTTPServer(proxyServer, webutil.OptGracefulHTTPServerListener(proxyServerListener)),
+	)
+
+	if upgradeAddr != "" {
+		log.Infof("http upgrader listening on: %s", upgradeAddr)
+		upgrader := reverseproxy.HTTPRedirect{}
+		servers = append(servers, webutil.NewGracefulHTTPServer(&http.Server{
+			Addr:    upgradeAddr,
+			Handler: webutil.NestMiddleware(upgrader.ServeHTTP, logger.HTTPLogged(log)),
+		}))
 	}
 
-	log.Infof("proxy listening: %s", bindAddr)
-	if err := graceful.Shutdown(gs); err != nil {
+	log.Infof("reverse proxy listening on: %s", addr)
+	if err := graceful.Shutdown(
+		servers...,
+	); err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}

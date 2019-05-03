@@ -96,7 +96,7 @@ cover:
 
 cover-ci:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
-	@GOMAXPROCS=1 go run cmd/coverage/main.go
+	@go run cmd/coverage/main.go --keep-coverage-out --covermode=atomic --coverprofile=coverage.txt
 
 cover-enforce:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"

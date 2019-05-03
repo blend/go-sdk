@@ -14,32 +14,23 @@ const (
 	FlagProxyRequest = "proxy.request"
 )
 
-// New returns a new proxy.
-func New() *Proxy {
-	return &Proxy{}
+// NewProxy returns a new proxy.
+func NewProxy(opts ...ProxyOption) *Proxy {
+	p := Proxy{
+		Headers: http.Header{},
+	}
+	for _, opt := range opts {
+		opt(&p)
+	}
+	return &p
 }
 
 // Proxy is a factory for a simple reverse proxy.
 type Proxy struct {
-	UpstreamHeaders http.Header
-	Log             logger.Log
-	Upstreams       []*Upstream
-	Resolver        Resolver
-}
-
-// WithUpstreamHeader adds a single upstream header.
-func (p *Proxy) WithUpstreamHeader(key, value string) *Proxy {
-	if p.UpstreamHeaders == nil {
-		p.UpstreamHeaders = http.Header{}
-	}
-	p.UpstreamHeaders.Set(key, value)
-	return p
-}
-
-// WithUpstream adds an upstream by URL.
-func (p *Proxy) WithUpstream(upstream *Upstream) *Proxy {
-	p.Upstreams = append(p.Upstreams, upstream)
-	return p
+	Headers   http.Header
+	Log       logger.Log
+	Upstreams []*Upstream
+	Resolver  Resolver
 }
 
 // ServeHTTP is the http entrypoint.
@@ -83,7 +74,7 @@ func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Header.Add("X-Forwarded-Proto", proto)
 	}
 	// add upstream headers.
-	for key, values := range p.UpstreamHeaders {
+	for key, values := range p.Headers {
 		for _, value := range values {
 			req.Header.Add(key, value)
 		}

@@ -2,23 +2,16 @@ package reverseproxy
 
 import (
 	"net/http"
-)
 
-const (
-	schemeHTTPS = "https"
+	"github.com/blend/go-sdk/webutil"
 )
-
-// NewHTTPRedirect returns a new HTTPRedirect which redirects HTTP to HTTPS
-func NewHTTPRedirect() *HTTPRedirect {
-	return &HTTPRedirect{}
-}
 
 // HTTPRedirect redirects HTTP to HTTPS
 type HTTPRedirect struct{}
 
 // ServeHTTP redirects HTTP to HTTPS
-func (hr *HTTPRedirect) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	req.URL.Scheme = schemeHTTPS
+func (hr HTTPRedirect) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	req.URL.Scheme = webutil.SchemeHTTPS
 	if req.URL.Host == "" {
 		req.URL.Host = req.Host
 	}

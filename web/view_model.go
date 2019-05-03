@@ -7,6 +7,7 @@ import (
 // ViewModel is a wrapping viewmodel.
 type ViewModel struct {
 	Env       env.Vars
+	Status    ViewStatus
 	Ctx       *Ctx
 	ViewModel interface{}
 }

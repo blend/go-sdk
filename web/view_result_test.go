@@ -50,7 +50,7 @@ func TestViewResultRender(t *testing.T) {
 		env.SetEnv(curr)
 	}()
 
-	env.SetEnv(env.NewVars())
+	env.SetEnv(env.New())
 	env.Env().Set("HELLO", expected)
 
 	vr = &ViewResult{

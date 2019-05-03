@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/logger"
 )
 
@@ -14,6 +15,17 @@ type Option func(*App)
 // OptConfig sets the config.
 func OptConfig(cfg Config) Option {
 	return func(a *App) {
+		a.Config = cfg
+		a.Auth = NewAuthManager(cfg)
+		a.Views = NewViewCache(OptViewCacheConfig(&cfg.Views))
+	}
+}
+
+// OptConfigFromEnv sets the config from the environment.
+func OptConfigFromEnv() Option {
+	return func(a *App) {
+		var cfg Config
+		env.Env().ReadInto(&cfg)
 		a.Config = cfg
 		a.Auth = NewAuthManager(cfg)
 		a.Views = NewViewCache(OptViewCacheConfig(&cfg.Views))
@@ -88,6 +100,11 @@ func OptDefaultMiddleware(middleware ...Middleware) Option {
 // OptUse adds to the default middleware.
 func OptUse(m Middleware) Option {
 	return func(a *App) { a.DefaultMiddleware = append(a.DefaultMiddleware, m) }
+}
+
+// OptMethodNotAllowedHandler sets default headers.
+func OptMethodNotAllowedHandler(action Action) Option {
+	return func(a *App) { a.MethodNotAllowedHandler = a.RenderAction(action) }
 }
 
 // OptNotFoundHandler sets default headers.

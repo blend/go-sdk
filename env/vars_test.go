@@ -10,7 +10,7 @@ import (
 
 func TestNewVarsFromEnvironment(t *testing.T) {
 	assert := assert.New(t)
-	assert.NotNil(NewVarsFromEnvironment())
+	assert.NotNil(New(OptFromEnv()))
 }
 
 func TestVarsSet(t *testing.T) {

@@ -139,7 +139,7 @@ func (e *Ex) Format(s fmt.State, verb rune) {
 			if e.Class != nil && len(e.Class.Error()) > 0 {
 				fmt.Fprintf(s, "%s", e.Class)
 				if len(e.Message) > 0 {
-					fmt.Fprintf(s, "\nmessage: %s", e.Message)
+					fmt.Fprintf(s, "\n%s", e.Message)
 				}
 			} else if len(e.Message) > 0 {
 				io.WriteString(s, e.Message)
@@ -150,15 +150,15 @@ func (e *Ex) Format(s fmt.State, verb rune) {
 		} else {
 			io.WriteString(s, e.Class.Error())
 			if len(e.Message) > 0 {
-				fmt.Fprintf(s, "\nmessage: %s", e.Message)
+				fmt.Fprintf(s, "\n%s", e.Message)
 			}
 		}
 		if e.Inner != nil {
 			if typed, ok := e.Inner.(fmt.Formatter); ok {
-				fmt.Fprint(s, "\ninner: ")
+				fmt.Fprint(s, "\n")
 				typed.Format(s, verb)
 			} else {
-				fmt.Fprintf(s, "\ninner: %v", e.Inner)
+				fmt.Fprintf(s, "\n%v", e.Inner)
 			}
 		}
 		return
