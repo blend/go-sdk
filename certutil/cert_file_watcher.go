@@ -52,7 +52,7 @@ type CertFileWatcher struct {
 	KeyPath      string
 	PollInterval time.Duration
 
-	OnReload func(*tls.Certificate, error)
+	OnReload func(*CertFileWatcher, error)
 }
 
 // PollIntervalOrDefault returns the polling interval or a default.
@@ -67,7 +67,7 @@ func (cw *CertFileWatcher) PollIntervalOrDefault() time.Duration {
 func (cw *CertFileWatcher) Reload() (err error) {
 	defer func() {
 		if cw.OnReload != nil {
-			cw.OnReload(cw.Certificate, err)
+			cw.OnReload(cw, err)
 		}
 	}()
 
