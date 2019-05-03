@@ -138,6 +138,48 @@ func TestRequestBytes(t *testing.T) {
 	assert.Equal("OK!\n", contents)
 }
 
+func TestRequestBytesWithResponse(t *testing.T) {
+	assert := assert.New(t)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "OK!\n")
+	}))
+	defer server.Close()
+	contents, meta, err := New(server.URL).BytesWithResponse()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.Equal("OK!\n", contents)
+}
+
+func TestRequestJSON(t *testing.T) {
+	assert := assert.New(t)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "{\"status\":\"ok!\"}\n")
+	}))
+	defer server.Close()
+
+	var deserialized map[string]interface{}
+	err := New(server.URL).JSON(&deserialized)
+	assert.Nil(err)
+	assert.Equal("ok!", deserialized["status"])
+}
+
+func TestRequestJSONWithResponse(t *testing.T) {
+	assert := assert.New(t)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "{\"status\":\"ok!\"}\n")
+	}))
+	defer server.Close()
+
+	var deserialized map[string]interface{}
+	res, err := New(server.URL).JSONWithResponse(&deserialized)
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, res.StatusCode)
+	assert.Equal("ok!", deserialized["status"])
+}
+
 func readString(r io.Reader) string {
 	contents, _ := ioutil.ReadAll(r)
 	return string(contents)
