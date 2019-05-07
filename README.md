@@ -40,11 +40,11 @@ Generally we follow semantic versioning. What that means in practice:
 
 > [major].[minor].[patch]
 
-We increment the major version if there are *any* breaking changes. A breaking change is defined as a change that would cause code written against the current major version having a build failure of any type. That's even for a trivial find and replace. Once you merge a new api or name for an object after CR, that's it.
+Major version changes are changes that break backwards-compatibility. A breaking change is defined as a change that would cause code written against the current major version having a build failure of any type. That's even for a trivial find and replace. Once you merge a new api or name for an object after CR, that's it. Major changes are rolled up into a once-per-year release.
 
-We increment minor versions if we make additions to exported types, values, or functions that don't cause breaking changes.
+Minor version changes are additions to exported types, values, or functions that don't cause break backwards compatibility. These types of changes are rolled into a new minor version at an approximate monthly cadence.
 
-We increment patch versions if we fix issues with the current set of exports.
+Patch versions are bugfixes and improvements made without changing the current set of exports. They can be cut at any time.
 
 The current version is stored in the `VERSION` file at the root of the package.
 
