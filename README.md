@@ -17,7 +17,7 @@ We also provide the following CLI tools to help with development that leverage s
 - `cmd/job` : run a command on a cron schedule; useful for writing jobs as kubernetes pods.
 - `cmd/profanity` : profanity rules checking (i.e. fail on grep match).
 - `cmd/recover` : recover crashed processes (to be used when debugging panics).
-- `cmd/semver` : semver maniuplation and validation.
+- `cmd/semver` : semver manipulation and validation.
 - `cmd/shamir` : securely partition secrets using shamir's sharing scheme.
 - `cmd/template` : commandline template generation using golang `text/template`.
 
@@ -40,7 +40,7 @@ Generally we follow semantic versioning. What that means in practice:
 
 > [major].[minor].[patch]
 
-Major version changes are changes that break backwards-compatibility. A breaking change is defined as a change that would cause code written against the current major version having a build failure of any type. That's even for a trivial find and replace. Once you merge a new api or name for an object after CR, that's it. Major changes are rolled up into a once-per-year release.
+Major version changes are changes that break backwards-compatibility. A breaking change is defined as a change that would cause code written against the current major version having a build failure of any type. That's even for a trivial find and replace. Once you merge a new api or name for an object after CR, that's it. Major changes are rolled up into a release, at most, once-per-year.
 
 Minor version changes are additions to exported types, values, or functions that don't cause break backwards compatibility. These types of changes are rolled into a new minor version at an approximate monthly cadence.
 
