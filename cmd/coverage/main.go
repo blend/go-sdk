@@ -416,7 +416,7 @@ func parseFullCoverProfile(pwd string, path string) (covered, total int, err err
 		fileCovered = 0
 
 		for _, block := range file.Blocks {
-			numLines = (block.EndLine - block.StartLine) + 1
+			numLines = block.EndLine - block.StartLine
 
 			total += numLines
 			if block.Count != 0 {
