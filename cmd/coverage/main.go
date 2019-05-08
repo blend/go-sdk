@@ -76,11 +76,8 @@ func main() {
 	}
 	fmt.Fprintln(fullCoverageData, "mode: set")
 
-	// fileTotals is a map from the "package" file path to it's total line count
-	fileTotals := map[string]int{}
 	var fileName string
 	maybeFatal(filepath.Walk("./", func(currentPath string, info os.FileInfo, err error) error {
-
 		if os.IsNotExist(err) {
 			return nil
 		}
@@ -89,6 +86,10 @@ func main() {
 		}
 		fileName = info.Name()
 
+		if currentPath == "./" {
+			vf("`%s` skipping dir; home\n", currentPath)
+			return nil
+		}
 		if fileName == ".git" {
 			vf("`%s` skipping dir; .git", currentPath)
 			return filepath.SkipDir
@@ -100,18 +101,6 @@ func main() {
 		if fileName == "vendor" {
 			vf("`%s` skipping dir; vendor", currentPath)
 			return filepath.SkipDir
-		}
-
-		if !info.IsDir() {
-			if strings.HasSuffix(fileName, ".go") {
-				vf("`%s` counting file lines", currentPath)
-				fileTotal, err := countFileLines(currentPath)
-				if err != nil {
-					return err
-				}
-				fileTotals[packageFilename(pwd, currentPath)] = fileTotal
-			}
-			return nil
 		}
 
 		if !dirHasGlob(currentPath, "*.go") {
@@ -183,7 +172,7 @@ func main() {
 	maybeFatal(fullCoverageData.Close())
 
 	// complete summary steps
-	covered, total, err := parseFullCoverProfile(pwd, *coverprofile, fileTotals)
+	covered, total, err := parseFullCoverProfile(pwd, *coverprofile)
 	maybeFatal(err)
 	finalCoverage := (float64(covered) / float64(total)) * 100
 	maybeFatal(writeCoverage(pwd, formatCoverage(finalCoverage)))
@@ -388,21 +377,6 @@ func removeAndOpen(path string) (*os.File, error) {
 	return os.Create(path)
 }
 
-func countFileLines(path string) (lines int, err error) {
-	if filepath.Ext(path) != ".go" {
-		err = fmt.Errorf("count lines path must be a .go file")
-		return
-	}
-
-	var contents []byte
-	contents, err = ioutil.ReadFile(path)
-	if err != nil {
-		return
-	}
-	lines = bytes.Count(contents, []byte{'\n'})
-	return
-}
-
 // joinCoverPath takes a pwd, and a filename, and joins them
 // overlaying parts of the suffix of the pwd, and the prefix
 // of the filename that match.
@@ -429,25 +403,28 @@ func packageFilename(pwd, relativePath string) string {
 }
 
 // parseFullCoverProfile parses the final / merged cover output.
-func parseFullCoverProfile(pwd string, path string, fileTotals map[string]int) (covered, total int, err error) {
+func parseFullCoverProfile(pwd string, path string) (covered, total int, err error) {
 	vf("parsing coverage profile: %s", path)
 	files, err := cover.ParseProfiles(path)
 	if err != nil {
 		return
 	}
 
-	var fileCovered int
-	for _, fileTotal := range fileTotals {
-		total += fileTotal
-	}
+	var fileCovered, numLines int
 
 	for _, file := range files {
-		fileTotal := fileTotals[file.FileName]
 		fileCovered = 0
+
 		for _, block := range file.Blocks {
-			fileCovered += (block.EndLine - block.StartLine) + 1
+			numLines = (block.EndLine - block.StartLine) + 1
+
+			total += numLines
+			if block.Count != 0 {
+				fileCovered += numLines
+			}
 		}
-		vf("processing coverage profile: %s result: %s (%d/%d lines)", path, file.FileName, fileCovered, fileTotal)
+
+		vf("processing coverage profile: %s result: %s (%d/%d lines)", path, file.FileName, fileCovered, numLines)
 		covered += fileCovered
 	}
 
