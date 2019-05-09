@@ -2,6 +2,7 @@ package web
 
 import (
 	"bytes"
+	"html/template"
 	"net/http"
 	"testing"
 
@@ -219,4 +220,24 @@ func TestViewCacheViewError(t *testing.T) {
 	assert.Equal(ex.Class("test error"), vcr.ViewModel)
 	assert.NotNil(vcr.Template)
 	assert.NotNil(vcr.Views)
+}
+
+func TestViewCacheFuncs(t *testing.T) {
+	assert := assert.New(t)
+
+	vc := NewViewCache()
+
+	f := func() {}
+
+	vc.FuncMap = nil
+	opt := OptViewCacheFunc("useless", f)
+	assert.NotNil(opt)
+	assert.Nil(opt(vc))
+	assert.NotEmpty(vc.FuncMap)
+	_, ok := vc.FuncMap["useless"]
+	assert.True(ok)
+
+	opt = OptViewCacheFuncMap(template.FuncMap{})
+	assert.Nil(opt(vc))
+	assert.Empty(vc.FuncMap)
 }
