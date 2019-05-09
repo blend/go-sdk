@@ -3,7 +3,6 @@ package stats
 import (
 	"runtime"
 	"testing"
-	"time"
 
 	"github.com/blend/go-sdk/assert"
 )
