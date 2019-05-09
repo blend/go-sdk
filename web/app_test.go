@@ -674,4 +674,18 @@ func TestAppAllowed(t *testing.T) {
 	app.POST("/hello", controllerNoOp)
 	allowed = strings.Split(app.allowed("/hello", ""), ", ")
 	assert.Len(allowed, 3)
+
+	app.OPTIONS("/hello", controllerNoOp)
+	app.HEAD("/hello", controllerNoOp)
+	app.PUT("/hello", controllerNoOp)
+	app.DELETE("/hello", controllerNoOp)
+
+	app.PATCH("/hi", controllerNoOp)
+	app.PATCH("/there", controllerNoOp)
+	allowed = strings.Split(app.allowed("/hello", ""), ", ")
+	assert.Len(allowed, 6)
+
+	app.PATCH("/hello", controllerNoOp)
+	allowed = strings.Split(app.allowed("/hello", ""), ", ")
+	assert.Len(allowed, 7)
 }
