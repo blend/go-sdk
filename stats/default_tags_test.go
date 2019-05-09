@@ -15,6 +15,9 @@ func TestAddDefaultTagsFromEnv(t *testing.T) {
 	env.Env().Set("SERVICE_ENV", "sandbox")
 	env.Env().Set("HOSTNAME", "somecontainer")
 
+	// Handles nil collector
+	AddDefaultTagsFromEnv(nil)
+
 	collector := NewMockCollector()
 	AddDefaultTagsFromEnv(collector)
 
@@ -27,6 +30,9 @@ func TestAddDefaultTagsFromEnv(t *testing.T) {
 
 func TestAddDefaultTags(t *testing.T) {
 	assert := assert.New(t)
+
+	// Handles nil collector
+	AddDefaultTagsFromEnv(nil)
 
 	collector := NewMockCollector()
 	AddDefaultTags(collector, "someservice", "sandbox", "somecontainer")
