@@ -28,7 +28,7 @@ type MockCollector struct {
 }
 
 // AddDefaultTag adds a default tag.
-func (mc MockCollector) AddDefaultTag(key, value string) {
+func (mc *MockCollector) AddDefaultTag(key, value string) {
 	mc.defaultTags = append(mc.defaultTags, fmt.Sprintf("%s:%s", key, value))
 }
 
