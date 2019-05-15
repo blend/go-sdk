@@ -13,7 +13,7 @@ import (
 	"github.com/blend/go-sdk/configutil"
 	"github.com/blend/go-sdk/graceful"
 	"github.com/blend/go-sdk/grpcutil"
-	full "github.com/blend/go-sdk/grpcutil/examples/full/protos"
+	full "github.com/blend/go-sdk/examples/grpcutil/full/protos"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/proxyprotocol"
 	"google.golang.org/grpc"
