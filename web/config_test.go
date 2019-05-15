@@ -4,16 +4,14 @@ import (
 	"encoding/base64"
 	"testing"
 
-	"github.com/blend/go-sdk/env"
-
-	"github.com/blend/go-sdk/webutil"
-
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/env"
+	"github.com/blend/go-sdk/webutil"
 )
 
 func TestConfigBindAddrOrDefault(t *testing.T) {
 	assert := assert.New(t)
-	c := &Config{}
+	var c Config
 	assert.Equal(DefaultBindAddr, c.BindAddrOrDefault())
 	assert.Equal("localhost:10", c.BindAddrOrDefault("localhost:10"))
 	c.Port = 10
@@ -24,7 +22,7 @@ func TestConfigBindAddrOrDefault(t *testing.T) {
 
 func TestConfigPortOrDefault(t *testing.T) {
 	assert := assert.New(t)
-	c := &Config{}
+	var c Config
 	assert.Equal(webutil.PortFromBindAddr(DefaultBindAddr), c.PortOrDefault())
 	c.BindAddr = ":10"
 	assert.Equal(10, c.PortOrDefault())
@@ -34,7 +32,7 @@ func TestConfigPortOrDefault(t *testing.T) {
 
 func TestConfigBaseURLIsSecureScheme(t *testing.T) {
 	assert := assert.New(t)
-	c := &Config{}
+	var c Config
 	assert.False(c.BaseURLIsSecureScheme())
 	c.BaseURL = "http://hello.com"
 	assert.False(c.BaseURLIsSecureScheme())
@@ -44,7 +42,7 @@ func TestConfigBaseURLIsSecureScheme(t *testing.T) {
 
 func TestConfigAuthManagerModeOrDefault(t *testing.T) {
 	assert := assert.New(t)
-	c := &Config{}
+	var c Config
 	assert.Equal(AuthManagerModeRemote, c.AuthManagerModeOrDefault())
 	c.AuthManagerMode = string(AuthManagerModeJWT)
 	assert.Equal(c.AuthManagerMode, c.AuthManagerModeOrDefault())
@@ -52,7 +50,7 @@ func TestConfigAuthManagerModeOrDefault(t *testing.T) {
 
 func TestConfigSessionTimeoutOrDefault(t *testing.T) {
 	assert := assert.New(t)
-	c := &Config{}
+	var c Config
 	assert.Equal(DefaultSessionTimeout, c.SessionTimeoutOrDefault())
 	c.SessionTimeout = 10
 	assert.Equal(c.SessionTimeout, c.SessionTimeoutOrDefault())
@@ -60,7 +58,7 @@ func TestConfigSessionTimeoutOrDefault(t *testing.T) {
 
 func TestConfigCookieNameOrDefault(t *testing.T) {
 	assert := assert.New(t)
-	c := &Config{}
+	var c Config
 	assert.Equal(DefaultCookieName, c.CookieNameOrDefault())
 	c.CookieName = "helloworld"
 	assert.Equal(c.CookieName, c.CookieNameOrDefault())
@@ -68,7 +66,7 @@ func TestConfigCookieNameOrDefault(t *testing.T) {
 
 func TestConfigCookiePathOrDefault(t *testing.T) {
 	assert := assert.New(t)
-	c := &Config{}
+	var c Config
 	assert.Equal(DefaultCookiePath, c.CookiePathOrDefault())
 	c.CookiePath = "helloworld"
 	assert.Equal(c.CookiePath, c.CookiePathOrDefault())
@@ -76,7 +74,7 @@ func TestConfigCookiePathOrDefault(t *testing.T) {
 
 func TestConfigCookieSecureOrDefault(t *testing.T) {
 	assert := assert.New(t)
-	c := &Config{}
+	var c Config
 	yes := true
 	assert.Equal(DefaultCookieSecure, c.CookieSecureOrDefault())
 	c.BaseURL = "https://hello.com"
@@ -89,7 +87,7 @@ func TestConfigCookieSecureOrDefault(t *testing.T) {
 
 func TestConfigCookieHTTPOnlyOrDefault(t *testing.T) {
 	assert := assert.New(t)
-	c := &Config{}
+	var c Config
 	yes := true
 	assert.Equal(DefaultCookieHTTPOnly, c.CookieHTTPOnlyOrDefault())
 	c.CookieHTTPOnly = &yes
@@ -98,7 +96,7 @@ func TestConfigCookieHTTPOnlyOrDefault(t *testing.T) {
 
 func TestConfigCookieSameSiteOrDefault(t *testing.T) {
 	assert := assert.New(t)
-	c := &Config{}
+	var c Config
 	assert.Equal(DefaultCookieSameSite, c.CookieSameSiteOrDefault())
 	c.CookieSameSite = "helloworld"
 	assert.Equal(c.CookieSameSite, c.CookieSameSiteOrDefault())
@@ -106,7 +104,7 @@ func TestConfigCookieSameSiteOrDefault(t *testing.T) {
 
 func TestConfigMaxHeaderBytesOrDefault(t *testing.T) {
 	assert := assert.New(t)
-	c := &Config{}
+	var c Config
 	assert.Equal(DefaultMaxHeaderBytes, c.MaxHeaderBytesOrDefault())
 	c.MaxHeaderBytes = 1000
 	assert.Equal(c.MaxHeaderBytes, c.MaxHeaderBytesOrDefault())
@@ -114,7 +112,7 @@ func TestConfigMaxHeaderBytesOrDefault(t *testing.T) {
 
 func TestConfigReadTimeoutOrDefault(t *testing.T) {
 	assert := assert.New(t)
-	c := &Config{}
+	var c Config
 	assert.Equal(DefaultReadTimeout, c.ReadTimeoutOrDefault())
 	c.ReadTimeout = 1000
 	assert.Equal(c.ReadTimeout, c.ReadTimeoutOrDefault())
@@ -122,7 +120,7 @@ func TestConfigReadTimeoutOrDefault(t *testing.T) {
 
 func TestConfigReadHeaderTimeoutOrDefault(t *testing.T) {
 	assert := assert.New(t)
-	c := &Config{}
+	var c Config
 	assert.Equal(DefaultReadHeaderTimeout, c.ReadHeaderTimeoutOrDefault())
 	c.ReadHeaderTimeout = 1000
 	assert.Equal(c.ReadHeaderTimeout, c.ReadHeaderTimeoutOrDefault())
@@ -130,7 +128,7 @@ func TestConfigReadHeaderTimeoutOrDefault(t *testing.T) {
 
 func TestConfigWriteTimeoutOrDefault(t *testing.T) {
 	assert := assert.New(t)
-	c := &Config{}
+	var c Config
 	assert.Equal(DefaultWriteTimeout, c.WriteTimeoutOrDefault())
 	c.WriteTimeout = 1000
 	assert.Equal(c.WriteTimeout, c.WriteTimeoutOrDefault())
@@ -138,7 +136,7 @@ func TestConfigWriteTimeoutOrDefault(t *testing.T) {
 
 func TestConfigIdleTimeoutOrDefault(t *testing.T) {
 	assert := assert.New(t)
-	c := &Config{}
+	var c Config
 	assert.Equal(DefaultIdleTimeout, c.IdleTimeoutOrDefault())
 	c.IdleTimeout = 1000
 	assert.Equal(c.IdleTimeout, c.IdleTimeoutOrDefault())
@@ -146,7 +144,7 @@ func TestConfigIdleTimeoutOrDefault(t *testing.T) {
 
 func TestConfigShutdownGracePeriodOrDefault(t *testing.T) {
 	assert := assert.New(t)
-	c := &Config{}
+	var c Config
 	assert.Equal(DefaultShutdownGracePeriod, c.ShutdownGracePeriodOrDefault())
 	c.ShutdownGracePeriod = 1000
 	assert.Equal(c.ShutdownGracePeriod, c.ShutdownGracePeriodOrDefault())
@@ -154,7 +152,7 @@ func TestConfigShutdownGracePeriodOrDefault(t *testing.T) {
 
 func TestConfigMustAuthSecret(t *testing.T) {
 	assert := assert.New(t)
-	c := &Config{}
+	var c Config
 	s := []byte("secret")
 	c.AuthSecret = base64.StdEncoding.EncodeToString(s)
 	assert.Equal(string(s), string(c.MustAuthSecret()))
@@ -172,7 +170,8 @@ func TestConfigMustAuthSecret(t *testing.T) {
 
 func TestConfigResolve(t *testing.T) {
 	assert := assert.New(t)
-	c := &Config{}
+	var c Config
+	defer env.Restore()
 	env.SetEnv(env.New())
 	assert.Nil(c.Resolve())
 	assert.Empty(c.BindAddr)

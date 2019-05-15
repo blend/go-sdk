@@ -12,6 +12,7 @@ func TestViewCacheConfigResolve(t *testing.T) {
 	assert := assert.New(t)
 	vcc := &ViewCacheConfig{}
 
+	defer env.Restore()
 	env.SetEnv(env.New())
 	assert.Nil(vcc.Resolve())
 	assert.False(vcc.LiveReload)
