@@ -140,6 +140,14 @@ func TestCtxRouteParam(t *testing.T) {
 	assert.Equal("bar", value)
 }
 
+func TestCtxSession(t *testing.T) {
+	assert := assert.New(t)
+
+	session := NewSession("test user", NewSessionID())
+	ctx := MockCtx("GET", "/", OptCtxSession(session))
+	assert.Equal(ctx.Session, session)
+}
+
 func TestCtxWriteNewCookie(t *testing.T) {
 	assert := assert.New(t)
 
