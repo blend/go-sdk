@@ -19,7 +19,7 @@ func StartSpanFromContext(ctx context.Context, tracer opentracing.Tracer, operat
 }
 
 // GetTracingSpanFromContext returns a tracing span from a given context.
-func GetTracingSpanFromContext(ctx context.Context, key string) opentracing.Span {
+func GetTracingSpanFromContext(ctx context.Context, key interface{}) opentracing.Span {
 	if typed, ok := ctx.Value(key).(opentracing.Span); ok {
 		return typed
 	}
