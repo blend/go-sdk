@@ -41,3 +41,5 @@ GOLANG_EXAMPLES_IMPORTS:
   description: "please don't reference example packages"
   importsContain:
   - "github.com/blend/go-sdk/example*"
+  excludeFiles:
+  - "examples/*"
