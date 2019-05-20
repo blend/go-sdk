@@ -5,8 +5,8 @@ import (
 	"flag"
 	"fmt"
 
+	full "github.com/blend/go-sdk/examples/grpcutil/full/protos"
 	"github.com/blend/go-sdk/grpcutil"
-	full "github.com/blend/go-sdk/grpcutil/examples/full/protos"
 	"github.com/blend/go-sdk/logger"
 	"google.golang.org/grpc"
 )
