@@ -92,19 +92,19 @@ test-verbose:
 
 cover:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
-	@go run cmd/coverage/main.go
+	@go run cmd/coverage/main.go --exclude="examples/*"
 
 cover-ci:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
-	@go run cmd/coverage/main.go --keep-coverage-out --covermode=atomic --coverprofile=coverage.txt
+	@go run cmd/coverage/main.go --keep-coverage-out --covermode=atomic --coverprofile=coverage.txt --exclude="examples/*"
 
 cover-enforce:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
-	@go run cmd/coverage/main.go -enforce
+	@go run cmd/coverage/main.go -enforce --exclude="examples/*"
 
 cover-update:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
-	@go run cmd/coverage/main.go -update
+	@go run cmd/coverage/main.go -update --exclude="examples/*"
 
 increment-patch:
 	@echo "Current Version $(VERSION)"
