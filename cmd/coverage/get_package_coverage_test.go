@@ -74,3 +74,25 @@ func TestGetPackageCoverageBaseCases(t *testing.T) {
 	assert.Equal("", packageCoverReport)
 	assert.Nil(err)
 }
+
+func TestGetPackageCoverageInclude(t *testing.T) {
+	assert := assert.New(t)
+
+	*include = "testo/"
+
+	dir, _ := os.Getwd()
+	packageCoverReport, err := getPackageCoverage(dir, FileInfo{name: "asdf"}, nil)
+	assert.Equal("", packageCoverReport)
+	assert.Nil(err)
+}
+
+func TestGetPackageCoverageExclude(t *testing.T) {
+	assert := assert.New(t)
+
+	*exclude = "cmd/coverage/*"
+
+	dir, _ := os.Getwd()
+	packageCoverReport, err := getPackageCoverage(dir, FileInfo{name: "asdf"}, nil)
+	assert.Equal("", packageCoverReport)
+	assert.Nil(err)
+}
