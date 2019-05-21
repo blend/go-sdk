@@ -12,6 +12,31 @@ type coverProfileTestCase struct {
 	Expected string
 }
 
+func TestGopath(t *testing.T) {
+	assert := assert.New(t)
+
+	assert.Contains(gopath(), "/go")
+}
+func TestGlob(t *testing.T) {
+	assert := assert.New(t)
+
+	assert.True(glob("", ""))
+	assert.True(glob("*", "asdf"))
+	assert.True(glob("*/testo/*", "asdf/testo/blah"))
+	assert.True(glob("*/*", "asdf/testo"))
+	assert.False(glob("*/testo/*", "asdf"))
+	assert.False(glob("*/*/*/testo", "asdf/testo"))
+	assert.True(glob("*/*/*/testo", "asdf/x/x/testo"))
+}
+func TestGlobAnyMatch(t *testing.T) {
+	assert := assert.New(t)
+
+	assert.False(globAnyMatch("", "testo"))
+	assert.True(globAnyMatch("*", "testo"))
+	assert.True(globAnyMatch("x,testo", "testo"))
+	assert.False(globAnyMatch("x,y", "testo"))
+}
+
 func TestJoinCoverPath(t *testing.T) {
 	testCases := []coverProfileTestCase{
 		{
