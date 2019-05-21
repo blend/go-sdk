@@ -81,7 +81,7 @@ func TestGetPackageCoverageInclude(t *testing.T) {
 	*include = "testo/"
 
 	dir, _ := os.Getwd()
-	packageCoverReport, err := getPackageCoverage(dir, FileInfo{name: "asdf"}, nil)
+	packageCoverReport, err := getPackageCoverage(dir, FileInfo{name: "coverage"}, nil)
 	assert.Equal("", packageCoverReport)
 	assert.Nil(err)
 }
@@ -92,7 +92,7 @@ func TestGetPackageCoverageExclude(t *testing.T) {
 	*exclude = "cmd/coverage/*"
 
 	dir, _ := os.Getwd()
-	packageCoverReport, err := getPackageCoverage(dir, FileInfo{name: "asdf"}, nil)
+	packageCoverReport, err := getPackageCoverage(dir, FileInfo{name: "coverage"}, nil)
 	assert.Equal("", packageCoverReport)
 	assert.Nil(err)
 }
