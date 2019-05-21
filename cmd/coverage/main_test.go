@@ -70,6 +70,12 @@ func TestJoinCoverPath(t *testing.T) {
 	}
 }
 
+func TestPackageFilename(t *testing.T) {
+	assert := assert.New(t)
+
+	assert.Equal("testo/asdf", packageFilename("testo", "asdf"))
+}
+
 func TestEnforceCoverage(t *testing.T) {
 	assert := assert.New(t)
 

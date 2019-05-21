@@ -46,8 +46,8 @@ func TestGetPackageCoverageBaseCases(t *testing.T) {
 
 	_, notExist := os.Stat("fake.xml")
 	packageCoverReport, err = getPackageCoverage("./", FileInfo{}, notExist)
-	assert.Equal("", packageCoverReport)
 	assert.Nil(err)
+	assert.Equal("", packageCoverReport)
 
 	blah := errors.New("blah")
 	packageCoverReport, err = getPackageCoverage("./", FileInfo{}, blah)
@@ -55,24 +55,24 @@ func TestGetPackageCoverageBaseCases(t *testing.T) {
 	assert.Equal(blah, err)
 
 	packageCoverReport, err = getPackageCoverage("./", FileInfo{}, nil)
-	assert.Equal("", packageCoverReport)
 	assert.Nil(err)
+	assert.Equal("", packageCoverReport)
 
 	packageCoverReport, err = getPackageCoverage("./testo", FileInfo{name: ".git"}, nil)
-	assert.Equal("", packageCoverReport)
 	assert.Equal(filepath.SkipDir, err)
+	assert.Equal("", packageCoverReport)
 
 	packageCoverReport, err = getPackageCoverage("./testo", FileInfo{name: "_hidden"}, nil)
-	assert.Equal("", packageCoverReport)
 	assert.Equal(filepath.SkipDir, err)
+	assert.Equal("", packageCoverReport)
 
 	packageCoverReport, err = getPackageCoverage("./testo", FileInfo{name: "vendor"}, nil)
-	assert.Equal("", packageCoverReport)
 	assert.Equal(filepath.SkipDir, err)
+	assert.Equal("", packageCoverReport)
 
 	packageCoverReport, err = getPackageCoverage("./testo", FileInfo{name: "/usr/lib"}, nil)
-	assert.Equal("", packageCoverReport)
 	assert.Nil(err)
+	assert.Equal("", packageCoverReport)
 }
 
 func TestGetPackageCoverageInclude(t *testing.T) {
@@ -82,8 +82,8 @@ func TestGetPackageCoverageInclude(t *testing.T) {
 
 	dir, _ := os.Getwd()
 	packageCoverReport, err := getPackageCoverage(dir, FileInfo{name: "coverage"}, nil)
-	assert.Equal("", packageCoverReport)
 	assert.Nil(err)
+	assert.Equal("", packageCoverReport)
 }
 
 func TestGetPackageCoverageExclude(t *testing.T) {
@@ -93,6 +93,15 @@ func TestGetPackageCoverageExclude(t *testing.T) {
 
 	dir, _ := os.Getwd()
 	packageCoverReport, err := getPackageCoverage(dir, FileInfo{name: "coverage"}, nil)
-	assert.Equal("", packageCoverReport)
 	assert.Nil(err)
+	assert.Equal("", packageCoverReport)
+}
+
+func TestGetPackageCoverage(t *testing.T) {
+	assert := assert.New(t)
+
+	dir, _ := os.Getwd()
+	packageCoverReport, err := getPackageCoverage(filepath.Join(dir, "test"), FileInfo{name: "test"}, nil)
+	assert.Nil(err)
+	assert.Contains(packageCoverReport, "cmd/coverage/test/profile.cov")
 }

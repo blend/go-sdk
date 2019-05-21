@@ -113,6 +113,8 @@ func getPackageCoverage(currentPath string, info os.FileInfo, err error) (string
 		return "", err
 	}
 
+	println("WAT")
+
 	var output []byte
 	output, err = execCoverage(currentPath)
 	if err != nil {
@@ -120,6 +122,8 @@ func getPackageCoverage(currentPath string, info os.FileInfo, err error) (string
 		fmt.Fprintln(os.Stderr, string(output))
 		return "", err
 	}
+
+	println("WAT 2")
 
 	coverage := extractCoverage(string(output))
 	fmt.Fprintf(os.Stdout, "%s: %v%%\n", currentPath, colorCoverage(parseCoverage(coverage)))
