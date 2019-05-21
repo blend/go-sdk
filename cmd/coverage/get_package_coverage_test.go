@@ -2,12 +2,34 @@ package main
 
 import (
 	"errors"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/blend/go-sdk/assert"
+)
+
+const (
+	Foo = `
+	package foo
+
+	func bar() int {
+		return 1
+	}
+	`
+	FooTest = `
+	package foo
+
+	import (
+		"testing"
+	)
+
+	func TestBar(t *testing.T) {
+		bar()
+	}
+	`
 )
 
 type FileInfo struct {
@@ -75,33 +97,42 @@ func TestGetPackageCoverageBaseCases(t *testing.T) {
 	assert.Equal("", packageCoverReport)
 }
 
-func TestGetPackageCoverageInclude(t *testing.T) {
-	assert := assert.New(t)
-
-	*include = "testo/"
-
-	dir, _ := os.Getwd()
-	packageCoverReport, err := getPackageCoverage(dir, FileInfo{name: "coverage"}, nil)
+func createFoo(assert *assert.Assertions) string {
+	path := filepath.Join(gopath(), "cov_test")
+	err := os.Mkdir(path, os.ModePerm)
 	assert.Nil(err)
-	assert.Equal("", packageCoverReport)
-}
-
-func TestGetPackageCoverageExclude(t *testing.T) {
-	assert := assert.New(t)
-
-	*exclude = "cmd/coverage/*"
-
-	dir, _ := os.Getwd()
-	packageCoverReport, err := getPackageCoverage(dir, FileInfo{name: "coverage"}, nil)
-	assert.Nil(err)
-	assert.Equal("", packageCoverReport)
+	ioutil.WriteFile(filepath.Join(path, "foo.go"), []byte(Foo), defaultFileFlags)
+	ioutil.WriteFile(filepath.Join(path, "foo_test.go"), []byte(FooTest), defaultFileFlags)
+	return path
 }
 
 func TestGetPackageCoverage(t *testing.T) {
 	assert := assert.New(t)
 
-	dir, _ := os.Getwd()
-	packageCoverReport, err := getPackageCoverage(filepath.Join(dir, "test"), FileInfo{name: "test"}, nil)
+	var packageCoverReport string
+	var err error
+
+	path := createFoo(assert)
+	defer os.RemoveAll(path)
+
+	// *exclude = "cov_test"
+	// *include = ""
+
+	// packageCoverReport, err = getPackageCoverage(path, FileInfo{name: "cov_test"}, nil)
+	// assert.Nil(err)
+	// assert.Equal("", packageCoverReport)
+
+	// *exclude = ""
+	// *include = "asdf_blah"
+
+	// packageCoverReport, err = getPackageCoverage(path, FileInfo{name: "cov_test"}, nil)
+	// assert.Nil(err)
+	// assert.Equal("", packageCoverReport)
+
+	// *include = "cov_test"
+	// *exclude = "*"
+
+	packageCoverReport, err = getPackageCoverage(path, FileInfo{name: "cov_test"}, nil)
 	assert.Nil(err)
-	assert.Contains(packageCoverReport, "cmd/coverage/test/profile.cov")
+	assert.Equal(filepath.Join(path, "profile.cov"), packageCoverReport)
 }
