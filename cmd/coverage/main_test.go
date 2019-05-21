@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/blend/go-sdk/assert"
+)
 
 type coverProfileTestCase struct {
 	BaseDir  string
@@ -39,4 +43,26 @@ func TestJoinCoverPath(t *testing.T) {
 			t.Errorf("%s does not match %s", actual, testCase.Expected)
 		}
 	}
+}
+
+func TestParseCoverage(t *testing.T) {
+	assert := assert.New(t)
+
+	assert.Equal(94, parseCoverage("94%"))
+	assert.Equal(94, parseCoverage("94"))
+}
+
+func TestColorCoverage(t *testing.T) {
+	assert := assert.New(t)
+
+	assert.Equal("\x1b[32m90.00\x1b[0m", colorCoverage(90))
+	assert.Equal("\x1b[33m75.00\x1b[0m", colorCoverage(75))
+	assert.Equal("\x1b[31m30.00\x1b[0m", colorCoverage(30))
+	assert.Equal("\x1b[90m0.00\x1b[0m", colorCoverage(0))
+}
+
+func TestFormatCoverage(t *testing.T) {
+	assert := assert.New(t)
+
+	assert.Equal("75.00", formatCoverage(75))
 }

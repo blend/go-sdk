@@ -61,6 +61,88 @@ func verrf(format string, args ...interface{}) {
 	}
 }
 
+// gets coverage for a directory and returns the path to the coverage file for that directory
+func getPackageCoverage(currentPath string, info os.FileInfo, err error) (string, error) {
+	if os.IsNotExist(err) {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	fileName := info.Name()
+
+	if currentPath == "./" {
+		vf("`%s` skipping dir; home\n", currentPath)
+		return "", nil
+	}
+	if fileName == ".git" {
+		vf("`%s` skipping dir; .git", currentPath)
+		return "", filepath.SkipDir
+	}
+	if strings.HasPrefix(fileName, "_") {
+		vf("`%s` skipping dir; '_' prefix", currentPath)
+		return "", filepath.SkipDir
+	}
+	if fileName == "vendor" {
+		vf("`%s` skipping dir; vendor", currentPath)
+		return "", filepath.SkipDir
+	}
+
+	if !dirHasGlob(currentPath, "*.go") {
+		vf("`%s` skipping dir; no *.go files", currentPath)
+		return "", nil
+	}
+
+	if len(*include) > 0 {
+		if matches := globAnyMatch(*include, currentPath); !matches {
+			vf("`%s` skipping dir; include no match: %s", currentPath, *include)
+			return "", nil
+		}
+	}
+
+	if len(*exclude) > 0 {
+		if matches := globAnyMatch(*exclude, currentPath); matches {
+			vf("`%s` skipping dir; exclude match: %s", currentPath, *exclude)
+			return "", nil
+		}
+	}
+
+	packageCoverReport := filepath.Join(currentPath, "profile.cov")
+	err = removeIfExists(packageCoverReport)
+	if err != nil {
+		return "", err
+	}
+
+	var output []byte
+	output, err = execCoverage(currentPath)
+	if err != nil {
+		verrf("error running coverage")
+		fmt.Fprintln(os.Stderr, string(output))
+		return "", err
+	}
+
+	coverage := extractCoverage(string(output))
+	fmt.Fprintf(os.Stdout, "%s: %v%%\n", currentPath, colorCoverage(parseCoverage(coverage)))
+
+	if enforce != nil && *enforce {
+		vf("enforcing coverage minimums")
+		err = enforceCoverage(currentPath, coverage)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	if update != nil && *update {
+		fmt.Fprintf(os.Stdout, "%s updating coverage\n", currentPath)
+		err = writeCoverage(currentPath, coverage)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return packageCoverReport, nil
+}
+
 func main() {
 	flag.Parse()
 
@@ -76,83 +158,14 @@ func main() {
 	}
 	fmt.Fprintln(fullCoverageData, "mode: set")
 
-	var fileName string
-	maybeFatal(filepath.Walk("./", func(currentPath string, info os.FileInfo, err error) error {
-		if os.IsNotExist(err) {
-			return nil
-		}
-		if err != nil {
-			return err
-		}
-		fileName = info.Name()
-
-		if currentPath == "./" {
-			vf("`%s` skipping dir; home\n", currentPath)
-			return nil
-		}
-		if fileName == ".git" {
-			vf("`%s` skipping dir; .git", currentPath)
-			return filepath.SkipDir
-		}
-		if strings.HasPrefix(fileName, "_") {
-			vf("`%s` skipping dir; '_' prefix", currentPath)
-			return filepath.SkipDir
-		}
-		if fileName == "vendor" {
-			vf("`%s` skipping dir; vendor", currentPath)
-			return filepath.SkipDir
-		}
-
-		if !dirHasGlob(currentPath, "*.go") {
-			vf("`%s` skipping dir; no *.go files", currentPath)
-			return nil
-		}
-
-		if len(*include) > 0 {
-			if matches := globAnyMatch(*include, currentPath); !matches {
-				vf("`%s` skipping dir; include no match: %s", currentPath, *include)
-				return nil
-			}
-		}
-
-		if len(*exclude) > 0 {
-			if matches := globAnyMatch(*exclude, currentPath); matches {
-				vf("`%s` skipping dir; exclude match: %s", currentPath, *exclude)
-				return nil
-			}
-		}
-
-		packageCoverReport := filepath.Join(currentPath, "profile.cov")
-		err = removeIfExists(packageCoverReport)
+	maybeFatal(filepath.Walk("./", func(currentPath string, info os.FileInfo, fileErr error) error {
+		packageCoverReport, err := getPackageCoverage(currentPath, info, fileErr)
 		if err != nil {
 			return err
 		}
 
-		var output []byte
-		output, err = execCoverage(currentPath)
-		if err != nil {
-			verrf("error running coverage")
-			fmt.Fprintln(os.Stderr, string(output))
-			return err
-		}
-
-		coverage := extractCoverage(string(output))
-		fmt.Fprintf(os.Stdout, "%s: %v%%\n", currentPath, colorCoverage(parseCoverage(coverage)))
-
-		if enforce != nil && *enforce {
-			vf("enforcing coverage minimums")
-			err = enforceCoverage(currentPath, coverage)
-			if err != nil {
-				return err
-			}
-		}
-
-		if update != nil && *update {
-			fmt.Fprintf(os.Stdout, "%s updating coverage\n", currentPath)
-			err = writeCoverage(currentPath, coverage)
-			if err != nil {
-				return err
-			}
+		if len(packageCoverReport) == 0 {
+			return nil
 		}
 
 		err = mergeCoverageOutput(packageCoverReport, fullCoverageData)
