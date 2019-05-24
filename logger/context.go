@@ -7,10 +7,11 @@ import (
 )
 
 // NewContext returns a new context.
-func NewContext(log *Logger, path []string, opts ...ContextOption) Context {
+func NewContext(log *Logger, path []string, fields Fields, opts ...ContextOption) Context {
 	c := Context{
 		Logger: log,
 		Path:   path,
+		Fields: fields,
 	}
 	for _, opt := range opts {
 		opt(&c)
@@ -18,21 +19,32 @@ func NewContext(log *Logger, path []string, opts ...ContextOption) Context {
 	return c
 }
 
-// Fields are event meta fields.
-type Fields = map[string]string
-
 // ContextOption is an option for contexts.
 type ContextOption func(*Context)
 
-// OptConextPath sets fields on the context.
-func OptConextPath(path ...string) ContextOption {
+// OptContextPath adds a new path segment on the context.
+func OptContextPath(path string) ContextOption {
+	return func(c *Context) {
+		c.Path = append(c.Path, path)
+	}
+}
+
+// OptContextSetPath sets path on the context.
+func OptContextSetPath(path ...string) ContextOption {
 	return func(c *Context) {
 		c.Path = path
 	}
 }
 
-// OptContextFields sets fields on the context.
+// OptContextFields adds fields to the context.
 func OptContextFields(fields Fields) ContextOption {
+	return func(c *Context) {
+		c.Fields = CombineFields(c.Fields, fields)
+	}
+}
+
+// OptContextSetFields sets fields on the context.
+func OptContextSetFields(fields Fields) ContextOption {
 	return func(c *Context) {
 		c.Fields = fields
 	}
@@ -49,12 +61,12 @@ type Context struct {
 
 // SubContext returns a new sub context.
 func (sc Context) SubContext(name string, options ...ContextOption) Context {
-	return NewContext(sc.Logger, append(sc.Path, name), options...)
+	return NewContext(sc.Logger, append(sc.Path, name), sc.Fields, options...)
 }
 
 // WithFields returns a new sub context.
 func (sc Context) WithFields(fields Fields, options ...ContextOption) Context {
-	return NewContext(sc.Logger, sc.Path, append(options, OptContextFields(fields))...)
+	return NewContext(sc.Logger, sc.Path, CombineFields(sc.Fields, fields), options...)
 }
 
 // --------------------------------------------------------------------------------
