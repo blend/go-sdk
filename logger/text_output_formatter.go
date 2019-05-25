@@ -33,13 +33,18 @@ func NewTextOutputFormatter(options ...TextOutputFormatterOption) *TextOutputFor
 type TextOutputFormatterOption func(*TextOutputFormatter)
 
 // OptTextConfig sets the text formatter config.
-func OptTextConfig(cfg *TextConfig) TextOutputFormatterOption {
+func OptTextConfig(cfg TextConfig) TextOutputFormatterOption {
 	return func(tf *TextOutputFormatter) {
 		tf.HideTimestamp = cfg.HideTimestamp
 		tf.HideFields = cfg.HideFields
 		tf.NoColor = cfg.NoColor
 		tf.TimeFormat = cfg.TimeFormatOrDefault()
 	}
+}
+
+// OptTextTimeFormat sets the timestamp format.
+func OptTextTimeFormat(format string) TextOutputFormatterOption {
+	return func(tf *TextOutputFormatter) { tf.TimeFormat = format }
 }
 
 // OptTextHideTimestamp hides the timestamp in output.
@@ -67,6 +72,14 @@ type TextOutputFormatter struct {
 	BufferPool *bufferutil.Pool
 }
 
+// TimeFormatOrDefault returns the time format or a default
+func (tf TextOutputFormatter) TimeFormatOrDefault() string {
+	if len(tf.TimeFormat) > 0 {
+		return tf.TimeFormat
+	}
+	return DefaultTextTimeFormat
+}
+
 // Colorize (optionally) applies a color to a string.
 func (tf TextOutputFormatter) Colorize(value string, color ansi.Color) string {
 	if tf.NoColor {
@@ -82,11 +95,7 @@ func (tf TextOutputFormatter) FormatFlag(flag string, color ansi.Color) string {
 
 // FormatTimestamp returns a new timestamp string.
 func (tf TextOutputFormatter) FormatTimestamp(ts time.Time) string {
-	timeFormat := DefaultTextTimeFormat
-	if len(tf.TimeFormat) > 0 {
-		timeFormat = tf.TimeFormat
-	}
-	value := ts.Format(timeFormat)
+	value := ts.Format(tf.TimeFormatOrDefault())
 	return tf.Colorize(fmt.Sprintf("%-30s", value), ansi.ColorLightBlack)
 }
 

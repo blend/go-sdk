@@ -39,11 +39,11 @@ func (c Config) FormatOrDefault() string {
 func (c Config) Formatter() WriteFormatter {
 	switch strings.ToLower(string(c.FormatOrDefault())) {
 	case FormatJSON:
-		return NewJSONOutputFormatter(OptJSONConfig(&c.JSON))
+		return NewJSONOutputFormatter(OptJSONConfig(c.JSON))
 	case FormatText:
-		return NewTextOutputFormatter(OptTextConfig(&c.Text))
+		return NewTextOutputFormatter(OptTextConfig(c.Text))
 	default:
-		return NewTextOutputFormatter(OptTextConfig(&c.Text))
+		return NewTextOutputFormatter(OptTextConfig(c.Text))
 	}
 }
 

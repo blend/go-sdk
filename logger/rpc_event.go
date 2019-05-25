@@ -16,12 +16,16 @@ var (
 )
 
 // NewRPCEvent creates a new rpc event.
-func NewRPCEvent(method string, elapsed time.Duration) *RPCEvent {
-	return &RPCEvent{
+func NewRPCEvent(method string, elapsed time.Duration, options ...RPCEventOption) *RPCEvent {
+	rpe := RPCEvent{
 		EventMeta: NewEventMeta(RPC),
 		Method:    method,
 		Elapsed:   elapsed,
 	}
+	for _, opt := range options {
+		opt(&rpe)
+	}
+	return &rpe
 }
 
 // NewRPCEventListener returns a new web request event listener.
@@ -31,6 +35,49 @@ func NewRPCEventListener(listener func(context.Context, *RPCEvent)) Listener {
 			listener(ctx, typed)
 		}
 	}
+}
+
+// RPCEventOption is a mutator for RPCEvents.
+type RPCEventOption func(*RPCEvent)
+
+// OptRPCEventEngine sets a field on the event.
+func OptRPCEventEngine(value string) RPCEventOption {
+	return func(e *RPCEvent) { e.Engine = value }
+}
+
+// OptRPCEventPeer sets a field on the event.
+func OptRPCEventPeer(value string) RPCEventOption {
+	return func(e *RPCEvent) { e.Peer = value }
+}
+
+// OptRPCEventMethod sets a field on the event.
+func OptRPCEventMethod(value string) RPCEventOption {
+	return func(e *RPCEvent) { e.Method = value }
+}
+
+// OptRPCEventUserAgent sets a field on the event.
+func OptRPCEventUserAgent(value string) RPCEventOption {
+	return func(e *RPCEvent) { e.UserAgent = value }
+}
+
+// OptRPCEventAuthority sets a field on the event.
+func OptRPCEventAuthority(value string) RPCEventOption {
+	return func(e *RPCEvent) { e.Authority = value }
+}
+
+// OptRPCEventContentType sets a field on the event.
+func OptRPCEventContentType(value string) RPCEventOption {
+	return func(e *RPCEvent) { e.ContentType = value }
+}
+
+// OptRPCEventElapsed sets a field on the event.
+func OptRPCEventElapsed(value time.Duration) RPCEventOption {
+	return func(e *RPCEvent) { e.Elapsed = value }
+}
+
+// OptRPCEventError sets a field on the event.
+func OptRPCEventError(value error) RPCEventOption {
+	return func(e *RPCEvent) { e.Err = value }
 }
 
 // RPCEvent is an event type for rpc

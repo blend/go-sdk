@@ -17,12 +17,12 @@ func TestMaybeNilLogger(t *testing.T) {
 }
 
 func TestMaybeLogger(t *testing.T) {
-	MaybeInfof(MustNew(), "Infof")
-	MaybeDebugf(MustNew(), "Debugf")
-	MaybeWarningf(MustNew(), "Warningf")
-	MaybeWarning(MustNew(), fmt.Errorf("Warning"))
-	MaybeErrorf(MustNew(), "Errorf")
-	MaybeError(MustNew(), fmt.Errorf("Error"))
-	MaybeFatalf(MustNew(), "Fatalf")
-	MaybeFatal(MustNew(), fmt.Errorf("Fatal"))
+	MaybeInfof(MustNew(OptOutput(nil)), "Infof")
+	MaybeDebugf(MustNew(OptOutput(nil)), "Debugf")
+	MaybeWarningf(MustNew(OptOutput(nil)), "Warningf")
+	MaybeWarning(MustNew(OptOutput(nil)), fmt.Errorf("Warning"))
+	MaybeErrorf(MustNew(OptOutput(nil)), "Errorf")
+	MaybeError(MustNew(OptOutput(nil)), fmt.Errorf("Error"))
+	MaybeFatalf(MustNew(OptOutput(nil)), "Fatalf")
+	MaybeFatal(MustNew(OptOutput(nil)), fmt.Errorf("Fatal"))
 }
