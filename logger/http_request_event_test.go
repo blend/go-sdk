@@ -24,10 +24,16 @@ func TestNewHTTPRequestEvent(t *testing.T) {
 			},
 		}),
 		OptHTTPRequestMeta(OptEventMetaFlag("test")),
+		OptHTTPRequestRoute("/foo/:bar"),
+		OptHTTPRequestState("this is the state"),
 	)
 
 	assert.NotNil(hre.Request)
+	assert.Equal("GET", hre.Request.Method)
+	assert.Equal("/foo", hre.Request.URL.Path)
 	assert.Equal("test", hre.GetFlag())
+	assert.Equal("/foo/:bar", hre.Route)
+	assert.Equal("this is the state", hre.State)
 
 	noColor := TextOutputFormatter{
 		NoColor: true,

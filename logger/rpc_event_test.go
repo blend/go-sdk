@@ -2,6 +2,7 @@ package logger
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"testing"
@@ -44,4 +45,17 @@ func TestRPCEvent(t *testing.T) {
 	contents, err := json.Marshal(re)
 	assert.Nil(err)
 	assert.Contains(string(contents), "event-engine")
+}
+
+func TestRPCEventListener(t *testing.T) {
+	assert := assert.New(t)
+
+	re := NewRPCEvent("/v1.foo", time.Second)
+
+	var didCall bool
+	ml := NewRPCEventListener(func(ctx context.Context, e *RPCEvent) {
+		didCall = true
+	})
+	ml(context.Background(), re)
+	assert.True(didCall)
 }

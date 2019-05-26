@@ -64,7 +64,7 @@ func OptHTTPRequestRoute(route string) HTTPRequestEventOption {
 }
 
 // OptHTTPRequestState sets a field on an HTTPRequestEvent.
-func OptHTTPRequestState(state map[interface{}]interface{}) HTTPRequestEventOption {
+func OptHTTPRequestState(state interface{}) HTTPRequestEventOption {
 	return func(hre *HTTPRequestEvent) {
 		hre.State = state
 	}
@@ -75,7 +75,7 @@ type HTTPRequestEvent struct {
 	*EventMeta
 	Request *http.Request
 	Route   string
-	State   map[interface{}]interface{}
+	State   interface{}
 }
 
 // WriteText implements TextWritable.
@@ -89,7 +89,9 @@ func (e *HTTPRequestEvent) MarshalJSON() ([]byte, error) {
 		"verb":      e.Request.Method,
 		"path":      e.Request.URL.Path,
 		"host":      e.Request.Host,
+		"route":     e.Route,
 		"ip":        webutil.GetRemoteAddr(e.Request),
 		"userAgent": webutil.GetUserAgent(e.Request),
+		"state":     e.State,
 	}))
 }

@@ -13,6 +13,8 @@ func TestJSONOutputFormatter(t *testing.T) {
 
 	jf := NewJSONOutputFormatter(OptJSONPretty())
 	assert.True(jf.Pretty)
+	assert.Empty(jf.PrettyPrefixOrDefault())
+	assert.Equal("\t", jf.PrettyIndentOrDefault())
 	jf.Pretty = false
 
 	me := NewMessageEvent(Info, "this is a test")
