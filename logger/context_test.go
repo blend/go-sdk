@@ -1,7 +1,10 @@
 package logger
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
@@ -62,4 +65,53 @@ func TestContextSyncTrigger(t *testing.T) {
 
 	assert.Equal([]string{"path"}, contextPath)
 	assert.Equal(Fields{"one": "two"}, contextFields)
+}
+
+func TestOptContextPath(t *testing.T) {
+	assert := assert.New(t)
+
+	log := None()
+	sc := log.SubContext("foo", OptContextPath("bar"))
+	assert.Equal([]string{"foo", "bar"}, sc.Path)
+}
+
+func TestOptContextSetFields(t *testing.T) {
+	assert := assert.New(t)
+
+	log := None()
+	log.Fields = Fields{"foo": "far"}
+	sc := log.SubContext("path", OptContextSetFields(Fields{"foo": "bar"}))
+	assert.Equal("bar", sc.Fields["foo"])
+}
+
+func TestContextMethods(t *testing.T) {
+	assert := assert.New(t)
+
+	log := All()
+	log.Formatter = NewTextOutputFormatter(OptTextNoColor(), OptTextHideTimestamp())
+
+	buf := new(bytes.Buffer)
+	log.Output = buf
+	log.Info("format", " test")
+	assert.Equal("[info] format test\n", buf.String())
+
+	buf = new(bytes.Buffer)
+	log.Output = buf
+	log.Debug("format", " test")
+	assert.Equal("[debug] format test\n", buf.String())
+
+	buf = new(bytes.Buffer)
+	log.Output = buf
+	log.WarningWithReq(fmt.Errorf("only a test"), &http.Request{Method: "foo"})
+	assert.Equal("[warning] only a test\n", buf.String())
+
+	buf = new(bytes.Buffer)
+	log.Output = buf
+	log.ErrorWithReq(fmt.Errorf("only a test"), &http.Request{Method: "foo"})
+	assert.Equal("[error] only a test\n", buf.String())
+
+	buf = new(bytes.Buffer)
+	log.Output = buf
+	log.FatalWithReq(fmt.Errorf("only a test"), &http.Request{Method: "foo"})
+	assert.Equal("[fatal] only a test\n", buf.String())
 }

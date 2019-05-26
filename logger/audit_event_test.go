@@ -2,6 +2,7 @@ package logger
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strings"
 	"testing"
@@ -83,4 +84,18 @@ func TestAuditEventWriteText(t *testing.T) {
 	ae.WriteText(noColor, buf)
 
 	assert.Equal("Context:event context Principal:not bailey Verb:not pooped Noun:audit noun Subject:audit subject Property:audit property Remote Addr:remote address UA:user agent foo:bar", buf.String())
+}
+
+func TestAuditEventListener(t *testing.T) {
+	assert := assert.New(t)
+
+	ae := NewAuditEvent("bailey", "pooped")
+
+	var didCall bool
+	ml := NewAuditEventListener(func(ctx context.Context, ae *AuditEvent) {
+		didCall = true
+	})
+
+	ml(context.Background(), ae)
+	assert.True(didCall)
 }

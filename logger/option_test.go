@@ -20,8 +20,6 @@ func TestOptConfig(t *testing.T) {
 
 	assert.Any(log.Flags.Flags(), func(v interface{}) bool { return v.(string) == "foo" })
 	assert.Any(log.Flags.Flags(), func(v interface{}) bool { return v.(string) == "bar" })
-
-	assert.Equal([]string{"foo", "bar"}, log.Flags.Flags())
 }
 
 func TestOptConfigFromEnv(t *testing.T) {
