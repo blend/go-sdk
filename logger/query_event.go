@@ -45,8 +45,8 @@ func NewQueryEventListener(listener func(context.Context, *QueryEvent)) Listener
 // QueryEventOption mutates a query event.
 type QueryEventOption func(*QueryEvent)
 
-// OptQueryEventMetaOptions sets options on the event metadata.
-func OptQueryEventMetaOptions(options ...EventMetaOption) QueryEventOption {
+// OptQueryMeta sets options on the event metadata.
+func OptQueryMeta(options ...EventMetaOption) QueryEventOption {
 	return func(ae *QueryEvent) {
 		for _, option := range options {
 			option(ae.EventMeta)
@@ -54,38 +54,38 @@ func OptQueryEventMetaOptions(options ...EventMetaOption) QueryEventOption {
 	}
 }
 
-// OptQueryEventBody sets a field on the query event.
-func OptQueryEventBody(value string) QueryEventOption {
+// OptQueryBody sets a field on the query event.
+func OptQueryBody(value string) QueryEventOption {
 	return func(e *QueryEvent) { e.Body = value }
 }
 
-// OptQueryEventDatabase sets a field on the query event.
-func OptQueryEventDatabase(value string) QueryEventOption {
+// OptQueryDatabase sets a field on the query event.
+func OptQueryDatabase(value string) QueryEventOption {
 	return func(e *QueryEvent) { e.Database = value }
 }
 
-// OptQueryEventEngine sets a field on the query event.
-func OptQueryEventEngine(value string) QueryEventOption {
+// OptQueryEngine sets a field on the query event.
+func OptQueryEngine(value string) QueryEventOption {
 	return func(e *QueryEvent) { e.Engine = value }
 }
 
-// OptQueryEventUsername sets a field on the query event.
-func OptQueryEventUsername(value string) QueryEventOption {
+// OptQueryUsername sets a field on the query event.
+func OptQueryUsername(value string) QueryEventOption {
 	return func(e *QueryEvent) { e.Username = value }
 }
 
-// OptQueryEventQueryLabel sets a field on the query event.
-func OptQueryEventQueryLabel(value string) QueryEventOption {
+// OptQueryLabel sets a field on the query event.
+func OptQueryLabel(value string) QueryEventOption {
 	return func(e *QueryEvent) { e.QueryLabel = value }
 }
 
-// OptQueryEventElapsed sets a field on the query event.
-func OptQueryEventElapsed(value time.Duration) QueryEventOption {
+// OptQueryElapsed sets a field on the query event.
+func OptQueryElapsed(value time.Duration) QueryEventOption {
 	return func(e *QueryEvent) { e.Elapsed = value }
 }
 
-// OptQueryEventErr sets a field on the query event.
-func OptQueryEventErr(value error) QueryEventOption {
+// OptQueryErr sets a field on the query event.
+func OptQueryErr(value error) QueryEventOption {
 	return func(e *QueryEvent) { e.Err = value }
 }
 

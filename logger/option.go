@@ -55,9 +55,9 @@ func OptOutput(output io.Writer) Option {
 	}
 }
 
-// OptSubContext sets an initial logger context path.
+// OptPath sets an initial logger context path.
 // This is useful if you want to label a logger to differentiate multiple loggers.
-func OptSubContext(path ...string) Option {
+func OptPath(path ...string) Option {
 	return func(l *Logger) error { l.Context.Path = path; return nil }
 }
 

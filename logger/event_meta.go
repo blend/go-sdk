@@ -50,7 +50,6 @@ type EventMeta struct {
 	Flag      string
 	Timestamp time.Time
 	FlagColor ansi.Color
-	Fields    map[string]string
 }
 
 // GetFlag returns the event flag.
@@ -67,7 +66,6 @@ func (em EventMeta) Decompose() map[string]interface{} {
 	output := map[string]interface{}{
 		FieldFlag:      em.Flag,
 		FieldTimestamp: em.Timestamp.Format(time.RFC3339Nano),
-		FieldFields:    em.Fields,
 	}
 	return output
 }

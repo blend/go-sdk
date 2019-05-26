@@ -14,13 +14,13 @@ func TestQueryEvent(t *testing.T) {
 	assert := assert.New(t)
 
 	qe := NewQueryEvent("query-body", time.Second,
-		OptQueryEventBody("event-body"),
-		OptQueryEventDatabase("event-database"),
-		OptQueryEventEngine("event-engine"),
-		OptQueryEventUsername("event-username"),
-		OptQueryEventQueryLabel("event-query-label"),
-		OptQueryEventElapsed(time.Millisecond),
-		OptQueryEventErr(fmt.Errorf("test error")),
+		OptQueryBody("event-body"),
+		OptQueryDatabase("event-database"),
+		OptQueryEngine("event-engine"),
+		OptQueryUsername("event-username"),
+		OptQueryLabel("event-query-label"),
+		OptQueryElapsed(time.Millisecond),
+		OptQueryErr(fmt.Errorf("test error")),
 	)
 
 	assert.Equal("event-body", qe.Body)

@@ -40,43 +40,43 @@ func NewRPCEventListener(listener func(context.Context, *RPCEvent)) Listener {
 // RPCEventOption is a mutator for RPCEvents.
 type RPCEventOption func(*RPCEvent)
 
-// OptRPCEventEngine sets a field on the event.
-func OptRPCEventEngine(value string) RPCEventOption {
+// OptRPCEngine sets a field on the event.
+func OptRPCEngine(value string) RPCEventOption {
 	return func(e *RPCEvent) { e.Engine = value }
 }
 
-// OptRPCEventPeer sets a field on the event.
-func OptRPCEventPeer(value string) RPCEventOption {
+// OptRPCPeer sets a field on the event.
+func OptRPCPeer(value string) RPCEventOption {
 	return func(e *RPCEvent) { e.Peer = value }
 }
 
-// OptRPCEventMethod sets a field on the event.
-func OptRPCEventMethod(value string) RPCEventOption {
+// OptRPCMethod sets a field on the event.
+func OptRPCMethod(value string) RPCEventOption {
 	return func(e *RPCEvent) { e.Method = value }
 }
 
-// OptRPCEventUserAgent sets a field on the event.
-func OptRPCEventUserAgent(value string) RPCEventOption {
+// OptRPCUserAgent sets a field on the event.
+func OptRPCUserAgent(value string) RPCEventOption {
 	return func(e *RPCEvent) { e.UserAgent = value }
 }
 
-// OptRPCEventAuthority sets a field on the event.
-func OptRPCEventAuthority(value string) RPCEventOption {
+// OptRPCAuthority sets a field on the event.
+func OptRPCAuthority(value string) RPCEventOption {
 	return func(e *RPCEvent) { e.Authority = value }
 }
 
-// OptRPCEventContentType sets a field on the event.
-func OptRPCEventContentType(value string) RPCEventOption {
+// OptRPCContentType sets a field on the event.
+func OptRPCContentType(value string) RPCEventOption {
 	return func(e *RPCEvent) { e.ContentType = value }
 }
 
-// OptRPCEventElapsed sets a field on the event.
-func OptRPCEventElapsed(value time.Duration) RPCEventOption {
+// OptRPCElapsed sets a field on the event.
+func OptRPCElapsed(value time.Duration) RPCEventOption {
 	return func(e *RPCEvent) { e.Elapsed = value }
 }
 
-// OptRPCEventError sets a field on the event.
-func OptRPCEventError(value error) RPCEventOption {
+// OptRPCErr sets a field on the event.
+func OptRPCErr(value error) RPCEventOption {
 	return func(e *RPCEvent) { e.Err = value }
 }
 

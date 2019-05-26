@@ -22,10 +22,10 @@ func NewContext(log *Logger, path []string, fields Fields, opts ...ContextOption
 // ContextOption is an option for contexts.
 type ContextOption func(*Context)
 
-// OptContextPath adds a new path segment on the context.
-func OptContextPath(path string) ContextOption {
+// OptContextPath appends new path segments to the context.
+func OptContextPath(path ...string) ContextOption {
 	return func(c *Context) {
-		c.Path = append(c.Path, path)
+		c.Path = append(c.Path, path...)
 	}
 }
 

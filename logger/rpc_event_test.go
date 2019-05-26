@@ -14,14 +14,14 @@ func TestRPCEvent(t *testing.T) {
 	assert := assert.New(t)
 
 	re := NewRPCEvent("/v1.foo", time.Second,
-		OptRPCEventAuthority("event-authority"),
-		OptRPCEventContentType("event-content-type"),
-		OptRPCEventElapsed(time.Millisecond),
-		OptRPCEventEngine("event-engine"),
-		OptRPCEventError(fmt.Errorf("test error")),
-		OptRPCEventMethod("/v1.bar"),
-		OptRPCEventPeer("event-peer"),
-		OptRPCEventUserAgent("event-user-agent"),
+		OptRPCAuthority("event-authority"),
+		OptRPCContentType("event-content-type"),
+		OptRPCElapsed(time.Millisecond),
+		OptRPCEngine("event-engine"),
+		OptRPCErr(fmt.Errorf("test error")),
+		OptRPCMethod("/v1.bar"),
+		OptRPCPeer("event-peer"),
+		OptRPCUserAgent("event-user-agent"),
 	)
 
 	assert.Equal("event-authority", re.Authority)

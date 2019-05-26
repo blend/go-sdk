@@ -40,8 +40,8 @@ func NewHTTPRequestEventListener(listener func(context.Context, *HTTPRequestEven
 // HTTPRequestEventOption sets a field on an HTTPRequestEventOption.
 type HTTPRequestEventOption func(*HTTPRequestEvent)
 
-// OptHTTPRequestEventOptionMetaOptions sets a field on an HTTPRequestEvent.
-func OptHTTPRequestEventOptionMetaOptions(options ...EventMetaOption) HTTPRequestEventOption {
+// OptHTTPRequestMeta sets a field on an HTTPRequestEvent.
+func OptHTTPRequestMeta(options ...EventMetaOption) HTTPRequestEventOption {
 	return func(hre *HTTPRequestEvent) {
 		for _, option := range options {
 			option(hre.EventMeta)
@@ -49,10 +49,24 @@ func OptHTTPRequestEventOptionMetaOptions(options ...EventMetaOption) HTTPReques
 	}
 }
 
-// OptHTTPRequestEventRequest sets a field on an HTTPRequestEvent.
-func OptHTTPRequestEventRequest(req *http.Request) HTTPRequestEventOption {
+// OptHTTPRequest sets a field on an HTTPRequestEvent.
+func OptHTTPRequest(req *http.Request) HTTPRequestEventOption {
 	return func(hre *HTTPRequestEvent) {
 		hre.Request = req
+	}
+}
+
+// OptHTTPRequestRoute sets a field on an HTTPRequestEvent.
+func OptHTTPRequestRoute(route string) HTTPRequestEventOption {
+	return func(hre *HTTPRequestEvent) {
+		hre.Route = route
+	}
+}
+
+// OptHTTPRequestState sets a field on an HTTPRequestEvent.
+func OptHTTPRequestState(state map[interface{}]interface{}) HTTPRequestEventOption {
+	return func(hre *HTTPRequestEvent) {
+		hre.State = state
 	}
 }
 

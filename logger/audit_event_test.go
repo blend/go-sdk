@@ -17,7 +17,7 @@ func TestAuditEventMarshalJSON(t *testing.T) {
 	ae := NewAuditEvent(
 		"bailey",
 		"pooped",
-		OptAuditEventMetaOptions(OptEventMetaTimestamp(time.Date(2016, 01, 02, 03, 04, 05, 06, time.UTC))),
+		OptAuditMetaOptions(OptEventMetaTimestamp(time.Date(2016, 01, 02, 03, 04, 05, 06, time.UTC))),
 	)
 
 	contents, err := json.Marshal(ae)
@@ -35,16 +35,16 @@ func TestAuditEventOptions(t *testing.T) {
 	ae := NewAuditEvent(
 		"bailey",
 		"pooped",
-		OptAuditEventMetaOptions(OptEventMetaTimestamp(time.Date(2016, 01, 02, 03, 04, 05, 06, time.UTC))),
-		OptAuditEventContext("event context"),
-		OptAuditEventPrincipal("not bailey"),
-		OptAuditEventVerb("not pooped"),
-		OptAuditEventNoun("audit noun"),
-		OptAuditEventSubject("audit subject"),
-		OptAuditEventProperty("audit property"),
-		OptAuditEventRemoteAddress("remote address"),
-		OptAuditEventUserAgent("user agent"),
-		OptAuditEventExtra(map[string]string{"foo": "bar"}),
+		OptAuditMetaOptions(OptEventMetaTimestamp(time.Date(2016, 01, 02, 03, 04, 05, 06, time.UTC))),
+		OptAuditContext("event context"),
+		OptAuditPrincipal("not bailey"),
+		OptAuditVerb("not pooped"),
+		OptAuditNoun("audit noun"),
+		OptAuditSubject("audit subject"),
+		OptAuditProperty("audit property"),
+		OptAuditRemoteAddress("remote address"),
+		OptAuditUserAgent("user agent"),
+		OptAuditExtra(map[string]string{"foo": "bar"}),
 	)
 
 	assert.Equal("event context", ae.Context)
@@ -64,16 +64,16 @@ func TestAuditEventWriteText(t *testing.T) {
 	ae := NewAuditEvent(
 		"bailey",
 		"pooped",
-		OptAuditEventMetaOptions(OptEventMetaTimestamp(time.Date(2016, 01, 02, 03, 04, 05, 06, time.UTC))),
-		OptAuditEventContext("event context"),
-		OptAuditEventPrincipal("not bailey"),
-		OptAuditEventVerb("not pooped"),
-		OptAuditEventNoun("audit noun"),
-		OptAuditEventSubject("audit subject"),
-		OptAuditEventProperty("audit property"),
-		OptAuditEventRemoteAddress("remote address"),
-		OptAuditEventUserAgent("user agent"),
-		OptAuditEventExtra(map[string]string{"foo": "bar"}),
+		OptAuditMetaOptions(OptEventMetaTimestamp(time.Date(2016, 01, 02, 03, 04, 05, 06, time.UTC))),
+		OptAuditContext("event context"),
+		OptAuditPrincipal("not bailey"),
+		OptAuditVerb("not pooped"),
+		OptAuditNoun("audit noun"),
+		OptAuditSubject("audit subject"),
+		OptAuditProperty("audit property"),
+		OptAuditRemoteAddress("remote address"),
+		OptAuditUserAgent("user agent"),
+		OptAuditExtra(map[string]string{"foo": "bar"}),
 	)
 
 	buf := new(bytes.Buffer)

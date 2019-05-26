@@ -2,6 +2,7 @@ package logger
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -14,7 +15,7 @@ func TestNewHTTPRequestEvent(t *testing.T) {
 	assert := assert.New(t)
 
 	hre := NewHTTPRequestEvent(nil,
-		OptHTTPRequestEventRequest(&http.Request{
+		OptHTTPRequest(&http.Request{
 			Method: "GET",
 			URL: &url.URL{
 				Scheme: "https",
@@ -22,7 +23,7 @@ func TestNewHTTPRequestEvent(t *testing.T) {
 				Path:   "/foo",
 			},
 		}),
-		OptHTTPRequestEventOptionMetaOptions(OptEventMetaFlag("test")),
+		OptHTTPRequestMeta(OptEventMetaFlag("test")),
 	)
 
 	assert.NotNil(hre.Request)
@@ -39,4 +40,17 @@ func TestNewHTTPRequestEvent(t *testing.T) {
 	contents, err := json.Marshal(hre)
 	assert.Nil(err)
 	assert.NotEmpty(contents)
+}
+
+func TestHTTPRequestEventListener(t *testing.T) {
+	assert := assert.New(t)
+
+	var didCall bool
+	listener := NewHTTPRequestEventListener(func(_ context.Context, hre *HTTPRequestEvent) {
+		didCall = true
+	})
+	listener(context.Background(), NewMessageEvent(Info, "test"))
+	assert.False(didCall)
+	listener(context.Background(), NewHTTPRequestEvent(nil))
+	assert.True(didCall)
 }

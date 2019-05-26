@@ -66,7 +66,7 @@ func TestOptions(t *testing.T) {
 	assert.NotNil(log.Output)
 
 	assert.Empty(log.Path)
-	assert.Nil(OptSubContext("path", "segment")(log))
+	assert.Nil(OptPath("path", "segment")(log))
 	assert.Equal([]string{"path", "segment"}, log.Path)
 
 	assert.Empty(log.Fields)
