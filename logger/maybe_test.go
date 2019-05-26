@@ -10,7 +10,9 @@ import (
 
 func TestMaybeNilLogger(t *testing.T) {
 	MaybeInfof(nil, "")
+	MaybeInfo(nil, "")
 	MaybeDebugf(nil, "")
+	MaybeDebug(nil, "")
 	MaybeWarningf(nil, "")
 	MaybeWarning(nil, nil)
 	MaybeErrorf(nil, "")

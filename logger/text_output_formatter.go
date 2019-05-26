@@ -117,11 +117,7 @@ func (tf TextOutputFormatter) FormatPath(path ...string) string {
 
 // FormatFields returns the sub-context fields section of the message as a string.
 func (tf TextOutputFormatter) FormatFields(fields Fields) string {
-	var output []string
-	for key, value := range fields {
-		output = append(output, fmt.Sprintf("%s=%s", tf.Colorize(key, ansi.ColorBlue), value))
-	}
-	return strings.Join(output, " ")
+	return FormatFields(tf, ansi.ColorBlue, fields)
 }
 
 // WriteFormat implements write formatter.

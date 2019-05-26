@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/blend/go-sdk/ansi"
 	"github.com/blend/go-sdk/assert"
 )
 
@@ -33,15 +34,20 @@ func TestWriteHTTPResponse(t *testing.T) {
 	assert.Equal("GET http://localhost/foo 200 1s text/html 1kB", buf.String())
 }
 
-func TestWriteFields(t *testing.T) {
+func TestFormatFields(t *testing.T) {
 	assert := assert.New(t)
 
-	tf := TextOutputFormatter{
-		NoColor: true,
-	}
-	buf := new(bytes.Buffer)
+	tf := NewTextOutputFormatter(OptTextNoColor())
+	actual := FormatFields(tf, ansi.ColorBlue, Fields{"foo": "bar", "moo": "loo"})
+	assert.Equal("foo=bar moo=loo", actual)
 
-	WriteFields(tf, buf, Fields{"foo": "bar", "moo": "loo"})
-	assert.Contains(buf.String(), "foo=bar")
-	assert.Contains(buf.String(), "moo=loo")
+	actual = FormatFields(tf, ansi.ColorBlue, Fields{"moo": "loo", "foo": "bar"})
+	assert.Equal("foo=bar moo=loo", actual)
+
+	tf = NewTextOutputFormatter()
+	actual = FormatFields(tf, ansi.ColorBlue, Fields{"foo": "bar", "moo": "loo"})
+	assert.Equal(ansi.ColorBlue.Apply("foo")+"=bar "+ansi.ColorBlue.Apply("moo")+"=loo", actual)
+
+	actual = FormatFields(tf, ansi.ColorBlue, Fields{"moo": "loo", "foo": "bar"})
+	assert.Equal(ansi.ColorBlue.Apply("foo")+"=bar "+ansi.ColorBlue.Apply("moo")+"=loo", actual)
 }

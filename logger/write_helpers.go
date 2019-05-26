@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 
@@ -44,13 +45,19 @@ func WriteHTTPResponse(tf TextFormatter, wr io.Writer, req *http.Request, status
 	io.WriteString(wr, stringutil.FileSize(contentLength))
 }
 
-// WriteFields writes fields.
-func WriteFields(tf TextFormatter, wr io.Writer, fields Fields) {
-	var values []string
-	for key, value := range fields {
-		values = append(values, fmt.Sprintf("%s=%s", key, value))
+// FormatFields formats the output of fields.
+func FormatFields(tf TextFormatter, keyColor ansi.Color, fields Fields) string {
+	var keys []string
+	for key := range fields {
+		keys = append(keys, key)
 	}
-	io.WriteString(wr, strings.Join(values, " "))
+	sort.Strings(keys)
+
+	var values []string
+	for _, key := range keys {
+		values = append(values, fmt.Sprintf("%s=%s", tf.Colorize(key, keyColor), fields[key]))
+	}
+	return strings.Join(values, " ")
 }
 
 // MergeDecomposed merges sets of decomposed data.
