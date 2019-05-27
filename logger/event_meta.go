@@ -52,6 +52,12 @@ type EventMeta struct {
 	FlagColor ansi.Color
 }
 
+// GetLabels returns the labels.
+func (em EventMeta) GetLabels() Labels { return em.Labels }
+
+// GetAnnotations returns the annotations.
+func (em EventMeta) GetAnnotations() Annotations { return em.Annotations }
+
 // GetFlag returns the event flag.
 func (em EventMeta) GetFlag() string { return em.Flag }
 
