@@ -15,9 +15,30 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		logger.FatalExit(err)
 	}
-	err = db.OpenDefault(conn)
+	err = openDefaultDB(conn)
 	if err != nil {
 		logger.FatalExit(err)
 	}
 	os.Exit(m.Run())
+}
+
+var (
+	defaultConnection *db.Connection
+)
+
+func setDefaultDB(conn *db.Connection) {
+	defaultConnection = conn
+}
+
+func defaultDB() *db.Connection {
+	return defaultConnection
+}
+
+func openDefaultDB(conn *db.Connection) error {
+	err := conn.Open()
+	if err != nil {
+		return err
+	}
+	setDefaultDB(conn)
+	return nil
 }

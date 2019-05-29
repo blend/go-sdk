@@ -33,8 +33,8 @@ func NewConfigFromDSN(dsn string) (*Config, error) {
 			config.Password = strings.TrimPrefix(piece, "password=")
 		} else if strings.HasPrefix(piece, "sslmode=") {
 			config.SSLMode = strings.TrimPrefix(piece, "sslmode=")
-		} else if strings.HasPrefix(piece, "schema=") {
-			config.Schema = strings.TrimPrefix(piece, "schema=")
+		} else if strings.HasPrefix(piece, "search_path=") {
+			config.Schema = strings.TrimPrefix(piece, "search_path=")
 		} else if strings.HasPrefix(piece, "connect_timeout=") {
 			config.ConnectTimeout, err = strconv.Atoi(strings.TrimPrefix(piece, "connect_timeout="))
 			if err != nil {
@@ -85,7 +85,16 @@ type Config struct {
 	Port string `json:"port,omitempty" yaml:"port,omitempty" env:"DB_PORT"`
 	// DBName is the database name
 	Database string `json:"database,omitempty" yaml:"database,omitempty" env:"DB_NAME"`
-	// Schema is the application schema within the database, defaults to `public`.
+	// Schema is the application schema within the database, defaults to `public`. This schema is used to set the
+	// Postgres "search_path" If you want to reference tables in other schemas, you'll need to specify those schemas
+	// in your queries e.g. "SELECT * FROM schema_two.table_one..."
+	// Using the public schema in a production application is considered bad practice as newly created roles will have
+	// visibility into this data by default. We strongly recommend specifying this option and using a schema that is
+	// owned by your service's role
+	// We recommend against setting a multi-schema search_path, but if you really want to, you provide multiple comma-
+	// separated schema names as the value for this config, or you can dbc.Invoke().Exec a SET statement on a newly
+	// opened connection such as "SET search_path = 'schema_one,schema_two';" Again, we recommend against this practice
+	// and encourage you to specify schema names beyond the first in your queries.
 	Schema string `json:"schema,omitempty" yaml:"schema,omitempty" env:"DB_SCHEMA"`
 	// Username is the username for the connection via password auth.
 	Username string `json:"username,omitempty" yaml:"username,omitempty" env:"DB_USER"`
@@ -142,6 +151,15 @@ func (c Config) DatabaseOrDefault(inherited ...string) string {
 		return c.Database
 	}
 	return DefaultDatabase
+}
+
+// SchemaOrDefault returns the schema on the search_path or the default ("public"). It's considered bad practice to
+// use the public schema in production
+func (c Config) SchemaOrDefault(inherited ...string) string {
+	if c.Schema != "" {
+		return c.Schema
+	}
+	return DefaultSchema
 }
 
 // IdleConnectionsOrDefault returns the number of idle connections or a default.
@@ -207,6 +225,9 @@ func (c Config) CreateDSN() string {
 	}
 	if c.ConnectTimeout > 0 {
 		queryArgs.Add("connect_timeout", strconv.Itoa(c.ConnectTimeout))
+	}
+	if c.Schema != "" {
+		queryArgs.Add("search_path", c.Schema)
 	}
 
 	dsn.RawQuery = queryArgs.Encode()

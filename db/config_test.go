@@ -20,7 +20,7 @@ func TestConfigCreateDSN(t *testing.T) {
 		ConnectTimeout: 5,
 	}
 
-	assert.Equal("postgres://bailey:dog@bar:1234/blend?connect_timeout=5&sslmode=verify-ca", cfg.CreateDSN())
+	assert.Equal("postgres://bailey:dog@bar:1234/blend?connect_timeout=5&search_path=mortgages&sslmode=verify-ca", cfg.CreateDSN())
 
 	cfg = &Config{
 		DSN:      "foo",
@@ -44,7 +44,7 @@ func TestConfigCreateDSN(t *testing.T) {
 		SSLMode:  SSLModeVerifyCA,
 	}
 
-	assert.Equal("postgres://bailey:dog@bar:1234/blend?sslmode=verify-ca", cfg.CreateDSN())
+	assert.Equal("postgres://bailey:dog@bar:1234/blend?search_path=mortgages&sslmode=verify-ca", cfg.CreateDSN())
 
 	cfg = &Config{
 		Host:     "bar",
@@ -55,7 +55,7 @@ func TestConfigCreateDSN(t *testing.T) {
 		Schema:   "mortgages",
 	}
 
-	assert.Equal("postgres://bailey:dog@bar:1234/blend", cfg.CreateDSN())
+	assert.Equal("postgres://bailey:dog@bar:1234/blend?search_path=mortgages", cfg.CreateDSN())
 
 	cfg = &Config{
 		Host:     "bar",
@@ -115,6 +115,26 @@ func TestNewConfigFromDSN(t *testing.T) {
 	assert.Equal("1234", parsed.Port)
 	assert.Equal("blend", parsed.Database)
 	assert.Equal("verify-ca", parsed.SSLMode)
+	assert.Equal(DefaultSchema, parsed.SchemaOrDefault())
+	assert.Equal(5, parsed.ConnectTimeout)
+}
+
+func TestNewConfigFromDSNWithSchema(t *testing.T) {
+	assert := assert.New(t)
+
+	dsn := "postgres://bailey:dog@bar:1234/blend?connect_timeout=5&sslmode=verify-ca&search_path=mortgages"
+
+	parsed, err := NewConfigFromDSN(dsn)
+	assert.Nil(err)
+
+	assert.Equal("bailey", parsed.Username)
+	assert.Equal("dog", parsed.Password)
+	assert.Equal("bar", parsed.Host)
+	assert.Equal("1234", parsed.Port)
+	assert.Equal("blend", parsed.Database)
+	assert.Equal("verify-ca", parsed.SSLMode)
+	assert.Equal("mortgages", parsed.Schema)
+	assert.Equal("mortgages", parsed.SchemaOrDefault())
 	assert.Equal(5, parsed.ConnectTimeout)
 }
 

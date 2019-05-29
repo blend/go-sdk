@@ -859,7 +859,7 @@ func (i *Invocation) Start(statement string) (string, error) {
 			return "", err
 		}
 	}
-	if i.Tracer != nil {
+	if i.Tracer != nil && !IsSkipQueryLogging(i.Context) {
 		i.TraceFinisher = i.Tracer.Query(i.Context, i.Conn, i, statement)
 	}
 	return statement, nil
@@ -873,7 +873,7 @@ func (i *Invocation) Finish(statement string, r interface{}, err error) error {
 	if r != nil {
 		err = ex.Nest(err, ex.New(r))
 	}
-	if i.Conn.Log != nil {
+	if i.Conn.Log != nil && !IsSkipQueryLogging(i.Context) {
 
 		qe := logger.NewQueryEvent(statement, time.Now().UTC().Sub(i.StartTime))
 
@@ -885,7 +885,7 @@ func (i *Invocation) Finish(statement string, r interface{}, err error) error {
 
 		i.Conn.Log.Trigger(i.Context, qe)
 	}
-	if i.TraceFinisher != nil {
+	if i.TraceFinisher != nil && !IsSkipQueryLogging(i.Context) {
 		i.TraceFinisher.Finish(err)
 	}
 	if err != nil {

@@ -1,5 +1,7 @@
 PREFIX			?= $(shell pwd)
 PKGS 			:= $(shell go list ./... | grep -v /vendor/)
+# We don't lint yaml because its forked code and terrible at lint
+LINTPKGS        := $(shell go list ./... | grep -v /vendor/ | grep -v "go-sdk/yaml")
 SHASUMCMD 		:= $(shell command -v sha1sum || command -v shasum; 2> /dev/null)
 TARCMD 			:= $(shell command -v tar || command -v tar; 2> /dev/null)
 GIT_REF 		:= $(shell git log --pretty=format:'%h' -n 1)
@@ -14,6 +16,9 @@ DB_SSLMODE		?= disable
 CIRCLE_ARTIFACTS 	?= "."
 COVERAGE_OUT 		:= "$(CIRCLE_ARTIFACTS)/coverage.html"
 
+GOMAXPROCS := 1
+
+export GOMAXPROCS
 export GIT_REF
 export VERSION
 export DB_SSLMODE
@@ -66,7 +71,7 @@ vet:
 
 lint:
 	@echo "$(VERSION)/$(GIT_REF) >> linting code"
-	@golint $(PKGS)
+	@golint $(LINTPKGS)
 
 build:
 	@echo "$(VERSION)/$(GIT_REF) >> linting code"
@@ -92,19 +97,19 @@ test-verbose:
 
 cover:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
-	@go run cmd/coverage/main.go
+	@go run cmd/coverage/main.go --exclude="examples/*"
 
 cover-ci:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
-	@go run cmd/coverage/main.go --keep-coverage-out --covermode=atomic --coverprofile=coverage.txt
+	@go run cmd/coverage/main.go --keep-coverage-out --covermode=atomic --coverprofile=coverage.txt --exclude="examples/*"
 
 cover-enforce:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
-	@go run cmd/coverage/main.go -enforce
+	@go run cmd/coverage/main.go -enforce --exclude="examples/*"
 
 cover-update:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
-	@go run cmd/coverage/main.go -update
+	@go run cmd/coverage/main.go -update --exclude="examples/*"
 
 increment-patch:
 	@echo "Current Version $(VERSION)"

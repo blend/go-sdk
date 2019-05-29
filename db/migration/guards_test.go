@@ -12,7 +12,7 @@ import (
 
 func TestGuard(t *testing.T) {
 	assert := assert.New(t)
-	tx, err := db.Default().Begin()
+	tx, err := defaultDB().Begin()
 	assert.Nil(err)
 	defer tx.Rollback()
 
@@ -33,7 +33,7 @@ func TestGuard(t *testing.T) {
 		return c.Invoke(db.OptTx(itx)).Query(fmt.Sprintf("select * from %s", tableName)).Any()
 	})(
 		context.Background(),
-		db.Default(),
+		defaultDB(),
 		tx,
 		action,
 	)

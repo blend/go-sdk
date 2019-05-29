@@ -28,41 +28,41 @@ func randomName() string {
 func createTestTable(tableName string, tx *sql.Tx) error {
 	body := fmt.Sprintf("CREATE TABLE %s (id int, name varchar(32));", tableName)
 	step := Step(TableNotExists(tableName), Statements(body))
-	return step.Action(context.Background(), db.Default(), tx)
+	return step.Action(context.Background(), defaultDB(), tx)
 }
 
 func insertTestValue(tableName string, id int, name string, tx *sql.Tx) error {
 	body := fmt.Sprintf("INSERT INTO %s (id, name) VALUES ($1, $2);", tableName)
-	return db.Default().Invoke(db.OptTx(tx)).Exec(body, id, name)
+	return defaultDB().Invoke(db.OptTx(tx)).Exec(body, id, name)
 }
 
 func createTestColumn(tableName, columnName string, tx *sql.Tx) error {
 	body := fmt.Sprintf("ALTER TABLE %s ADD %s varchar(32);", tableName, columnName)
 	step := Step(ColumnNotExists(tableName, columnName), Statements(body))
-	return step.Action(context.Background(), db.Default(), tx)
+	return step.Action(context.Background(), defaultDB(), tx)
 }
 
 func createTestConstraint(tableName, constraintName string, tx *sql.Tx) error {
 	body := fmt.Sprintf("ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (name);", tableName, constraintName)
 	step := Step(ColumnNotExists(tableName, constraintName), Statements(body))
-	return step.Action(context.Background(), db.Default(), tx)
+	return step.Action(context.Background(), defaultDB(), tx)
 }
 
 func createTestIndex(tableName, indexName string, tx *sql.Tx) error {
 	body := fmt.Sprintf("CREATE INDEX %s ON %s (name);", indexName, tableName)
 	step := Step(IndexNotExists(tableName, indexName), Statements(body))
-	return step.Action(context.Background(), db.Default(), tx)
+	return step.Action(context.Background(), defaultDB(), tx)
 }
 
 func createTestRole(roleName string, tx *sql.Tx) error {
 	body := fmt.Sprintf("CREATE ROLE %s;", roleName)
 	step := Step(RoleNotExists(roleName), Statements(body))
-	return step.Action(context.Background(), db.Default(), tx)
+	return step.Action(context.Background(), defaultDB(), tx)
 }
 
 func TestCreateTable(t *testing.T) {
 	assert := assert.New(t)
-	tx, err := db.Default().Begin()
+	tx, err := defaultDB().Begin()
 	assert.Nil(err)
 	defer tx.Rollback()
 
@@ -70,14 +70,14 @@ func TestCreateTable(t *testing.T) {
 	err = createTestTable(tableName, nil)
 	assert.Nil(err)
 
-	exists, err := PredicateTableExists(db.Default(), nil, tableName)
+	exists, err := PredicateTableExists(defaultDB(), nil, tableName)
 	assert.Nil(err)
 	assert.True(exists, "table does not exist")
 }
 
 func TestCreateColumn(t *testing.T) {
 	assert := assert.New(t)
-	tx, err := db.Default().Begin()
+	tx, err := defaultDB().Begin()
 	assert.Nil(err)
 	defer tx.Rollback()
 
@@ -89,14 +89,14 @@ func TestCreateColumn(t *testing.T) {
 	err = createTestColumn(tableName, columnName, tx)
 	assert.Nil(err)
 
-	exists, err := PredicateColumnExists(db.Default(), tx, tableName, columnName)
+	exists, err := PredicateColumnExists(defaultDB(), tx, tableName, columnName)
 	assert.Nil(err)
 	assert.True(exists, "column does not exist on table")
 }
 
 func TestCreateConstraint(t *testing.T) {
 	assert := assert.New(t)
-	tx, err := db.Default().Begin()
+	tx, err := defaultDB().Begin()
 	assert.Nil(err)
 	defer tx.Rollback()
 
@@ -108,14 +108,14 @@ func TestCreateConstraint(t *testing.T) {
 	err = createTestConstraint(tableName, constraintName, tx)
 	assert.Nil(err)
 
-	exists, err := PredicateConstraintExists(db.Default(), tx, constraintName)
+	exists, err := PredicateConstraintExists(defaultDB(), tx, tableName, constraintName)
 	assert.Nil(err)
 	assert.True(exists, "constraint does not exist")
 }
 
 func TestCreateIndex(t *testing.T) {
 	assert := assert.New(t)
-	tx, err := db.Default().Begin()
+	tx, err := defaultDB().Begin()
 	assert.Nil(err)
 	defer tx.Rollback()
 
@@ -127,14 +127,14 @@ func TestCreateIndex(t *testing.T) {
 	err = createTestIndex(tableName, indexName, tx)
 	assert.Nil(err)
 
-	exists, err := PredicateIndexExists(db.Default(), tx, tableName, indexName)
+	exists, err := PredicateIndexExists(defaultDB(), tx, tableName, indexName)
 	assert.Nil(err)
 	assert.True(exists, "constraint should exist")
 }
 
 func TestCreateRole(t *testing.T) {
 	assert := assert.New(t)
-	tx, err := db.Default().Begin()
+	tx, err := defaultDB().Begin()
 	assert.Nil(err)
 	defer tx.Rollback()
 
@@ -142,7 +142,7 @@ func TestCreateRole(t *testing.T) {
 	err = createTestRole(roleName, tx)
 	assert.Nil(err)
 
-	exists, err := PredicateRoleExists(db.Default(), tx, roleName)
+	exists, err := PredicateRoleExists(defaultDB(), tx, roleName)
 	assert.Nil(err)
 	assert.True(exists, "role does exist")
 }

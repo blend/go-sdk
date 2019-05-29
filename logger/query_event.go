@@ -21,12 +21,16 @@ var (
 )
 
 // NewQueryEvent creates a new query event.
-func NewQueryEvent(body string, elapsed time.Duration, options ...EventMetaOption) *QueryEvent {
-	return &QueryEvent{
-		EventMeta: NewEventMeta(Query, options...),
+func NewQueryEvent(body string, elapsed time.Duration, options ...QueryEventOption) *QueryEvent {
+	qe := QueryEvent{
+		EventMeta: NewEventMeta(Query),
 		Body:      body,
 		Elapsed:   elapsed,
 	}
+	for _, opt := range options {
+		opt(&qe)
+	}
+	return &qe
 }
 
 // NewQueryEventListener returns a new listener for spiffy events.
@@ -36,6 +40,53 @@ func NewQueryEventListener(listener func(context.Context, *QueryEvent)) Listener
 			listener(ctx, typed)
 		}
 	}
+}
+
+// QueryEventOption mutates a query event.
+type QueryEventOption func(*QueryEvent)
+
+// OptQueryMeta sets options on the event metadata.
+func OptQueryMeta(options ...EventMetaOption) QueryEventOption {
+	return func(ae *QueryEvent) {
+		for _, option := range options {
+			option(ae.EventMeta)
+		}
+	}
+}
+
+// OptQueryBody sets a field on the query event.
+func OptQueryBody(value string) QueryEventOption {
+	return func(e *QueryEvent) { e.Body = value }
+}
+
+// OptQueryDatabase sets a field on the query event.
+func OptQueryDatabase(value string) QueryEventOption {
+	return func(e *QueryEvent) { e.Database = value }
+}
+
+// OptQueryEngine sets a field on the query event.
+func OptQueryEngine(value string) QueryEventOption {
+	return func(e *QueryEvent) { e.Engine = value }
+}
+
+// OptQueryUsername sets a field on the query event.
+func OptQueryUsername(value string) QueryEventOption {
+	return func(e *QueryEvent) { e.Username = value }
+}
+
+// OptQueryLabel sets a field on the query event.
+func OptQueryLabel(value string) QueryEventOption {
+	return func(e *QueryEvent) { e.QueryLabel = value }
+}
+
+// OptQueryElapsed sets a field on the query event.
+func OptQueryElapsed(value time.Duration) QueryEventOption {
+	return func(e *QueryEvent) { e.Elapsed = value }
+}
+
+// OptQueryErr sets a field on the query event.
+func OptQueryErr(value error) QueryEventOption {
+	return func(e *QueryEvent) { e.Err = value }
 }
 
 // QueryEvent represents a database query.
