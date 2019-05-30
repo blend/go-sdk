@@ -24,7 +24,7 @@ func TestStart(t *testing.T) {
 
 	span := opentracing.SpanFromContext(ctx)
 	mockSpan := span.(*mocktracer.MockSpan)
-	assert.Equal("job", mockSpan.OperationName)
+	assert.Equal(tracing.OperationJob, mockSpan.OperationName)
 
 	assert.Len(mockSpan.Tags(), 2)
 	assert.Equal("test_job", mockSpan.Tags()[tracing.TagKeyResourceName])

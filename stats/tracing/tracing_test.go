@@ -15,7 +15,6 @@ func TestStartSpanFromContext(t *testing.T) {
 	assert := assert.New(t)
 	mockTracer := mocktracer.New()
 
-	// Start Span from Background Context
 	span, ctx := StartSpanFromContext(
 		context.Background(),
 		mockTracer,
@@ -31,25 +30,36 @@ func TestStartSpanFromContext(t *testing.T) {
 	spanFromCtx := opentracing.SpanFromContext(ctx)
 	mockSpanFromCtx := spanFromCtx.(*mocktracer.MockSpan)
 	assert.Equal(mockSpan.String(), mockSpanFromCtx.String())
+}
+
+func TestStartSpanFromContextWithParent(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+
+	// Start Parent Span from Background Context
+	parentSpan, ctx := StartSpanFromContext(
+		context.Background(),
+		mockTracer,
+		"test.operation.one",
+	)
+
+	mockParentSpan := parentSpan.(*mocktracer.MockSpan)
 
 	// Start Child Span from Context with Parent Span
-	childSpan, ctx := StartSpanFromContext(
+	span, ctx := StartSpanFromContext(
 		ctx,
 		mockTracer,
 		"test.operation.two",
-		opentracing.Tags(map[string]interface{}{"k2": "v2"}),
 	)
 
-	mockChildSpan := childSpan.(*mocktracer.MockSpan)
-	assert.Equal("test.operation.two", mockChildSpan.OperationName)
-	assert.Len(mockChildSpan.Tags(), 1)
-	assert.Equal("v2", mockChildSpan.Tags()["k2"])
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal("test.operation.two", mockSpan.OperationName)
 
-	spanFromCtx = opentracing.SpanFromContext(ctx)
-	mockSpanFromCtx = spanFromCtx.(*mocktracer.MockSpan)
-	assert.Equal(mockChildSpan.String(), mockSpanFromCtx.String())
+	spanFromCtx := opentracing.SpanFromContext(ctx)
+	mockSpanFromCtx := spanFromCtx.(*mocktracer.MockSpan)
+	assert.Equal(mockSpan.String(), mockSpanFromCtx.String())
 
-	assert.Equal(mockChildSpan.ParentID, mockSpan.SpanContext.SpanID)
+	assert.Equal(mockSpan.ParentID, mockParentSpan.SpanContext.SpanID)
 }
 
 func TestGetTracingSpanFromContext(t *testing.T) {
