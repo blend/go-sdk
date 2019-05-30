@@ -78,8 +78,14 @@ func (e ErrorEvent) WriteText(formatter TextFormatter, output io.Writer) {
 
 // MarshalJSON implements json.Marshaler.
 func (e ErrorEvent) MarshalJSON() ([]byte, error) {
+	if _, ok := e.Err.(json.Marshaler); ok {
+		return json.Marshal(MergeDecomposed(e.EventMeta.Decompose(), map[string]interface{}{
+			"err":   e.Err,
+			"state": e.State,
+		}))
+	}
 	return json.Marshal(MergeDecomposed(e.EventMeta.Decompose(), map[string]interface{}{
-		"err":   e.Err,
+		"err":   e.Err.Error(),
 		"state": e.State,
 	}))
 }

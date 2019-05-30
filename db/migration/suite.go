@@ -10,16 +10,23 @@ import (
 )
 
 // New returns a new suite of groups.
-func New(groups ...GroupedActions) *Suite {
-	return &Suite{
-		Groups: groups,
+func New(options ...SuiteOption) *Suite {
+	var s Suite
+	for _, option := range options {
+		option(&s)
 	}
+	return &s
+}
+
+// NewWithGroups is a helper for "New(OptGroups(groups ...*Group))"
+func NewWithGroups(actions ...*Group) *Suite {
+	return New(OptGroups(actions...))
 }
 
 // Suite is a migration suite.
 type Suite struct {
 	Log    logger.Log
-	Groups []GroupedActions
+	Groups []*Group
 
 	Applied int
 	Skipped int
@@ -80,4 +87,9 @@ func (s *Suite) Write(ctx context.Context, result, body string) {
 // WriteStats writes the stats if a logger is configured.
 func (s *Suite) WriteStats(ctx context.Context) {
 	logger.MaybeTrigger(ctx, s.Log, NewStatsEvent(s.Applied, s.Skipped, s.Failed, s.Total))
+}
+
+// Results provides a window into the results of this migration
+func (s *Suite) Results() (applied, skipped, failed, total int) {
+	return s.Applied, s.Skipped, s.Failed, s.Total
 }

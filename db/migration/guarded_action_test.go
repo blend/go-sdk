@@ -9,7 +9,7 @@ import (
 func TestStep(t *testing.T) {
 	assert := assert.New(t)
 
-	step := Step(Always(), NoOp)
+	step := NewStep(Always(), NoOp)
 	assert.NotNil(step.Guard)
 	assert.NotNil(step.Body)
 }

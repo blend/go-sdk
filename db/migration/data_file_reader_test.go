@@ -2,7 +2,11 @@ package migration
 
 import (
 	"bytes"
+	"context"
+	"database/sql"
 	"fmt"
+	"github.com/blend/go-sdk/db"
+	"github.com/blend/go-sdk/logger"
 	"io"
 	"testing"
 
@@ -123,4 +127,100 @@ this is a line that ends in a tab	`))
 	assert.Equal(io.EOF, readErr)
 	assert.Len(pieces, 1)
 	assert.Equal("this is a line that ends in a tab", pieces[0])
+}
+
+func TestCopyIn(t *testing.T) {
+	a := assert.New(t)
+	s := CopyIn("test_table", "col_1", "col_2", "col_3", "col_4")
+	a.Equal(`COPY "test_table" ("col_1", "col_2", "col_3", "col_4") FROM STDIN`, s)
+}
+
+type Data struct {
+	Col1 string `db:"col_1"`
+	Col2 string `db:"col_2"`
+	Col3 string `db:"col_3"`
+	Col4 string `db:"col_4"`
+}
+
+func TestDataFileReaderAction(t *testing.T) {
+	a := assert.New(t)
+	conn := getSchemaConnection(db.DefaultSchema, a)
+	testSchemaName := buildTestSchemaName()
+	err := conn.Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE;", testSchemaName))
+	a.Nil(err)
+	dfr := ReadDataFile("./testdata/data_file_reader_test.sql")
+	s := New(OptLog(logger.None()), OptGroups(createDataFileMigrations(testSchemaName)...))
+	defer func() {
+		c := conn
+		if c == nil {
+			c = defaultDB()
+		}
+		// pq can't parameterize Drop
+		err := c.Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE;", testSchemaName))
+		a.Nil(err)
+	}()
+	err = s.Apply(context.Background(), conn)
+	a.Nil(err)
+	app, _, _, _ := s.Results()
+	a.Equal(2, app)
+	conn.Close()
+	conn = getSchemaConnection(testSchemaName, a)
+
+	s = New(OptLog(logger.None()), OptGroups(NewGroupWithActions(NewStep(Always(), dfr.Action))))
+	err = s.Apply(context.Background(), conn)
+	a.Nil(err)
+
+	var count int
+	err = conn.Query("Select count(1) from test_table_one").Scan(&count)
+	a.Nil(err)
+	a.Equal(3, count)
+
+	var data []Data
+	err = conn.Query("Select * from test_table_one ORDER BY col_1 ASC").OutMany(&data)
+	for i, d := range data {
+		a.Equal(fmt.Sprintf("data_%d_1", i+1), d.Col1)
+		a.Equal(fmt.Sprintf("data_%d_2", i+1), d.Col2)
+		a.Equal(fmt.Sprintf("data_%d_3", i+1), d.Col3)
+		a.Equal(fmt.Sprintf("data_%d_4", i+1), d.Col4)
+	}
+}
+
+func createDataFileMigrations(testSchemaName string) []*Group {
+	return []*Group{
+		NewGroupWithActions(
+			NewStep(
+				SchemaNotExists(testSchemaName),
+				Actions(
+					// pq can't parameterize Create
+					func(i context.Context, connection *db.Connection, tx *sql.Tx) error {
+						err := connection.Exec(fmt.Sprintf("CREATE SCHEMA %s;", testSchemaName))
+						if err != nil {
+							return err
+						}
+						return nil
+					},
+					func(i context.Context, connection *db.Connection, tx *sql.Tx) error {
+						// This is a hack to set the schema on the connection
+						(&connection.Config).Schema = testSchemaName
+						return nil
+					},
+				))),
+		NewGroupWithActions(
+			NewStep(
+				TableNotExists("test_table_one"),
+				Exec(fmt.Sprintf("CREATE TABLE %s.test_table_one (col_1 varchar(16) not null, col_2 varchar(16) not null, col_3 varchar(16) not null, col_4 varchar(16) not null);", testSchemaName)),
+			)),
+	}
+}
+
+func getSchemaConnection(schema string, a *assert.Assertions) *db.Connection {
+	var conn *db.Connection
+	cfg, err := db.NewConfigFromEnv()
+	a.Nil(err)
+	(&cfg).Schema = schema
+	conn, err = db.New(db.OptConfig(cfg))
+	a.Nil(err)
+	err = conn.Open()
+	a.Nil(err)
+	return conn
 }

@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	//DBNilError is a common error
+	// DBNilError is a common error
 	DBNilError = "connection is nil"
 )
 
@@ -203,6 +203,12 @@ func (dbc *Connection) PingContext(context context.Context) (err error) {
 	return
 }
 
+// DefaultSchema returns the schema on the search_path for requests over this connection. It can be used to query
+// other schemas, but that must be done by manually specifying them in the query.
+func (dbc *Connection) DefaultSchema() string {
+	return dbc.Config.SchemaOrDefault()
+}
+
 // Exec is a helper stub for .Invoke(...).Exec(...).
 func (dbc *Connection) Exec(statement string, args ...interface{}) error {
 	return dbc.Invoke().Exec(statement, args...)
@@ -222,3 +228,4 @@ func (dbc *Connection) Query(statement string, args ...interface{}) *Query {
 func (dbc *Connection) QueryContext(ctx context.Context, statement string, args ...interface{}) *Query {
 	return dbc.Invoke(OptContext(ctx)).Query(statement, args...)
 }
+

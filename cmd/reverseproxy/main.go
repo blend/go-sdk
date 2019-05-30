@@ -31,7 +31,7 @@ func main() {
 		logger.OptConfigFromEnv(),
 		logger.OptEnabled(logger.HTTPRequest),
 		logger.OptEnabled(logger.HTTPResponse),
-		logger.OptSubContext("reverse-proxy"),
+		logger.OptPath("reverse-proxy"),
 	)
 	if err != nil {
 		logger.FatalExit(err)

@@ -21,7 +21,7 @@ type MockEventCollector struct {
 }
 
 // AddDefaultTag adds a default tag.
-func (mec MockEventCollector) AddDefaultTag(key, value string) {
+func (mec *MockEventCollector) AddDefaultTag(key, value string) {
 	mec.defaultTags = append(mec.defaultTags, fmt.Sprintf("%s:%s", key, value))
 }
 

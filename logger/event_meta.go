@@ -50,8 +50,13 @@ type EventMeta struct {
 	Flag      string
 	Timestamp time.Time
 	FlagColor ansi.Color
-	Fields    map[string]string
 }
+
+// GetLabels returns the labels.
+func (em EventMeta) GetLabels() Labels { return em.Labels }
+
+// GetAnnotations returns the annotations.
+func (em EventMeta) GetAnnotations() Annotations { return em.Annotations }
 
 // GetFlag returns the event flag.
 func (em EventMeta) GetFlag() string { return em.Flag }
@@ -67,7 +72,6 @@ func (em EventMeta) Decompose() map[string]interface{} {
 	output := map[string]interface{}{
 		FieldFlag:      em.Flag,
 		FieldTimestamp: em.Timestamp.Format(time.RFC3339Nano),
-		FieldFields:    em.Fields,
 	}
 	return output
 }

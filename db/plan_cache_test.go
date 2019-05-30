@@ -10,7 +10,7 @@ import (
 func TestStatementCachePrepare(t *testing.T) {
 	assert := assert.New(t)
 
-	sc := NewPlanCache().WithConnection(Default().Connection)
+	sc := NewPlanCache().WithConnection(defaultDB().Connection)
 
 	query := "select 'ok'"
 	stmt, err := sc.PrepareContext(context.Background(), query, query)

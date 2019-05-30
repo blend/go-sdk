@@ -2,7 +2,6 @@ package migration
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"strings"
 
@@ -40,11 +39,6 @@ type Event struct {
 	Result string
 	Body   string
 	Labels []string
-}
-
-func (e Event) colorizeFixedWidthLeftAligned(tf logger.TextFormatter, text string, color ansi.Color, width int) string {
-	fixedToken := fmt.Sprintf("%%-%ds", width)
-	return tf.Colorize(fmt.Sprintf(fixedToken, text), color)
 }
 
 // WriteText writes the migration event as text.
