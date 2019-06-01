@@ -2,6 +2,8 @@ package web
 
 import (
 	"bytes"
+	"fmt"
+	"html/template"
 	"net/http"
 	"testing"
 
@@ -57,6 +59,16 @@ func TestViewCacheAddRawViews(t *testing.T) {
 	buf := bytes.NewBuffer(nil)
 	assert.Nil(view.ExecuteTemplate(buf, "test", nil))
 	assert.NotEmpty(buf.String())
+
+	vc = NewViewCache()
+	vc.AddLiterals(`{{define "test"}}failure{{`)
+	_, err = vc.Parse()
+	assert.NotNil(err)
+
+	vc = NewViewCache()
+	vc.AddPaths("this path doesn't exist at all")
+	_, err = vc.Parse()
+	assert.NotNil(err)
 }
 
 func TestViewCacheCached(t *testing.T) {
@@ -81,6 +93,11 @@ func TestViewCacheCached(t *testing.T) {
 	buf = bytes.NewBuffer(nil)
 	assert.Nil(tmp.Execute(buf, nil))
 	assert.Equal("bar", buf.String())
+
+	vc = NewViewCache()
+	vc.AddLiterals(`{{define "test"}}failure{{`)
+	_, err = vc.Lookup("foo")
+	assert.NotNil(err)
 }
 
 func TestViewCacheCachingDisabled(t *testing.T) {
@@ -117,6 +134,13 @@ func TestViewCacheBadRequest(t *testing.T) {
 	assert.Equal(http.StatusBadRequest, vr.StatusCode)
 	assert.NotNil(vr.Views)
 	assert.NotNil(vr.ViewModel)
+
+	vc = NewViewCache()
+	vc.AddLiterals(`{{define "test"}}failure{{`)
+	vr, _ = vc.BadRequest(fmt.Errorf("err")).(*ViewResult)
+	assert.NotNil(vr.ViewModel)
+	_, ok := vr.ViewModel.(error)
+	assert.True(ok)
 }
 
 func TestViewCacheInternalError(t *testing.T) {
@@ -133,6 +157,13 @@ func TestViewCacheInternalError(t *testing.T) {
 	assert.NotNil(vr.Views)
 	assert.NotNil(vr.Template)
 	assert.NotNil(vr.ViewModel)
+
+	vc = NewViewCache()
+	vc.AddLiterals(`{{define "test"}}failure{{`)
+	vr, _ = vc.InternalError(fmt.Errorf("err")).(*ViewResult)
+	assert.NotNil(vr.ViewModel)
+	_, ok := vr.ViewModel.(error)
+	assert.True(ok)
 }
 
 func TestViewCacheNotFound(t *testing.T) {
@@ -148,6 +179,13 @@ func TestViewCacheNotFound(t *testing.T) {
 	assert.NotNil(vr.Views)
 	assert.NotNil(vr.Template)
 	assert.Nil(vr.ViewModel)
+
+	vc = NewViewCache()
+	vc.AddLiterals(`{{define "test"}}failure{{`)
+	vr, _ = vc.NotFound().(*ViewResult)
+	assert.NotNil(vr.ViewModel)
+	_, ok := vr.ViewModel.(error)
+	assert.True(ok)
 }
 
 func TestViewCacheNotAuthorized(t *testing.T) {
@@ -163,6 +201,13 @@ func TestViewCacheNotAuthorized(t *testing.T) {
 	assert.NotNil(vr.Views)
 	assert.NotNil(vr.Template)
 	assert.Nil(vr.ViewModel)
+
+	vc = NewViewCache()
+	vc.AddLiterals(`{{define "test"}}failure{{`)
+	vr, _ = vc.NotAuthorized().(*ViewResult)
+	assert.NotNil(vr.ViewModel)
+	_, ok := vr.ViewModel.(error)
+	assert.True(ok)
 }
 
 func TestViewCacheStatus(t *testing.T) {
@@ -178,6 +223,26 @@ func TestViewCacheStatus(t *testing.T) {
 	assert.NotNil(vr.Views)
 	assert.NotNil(vr.Template)
 	assert.NotNil(vr.ViewModel)
+
+	vc = NewViewCache()
+	vc.AddLiterals(`{{define "test"}}failure{{`)
+	vr, _ = vc.Status(http.StatusPreconditionFailed).(*ViewResult)
+	assert.NotNil(vr.ViewModel)
+	_, ok := vr.ViewModel.(error)
+	assert.True(ok)
+}
+
+func TestViewCacheViewStatus(t *testing.T) {
+	assert := assert.New(t)
+
+	vc := NewViewCache()
+	assert.Nil(vc.Initialize())
+
+	vc.AddLiterals(`{{define "test"}}failure{{`)
+	vr, _ := vc.ViewStatus(http.StatusPreconditionFailed, "", nil).(*ViewResult)
+	assert.NotNil(vr.ViewModel)
+	_, ok := vr.ViewModel.(error)
+	assert.True(ok)
 }
 
 func TestViewCacheView(t *testing.T) {
@@ -219,4 +284,24 @@ func TestViewCacheViewError(t *testing.T) {
 	assert.Equal(ex.Class("test error"), vcr.ViewModel)
 	assert.NotNil(vcr.Template)
 	assert.NotNil(vcr.Views)
+}
+
+func TestViewCacheFuncs(t *testing.T) {
+	assert := assert.New(t)
+
+	vc := NewViewCache()
+
+	f := func() {}
+
+	vc.FuncMap = nil
+	opt := OptViewCacheFunc("useless", f)
+	assert.NotNil(opt)
+	assert.Nil(opt(vc))
+	assert.NotEmpty(vc.FuncMap)
+	_, ok := vc.FuncMap["useless"]
+	assert.True(ok)
+
+	opt = OptViewCacheFuncMap(template.FuncMap{})
+	assert.Nil(opt(vc))
+	assert.Empty(vc.FuncMap)
 }

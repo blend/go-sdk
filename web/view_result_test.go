@@ -2,6 +2,7 @@ package web
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"net/http"
 	"strings"
@@ -15,6 +16,14 @@ import (
 
 type testViewModel struct {
 	Text string
+}
+
+type errorWriter struct {
+	ResponseWriter
+}
+
+func (ew *errorWriter) Write(_ []byte) (int, error) {
+	return -1, fmt.Errorf("error")
 }
 
 func TestViewResultRender(t *testing.T) {
@@ -64,6 +73,29 @@ func TestViewResultRender(t *testing.T) {
 
 	assert.NotZero(buffer.Len())
 	assert.True(strings.Contains(buffer.String(), expected))
+}
+
+func TestViewResultRenderErrorResponse(t *testing.T) {
+	assert := assert.New(t)
+
+	buffer := bytes.NewBuffer([]byte{})
+	rc := NewCtx(webutil.NewMockResponse(buffer), nil)
+
+	assert.True(ex.Is((&ViewResult{}).Render(nil), ErrUnsetViewTemplate))
+
+	testView := template.New("testView")
+	testView.Parse("{{ .ViewModel.Text }}")
+
+	vr := &ViewResult{
+		StatusCode: http.StatusOK,
+		ViewModel:  testViewModel{Text: "bar"},
+		Template:   testView,
+	}
+
+	rc.Response = &errorWriter{ResponseWriter: rc.Response}
+
+	err := vr.Render(rc)
+	assert.NotNil(err)
 }
 
 func TestViewResultRenderError(t *testing.T) {
