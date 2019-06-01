@@ -22,6 +22,16 @@ var (
 
 func controllerNoOp(_ *Ctx) Result { return nil }
 
+type testController struct {
+	callback func(app *App)
+}
+
+func (tc testController) Register(app *App) {
+	if tc.callback != nil {
+		tc.callback(app)
+	}
+}
+
 func TestAppNew(t *testing.T) {
 	assert := assert.New(t)
 
@@ -34,8 +44,8 @@ func TestAppNewFromConfig(t *testing.T) {
 	assert := assert.New(t)
 
 	app := New(OptConfig(Config{
-		BindAddr:               ":5555",
-		Port:                   5000,
+		BindAddr: ":5555",
+		Port:     5000,
 		HandleMethodNotAllowed: true,
 		HandleOptions:          true,
 		DisablePanicRecovery:   true,
@@ -63,6 +73,21 @@ func TestAppNewFromConfig(t *testing.T) {
 	assert.Equal(8*time.Second, app.Config.WriteTimeout)
 	assert.Equal("A GOOD ONE", app.Auth.CookieName, "we should use the auth config for the auth manager")
 	assert.True(app.Views.LiveReload, "we should use the view cache config for the view cache")
+}
+
+func TestAppRegister(t *testing.T) {
+	assert := assert.New(t)
+	called := false
+	c := &testController{
+		callback: func(_ *App) {
+			called = true
+		},
+	}
+	app := New()
+
+	assert.False(called)
+	app.Register(c)
+	assert.True(called)
 }
 
 func TestAppPathParams(t *testing.T) {
@@ -153,6 +178,9 @@ func TestAppStaticRewrite(t *testing.T) {
 	assert.Nil(app.SetStaticRewriteRule("/testPath", "(.*)", func(path string, pieces ...string) string {
 		return path
 	}))
+	assert.NotNil(app.SetStaticRewriteRule("/notapath", "(.*)", func(path string, pieces ...string) string {
+		return path
+	}))
 
 	assert.NotEmpty(app.Statics["/testPath/*filepath"].RewriteRules)
 }
@@ -179,6 +207,7 @@ func TestAppStaticHeader(t *testing.T) {
 	assert.NotEmpty(app.Statics)
 	assert.NotNil(app.Statics["/testPath/*filepath"])
 	assert.Nil(app.SetStaticHeader("/testPath/*filepath", "cache-control", "haha what is caching."))
+	assert.NotNil(app.SetStaticHeader("/notaroute", "cache-control", "haha what is caching."))
 	assert.NotEmpty(app.Statics["/testPath/*filepath"].Headers)
 }
 
@@ -607,4 +636,56 @@ func TestAppViewTracerError(t *testing.T) {
 	assert.True(hasValue)
 	assert.True(hasError)
 	assert.True(hasViewError)
+}
+
+func TestAppAllowed(t *testing.T) {
+	assert := assert.New(t)
+	app := New()
+	app.GET("/test", nil)
+
+	allowed := strings.Split(app.allowed("*", ""), ", ")
+	assert.Len(allowed, 1)
+	assert.Equal("GET", allowed[0])
+
+	app.POST("/hello", nil)
+	allowed = strings.Split(app.allowed("*", ""), ", ")
+	assert.Len(allowed, 2)
+	assert.Any(allowed, func(i interface{}) bool {
+		s, ok := i.(string)
+		return ok && s == "GET"
+	})
+	assert.Any(allowed, func(i interface{}) bool {
+		s, ok := i.(string)
+		return ok && s == "POST"
+	})
+
+	app = New()
+	app.GET("/hello", controllerNoOp)
+	allowed = strings.Split(app.allowed("/hello", ""), ", ")
+	assert.Len(allowed, 2)
+	assert.Any(allowed, func(i interface{}) bool {
+		s, ok := i.(string)
+		return ok && s == "GET"
+	})
+	assert.Any(allowed, func(i interface{}) bool {
+		s, ok := i.(string)
+		return ok && s == "OPTIONS"
+	})
+	app.POST("/hello", controllerNoOp)
+	allowed = strings.Split(app.allowed("/hello", ""), ", ")
+	assert.Len(allowed, 3)
+
+	app.OPTIONS("/hello", controllerNoOp)
+	app.HEAD("/hello", controllerNoOp)
+	app.PUT("/hello", controllerNoOp)
+	app.DELETE("/hello", controllerNoOp)
+
+	app.PATCH("/hi", controllerNoOp)
+	app.PATCH("/there", controllerNoOp)
+	allowed = strings.Split(app.allowed("/hello", ""), ", ")
+	assert.Len(allowed, 6)
+
+	app.PATCH("/hello", controllerNoOp)
+	allowed = strings.Split(app.allowed("/hello", ""), ", ")
+	assert.Len(allowed, 7)
 }
