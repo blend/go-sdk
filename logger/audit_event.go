@@ -42,8 +42,8 @@ func NewAuditEventListener(listener func(context.Context, *AuditEvent)) Listener
 // AuditEventOption is an option for AuditEvents.
 type AuditEventOption func(*AuditEvent)
 
-// OptAuditEventMetaOptions sets options on the event metadata.
-func OptAuditEventMetaOptions(options ...EventMetaOption) AuditEventOption {
+// OptAuditMetaOptions sets options on the event metadata.
+func OptAuditMetaOptions(options ...EventMetaOption) AuditEventOption {
 	return func(ae *AuditEvent) {
 		for _, option := range options {
 			option(ae.EventMeta)
@@ -51,48 +51,48 @@ func OptAuditEventMetaOptions(options ...EventMetaOption) AuditEventOption {
 	}
 }
 
-// OptAuditEventContext sets a field on an AuditEvent.
-func OptAuditEventContext(value string) AuditEventOption {
+// OptAuditContext sets a field on an AuditEvent.
+func OptAuditContext(value string) AuditEventOption {
 	return func(ae *AuditEvent) { ae.Context = value }
 }
 
-// OptAuditEventPrincipal sets a field on an AuditEvent.
-func OptAuditEventPrincipal(value string) AuditEventOption {
+// OptAuditPrincipal sets a field on an AuditEvent.
+func OptAuditPrincipal(value string) AuditEventOption {
 	return func(ae *AuditEvent) { ae.Principal = value }
 }
 
-// OptAuditEventVerb sets a field on an AuditEvent.
-func OptAuditEventVerb(value string) AuditEventOption {
+// OptAuditVerb sets a field on an AuditEvent.
+func OptAuditVerb(value string) AuditEventOption {
 	return func(ae *AuditEvent) { ae.Verb = value }
 }
 
-// OptAuditEventNoun sets a field on an AuditEvent.
-func OptAuditEventNoun(value string) AuditEventOption {
+// OptAuditNoun sets a field on an AuditEvent.
+func OptAuditNoun(value string) AuditEventOption {
 	return func(ae *AuditEvent) { ae.Noun = value }
 }
 
-// OptAuditEventSubject sets a field on an AuditEvent.
-func OptAuditEventSubject(value string) AuditEventOption {
+// OptAuditSubject sets a field on an AuditEvent.
+func OptAuditSubject(value string) AuditEventOption {
 	return func(ae *AuditEvent) { ae.Subject = value }
 }
 
-// OptAuditEventProperty sets a field on an AuditEvent.
-func OptAuditEventProperty(value string) AuditEventOption {
+// OptAuditProperty sets a field on an AuditEvent.
+func OptAuditProperty(value string) AuditEventOption {
 	return func(ae *AuditEvent) { ae.Property = value }
 }
 
-// OptAuditEventRemoteAddress sets a field on an AuditEvent.
-func OptAuditEventRemoteAddress(value string) AuditEventOption {
+// OptAuditRemoteAddress sets a field on an AuditEvent.
+func OptAuditRemoteAddress(value string) AuditEventOption {
 	return func(ae *AuditEvent) { ae.RemoteAddress = value }
 }
 
-// OptAuditEventUserAgent sets a field on an AuditEvent.
-func OptAuditEventUserAgent(value string) AuditEventOption {
+// OptAuditUserAgent sets a field on an AuditEvent.
+func OptAuditUserAgent(value string) AuditEventOption {
 	return func(ae *AuditEvent) { ae.UserAgent = value }
 }
 
-// OptAuditEventExtra sets a field on an AuditEvent.
-func OptAuditEventExtra(values map[string]string) AuditEventOption {
+// OptAuditExtra sets a field on an AuditEvent.
+func OptAuditExtra(values map[string]string) AuditEventOption {
 	return func(ae *AuditEvent) { ae.Extra = values }
 }
 

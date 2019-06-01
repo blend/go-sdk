@@ -139,3 +139,52 @@ func TestLoggerSkipWrite(t *testing.T) {
 	assert.True(wasCalled)
 	assert.Empty(output.String())
 }
+
+func TestLoggerListeners(t *testing.T) {
+	assert := assert.New(t)
+
+	log := MustNew()
+	defer log.Close()
+
+	assert.Empty(log.Listeners)
+	log.Listen(Info, "foo", NewMessageEventListener(func(_ context.Context, me *MessageEvent) {}))
+	assert.NotEmpty(log.Listeners)
+	assert.True(log.HasListeners(Info))
+	assert.True(log.HasListener(Info, "foo"))
+	assert.False(log.HasListener(Info, "bar"))
+
+	log.Listen(Error, "foo", NewMessageEventListener(func(_ context.Context, me *MessageEvent) {}))
+	assert.True(log.HasListeners(Error))
+	assert.True(log.HasListener(Error, "foo"))
+	assert.False(log.HasListener(Error, "bar"))
+
+	log.Listen(Info, "bar", NewMessageEventListener(func(_ context.Context, me *MessageEvent) {}))
+	assert.True(log.HasListeners(Info))
+	assert.True(log.HasListener(Info, "foo"))
+	assert.True(log.HasListener(Info, "bar"))
+
+	log.Listen(Error, "bar", NewMessageEventListener(func(_ context.Context, me *MessageEvent) {}))
+	assert.True(log.HasListeners(Error))
+	assert.True(log.HasListener(Error, "foo"))
+	assert.True(log.HasListener(Error, "bar"))
+
+	log.RemoveListener(Info, "foo")
+	assert.True(log.HasListeners(Info))
+	assert.False(log.HasListener(Info, "foo"))
+	assert.True(log.HasListener(Info, "bar"))
+
+	log.RemoveListeners(Error)
+	assert.False(log.HasListeners(Error))
+	assert.False(log.HasListener(Error, "foo"))
+	assert.False(log.HasListener(Error, "bar"))
+}
+
+func TestLoggerProd(t *testing.T) {
+	assert := assert.New(t)
+
+	p := Prod(OptEnabled("bailey"))
+	defer p.Close()
+
+	assert.True(p.Flags.IsEnabled("bailey"))
+	assert.True(p.Formatter.(*TextOutputFormatter).NoColor)
+}

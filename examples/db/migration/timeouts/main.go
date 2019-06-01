@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/blend/go-sdk/db"
@@ -10,17 +11,16 @@ import (
 )
 
 func main() {
-	suite := migration.New(
-		migration.Group(
-			migration.Step(
+	suite := migration.New(migration.OptGroups(
+		migration.NewGroup(migration.OptActions(
+			migration.NewStep(
 				migration.Always(),
-				migration.Statements(
-					"select pg_sleep(10);",
-				),
-				db.OptTimeout(500*time.Millisecond),
+				func(ctx context.Context, connection *db.Connection, tx *sql.Tx) error {
+					return connection.Invoke(db.OptTimeout(500*time.Millisecond)).Exec("select pg_sleep(10);")
+				},
 			),
 		),
-	)
+	)))
 
 	suite.Log = logger.Prod()
 

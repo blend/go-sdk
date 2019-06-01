@@ -34,7 +34,7 @@ func TestConnectionSanityCheck(t *testing.T) {
 
 func TestPrepare(t *testing.T) {
 	a := assert.New(t)
-	tx, err := Default().Begin()
+	tx, err := defaultDB().Begin()
 	a.Nil(err)
 	defer tx.Rollback()
 
@@ -44,15 +44,16 @@ func TestPrepare(t *testing.T) {
 
 func TestQuery(t *testing.T) {
 	a := assert.New(t)
-	tx, err := Default().Begin()
+	tx, err := defaultDB().Begin()
 	a.Nil(err)
 	defer tx.Rollback()
 
+	a.Equal(DefaultSchema, defaultDB().DefaultSchema())
 	err = seedObjects(100, tx)
 	a.Nil(err)
 
 	objs := []benchObj{}
-	err = Default().Invoke(OptTx(tx)).Query("select * from bench_object").OutMany(&objs)
+	err = defaultDB().Invoke(OptTx(tx)).Query("select * from bench_object").OutMany(&objs)
 	a.Nil(err)
 	a.NotEmpty(objs)
 }
@@ -110,11 +111,11 @@ func TestConnectionOpen(t *testing.T) {
 
 func TestExec(t *testing.T) {
 	a := assert.New(t)
-	tx, err := Default().Begin()
+	tx, err := defaultDB().Begin()
 	a.Nil(err)
 	defer tx.Rollback()
 
-	err = Default().Invoke(OptTx(tx)).Exec("select 'ok!'")
+	err = defaultDB().Invoke(OptTx(tx)).Exec("select 'ok!'")
 	a.Nil(err)
 }
 

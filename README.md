@@ -73,3 +73,16 @@ Major:
 # Bugs and Feature Requests
 
 Please use the [issues page](https://github.com/blend/go-sdk/issues) to report any bugs or request new features be added to the SDK. We welcome contributions to any issue reported therein, including those you report. Please ping us on the issue itself for things like access requests.
+
+# Maintainers
+
+This repo is maintained by a core group of [Blend](https://blend.com) employees.
+
+This list includes (ordered alpha by username):
+- [@akarimcheese](https://github.com/akarimcheese)
+- [@alee101](https://github.co/alee101)
+- [@amallem](https://github.com/amallem)
+- [@gcarling](https://github.com/gcarling)
+- [@mat285](https://github.com/mat285)
+- [@mikes-blend](https://github.com/mikes-blend)
+- [@wcharczuk](https://github.com/wcharczuk)

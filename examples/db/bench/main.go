@@ -24,32 +24,28 @@ type benchObject struct {
 
 func createTable(tableName string, log logger.Log, conn *db.Connection) error {
 	log.Infof("creating %s", tableName)
-	suite := migration.New(
-		migration.Group(
-			migration.Step(
-				migration.TableNotExists(tableName),
-				migration.Statements(
-					fmt.Sprintf("CREATE TABLE %s (id serial not null primary key, name varchar(255))", tableName),
-				),
-			),
-		),
+	action := migration.NewStep(
+		migration.TableNotExists(tableName),
+		migration.Statements(
+			fmt.Sprintf("CREATE TABLE %s (id serial not null primary key, name varchar(255))", tableName)),
 	)
+
+
+	suite := migration.New(migration.OptGroups(migration.NewGroup(migration.OptActions(action))))
 	suite.Log = log
 	return suite.Apply(context.TODO(), conn)
 }
 
 func dropTable(tableName string, log logger.Log, conn *db.Connection) error {
 	log.Infof("dropping %s", tableName)
-	suite := migration.New(
-		migration.Group(
-			migration.Step(
-				migration.TableExists(tableName),
-				migration.Statements(
-					fmt.Sprintf("DROP TABLE %s", tableName),
-				),
-			),
+	action := migration.NewStep(
+		migration.TableExists(tableName),
+		migration.Statements(
+			fmt.Sprintf("DROP TABLE %s", tableName),
 		),
 	)
+
+	suite := migration.New(migration.OptGroups(migration.NewGroup(migration.OptActions(action))))
 	suite.Log = log
 	return suite.Apply(context.TODO(), conn)
 }

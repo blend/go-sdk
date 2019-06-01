@@ -12,7 +12,7 @@ import (
 
 func TestGuard(t *testing.T) {
 	assert := assert.New(t)
-	tx, err := db.Default().Begin()
+	tx, err := defaultDB().Begin()
 	assert.Nil(err)
 	defer tx.Rollback()
 
@@ -24,7 +24,7 @@ func TestGuard(t *testing.T) {
 	assert.Nil(err)
 
 	var didRun bool
-	action := Actions(func(ctx context.Context, c *db.Connection, itx *sql.Tx, opts ...db.InvocationOption) error {
+	action := Actions(func(ctx context.Context, c *db.Connection, itx *sql.Tx) error {
 		didRun = true
 		return nil
 	})
@@ -33,7 +33,7 @@ func TestGuard(t *testing.T) {
 		return c.Invoke(db.OptTx(itx)).Query(fmt.Sprintf("select * from %s", tableName)).Any()
 	})(
 		context.Background(),
-		db.Default(),
+		defaultDB(),
 		tx,
 		action,
 	)

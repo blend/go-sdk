@@ -9,6 +9,6 @@ import (
 func TestNewGroup(t *testing.T) {
 	assert := assert.New(t)
 
-	g := Group(Step(Always(), NoOp))
-	assert.Len(g, 1)
+	g := NewGroup(OptActions(NewStep(Always(), NoOp)))
+	assert.Len(g.Actions, 1)
 }
