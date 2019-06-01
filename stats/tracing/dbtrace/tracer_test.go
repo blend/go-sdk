@@ -1,0 +1,180 @@
+package dbtrace
+
+import (
+	"context"
+	"database/sql/driver"
+	"fmt"
+	"testing"
+
+	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/stats/tracing"
+	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/mocktracer"
+)
+
+func TestPing(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	dbTracer := Tracer(mockTracer)
+
+	dbtf := dbTracer.Ping(context.Background(), defaultDB())
+	span := dbtf.(dbTraceFinisher).span
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal(tracing.OperationSQLPing, mockSpan.OperationName)
+
+	assert.Len(mockSpan.Tags(), 3)
+	assert.Equal(tracing.SpanTypeSQL, mockSpan.Tags()[tracing.TagKeySpanType])
+	assert.Equal("postgres", mockSpan.Tags()[tracing.TagKeyDBName])
+	assert.Equal("", mockSpan.Tags()[tracing.TagKeyDBUser])
+}
+
+func TestPingWithParentSpan(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	dbTracer := Tracer(mockTracer)
+
+	parentSpan := mockTracer.StartSpan("test_op")
+	ctx := opentracing.ContextWithSpan(context.Background(), parentSpan)
+
+	dbtf := dbTracer.Ping(ctx, defaultDB())
+	span := dbtf.(dbTraceFinisher).span
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal(tracing.OperationSQLPing, mockSpan.OperationName)
+
+	mockParentSpan := parentSpan.(*mocktracer.MockSpan)
+	assert.Equal(mockSpan.ParentID, mockParentSpan.SpanContext.SpanID)
+}
+
+func TestPrepare(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	dbTracer := Tracer(mockTracer)
+
+	dbtf := dbTracer.Prepare(context.Background(), defaultDB(), "select * from test_table limit 1")
+	span := dbtf.(dbTraceFinisher).span
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal(tracing.OperationSQLPrepare, mockSpan.OperationName)
+
+	assert.Len(mockSpan.Tags(), 4)
+	assert.Equal(tracing.SpanTypeSQL, mockSpan.Tags()[tracing.TagKeySpanType])
+	assert.Equal("postgres", mockSpan.Tags()[tracing.TagKeyDBName])
+	assert.Equal("", mockSpan.Tags()[tracing.TagKeyDBUser])
+	assert.Equal("select * from test_table limit 1", mockSpan.Tags()[TagKeyQuery])
+}
+
+func TestPrepareWithParentSpan(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	dbTracer := Tracer(mockTracer)
+
+	parentSpan := mockTracer.StartSpan("test_op")
+	ctx := opentracing.ContextWithSpan(context.Background(), parentSpan)
+
+	dbtf := dbTracer.Prepare(ctx, defaultDB(), "select * from test_table limit 1")
+	span := dbtf.(dbTraceFinisher).span
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal(tracing.OperationSQLPrepare, mockSpan.OperationName)
+
+	mockParentSpan := parentSpan.(*mocktracer.MockSpan)
+	assert.Equal(mockSpan.ParentID, mockParentSpan.SpanContext.SpanID)
+}
+
+func TestQuery(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	dbTracer := Tracer(mockTracer)
+
+	tx, err := defaultDB().Begin()
+	assert.Nil(err)
+	err = createTable(tx)
+	assert.Nil(err)
+
+	statement := "SELECT 1 FROM test_table WHERE id = $1"
+	invocation := defaultDB().Invoke()
+	invocation.CachedPlanKey = "test_table_exists"
+
+	dbtf := dbTracer.Query(context.Background(), defaultDB(), invocation, statement)
+	span := dbtf.(dbTraceFinisher).span
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal(tracing.OperationSQLQuery, mockSpan.OperationName)
+
+	assert.Len(mockSpan.Tags(), 5)
+	assert.Equal("test_table_exists", mockSpan.Tags()[tracing.TagKeyResourceName])
+	assert.Equal(tracing.SpanTypeSQL, mockSpan.Tags()[tracing.TagKeySpanType])
+	assert.Equal("postgres", mockSpan.Tags()[tracing.TagKeyDBName])
+	assert.Equal("", mockSpan.Tags()[tracing.TagKeyDBUser])
+	assert.Equal(statement, mockSpan.Tags()[TagKeyQuery])
+}
+
+func TestQueryWithParentSpan(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	dbTracer := Tracer(mockTracer)
+
+	parentSpan := mockTracer.StartSpan("test_op")
+	ctx := opentracing.ContextWithSpan(context.Background(), parentSpan)
+
+	tx, err := defaultDB().Begin()
+	assert.Nil(err)
+	err = createTable(tx)
+	assert.Nil(err)
+
+	statement := "SELECT 1 FROM test_table WHERE id = $1"
+	invocation := defaultDB().Invoke()
+	invocation.CachedPlanKey = "test_table_exists"
+
+	dbtf := dbTracer.Query(ctx, defaultDB(), invocation, statement)
+	span := dbtf.(dbTraceFinisher).span
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal(tracing.OperationSQLQuery, mockSpan.OperationName)
+
+	mockParentSpan := parentSpan.(*mocktracer.MockSpan)
+	assert.Equal(mockSpan.ParentID, mockParentSpan.SpanContext.SpanID)
+}
+
+func TestFinish(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	dbTracer := Tracer(mockTracer)
+
+	dbtf := dbTracer.Ping(context.Background(), defaultDB())
+	dbtf.Finish(nil)
+
+	span := dbtf.(dbTraceFinisher).span
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Nil(mockSpan.Tags()[tracing.TagKeyError])
+}
+
+func TestFinishError(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	dbTracer := Tracer(mockTracer)
+
+	dbtf := dbTracer.Ping(context.Background(), defaultDB())
+	dbtf.Finish(fmt.Errorf("error"))
+
+	span := dbtf.(dbTraceFinisher).span
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal("error", mockSpan.Tags()[tracing.TagKeyError])
+}
+
+func TestFinishErrorSkip(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	dbTracer := Tracer(mockTracer)
+
+	dbtf := dbTracer.Ping(context.Background(), defaultDB())
+	dbtf.Finish(driver.ErrSkip)
+
+	span := dbtf.(dbTraceFinisher).span
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Nil(mockSpan.Tags()[tracing.TagKeyError])
+}
+
+func TestFinishNil(t *testing.T) {
+	assert := assert.New(t)
+
+	dbtf := dbTraceFinisher{}
+	dbtf.Finish(nil)
+	assert.Nil(dbtf.span)
+}
