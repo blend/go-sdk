@@ -653,3 +653,16 @@ func TestConnectionCreateIfNotExists(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(oldCategory, verify.Category)
 }
+
+func TestInvocationEarlyExitOnError(t *testing.T) {
+	assert := assert.New(t)
+	tx, err := defaultDB().Begin()
+	assert.Nil(err)
+	defer tx.Rollback()
+
+	i := defaultDB().Invoke(OptTx(tx))
+	assert.Nil(i.Exec("select 1"))
+
+	i.Err = fmt.Errorf("this is a test")
+	assert.Equal("this is a test", i.Exec("select 1").Error())
+}

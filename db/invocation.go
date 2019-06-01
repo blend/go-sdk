@@ -23,6 +23,7 @@ type Invocation struct {
 	TraceFinisher        TraceFinisher
 	StartTime            time.Time
 	Tx                   *sql.Tx
+	Err                  error
 }
 
 // Prepare returns a cached or newly prepared statment plan for a given sql statement.
@@ -852,6 +853,9 @@ func (i *Invocation) CloseStatement(stmt *sql.Stmt, err error) error {
 
 // Start runs on start steps.
 func (i *Invocation) Start(statement string) (string, error) {
+	if i.Err != nil {
+		return "", i.Err
+	}
 	if i.StatementInterceptor != nil {
 		var err error
 		statement, err = i.StatementInterceptor(i.CachedPlanKey, statement)

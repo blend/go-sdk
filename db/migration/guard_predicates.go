@@ -1,6 +1,11 @@
 package migration
 
-import "fmt"
+import (
+	"database/sql"
+	"fmt"
+	"github.com/blend/go-sdk/db"
+	"strings"
+)
 
 // TableExists returns a guard that ensures a table exists
 func TableExists(tableName string) GuardFunc {
@@ -104,4 +109,25 @@ func RoleExists(roleName string) GuardFunc {
 // RoleNotExists returns a guard that ensures a role (user) does not exist
 func RoleNotExists(roleName string) GuardFunc {
 	return guardNotPredicate(fmt.Sprintf("Check Role Not Exists: %s", roleName), PredicateRoleExists, roleName)
+}
+
+// SchemaExists is a guard function for asserting that a schema exists
+func SchemaExists(schemaName string) GuardFunc {
+	return Guard(fmt.Sprintf("drop schema `%s`", schemaName),
+		func(c *db.Connection, tx *sql.Tx) (bool, error) {
+			return predicateSchemaExists(c, tx, schemaName)
+		})
+}
+
+// SchemaNotExists is a guard function for asserting that a schema does not exist
+func SchemaNotExists(schemaName string) GuardFunc {
+	return Guard(fmt.Sprintf("create schema `%s`", schemaName),
+		func(c *db.Connection, tx *sql.Tx) (bool, error) {
+			return Not(predicateSchemaExists(c, tx, schemaName))
+		})
+}
+
+func predicateSchemaExists(c *db.Connection, tx *sql.Tx, schemaName string) (bool, error) {
+	return c.Invoke(db.OptTx(tx)).Query(`SELECT 1 FROM information_schema.schemata WHERE schema_name = $1`,
+		strings.ToLower(schemaName)).Any()
 }

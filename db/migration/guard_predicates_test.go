@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestGuardsReal(t *testing.T) {
+func TestGuardPredicatesReal(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
@@ -20,10 +20,19 @@ func TestGuardsReal(t *testing.T) {
 	iName := "index_foo"
 
 	var didRun bool
-	action := Actions(func(ctx context.Context, c *db.Connection, itx *sql.Tx, _ ...db.InvocationOption) error {
+	action := Actions(func(ctx context.Context, c *db.Connection, itx *sql.Tx) error {
 		didRun = true
 		return nil
 	})
+
+	err = SchemaExists("public")(context.Background(), defaultDB(), tx, action)
+	assert.Nil(err)
+	assert.True(didRun)
+
+	didRun = false
+	err = SchemaNotExists("public")(context.Background(), defaultDB(), tx, action)
+	assert.Nil(err)
+	assert.False(didRun)
 
 	err = TableExists(tName)(context.Background(), defaultDB(), tx, action)
 	assert.Nil(err)
@@ -93,7 +102,7 @@ func TestGuardsReal(t *testing.T) {
 	assert.True(didRun)
 }
 
-func TestGuardsRealSchema(t *testing.T) {
+func TestGuardPredicatsRealSchema(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
@@ -109,7 +118,7 @@ func TestGuardsRealSchema(t *testing.T) {
 	assert.Nil(err)
 
 	var didRun bool
-	action := Actions(func(ctx context.Context, c *db.Connection, itx *sql.Tx, _ ...db.InvocationOption) error {
+	action := Actions(func(ctx context.Context, c *db.Connection, itx *sql.Tx) error {
 		didRun = true
 		return nil
 	})
