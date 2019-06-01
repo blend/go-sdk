@@ -61,6 +61,88 @@ func verrf(format string, args ...interface{}) {
 	}
 }
 
+// gets coverage for a directory and returns the path to the coverage file for that directory
+func getPackageCoverage(currentPath string, info os.FileInfo, err error) (string, error) {
+	if os.IsNotExist(err) {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	fileName := info.Name()
+
+	if currentPath == "./" {
+		vf("`%s` skipping dir; home\n", currentPath)
+		return "", nil
+	}
+	if fileName == ".git" {
+		vf("`%s` skipping dir; .git", currentPath)
+		return "", filepath.SkipDir
+	}
+	if strings.HasPrefix(fileName, "_") {
+		vf("`%s` skipping dir; '_' prefix", currentPath)
+		return "", filepath.SkipDir
+	}
+	if fileName == "vendor" {
+		vf("`%s` skipping dir; vendor", currentPath)
+		return "", filepath.SkipDir
+	}
+
+	if !dirHasGlob(currentPath, "*.go") {
+		vf("`%s` skipping dir; no *.go files", currentPath)
+		return "", nil
+	}
+
+	if len(*include) > 0 {
+		if matches := globAnyMatch(*include, currentPath); !matches {
+			vf("`%s` skipping dir; include no match: %s", currentPath, *include)
+			return "", nil
+		}
+	}
+
+	if len(*exclude) > 0 {
+		if matches := globAnyMatch(*exclude, currentPath); matches {
+			vf("`%s` skipping dir; exclude match: %s", currentPath, *exclude)
+			return "", nil
+		}
+	}
+
+	packageCoverReport := filepath.Join(currentPath, "profile.cov")
+	err = removeIfExists(packageCoverReport)
+	if err != nil {
+		return "", err
+	}
+
+	var output []byte
+	output, err = execCoverage(currentPath)
+	if err != nil {
+		verrf("error running coverage")
+		fmt.Fprintln(os.Stderr, string(output))
+		return "", err
+	}
+
+	coverage := extractCoverage(string(output))
+	fmt.Fprintf(os.Stdout, "%s: %v%%\n", currentPath, colorCoverage(parseCoverage(coverage)))
+
+	if enforce != nil && *enforce {
+		vf("enforcing coverage minimums")
+		err = enforceCoverage(currentPath, coverage)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	if update != nil && *update {
+		fmt.Fprintf(os.Stdout, "%s updating coverage\n", currentPath)
+		err = writeCoverage(currentPath, coverage)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return packageCoverReport, nil
+}
+
 func main() {
 	flag.Parse()
 
@@ -76,94 +158,14 @@ func main() {
 	}
 	fmt.Fprintln(fullCoverageData, "mode: set")
 
-	// fileTotals is a map from the "package" file path to it's total line count
-	fileTotals := map[string]int{}
-	var fileName string
-	maybeFatal(filepath.Walk("./", func(currentPath string, info os.FileInfo, err error) error {
-
-		if os.IsNotExist(err) {
-			return nil
-		}
-		if err != nil {
-			return err
-		}
-		fileName = info.Name()
-
-		if fileName == ".git" {
-			vf("`%s` skipping dir; .git", currentPath)
-			return filepath.SkipDir
-		}
-		if strings.HasPrefix(fileName, "_") {
-			vf("`%s` skipping dir; '_' prefix", currentPath)
-			return filepath.SkipDir
-		}
-		if fileName == "vendor" {
-			vf("`%s` skipping dir; vendor", currentPath)
-			return filepath.SkipDir
-		}
-
-		if !info.IsDir() {
-			if strings.HasSuffix(fileName, ".go") {
-				vf("`%s` counting file lines", currentPath)
-				fileTotal, err := countFileLines(currentPath)
-				if err != nil {
-					return err
-				}
-				fileTotals[packageFilename(pwd, currentPath)] = fileTotal
-			}
-			return nil
-		}
-
-		if !dirHasGlob(currentPath, "*.go") {
-			vf("`%s` skipping dir; no *.go files", currentPath)
-			return nil
-		}
-
-		if len(*include) > 0 {
-			if matches := globAnyMatch(*include, currentPath); !matches {
-				vf("`%s` skipping dir; include no match: %s", currentPath, *include)
-				return nil
-			}
-		}
-
-		if len(*exclude) > 0 {
-			if matches := globAnyMatch(*exclude, currentPath); matches {
-				vf("`%s` skipping dir; exclude match: %s", currentPath, *exclude)
-				return nil
-			}
-		}
-
-		packageCoverReport := filepath.Join(currentPath, "profile.cov")
-		err = removeIfExists(packageCoverReport)
+	maybeFatal(filepath.Walk("./", func(currentPath string, info os.FileInfo, fileErr error) error {
+		packageCoverReport, err := getPackageCoverage(currentPath, info, fileErr)
 		if err != nil {
 			return err
 		}
 
-		var output []byte
-		output, err = execCoverage(currentPath)
-		if err != nil {
-			verrf("error running coverage")
-			fmt.Fprintln(os.Stderr, string(output))
-			return err
-		}
-
-		coverage := extractCoverage(string(output))
-		fmt.Fprintf(os.Stdout, "%s: %v%%\n", currentPath, colorCoverage(parseCoverage(coverage)))
-
-		if enforce != nil && *enforce {
-			vf("enforcing coverage minimums")
-			err = enforceCoverage(currentPath, coverage)
-			if err != nil {
-				return err
-			}
-		}
-
-		if update != nil && *update {
-			fmt.Fprintf(os.Stdout, "%s updating coverage\n", currentPath)
-			err = writeCoverage(currentPath, coverage)
-			if err != nil {
-				return err
-			}
+		if len(packageCoverReport) == 0 {
+			return nil
 		}
 
 		err = mergeCoverageOutput(packageCoverReport, fullCoverageData)
@@ -183,7 +185,7 @@ func main() {
 	maybeFatal(fullCoverageData.Close())
 
 	// complete summary steps
-	covered, total, err := parseFullCoverProfile(pwd, *coverprofile, fileTotals)
+	covered, total, err := parseFullCoverProfile(pwd, *coverprofile)
 	maybeFatal(err)
 	finalCoverage := (float64(covered) / float64(total)) * 100
 	maybeFatal(writeCoverage(pwd, formatCoverage(finalCoverage)))
@@ -388,21 +390,6 @@ func removeAndOpen(path string) (*os.File, error) {
 	return os.Create(path)
 }
 
-func countFileLines(path string) (lines int, err error) {
-	if filepath.Ext(path) != ".go" {
-		err = fmt.Errorf("count lines path must be a .go file")
-		return
-	}
-
-	var contents []byte
-	contents, err = ioutil.ReadFile(path)
-	if err != nil {
-		return
-	}
-	lines = bytes.Count(contents, []byte{'\n'})
-	return
-}
-
 // joinCoverPath takes a pwd, and a filename, and joins them
 // overlaying parts of the suffix of the pwd, and the prefix
 // of the filename that match.
@@ -429,25 +416,28 @@ func packageFilename(pwd, relativePath string) string {
 }
 
 // parseFullCoverProfile parses the final / merged cover output.
-func parseFullCoverProfile(pwd string, path string, fileTotals map[string]int) (covered, total int, err error) {
+func parseFullCoverProfile(pwd string, path string) (covered, total int, err error) {
 	vf("parsing coverage profile: %s", path)
 	files, err := cover.ParseProfiles(path)
 	if err != nil {
 		return
 	}
 
-	var fileCovered int
-	for _, fileTotal := range fileTotals {
-		total += fileTotal
-	}
+	var fileCovered, numLines int
 
 	for _, file := range files {
-		fileTotal := fileTotals[file.FileName]
 		fileCovered = 0
+
 		for _, block := range file.Blocks {
-			fileCovered += (block.EndLine - block.StartLine) + 1
+			numLines = block.EndLine - block.StartLine
+
+			total += numLines
+			if block.Count != 0 {
+				fileCovered += numLines
+			}
 		}
-		vf("processing coverage profile: %s result: %s (%d/%d lines)", path, file.FileName, fileCovered, fileTotal)
+
+		vf("processing coverage profile: %s result: %s (%d/%d lines)", path, file.FileName, fileCovered, numLines)
 		covered += fileCovered
 	}
 

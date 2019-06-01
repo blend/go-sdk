@@ -31,7 +31,7 @@ func TestReflectSliceType(t *testing.T) {
 
 func TestMakeSliceOfType(t *testing.T) {
 	a := assert.New(t)
-	tx, txErr := Default().Begin()
+	tx, txErr := defaultDB().Begin()
 	a.Nil(txErr)
 	defer func() {
 		a.Nil(tx.Rollback())
@@ -44,7 +44,7 @@ func TestMakeSliceOfType(t *testing.T) {
 	sliceOfT, castOk := makeSliceOfType(myType).(*[]benchObj)
 	a.True(castOk)
 
-	allErr := Default().Invoke(OptTx(tx)).All(sliceOfT)
+	allErr := defaultDB().Invoke(OptTx(tx)).All(sliceOfT)
 	a.Nil(allErr)
 	a.NotEmpty(*sliceOfT)
 }

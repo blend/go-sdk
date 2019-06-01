@@ -41,8 +41,8 @@ func NewHTTPResponseEventListener(listener func(context.Context, *HTTPResponseEv
 // HTTPResponseEventOption is a function that modifies an http response event.
 type HTTPResponseEventOption func(*HTTPResponseEvent)
 
-// OptHTTPResponseMetaOptions sets a fields on the event meta.
-func OptHTTPResponseMetaOptions(options ...EventMetaOption) HTTPResponseEventOption {
+// OptHTTPResponseMeta sets a fields on the event meta.
+func OptHTTPResponseMeta(options ...EventMetaOption) HTTPResponseEventOption {
 	return func(hre *HTTPResponseEvent) {
 		for _, option := range options {
 			option(hre.EventMeta)
@@ -85,6 +85,11 @@ func OptHTTPResponseElapsed(elapsed time.Duration) HTTPResponseEventOption {
 	return func(hre *HTTPResponseEvent) { hre.Elapsed = elapsed }
 }
 
+// OptHTTPResponseState sets a field.
+func OptHTTPResponseState(state interface{}) HTTPResponseEventOption {
+	return func(hre *HTTPResponseEvent) { hre.State = state }
+}
+
 // HTTPResponseEvent is an event type for responses.
 type HTTPResponseEvent struct {
 	*EventMeta
@@ -96,7 +101,7 @@ type HTTPResponseEvent struct {
 	ContentEncoding string
 	StatusCode      int
 	Elapsed         time.Duration
-	State           map[interface{}]interface{}
+	State           interface{}
 }
 
 // WriteText implements TextWritable.
@@ -111,6 +116,7 @@ func (e HTTPResponseEvent) MarshalJSON() ([]byte, error) {
 		"userAgent":       webutil.GetUserAgent(e.Request),
 		"verb":            e.Request.Method,
 		"path":            e.Request.URL.Path,
+		"route":           e.Route,
 		"query":           e.Request.URL.RawQuery,
 		"host":            e.Request.Host,
 		"contentLength":   e.ContentLength,
@@ -118,5 +124,6 @@ func (e HTTPResponseEvent) MarshalJSON() ([]byte, error) {
 		"contentEncoding": e.ContentEncoding,
 		"statusCode":      e.StatusCode,
 		"elapsed":         timeutil.Milliseconds(e.Elapsed),
+		"state":           e.State,
 	}))
 }
