@@ -35,6 +35,11 @@ func OptCtxState(s State) CtxOption {
 	return func(c *Ctx) { c.State = s }
 }
 
+// OptCtxSession sets the context session.
+func OptCtxSession(s *Session) CtxOption {
+	return func(c *Ctx) { c.Session = s }
+}
+
 // OptCtxRoute sets the context route.
 func OptCtxRoute(r *Route) CtxOption {
 	return func(c *Ctx) { c.Route = r }
