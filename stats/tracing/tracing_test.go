@@ -78,6 +78,19 @@ func TestGetTracingSpanFromContext(t *testing.T) {
 	assert.Equal(mockSpan.String(), mockSpanFromCtx.String())
 }
 
+func TestGetTracingSpanFromContextMiss(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+
+	spanKey := struct{}{}
+	span := mockTracer.StartSpan("test.operation")
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, spanKey, span)
+
+	spanFromCtx := GetTracingSpanFromContext(ctx, "wrongKey")
+	assert.Nil(spanFromCtx)
+}
+
 func TestSpanError(t *testing.T) {
 	assert := assert.New(t)
 	mockTracer := mocktracer.New()
