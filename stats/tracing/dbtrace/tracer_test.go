@@ -84,11 +84,6 @@ func TestQuery(t *testing.T) {
 	mockTracer := mocktracer.New()
 	dbTracer := Tracer(mockTracer)
 
-	tx, err := defaultDB().Begin()
-	assert.Nil(err)
-	err = createTable(tx)
-	assert.Nil(err)
-
 	statement := "SELECT 1 FROM test_table WHERE id = $1"
 	invocation := defaultDB().Invoke()
 	invocation.CachedPlanKey = "test_table_exists"
@@ -113,11 +108,6 @@ func TestQueryWithParentSpan(t *testing.T) {
 
 	parentSpan := mockTracer.StartSpan("test_op")
 	ctx := opentracing.ContextWithSpan(context.Background(), parentSpan)
-
-	tx, err := defaultDB().Begin()
-	assert.Nil(err)
-	err = createTable(tx)
-	assert.Nil(err)
 
 	statement := "SELECT 1 FROM test_table WHERE id = $1"
 	invocation := defaultDB().Invoke()
