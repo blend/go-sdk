@@ -29,6 +29,7 @@ func TestStart(t *testing.T) {
 	assert.Len(mockSpan.Tags(), 2)
 	assert.Equal("test_job", mockSpan.Tags()[tracing.TagKeyResourceName])
 	assert.Equal(tracing.SpanTypeJob, mockSpan.Tags()[tracing.TagKeySpanType])
+	assert.True(mockSpan.FinishTime.IsZero())
 }
 
 func TestFinish(t *testing.T) {
@@ -46,6 +47,7 @@ func TestFinish(t *testing.T) {
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.True(testStartTime.Before(mockSpan.FinishTime))
 	assert.Equal(nil, mockSpan.Tags()[tracing.TagKeyError])
+	assert.False(mockSpan.FinishTime.IsZero())
 }
 
 func TestFinishError(t *testing.T) {
@@ -66,6 +68,7 @@ func TestFinishError(t *testing.T) {
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.True(testStartTime.Before(mockSpan.FinishTime))
 	assert.Equal("error", mockSpan.Tags()[tracing.TagKeyError])
+	assert.False(mockSpan.FinishTime.IsZero())
 }
 
 func TestFinishNilSpan(t *testing.T) {

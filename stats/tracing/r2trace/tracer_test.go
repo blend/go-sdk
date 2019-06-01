@@ -33,6 +33,7 @@ func TestStart(t *testing.T) {
 
 	assert.Len(mockSpan.Tags(), 1)
 	assert.Equal(tracing.SpanTypeHTTP, mockSpan.Tags()[tracing.TagKeySpanType])
+	assert.True(mockSpan.FinishTime.IsZero())
 }
 
 func TestStartNoHeader(t *testing.T) {
@@ -54,6 +55,7 @@ func TestStartNoHeader(t *testing.T) {
 
 	assert.Len(mockSpan.Tags(), 1)
 	assert.Equal(tracing.SpanTypeHTTP, mockSpan.Tags()[tracing.TagKeySpanType])
+	assert.True(mockSpan.FinishTime.IsZero())
 }
 
 func TestStartWithParentSpan(t *testing.T) {
@@ -87,6 +89,7 @@ func TestFinish(t *testing.T) {
 	span := rtf.(r2TraceFinisher).span
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal("200", mockSpan.Tags()[tracing.TagKeyHTTPCode])
+	assert.False(mockSpan.FinishTime.IsZero())
 }
 
 func TestFinishError(t *testing.T) {
@@ -102,6 +105,7 @@ func TestFinishError(t *testing.T) {
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal("500", mockSpan.Tags()[tracing.TagKeyHTTPCode])
 	assert.Equal("error", mockSpan.Tags()[tracing.TagKeyError])
+	assert.False(mockSpan.FinishTime.IsZero())
 }
 
 func TestFinishNilSpan(t *testing.T) {

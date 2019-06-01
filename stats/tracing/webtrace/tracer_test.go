@@ -31,6 +31,7 @@ func TestStart(t *testing.T) {
 	assert.Equal("127.0.0.1", mockSpan.Tags()["http.remote_addr"])
 	assert.Equal("localhost", mockSpan.Tags()["http.host"])
 	assert.Equal("go-sdk test", mockSpan.Tags()["http.user_agent"])
+	assert.True(mockSpan.FinishTime.IsZero())
 }
 
 func TestStartWithRoute(t *testing.T) {
@@ -57,6 +58,7 @@ func TestStartWithRoute(t *testing.T) {
 	assert.Equal("localhost", mockSpan.Tags()["http.host"])
 	assert.Equal("go-sdk test", mockSpan.Tags()["http.user_agent"])
 	assert.Equal("/test-resource/:id", mockSpan.Tags()["http.route"])
+	assert.True(mockSpan.FinishTime.IsZero())
 }
 
 func optCtxIncomingSpan(t opentracing.Tracer, s opentracing.Span) web.CtxOption {
@@ -105,6 +107,7 @@ func TestFinish(t *testing.T) {
 	span := opentracing.SpanFromContext(ctx.Context())
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal("200", mockSpan.Tags()[tracing.TagKeyHTTPCode])
+	assert.False(mockSpan.FinishTime.IsZero())
 }
 
 func TestFinishError(t *testing.T) {
@@ -125,6 +128,7 @@ func TestFinishError(t *testing.T) {
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal("500", mockSpan.Tags()[tracing.TagKeyHTTPCode])
 	assert.Equal("error", mockSpan.Tags()[tracing.TagKeyError])
+	assert.False(mockSpan.FinishTime.IsZero())
 }
 
 func TestFinishNilSpan(t *testing.T) {
@@ -133,4 +137,66 @@ func TestFinishNilSpan(t *testing.T) {
 	ctx := web.MockCtx("GET", "/test-resource")
 	webTraceFinisher{}.Finish(ctx, nil)
 	assert.Nil(opentracing.SpanFromContext(ctx.Context()))
+}
+
+func TestStartView(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	webViewTracer := Tracer(mockTracer).(web.ViewTracer)
+
+	ctx := web.MockCtx("GET", "/test-resource")
+	viewResult := &web.ViewResult{
+		ViewName:   "test_view",
+		StatusCode: 200,
+	}
+	wvtf := webViewTracer.StartView(ctx, viewResult)
+	span := wvtf.(*webViewTraceFinisher).span
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal(tracing.OperationHTTPRender, mockSpan.OperationName)
+
+	assert.Len(mockSpan.Tags(), 2)
+	assert.Equal("test_view", mockSpan.Tags()[tracing.TagKeyResourceName])
+	assert.Equal(tracing.SpanTypeWeb, mockSpan.Tags()[tracing.TagKeySpanType])
+	assert.True(mockSpan.FinishTime.IsZero())
+}
+
+func TestStartViewWithParentSpan(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	webViewTracer := Tracer(mockTracer).(web.ViewTracer)
+
+	parentSpan := mockTracer.StartSpan("test_op")
+	ctx := web.MockCtx("GET", "/test-resource")
+	ctx.WithContext(opentracing.ContextWithSpan(ctx.Context(), parentSpan))
+	viewResult := &web.ViewResult{
+		ViewName:   "test_view",
+		StatusCode: 200,
+	}
+	wvtf := webViewTracer.StartView(ctx, viewResult)
+	span := wvtf.(*webViewTraceFinisher).span
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal(tracing.OperationHTTPRender, mockSpan.OperationName)
+
+	mockParentSpan := parentSpan.(*mocktracer.MockSpan)
+	assert.Equal(mockSpan.ParentID, mockParentSpan.SpanContext.SpanID)
+}
+
+func TestFinishView(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	webViewTracer := Tracer(mockTracer).(web.ViewTracer)
+
+	ctx := web.MockCtx("GET", "/test-resource")
+	viewResult := &web.ViewResult{
+		ViewName:   "test_view",
+		StatusCode: 200,
+	}
+	wvtf := webViewTracer.StartView(ctx, viewResult)
+	wvtf.FinishView(ctx, viewResult, nil)
+
+	span := wvtf.(*webViewTraceFinisher).span
+	mockSpan := span.(*mocktracer.MockSpan)
+
+	assert.Nil(mockSpan.Tags()[tracing.TagKeyError])
+	assert.False(mockSpan.FinishTime.IsZero())
 }

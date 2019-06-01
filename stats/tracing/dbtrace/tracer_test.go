@@ -26,6 +26,7 @@ func TestPing(t *testing.T) {
 	assert.Equal(tracing.SpanTypeSQL, mockSpan.Tags()[tracing.TagKeySpanType])
 	assert.Equal("postgres", mockSpan.Tags()[tracing.TagKeyDBName])
 	assert.Equal("", mockSpan.Tags()[tracing.TagKeyDBUser])
+	assert.True(mockSpan.FinishTime.IsZero())
 }
 
 func TestPingWithParentSpan(t *testing.T) {
@@ -60,6 +61,7 @@ func TestPrepare(t *testing.T) {
 	assert.Equal("postgres", mockSpan.Tags()[tracing.TagKeyDBName])
 	assert.Equal("", mockSpan.Tags()[tracing.TagKeyDBUser])
 	assert.Equal("select * from test_table limit 1", mockSpan.Tags()[TagKeyQuery])
+	assert.True(mockSpan.FinishTime.IsZero())
 }
 
 func TestPrepareWithParentSpan(t *testing.T) {
@@ -99,6 +101,7 @@ func TestQuery(t *testing.T) {
 	assert.Equal("postgres", mockSpan.Tags()[tracing.TagKeyDBName])
 	assert.Equal("", mockSpan.Tags()[tracing.TagKeyDBUser])
 	assert.Equal(statement, mockSpan.Tags()[TagKeyQuery])
+	assert.True(mockSpan.FinishTime.IsZero())
 }
 
 func TestQueryWithParentSpan(t *testing.T) {
@@ -133,6 +136,7 @@ func TestFinish(t *testing.T) {
 	span := dbtf.(dbTraceFinisher).span
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Nil(mockSpan.Tags()[tracing.TagKeyError])
+	assert.False(mockSpan.FinishTime.IsZero())
 }
 
 func TestFinishError(t *testing.T) {
@@ -146,6 +150,7 @@ func TestFinishError(t *testing.T) {
 	span := dbtf.(dbTraceFinisher).span
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal("error", mockSpan.Tags()[tracing.TagKeyError])
+	assert.False(mockSpan.FinishTime.IsZero())
 }
 
 func TestFinishErrorSkip(t *testing.T) {
