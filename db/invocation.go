@@ -23,6 +23,7 @@ type Invocation struct {
 	TraceFinisher        TraceFinisher
 	StartTime            time.Time
 	Tx                   *sql.Tx
+	Err                  error
 }
 
 // Prepare returns a cached or newly prepared statment plan for a given sql statement.
@@ -852,6 +853,9 @@ func (i *Invocation) CloseStatement(stmt *sql.Stmt, err error) error {
 
 // Start runs on start steps.
 func (i *Invocation) Start(statement string) (string, error) {
+	if i.Err != nil {
+		return "", i.Err
+	}
 	if i.StatementInterceptor != nil {
 		var err error
 		statement, err = i.StatementInterceptor(i.CachedPlanKey, statement)
@@ -859,7 +863,7 @@ func (i *Invocation) Start(statement string) (string, error) {
 			return "", err
 		}
 	}
-	if i.Tracer != nil {
+	if i.Tracer != nil && !IsSkipQueryLogging(i.Context) {
 		i.TraceFinisher = i.Tracer.Query(i.Context, i.Conn, i, statement)
 	}
 	return statement, nil
@@ -873,7 +877,7 @@ func (i *Invocation) Finish(statement string, r interface{}, err error) error {
 	if r != nil {
 		err = ex.Nest(err, ex.New(r))
 	}
-	if i.Conn.Log != nil {
+	if i.Conn.Log != nil && !IsSkipQueryLogging(i.Context) {
 
 		qe := logger.NewQueryEvent(statement, time.Now().UTC().Sub(i.StartTime))
 
@@ -885,7 +889,7 @@ func (i *Invocation) Finish(statement string, r interface{}, err error) error {
 
 		i.Conn.Log.Trigger(i.Context, qe)
 	}
-	if i.TraceFinisher != nil {
+	if i.TraceFinisher != nil && !IsSkipQueryLogging(i.Context) {
 		i.TraceFinisher.Finish(err)
 	}
 	if err != nil {

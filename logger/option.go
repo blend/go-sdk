@@ -2,7 +2,6 @@ package logger
 
 import (
 	"io"
-	"os"
 
 	"github.com/blend/go-sdk/env"
 )
@@ -13,7 +12,6 @@ type Option func(*Logger) error
 // OptConfig sets the logger based on a config.
 func OptConfig(cfg Config) Option {
 	return func(l *Logger) error {
-		l.Output = NewInterlockedWriter(os.Stdout)
 		l.Formatter = cfg.Formatter()
 		l.Flags = NewFlags(cfg.FlagsOrDefault()...)
 		return nil
@@ -28,7 +26,6 @@ func OptConfigFromEnv() Option {
 		if err := env.Env().ReadInto(&cfg); err != nil {
 			return err
 		}
-		l.Output = NewInterlockedWriter(os.Stdout)
 		l.Formatter = cfg.Formatter()
 		l.Flags = NewFlags(cfg.FlagsOrDefault()...)
 		return nil
@@ -58,12 +55,13 @@ func OptOutput(output io.Writer) Option {
 	}
 }
 
-// OptSubContext sets an initial sub-context path.
-func OptSubContext(path ...string) Option {
+// OptPath sets an initial logger context path.
+// This is useful if you want to label a logger to differentiate multiple loggers.
+func OptPath(path ...string) Option {
 	return func(l *Logger) error { l.Context.Path = path; return nil }
 }
 
-// OptFields sets an initial sub-context fields.
+// OptFields sets an initial logger context fields.
 func OptFields(fields Fields) Option {
 	return func(l *Logger) error { l.Context.Fields = fields; return nil }
 }

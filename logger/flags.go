@@ -13,8 +13,8 @@ func NewFlags(flags ...string) *Flags {
 		flags: make(map[string]bool),
 	}
 
-	for _, flag := range flags {
-		parsedFlag := strings.TrimSpace(strings.ToLower(flag))
+	for _, rawFlag := range flags {
+		parsedFlag := strings.TrimSpace(strings.ToLower(rawFlag))
 		if parsedFlag == FlagAll {
 			flagSet.all = true
 		}
@@ -106,9 +106,15 @@ func (efs Flags) IsEnabled(flag string) bool {
 	return false
 }
 
+// String returns a string representation of the flags.
 func (efs Flags) String() string {
+	return strings.Join(efs.Flags(), ", ")
+}
+
+// Flags returns an array of flags.
+func (efs Flags) Flags() []string {
 	if efs.none {
-		return FlagNone
+		return []string{FlagNone}
 	}
 
 	var flags []string
@@ -126,7 +132,7 @@ func (efs Flags) String() string {
 			}
 		}
 	}
-	return strings.Join(flags, ", ")
+	return flags
 }
 
 // MergeWith sets the set from another, with the other taking precedence.

@@ -7,28 +7,21 @@ import (
 	"github.com/blend/go-sdk/db"
 )
 
-// Step returns a new guarded actionable.
-func Step(guard GuardFunc, action Action, options ...db.InvocationOption) *GuardedAction {
-	return &GuardedAction{
+// NewStep returns a new Step, given a GuardFunc and an Action
+func NewStep(guard GuardFunc, action Action) *Step {
+	return &Step{
 		Guard:   guard,
 		Body:    action,
-		Options: options,
 	}
 }
 
-// GuardedAction is a guarded actionable.
-type GuardedAction struct {
+// Step is a guarded action. The GuardFunc will decide whether to execute this Action
+type Step struct {
 	Guard   GuardFunc
 	Body    Action
-	Options []db.InvocationOption
 }
 
-// BodyWithOptions is the guarded action body with a given set of options.
-func (ga GuardedAction) BodyWithOptions(ctx context.Context, c *db.Connection, tx *sql.Tx, options ...db.InvocationOption) error {
-	return ga.Body(ctx, c, tx, append(options, ga.Options...)...)
-}
-
-// Action runs the body if the provided guard passes.
-func (ga GuardedAction) Action(ctx context.Context, c *db.Connection, tx *sql.Tx, options ...db.InvocationOption) error {
-	return ga.Guard(ctx, c, tx, ga.BodyWithOptions)
+// Action implements the Actionable interface and runs the body if the provided guard passes.
+func (ga *Step) Action(ctx context.Context, c *db.Connection, tx *sql.Tx) error {
+	return ga.Guard(ctx, c, tx, ga.Body)
 }

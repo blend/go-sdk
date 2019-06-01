@@ -16,7 +16,7 @@ func New(options ...Option) (*Logger, error) {
 		RecoverPanics: DefaultRecoverPanics,
 		Flags:         NewFlags(DefaultFlags...),
 	}
-	l.Context = NewContext(l, nil)
+	l.Context = NewContext(l, nil, nil)
 	var err error
 	for _, option := range options {
 		if err = option(l); err != nil {
@@ -45,7 +45,11 @@ func All(options ...Option) *Logger {
 
 // None returns a new logger with all flags enabled.
 func None() *Logger {
-	return MustNew(OptNone(), OptOutput(nil))
+	return MustNew(
+		OptNone(),
+		OptOutput(nil),
+		OptFormatter(nil),
+	)
 }
 
 // Prod returns a new logger tuned for production use.
