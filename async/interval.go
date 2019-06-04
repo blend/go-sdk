@@ -23,7 +23,7 @@ func NewInterval(action ContextAction, interval time.Duration, options ...Interv
 		Latch:    NewLatch(),
 		Action:   action,
 		Context:  context.Background(),
-		Interval: DefaultInterval,
+		Interval: interval,
 	}
 	for _, option := range options {
 		option(&i)
