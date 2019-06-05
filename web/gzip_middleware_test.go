@@ -16,7 +16,6 @@ func TestGZipMiddlewarePlaintext(t *testing.T) {
 
 	app := New()
 	app.Use(GZip)
-
 	app.GET("/", ok)
 
 	req := MockGet(app, "/")
