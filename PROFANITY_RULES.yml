@@ -3,6 +3,11 @@ GOLANG_LOGGER: #note: this does not affect go-sdk/logger because of the package 
   contains:
   - "*logger.Logger"
 
+GOLANG_LATCH:
+  description: "please use the latch constructor"
+  contains:
+  - "&async.Latch{}"
+
 GOLANG_ASSERT_NON_TEST:
   description: "do not include assert in non _test.go files"
   excludeFiles:

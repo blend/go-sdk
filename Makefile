@@ -97,11 +97,11 @@ test-verbose:
 
 cover:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
-	@go run cmd/coverage/main.go --exclude="examples/*"
+	@go run cmd/coverage/main.go --exclude="examples/*" --keep-coverage-out
 
 cover-ci:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
-	@go run cmd/coverage/main.go --keep-coverage-out --covermode=atomic --coverprofile=coverage.txt --exclude="examples/*"
+	@go run cmd/coverage/main.go --keep-coverage-out --covermode=atomic --coverprofile=.coverage --exclude="examples/*"
 
 cover-enforce:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
