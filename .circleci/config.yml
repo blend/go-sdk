@@ -16,6 +16,9 @@ jobs:
     - run:
         name: ci
         command: make ci
+    - run:
+        name: codecov
+        command: bash <(curl -s https://codecov.io/bash) -X fix -f coverage.txt
     - store_artifacts:
         path: coverage.html
         destination: coverage.html
