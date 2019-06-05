@@ -19,7 +19,7 @@ func New(options ...Option) *App {
 		Latch:           async.NewLatch(),
 		State:           &SyncState{},
 		Statics:         map[string]*StaticFileServer{},
-		DefaultHeaders:  DefaultHeaders,
+		DefaultHeaders:  CopyHeaders(DefaultHeaders),
 		Views:           views,
 		DefaultProvider: views,
 	}
@@ -40,7 +40,7 @@ type App struct {
 	TLSConfig               *tls.Config
 	Server                  *http.Server
 	Listener                *net.TCPListener
-	DefaultHeaders          map[string]string
+	DefaultHeaders          http.Header
 	Statics                 map[string]*StaticFileServer
 	Routes                  map[string]*RouteNode
 	NotFoundHandler         Handler
@@ -64,6 +64,11 @@ func (a *App) CreateServer() *http.Server {
 		WriteTimeout:      a.Config.WriteTimeoutOrDefault(),
 		IdleTimeout:       a.Config.IdleTimeoutOrDefault(),
 	}
+}
+
+// Use adds a new default middleware.
+func (a *App) Use(middleware Middleware) {
+	a.DefaultMiddleware = append(a.DefaultMiddleware, middleware)
 }
 
 // StartupTasks runs common startup tasks.
@@ -196,7 +201,7 @@ func (a *App) ServeStatic(route string, searchPaths []string, middleware ...Midd
 	sfs.CacheDisabled = true
 	mountedRoute := a.formatStaticMountRoute(route)
 	a.Statics[mountedRoute] = sfs
-	a.Handle("GET", mountedRoute, a.RenderAction(a.Middleware(sfs.Action, middleware...)))
+	a.Handle("GET", mountedRoute, a.RenderAction(a.NestMiddleware(sfs.Action, middleware...)))
 }
 
 // ServeStaticCached serves files from the given file system root(s).
@@ -210,7 +215,7 @@ func (a *App) ServeStaticCached(route string, searchPaths []string, middleware .
 	sfs.Middleware = middleware
 	mountedRoute := a.formatStaticMountRoute(route)
 	a.Statics[mountedRoute] = sfs
-	a.Handle("GET", mountedRoute, a.RenderAction(a.Middleware(sfs.Action, middleware...)))
+	a.Handle("GET", mountedRoute, a.RenderAction(a.NestMiddleware(sfs.Action, middleware...)))
 }
 
 func (a *App) formatStaticMountRoute(route string) string {
@@ -239,37 +244,37 @@ It is important to note that routes are registered in order and
 cannot have any wildcards inside the routes.
 */
 func (a *App) GET(path string, action Action, middleware ...Middleware) {
-	a.Handle("GET", path, a.RenderAction(a.Middleware(action, middleware...)))
+	a.Handle("GET", path, a.RenderAction(a.NestMiddleware(action, middleware...)))
 }
 
 // OPTIONS registers a OPTIONS request handler.
 func (a *App) OPTIONS(path string, action Action, middleware ...Middleware) {
-	a.Handle("OPTIONS", path, a.RenderAction(a.Middleware(action, middleware...)))
+	a.Handle("OPTIONS", path, a.RenderAction(a.NestMiddleware(action, middleware...)))
 }
 
 // HEAD registers a HEAD request handler.
 func (a *App) HEAD(path string, action Action, middleware ...Middleware) {
-	a.Handle("HEAD", path, a.RenderAction(a.Middleware(action, middleware...)))
+	a.Handle("HEAD", path, a.RenderAction(a.NestMiddleware(action, middleware...)))
 }
 
 // PUT registers a PUT request handler.
 func (a *App) PUT(path string, action Action, middleware ...Middleware) {
-	a.Handle("PUT", path, a.RenderAction(a.Middleware(action, middleware...)))
+	a.Handle("PUT", path, a.RenderAction(a.NestMiddleware(action, middleware...)))
 }
 
 // PATCH registers a PATCH request handler.
 func (a *App) PATCH(path string, action Action, middleware ...Middleware) {
-	a.Handle("PATCH", path, a.RenderAction(a.Middleware(action, middleware...)))
+	a.Handle("PATCH", path, a.RenderAction(a.NestMiddleware(action, middleware...)))
 }
 
 // POST registers a POST request actions.
 func (a *App) POST(path string, action Action, middleware ...Middleware) {
-	a.Handle("POST", path, a.RenderAction(a.Middleware(action, middleware...)))
+	a.Handle("POST", path, a.RenderAction(a.NestMiddleware(action, middleware...)))
 }
 
 // DELETE registers a DELETE request handler.
 func (a *App) DELETE(path string, action Action, middleware ...Middleware) {
-	a.Handle("DELETE", path, a.RenderAction(a.Middleware(action, middleware...)))
+	a.Handle("DELETE", path, a.RenderAction(a.NestMiddleware(action, middleware...)))
 }
 
 // Handle adds a raw handler at a given method and path.
@@ -382,7 +387,7 @@ func (a *App) RenderAction(action Action) Handler {
 
 		if len(a.DefaultHeaders) > 0 {
 			for key, value := range a.DefaultHeaders {
-				ctx.Response.Header().Set(key, value)
+				ctx.Response.Header()[key] = value
 			}
 		}
 		result := action(ctx)
@@ -424,8 +429,8 @@ func (a *App) RenderAction(action Action) Handler {
 	}
 }
 
-// Middleware wraps an action with a given set of middleware, including app level default middleware.
-func (a *App) Middleware(action Action, middleware ...Middleware) Action {
+// NestMiddleware wraps an action with a given set of middleware, including app level default middleware.
+func (a *App) NestMiddleware(action Action, middleware ...Middleware) Action {
 	if len(middleware) == 0 && len(a.DefaultMiddleware) == 0 {
 		return action
 	}

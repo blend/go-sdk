@@ -1,6 +1,7 @@
 package web
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/blend/go-sdk/webutil"
@@ -68,7 +69,7 @@ const (
 	HeaderUserAgent = "User-Agent"
 
 	// HeaderVary is the "Vary" header.
-	// It is used to indicate what fields should be used by the client as cache keys.
+	// It is used to indicate what fields should not be used by the client as cache keys.
 	HeaderVary = "Vary"
 
 	// HeaderXServedBy is the "X-Served-By" header.
@@ -264,9 +265,8 @@ const (
 )
 
 // DefaultHeaders are the default headers added by go-web.
-var DefaultHeaders = map[string]string{
-	HeaderServer:    PackageName,
-	HeaderXServedBy: PackageName,
+var DefaultHeaders = http.Header{
+	HeaderServer: []string{PackageName},
 }
 
 // SessionLockPolicy is a lock policy.

@@ -81,14 +81,14 @@ func OptTLSConfig(cfg *tls.Config) Option {
 func OptDefaultHeader(key, value string) Option {
 	return func(a *App) {
 		if a.DefaultHeaders == nil {
-			a.DefaultHeaders = make(map[string]string)
+			a.DefaultHeaders = make(http.Header)
 		}
-		a.DefaultHeaders[key] = value
+		a.DefaultHeaders.Set(key, value)
 	}
 }
 
 // OptDefaultHeaders sets default headers.
-func OptDefaultHeaders(headers map[string]string) Option {
+func OptDefaultHeaders(headers http.Header) Option {
 	return func(a *App) { a.DefaultHeaders = headers }
 }
 

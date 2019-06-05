@@ -53,3 +53,12 @@ func ParseInt32(v string) int32 {
 func NewCookie(name, value string) *http.Cookie {
 	return &http.Cookie{Name: name, Value: value}
 }
+
+// CopyHeaders copies headers.
+func CopyHeaders(headers http.Header) http.Header {
+	output := make(http.Header)
+	for key, values := range headers {
+		output[key] = values
+	}
+	return output
+}
