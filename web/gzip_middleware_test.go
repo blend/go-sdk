@@ -6,9 +6,8 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/blend/go-sdk/r2"
-
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/r2"
 )
 
 func TestGZipMiddlewarePlaintext(t *testing.T) {
