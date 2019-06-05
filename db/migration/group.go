@@ -26,7 +26,7 @@ func NewGroupWithActions(actions ...Actionable) *Group {
 // It uses normally transactions to apply these actions as an atomic unit, but this transaction can be bypassed by
 // setting the SkipTransaction flag to true. This allows the use of CONCURRENT index creation and other operations that
 // postgres will not allow within a transaction.
-type Group struct{
+type Group struct {
 	Actions         []Actionable
 	SkipTransaction bool
 }

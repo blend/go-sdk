@@ -16,11 +16,11 @@ func main() {
 			migration.NewStep(
 				migration.Always(),
 				func(ctx context.Context, connection *db.Connection, tx *sql.Tx) error {
-					return connection.Invoke(db.OptTimeout(500*time.Millisecond)).Exec("select pg_sleep(10);")
+					return connection.Invoke(db.OptTimeout(500 * time.Millisecond)).Exec("select pg_sleep(10);")
 				},
 			),
 		),
-	)))
+		)))
 
 	suite.Log = logger.Prod()
 

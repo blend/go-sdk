@@ -2,7 +2,7 @@ package db
 
 import "context"
 
-type skipQueryLogging struct {}
+type skipQueryLogging struct{}
 
 // WithSkipQueryLogging sets the context to skip logger listener triggers.
 func WithSkipQueryLogging(ctx context.Context) context.Context {

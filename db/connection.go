@@ -228,4 +228,3 @@ func (dbc *Connection) Query(statement string, args ...interface{}) *Query {
 func (dbc *Connection) QueryContext(ctx context.Context, statement string, args ...interface{}) *Query {
 	return dbc.Invoke(OptContext(ctx)).Query(statement, args...)
 }
-

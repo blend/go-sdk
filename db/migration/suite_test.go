@@ -10,7 +10,6 @@ import (
 	"testing"
 )
 
-
 func TestSuite_Apply(t *testing.T) {
 	a := assert.New(t)
 	testSchemaName := buildTestSchemaName()
@@ -83,21 +82,21 @@ func createTestMigrations(testSchemaName string) []*Group {
 						(&connection.Config).Schema = testSchemaName
 						return nil
 					},
-			))),
+				))),
 		NewGroupWithActions(
 			NewStep(
 				TableNotExists("table_test_foo"),
 				Exec(fmt.Sprintf("CREATE TABLE %s.table_test_foo (id serial not null primary key, something varchar(32) not null);", testSchemaName)),
-				),
+			),
 			NewStep(
 				ColumnNotExists("table_test_foo", "created_foo"),
-				Statements(fmt.Sprintf("ALTER TABLE %s.table_test_foo ADD COLUMN created_foo timestamp not null;",testSchemaName)),
-				)),
+				Statements(fmt.Sprintf("ALTER TABLE %s.table_test_foo ADD COLUMN created_foo timestamp not null;", testSchemaName)),
+			)),
 		NewGroup(OptSkipTransaction(), OptActions(
 			NewStep(
-				IndexNotExists("table_test_foo","idx_created_foo"),
+				IndexNotExists("table_test_foo", "idx_created_foo"),
 				Statements(fmt.Sprintf("CREATE INDEX CONCURRENTLY idx_created_foo ON %s.table_test_foo(created_foo);", testSchemaName)),
-				))),
+			))),
 		NewGroupWithActions(
 			NewStep(
 				TableNotExists("table_test_foo"),

@@ -14,7 +14,7 @@ func TestRef(t *testing.T) {
 	assert.NotEmpty(Strings("foo", "bar"))
 
 	assert.NotNil(Bool(true))
-	
+
 	assert.NotNil(Byte('b'))
 	assert.NotNil(Rune('b'))
 

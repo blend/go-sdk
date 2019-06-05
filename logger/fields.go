@@ -1,6 +1,5 @@
 package logger
 
-
 // Fields are event meta fields.
 type Fields = map[string]string
 
@@ -9,7 +8,7 @@ func CombineFields(fields ...Fields) Fields {
 	output := make(Fields)
 	for _, fieldSet := range fields {
 		for key, value := range fieldSet {
-			output[key]=value
+			output[key] = value
 		}
 	}
 	return output

@@ -109,7 +109,6 @@ func guardNotPredicate3(description string, p predicate3, arg1, arg2, arg3 strin
 	})
 }
 
-
 // predicate is a function that evaluates based on a string param.
 type predicate func(*db.Connection, *sql.Tx, string) (bool, error)
 
