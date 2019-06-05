@@ -16,14 +16,11 @@ DB_SSLMODE		?= disable
 CIRCLE_ARTIFACTS 	?= "."
 COVERAGE_OUT 		:= "$(CIRCLE_ARTIFACTS)/coverage.html"
 
-GOMAXPROCS := 1
-
-export GOMAXPROCS
 export GIT_REF
 export VERSION
 export DB_SSLMODE
 
-all: format vet profanity test
+all: ci
 
 ci: vet profanity cover-ci
 
