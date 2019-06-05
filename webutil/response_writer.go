@@ -2,13 +2,19 @@ package webutil
 
 import "net/http"
 
-// ResponseWrapper is a type that wraps a response.
-type ResponseWrapper interface {
-	InnerResponse() http.ResponseWriter
-}
+var (
+	_ (ResponseWrapper)     = (*ResponseWriter)(nil)
+	_ (http.ResponseWriter) = (*ResponseWriter)(nil)
+	_ (http.Flusher)        = (*ResponseWriter)(nil)
+)
 
 // NewResponseWriter creates a new response writer.
 func NewResponseWriter(w http.ResponseWriter) *ResponseWriter {
+	if typed, ok := w.(ResponseWrapper); ok {
+		return &ResponseWriter{
+			innerResponse: typed.InnerResponse(),
+		}
+	}
 	return &ResponseWriter{
 		innerResponse: w,
 	}
@@ -39,15 +45,13 @@ func (rw *ResponseWriter) WriteHeader(code int) {
 	rw.innerResponse.WriteHeader(code)
 }
 
-// InnerWriter returns the backing writer.
-func (rw *ResponseWriter) InnerWriter() http.ResponseWriter {
+// InnerResponse returns the backing writer.
+func (rw *ResponseWriter) InnerResponse() http.ResponseWriter {
 	return rw.innerResponse
 }
 
 // Flush is a no op on raw response writers.
-func (rw *ResponseWriter) Flush() error {
-	return nil
-}
+func (rw *ResponseWriter) Flush() {}
 
 // StatusCode returns the status code.
 func (rw *ResponseWriter) StatusCode() int {

@@ -371,16 +371,7 @@ func (a *App) RenderAction(action Action) Handler {
 		var err error
 		var tf TraceFinisher
 
-		var response ResponseWriter
-		if strings.Contains(r.Header.Get(HeaderAcceptEncoding), ContentEncodingGZIP) {
-			w.Header().Set(HeaderContentEncoding, ContentEncodingGZIP)
-			response = NewCompressedResponseWriter(w)
-		} else {
-			w.Header().Set(HeaderContentEncoding, ContentEncodingIdentity)
-			response = NewRawResponseWriter(w)
-		}
-
-		ctx := a.createCtx(response, r, route, p)
+		ctx := a.createCtx(NewRawResponseWriter(w), r, route, p)
 		ctx.onRequestStart()
 		if a.Tracer != nil {
 			tf = a.Tracer.Start(ctx)
@@ -391,7 +382,7 @@ func (a *App) RenderAction(action Action) Handler {
 
 		if len(a.DefaultHeaders) > 0 {
 			for key, value := range a.DefaultHeaders {
-				response.Header().Set(key, value)
+				ctx.Response.Header().Set(key, value)
 			}
 		}
 		result := action(ctx)
@@ -419,7 +410,7 @@ func (a *App) RenderAction(action Action) Handler {
 		}
 
 		ctx.onRequestFinish()
-		response.Close()
+		ctx.Response.Close()
 
 		if err != nil {
 			a.logFatal(err, r)
