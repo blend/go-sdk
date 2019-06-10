@@ -36,8 +36,8 @@ func TestMain(m *testing.M) {
 
 // BenchmarkMain is the benchmarking entrypoint.
 func BenchmarkMain(b *testing.B) {
-	tx, txErr := defaultDB().Begin()
-	if txErr != nil {
+	tx, err := defaultDB().Begin()
+	if err != nil {
 		b.Error("Unable to create transaction")
 		b.FailNow()
 	}
@@ -48,36 +48,53 @@ func BenchmarkMain(b *testing.B) {
 
 	defer func() {
 		if tx != nil {
-			if rollbackErr := tx.Rollback(); rollbackErr != nil {
-				b.Errorf("Error rolling back transaction: %v", rollbackErr)
+			if err := tx.Rollback(); err != nil {
+				b.Errorf("Error rolling back transaction: %v", err)
 				b.FailNow()
 			}
 		}
 	}()
 
-	seedErr := seedObjects(10000, tx)
-	if seedErr != nil {
-		b.Errorf("Error seeding objects: %v", seedErr)
+	err = seedObjects(10000, tx)
+	if err != nil {
+		b.Errorf("Error seeding objects: %v", err)
 		b.FailNow()
 	}
 
-	manualBefore := time.Now()
-	_, manualErr := readManual(tx)
-	manualAfter := time.Now()
-	if manualErr != nil {
-		b.Errorf("Error using manual query: %v", manualErr)
-		b.FailNow()
+	var manual time.Duration
+	for x := 0; x < b.N*10; x++ {
+		manualStart := time.Now()
+		_, err = readManual(tx)
+		if err != nil {
+			b.Errorf("Error using manual query: %v", err)
+			b.FailNow()
+		}
+		manual += time.Since(manualStart)
 	}
 
-	ormBefore := time.Now()
-	_, ormErr := readOrm(tx)
-	ormAfter := time.Now()
-	if ormErr != nil {
-		b.Errorf("Error using orm: %v", ormErr)
-		b.FailNow()
+	var orm time.Duration
+	for x := 0; x < b.N*10; x++ {
+		ormStart := time.Now()
+		_, err = readOrm(tx)
+		if err != nil {
+			b.Errorf("Error using orm: %v", err)
+			b.FailNow()
+		}
+		orm += time.Since(ormStart)
 	}
 
-	b.Logf("Benchmark Test Results: Manual: %v vs. Orm: %v\n", manualAfter.Sub(manualBefore), ormAfter.Sub(ormBefore))
+	var ormCached time.Duration
+	for x := 0; x < b.N*10; x++ {
+		ormCachedStart := time.Now()
+		_, err = readCachedOrm(tx)
+		if err != nil {
+			b.Errorf("Error using orm: %v", err)
+			b.FailNow()
+		}
+		ormCached += time.Since(ormCachedStart)
+	}
+
+	b.Logf("Benchmark Test Results:\nManual: %v \nOrm: %v\nOrm (Cached Plan): %v\n", manual, orm, ormCached)
 }
 
 //------------------------------------------------------------------------------------------------
@@ -205,7 +222,13 @@ func readManual(tx *sql.Tx) ([]benchObj, error) {
 
 func readOrm(tx *sql.Tx) ([]benchObj, error) {
 	var objs []benchObj
-	allErr := defaultDB().Invoke(OptTx(tx)).All(&objs)
+	allErr := defaultDB().Invoke(OptTx(tx)).Query(fmt.Sprintf("select %s from bench_object", ColumnNamesCSV(benchObj{}))).OutMany(&objs)
+	return objs, allErr
+}
+
+func readCachedOrm(tx *sql.Tx) ([]benchObj, error) {
+	var objs []benchObj
+	allErr := defaultDB().Invoke(OptTx(tx), OptCachedPlanKey("get_all_bench_object")).Query(fmt.Sprintf("select %s from bench_object", ColumnNamesCSV(benchObj{}))).OutMany(&objs)
 	return objs, allErr
 }
 
