@@ -26,6 +26,14 @@ We also provide the following CLI tools to help with development that leverage s
 - The repository is organized into composible packages. They are designed to be as loosely coupled as possible, but are all in a single repo to facilitate breaking change management.
 - Any commandline programs should live under `cmd/**` with the core library code in a top level package. The CLI should just be the bare minimum to run the library from the cli.
 
+# Contributing
+
+One (or more) of the core team members are required to review any PR (please make sure to tag them on the PR).
+
+Blend employees (members of the `Blend` organization) feel free to use branches to create PRs.
+
+Non-Blend employees feel free to fork the repo and open PRs with changes. Forked repos present some difficulty pre-go mod because of the path reference being changed (i.e. `github.com/blend/go-sdk` turns into `github.com/<FORKING USER>/go-sdk`), so it's recommended to check the fork out to `$GOPATH/src/github.com/blend/go-sdk` on disk to preserve the project paths.
+
 # Code Style Notes
 
 - Where possible, follow the [golang proverbs](https://go-proverbs.github.io/).
