@@ -70,14 +70,14 @@ func (i *Invocation) Query(statement string, args ...interface{}) *Query {
 	var err error
 	statement, err = i.Start(statement)
 	return &Query{
-		context:       i.Context,
-		statement:     statement,
-		cachedPlanKey: i.CachedPlanKey,
-		args:          args,
-		conn:          i.Conn,
-		inv:           i,
-		tx:            i.Tx,
-		err:           err,
+		Context:       i.Context,
+		Statement:     statement,
+		CachedPlanKey: i.CachedPlanKey,
+		Args:          args,
+		Conn:          i.Conn,
+		Invocation:    i,
+		Tx:            i.Tx,
+		Err:           err,
 	}
 }
 
@@ -355,7 +355,7 @@ func (i *Invocation) Delete(object DatabaseMapped) (deleted bool, err error) {
 		return
 	}
 	defer func() { err = i.CloseStatement(stmt, err) }()
-	res, err := stmt.ExecContext(i.Context, pks.ColumnValues(object)...);
+	res, err := stmt.ExecContext(i.Context, pks.ColumnValues(object)...)
 	if err != nil {
 		err = Error(err)
 		return

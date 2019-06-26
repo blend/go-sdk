@@ -14,17 +14,17 @@ import (
 
 // Query is the intermediate result of a query.
 type Query struct {
-	context       context.Context
-	statement     string
-	cachedPlanKey string
-	args          []interface{}
+	Context       context.Context
+	Statement     string
+	CachedPlanKey string
+	Args          []interface{}
 
-	rows *sql.Rows
-	err  error
+	Rows *sql.Rows
+	Err  error
 
-	conn *Connection
-	inv  *Invocation
-	tx   *sql.Tx
+	Conn       *Connection
+	Invocation *Invocation
+	Tx         *sql.Tx
 }
 
 // Execute runs a given query, yielding the raw results.
@@ -38,14 +38,14 @@ func (q *Query) Execute() (rows *sql.Rows, err error) {
 func (q *Query) Any() (hasRows bool, err error) {
 	defer func() { err = q.finish(recover(), err) }()
 
-	q.rows, q.err = q.query()
-	if q.err != nil {
-		err = q.err
+	q.Rows, q.Err = q.query()
+	if q.Err != nil {
+		err = q.Err
 		return
 	}
-	defer func() { err = ex.Nest(err, q.rows.Close()) }()
+	defer func() { err = ex.Nest(err, q.Rows.Close()) }()
 
-	hasRows = q.rows.Next()
+	hasRows = q.Rows.Next()
 	return
 }
 
@@ -53,13 +53,13 @@ func (q *Query) Any() (hasRows bool, err error) {
 func (q *Query) None() (hasRows bool, err error) {
 	defer func() { err = q.finish(recover(), err) }()
 
-	q.rows, q.err = q.query()
-	if q.err != nil {
-		err = q.err
+	q.Rows, q.Err = q.query()
+	if q.Err != nil {
+		err = q.Err
 		return
 	}
-	defer func() { err = ex.Nest(err, Error(q.rows.Close())) }()
-	hasRows = !q.rows.Next()
+	defer func() { err = ex.Nest(err, Error(q.Rows.Close())) }()
+	hasRows = !q.Rows.Next()
 	return
 }
 
@@ -67,15 +67,15 @@ func (q *Query) None() (hasRows bool, err error) {
 func (q *Query) Scan(args ...interface{}) (err error) {
 	defer func() { err = q.finish(recover(), err) }()
 
-	q.rows, q.err = q.query()
-	if q.err != nil {
-		err = q.err
+	q.Rows, q.Err = q.query()
+	if q.Err != nil {
+		err = q.Err
 		return
 	}
-	defer func() { err = ex.Nest(err, Error(q.rows.Close())) }()
+	defer func() { err = ex.Nest(err, Error(q.Rows.Close())) }()
 
-	if q.rows.Next() {
-		if err = q.rows.Scan(args...); err != nil {
+	if q.Rows.Next() {
+		if err = q.Rows.Scan(args...); err != nil {
 			err = Error(err)
 			return
 		}
@@ -100,15 +100,14 @@ func (q *Query) Into(object interface{}) (found bool, err error) {
 	return q.populateImpl(object, false)
 }
 
-func (q *Query) populateImpl(object interface{}, clearEmpty bool)(found bool, err error) {
+func (q *Query) populateImpl(object interface{}, clearEmpty bool) (found bool, err error) {
 	defer func() { err = q.finish(recover(), err) }()
-	q.rows, q.err = q.query()
-	if q.err != nil {
-		err = q.err
+	q.Rows, q.Err = q.query()
+	if q.Err != nil {
+		err = q.Err
 		return
 	}
-	defer func() { err = ex.Nest(err, Error(q.rows.Close())) }()
-
+	defer func() { err = ex.Nest(err, Error(q.Rows.Close())) }()
 
 	sliceType := ReflectType(object)
 	if sliceType.Kind() != reflect.Struct {
@@ -117,12 +116,12 @@ func (q *Query) populateImpl(object interface{}, clearEmpty bool)(found bool, er
 	}
 
 	columnMeta := CachedColumnCollectionFromInstance(object)
-	if q.rows.Next() {
+	if q.Rows.Next() {
 		found = true
 		if populatable, ok := object.(Populatable); ok {
-			err = populatable.Populate(q.rows)
+			err = populatable.Populate(q.Rows)
 		} else {
-			err = PopulateByName(object, q.rows, columnMeta, clearEmpty)
+			err = PopulateByName(object, q.Rows, columnMeta, clearEmpty)
 		}
 		if err != nil {
 			return
@@ -131,7 +130,7 @@ func (q *Query) populateImpl(object interface{}, clearEmpty bool)(found bool, er
 		PopulateEmpty(object, columnMeta)
 	}
 
-	if q.rows.Next() {
+	if q.Rows.Next() {
 		err = Error(ErrTooManyRows)
 	}
 
@@ -142,12 +141,12 @@ func (q *Query) populateImpl(object interface{}, clearEmpty bool)(found bool, er
 func (q *Query) OutMany(collection interface{}) (err error) {
 	defer func() { err = q.finish(recover(), err) }()
 
-	q.rows, q.err = q.query()
-	if q.err != nil {
-		err = q.err
+	q.Rows, q.Err = q.query()
+	if q.Err != nil {
+		err = q.Err
 		return
 	}
-	defer func() { err = ex.Nest(err, q.rows.Close()) }()
+	defer func() { err = ex.Nest(err, q.Rows.Close()) }()
 
 	sliceType := ReflectType(collection)
 	if sliceType.Kind() != reflect.Slice {
@@ -163,13 +162,13 @@ func (q *Query) OutMany(collection interface{}) (err error) {
 	isPopulatable := isPopulatable(v)
 
 	didSetRows := false
-	for q.rows.Next() {
+	for q.Rows.Next() {
 		newObj := makeNew(sliceInnerType)
 
 		if isPopulatable {
-			err = asPopulatable(newObj).Populate(q.rows)
+			err = asPopulatable(newObj).Populate(q.Rows)
 		} else {
-			err = PopulateByName(newObj, q.rows, meta, true)
+			err = PopulateByName(newObj, q.Rows, meta, true)
 		}
 		if err != nil {
 			return
@@ -190,15 +189,15 @@ func (q *Query) OutMany(collection interface{}) (err error) {
 func (q *Query) Each(consumer RowsConsumer) (err error) {
 	defer func() { err = q.finish(recover(), err) }()
 
-	q.rows, q.err = q.query()
-	if q.err != nil {
-		err = q.err
+	q.Rows, q.Err = q.query()
+	if q.Err != nil {
+		err = q.Err
 		return
 	}
-	defer func() { err = ex.Nest(err, Error(q.rows.Close())) }()
+	defer func() { err = ex.Nest(err, Error(q.Rows.Close())) }()
 
-	for q.rows.Next() {
-		if err = consumer(q.rows); err != nil {
+	for q.Rows.Next() {
+		if err = consumer(q.Rows); err != nil {
 			err = Error(err)
 			return
 		}
@@ -210,15 +209,15 @@ func (q *Query) Each(consumer RowsConsumer) (err error) {
 func (q *Query) First(consumer RowsConsumer) (err error) {
 	defer func() { err = q.finish(recover(), err) }()
 
-	q.rows, q.err = q.query()
-	if q.err != nil {
-		err = q.err
+	q.Rows, q.Err = q.query()
+	if q.Err != nil {
+		err = q.Err
 		return
 	}
-	defer func() { err = ex.Nest(err, Error(q.rows.Close())) }()
+	defer func() { err = ex.Nest(err, Error(q.Rows.Close())) }()
 
-	if q.rows.Next() {
-		if err = consumer(q.rows); err != nil {
+	if q.Rows.Next() {
+		if err = consumer(q.Rows); err != nil {
 			return
 		}
 	}
@@ -230,19 +229,19 @@ func (q *Query) First(consumer RowsConsumer) (err error) {
 // --------------------------------------------------------------------------------
 
 func (q *Query) query() (rows *sql.Rows, err error) {
-	if q.err != nil {
-		err = q.err
+	if q.Err != nil {
+		err = q.Err
 		return
 	}
 
-	stmt, stmtErr := q.inv.Prepare(q.statement)
+	stmt, stmtErr := q.Invocation.Prepare(q.Statement)
 	if stmtErr != nil {
 		err = Error(stmtErr)
 		return
 	}
-	defer func() { err = q.inv.CloseStatement(stmt, err) }()
+	defer func() { err = q.Invocation.CloseStatement(stmt, err) }()
 
-	rows, err = stmt.QueryContext(q.context, q.args...)
+	rows, err = stmt.QueryContext(q.Context, q.Args...)
 	if err != nil && !ex.Is(err, sql.ErrNoRows) {
 		err = Error(err)
 	}
@@ -250,5 +249,5 @@ func (q *Query) query() (rows *sql.Rows, err error) {
 }
 
 func (q *Query) finish(r interface{}, err error) error {
-	return q.inv.Finish(q.statement, r, err)
+	return q.Invocation.Finish(q.Statement, r, err)
 }
