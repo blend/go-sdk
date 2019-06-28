@@ -39,7 +39,13 @@ func (i *Invocation) Prepare(statement string) (stmt *sql.Stmt, err error) {
 }
 
 // Exec executes a sql statement with a given set of arguments.
-func (i *Invocation) Exec(statement string, args ...interface{}) (rowsAffected int64, err error) {
+func (i *Invocation) Exec(statement string, args ...interface{}) (err error) {
+	_, err = i.ExecStats(statement, args...)
+	return
+}
+
+// ExecStats executes a sql statement with a given set of arguments and returns the rows affected.
+func (i *Invocation) ExecStats(statement string, args ...interface{}) (rowsAffected int64, err error) {
 	var stmt *sql.Stmt
 	statement, err = i.Start(statement)
 	defer func() { err = i.Finish(statement, recover(), err) }()
@@ -93,7 +99,6 @@ func (i *Invocation) Get(object DatabaseMapped, ids ...interface{}) (found bool,
 		err = Error(err)
 		return
 	}
-
 	return i.Query(queryBody, ids...).Out(object)
 }
 
@@ -103,7 +108,6 @@ func (i *Invocation) All(collection interface{}) (err error) {
 	defer func() { err = i.Finish(queryBody, recover(), err) }()
 
 	i.CachedPlanKey, queryBody = i.generateGetAll(collection)
-
 	return i.Query(queryBody).OutMany(collection)
 }
 
@@ -244,13 +248,17 @@ func (i *Invocation) Update(object DatabaseMapped) (updated bool, err error) {
 		return
 	}
 	defer func() { err = i.CloseStatement(stmt, err) }()
-	res, err := stmt.ExecContext(i.Context, append(writeCols.ColumnValues(object), pks.ColumnValues(object)...)...)
+	res, err := stmt.ExecContext(
+		i.Context,
+		append(writeCols.ColumnValues(object), pks.ColumnValues(object)...)...,
+	)
 	if err != nil {
 		err = Error(err)
 		return
 	}
-	// The error here is intentionally ignored. Postgres supports this. We'd need to revisit swallowing this error
-	// for other drivers
+
+	// The error here is intentionally ignored. Postgres supports this.
+	// We'd need to revisit swallowing this error for other drivers.
 	rowCount, _ := res.RowsAffected()
 	if rowCount > 0 {
 		updated = true

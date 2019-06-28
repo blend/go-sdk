@@ -210,13 +210,23 @@ func (dbc *Connection) DefaultSchema() string {
 }
 
 // Exec is a helper stub for .Invoke(...).Exec(...).
-func (dbc *Connection) Exec(statement string, args ...interface{}) (int64, error) {
+func (dbc *Connection) Exec(statement string, args ...interface{}) error {
 	return dbc.Invoke().Exec(statement, args...)
 }
 
+// ExecStats is a helper stub for .Invoke(...).ExecStats(...).
+func (dbc *Connection) ExecStats(statement string, args ...interface{}) (int64, error) {
+	return dbc.Invoke().ExecStats(statement, args...)
+}
+
 // ExecContext is a helper stub for .Invoke(OptContext(ctx)).Exec(...).
-func (dbc *Connection) ExecContext(ctx context.Context, statement string, args ...interface{}) (int64, error) {
+func (dbc *Connection) ExecContext(ctx context.Context, statement string, args ...interface{}) error {
 	return dbc.Invoke(OptContext(ctx)).Exec(statement, args...)
+}
+
+// ExecStatsContext is a helper stub for .Invoke(OptContext(ctx)).Exec(...).
+func (dbc *Connection) ExecStatsContext(ctx context.Context, statement string, args ...interface{}) (int64, error) {
+	return dbc.Invoke(OptContext(ctx)).ExecStats(statement, args...)
 }
 
 // Query is a helper stub for .Invoke(...).Query(...).

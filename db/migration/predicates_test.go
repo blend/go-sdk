@@ -33,8 +33,7 @@ func createTestTable(tableName string, tx *sql.Tx) error {
 
 func insertTestValue(tableName string, id int, name string, tx *sql.Tx) error {
 	body := fmt.Sprintf("INSERT INTO %s (id, name) VALUES ($1, $2);", tableName)
-	_, err := defaultDB().Invoke(db.OptTx(tx)).Exec(body, id, name)
-	return err
+	return defaultDB().Invoke(db.OptTx(tx)).Exec(body, id, name)
 }
 
 func createTestColumn(tableName, columnName string, tx *sql.Tx) error {

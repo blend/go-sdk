@@ -69,7 +69,7 @@ func (c Column) SetZero(object interface{}) {
 }
 
 // SetValue sets the field on a database mapped object to the instance of `value`.
-func (c Column) SetValue(object interface{}, value interface{}, clearEmpty bool) error {
+func (c Column) SetValue(object interface{}, value interface{}, resetRowEmpty bool) error {
 	objValue := ReflectValue(object)
 	field := objValue.FieldByName(c.FieldName)
 	fieldType := field.Type()
@@ -79,7 +79,7 @@ func (c Column) SetValue(object interface{}, value interface{}, clearEmpty bool)
 
 	valueReflected := ReflectValue(value)
 	if !valueReflected.IsValid() {
-		if clearEmpty {
+		if resetRowEmpty {
 			field.Set(reflect.Zero(field.Type()))
 		}
 		return nil

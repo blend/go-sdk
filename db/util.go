@@ -53,12 +53,12 @@ func ParamTokens(startAt, count int) string {
 // --------------------------------------------------------------------------------
 
 // AsPopulatable casts an object as populatable.
-func asPopulatable(object interface{}) Populatable {
+func AsPopulatable(object interface{}) Populatable {
 	return object.(Populatable)
 }
 
-// isPopulatable returns if an object is populatable
-func isPopulatable(object interface{}) bool {
+// IsPopulatable returns if an object is populatable
+func IsPopulatable(object interface{}) bool {
 	_, isPopulatable := object.(Populatable)
 	return isPopulatable
 }

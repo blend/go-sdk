@@ -5,10 +5,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/blend/go-sdk/db"
-	"github.com/blend/go-sdk/logger"
 	"io"
 	"testing"
+
+	"github.com/blend/go-sdk/db"
+	"github.com/blend/go-sdk/logger"
 
 	"github.com/blend/go-sdk/assert"
 )
@@ -146,7 +147,7 @@ func TestDataFileReaderAction(t *testing.T) {
 	a := assert.New(t)
 	conn := getSchemaConnection(db.DefaultSchema, a)
 	testSchemaName := buildTestSchemaName()
-	_, err := conn.Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE;", testSchemaName))
+	err := conn.Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE;", testSchemaName))
 	a.Nil(err)
 	dfr := ReadDataFile("./testdata/data_file_reader_test.sql")
 	s := New(OptLog(logger.None()), OptGroups(createDataFileMigrations(testSchemaName)...))
@@ -156,7 +157,7 @@ func TestDataFileReaderAction(t *testing.T) {
 			c = defaultDB()
 		}
 		// pq can't parameterize Drop
-		_, err := c.Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE;", testSchemaName))
+		err := c.Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE;", testSchemaName))
 		a.Nil(err)
 	}()
 	err = s.Apply(context.Background(), conn)
@@ -171,8 +172,10 @@ func TestDataFileReaderAction(t *testing.T) {
 	a.Nil(err)
 
 	var count int
-	err = conn.Query("Select count(1) from test_table_one").Scan(&count)
+	var found bool
+	found, err = conn.Query("Select count(1) from test_table_one").Scan(&count)
 	a.Nil(err)
+	a.True(found)
 	a.Equal(3, count)
 
 	var data []Data
@@ -193,7 +196,7 @@ func createDataFileMigrations(testSchemaName string) []*Group {
 				Actions(
 					// pq can't parameterize Create
 					func(i context.Context, connection *db.Connection, tx *sql.Tx) error {
-						_, err := connection.Exec(fmt.Sprintf("CREATE SCHEMA %s;", testSchemaName))
+						err := connection.Exec(fmt.Sprintf("CREATE SCHEMA %s;", testSchemaName))
 						if err != nil {
 							return err
 						}

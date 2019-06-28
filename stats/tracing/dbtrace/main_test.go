@@ -2,9 +2,10 @@ package dbtrace
 
 import (
 	"database/sql"
-	"github.com/blend/go-sdk/logger"
 	"os"
 	"testing"
+
+	"github.com/blend/go-sdk/logger"
 
 	"github.com/blend/go-sdk/db"
 	_ "github.com/lib/pq"
@@ -48,6 +49,5 @@ func createTable(tx *sql.Tx) error {
 	createSQL := `CREATE TABLE IF NOT EXISTS test_table (
 		id serial not null primary key
 	);`
-	_, err := defaultDB().Invoke(db.OptTx(tx)).Exec(createSQL)
-	return err
+	return defaultDB().Invoke(db.OptTx(tx)).Exec(createSQL)
 }

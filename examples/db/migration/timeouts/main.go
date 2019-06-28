@@ -16,8 +16,7 @@ func main() {
 			migration.NewStep(
 				migration.Always(),
 				func(ctx context.Context, connection *db.Connection, tx *sql.Tx) error {
-					_, err := connection.Invoke(db.OptTimeout(500 * time.Millisecond)).Exec("select pg_sleep(10);")
-					return err
+					return connection.Invoke(db.OptTimeout(500 * time.Millisecond)).Exec("select pg_sleep(10);")
 				},
 			),
 		),
