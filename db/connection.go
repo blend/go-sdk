@@ -224,7 +224,7 @@ func (dbc *Connection) ExecContext(ctx context.Context, statement string, args .
 	return dbc.Invoke(OptContext(ctx)).Exec(statement, args...)
 }
 
-// ExecStatsContext is a helper stub for .Invoke(OptContext(ctx)).Exec(...).
+// ExecStatsContext is a helper stub for .Invoke(OptContext(ctx)).ExecStats(...).
 func (dbc *Connection) ExecStatsContext(ctx context.Context, statement string, args ...interface{}) (int64, error) {
 	return dbc.Invoke(OptContext(ctx)).ExecStats(statement, args...)
 }
