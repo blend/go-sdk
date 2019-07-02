@@ -21,6 +21,8 @@ func AddListeners(log logger.Listenable, cfg Config) {
 	listener := logger.NewErrorEventListener(func(_ context.Context, ee *logger.ErrorEvent) {
 		if req, ok := ee.State.(*http.Request); ok {
 			client.NotifyWithRequest(ee.Err, req)
+		} else if state, ok := ee.State.(Params); ok {
+			client.NotifyWithParams(ee.Err, state)
 		} else {
 			client.Notify(ee.Err)
 		}
