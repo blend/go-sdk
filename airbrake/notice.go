@@ -9,9 +9,6 @@ import (
 	"github.com/blend/go-sdk/webutil"
 )
 
-// Params is a custom type alias
-type Params map[string]interface{}
-
 // NewNotice returns a new gobrake notice.
 func NewNotice(err interface{}, req *http.Request) *gobrake.Notice {
 	var notice *gobrake.Notice
@@ -36,7 +33,7 @@ func NewNotice(err interface{}, req *http.Request) *gobrake.Notice {
 			Context: make(map[string]interface{}),
 			Env:     make(map[string]interface{}),
 			Session: make(map[string]interface{}),
-			Params:  make(Params),
+			Params:  make(map[string]interface{}),
 		}
 	} else {
 		notice = &gobrake.Notice{

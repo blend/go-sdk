@@ -77,7 +77,7 @@ func (n *Notifier) NotifyWithRequest(err interface{}, req *http.Request) error {
 }
 
 // NotifyWithParams sends an error with custom parameters attached.
-func (n *Notifier) NotifyWithParams(err interface{}, params Params) error {
+func (n *Notifier) NotifyWithParams(err interface{}, params map[string]interface{}) error {
 	_, sendErr := n.Client.SendNotice(NewNoticeWithParams(err, params))
 	return ex.New(sendErr)
 }

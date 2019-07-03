@@ -142,12 +142,16 @@ func (sc Context) Error(err error) error {
 	return err
 }
 
-// ErrorWithReq logs an error to std err with a request.
-func (sc Context) ErrorWithReq(err error, req *http.Request) error {
-	ee := NewErrorEvent(Error, err)
-	ee.State = req
+// ErrorWithState logs an error to std with a generic state.
+func (sc Context) ErrorWithState(err error, state interface{}) error {
+	ee := NewErrorEvent(Error, err, OptErrorEventState(state))
 	sc.Trigger(context.Background(), ee)
 	return err
+}
+
+// ErrorWithReq logs an error to std err with a request.
+func (sc Context) ErrorWithReq(err error, req *http.Request) error {
+	return sc.ErrorWithState(err, req)
 }
 
 // Fatal logs an error as fatal.
