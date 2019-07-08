@@ -38,14 +38,8 @@ func (i *Invocation) Prepare(statement string) (stmt *sql.Stmt, err error) {
 	return
 }
 
-// Exec executes a sql statement with a given set of arguments.
-func (i *Invocation) Exec(statement string, args ...interface{}) (err error) {
-	_, err = i.ExecStats(statement, args...)
-	return
-}
-
-// ExecStats executes a sql statement with a given set of arguments and returns the rows affected.
-func (i *Invocation) ExecStats(statement string, args ...interface{}) (rowsAffected int64, err error) {
+// Exec executes a sql statement with a given set of arguments and returns the rows affected.
+func (i *Invocation) Exec(statement string, args ...interface{}) (res sql.Result, err error) {
 	var stmt *sql.Stmt
 	statement, err = i.Start(statement)
 	defer func() { err = i.Finish(statement, recover(), err) }()
@@ -60,14 +54,11 @@ func (i *Invocation) ExecStats(statement string, args ...interface{}) (rowsAffec
 	}
 	defer func() { err = i.CloseStatement(stmt, err) }()
 
-	res, err := stmt.ExecContext(i.Context, args...)
+	res, err = stmt.ExecContext(i.Context, args...)
 	if err != nil {
 		err = Error(err)
 		return
 	}
-	// The error here is intentionally ignored. Postgres supports this. We'd need to revisit swallowing this error
-	// for other drivers
-	rowsAffected, _ = res.RowsAffected()
 	return
 }
 

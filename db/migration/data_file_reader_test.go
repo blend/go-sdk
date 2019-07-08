@@ -147,7 +147,7 @@ func TestDataFileReaderAction(t *testing.T) {
 	a := assert.New(t)
 	conn := getSchemaConnection(db.DefaultSchema, a)
 	testSchemaName := buildTestSchemaName()
-	err := conn.Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE;", testSchemaName))
+	err := db.IgnoreExecResult(conn.Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE;", testSchemaName)))
 	a.Nil(err)
 	dfr := ReadDataFile("./testdata/data_file_reader_test.sql")
 	s := New(OptLog(logger.None()), OptGroups(createDataFileMigrations(testSchemaName)...))
@@ -157,7 +157,7 @@ func TestDataFileReaderAction(t *testing.T) {
 			c = defaultDB()
 		}
 		// pq can't parameterize Drop
-		err := c.Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE;", testSchemaName))
+		err := db.IgnoreExecResult(c.Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE;", testSchemaName)))
 		a.Nil(err)
 	}()
 	err = s.Apply(context.Background(), conn)
@@ -196,7 +196,7 @@ func createDataFileMigrations(testSchemaName string) []*Group {
 				Actions(
 					// pq can't parameterize Create
 					func(i context.Context, connection *db.Connection, tx *sql.Tx) error {
-						err := connection.Exec(fmt.Sprintf("CREATE SCHEMA %s;", testSchemaName))
+						err := db.IgnoreExecResult(connection.Exec(fmt.Sprintf("CREATE SCHEMA %s;", testSchemaName)))
 						if err != nil {
 							return err
 						}

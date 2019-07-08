@@ -89,7 +89,7 @@ func main() {
 
 	for x := 0; x < 1<<12; x++ {
 		ctx, cancel := context.WithTimeout(context.Background(), 250*time.Millisecond)
-		err := conn.Invoke(db.OptContext(ctx)).Exec(fmt.Sprintf("INSERT INTO %s VALUES ($1)", tableName), strconv.Itoa(x))
+		err := db.IgnoreExecResult(conn.Invoke(db.OptContext(ctx)).Exec(fmt.Sprintf("INSERT INTO %s VALUES ($1)", tableName), strconv.Itoa(x)))
 		maybeFatal(err)
 		cancel()
 	}

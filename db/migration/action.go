@@ -22,7 +22,7 @@ func NoOp(_ context.Context, _ *db.Connection, _ *sql.Tx) error { return nil }
 func Statements(statements ...string) Action {
 	return func(ctx context.Context, c *db.Connection, tx *sql.Tx) (err error) {
 		for _, statement := range statements {
-			err = c.Invoke(db.OptContext(ctx), db.OptTx(tx)).Exec(statement)
+			err = db.IgnoreExecResult(c.Invoke(db.OptContext(ctx), db.OptTx(tx)).Exec(statement))
 			if err != nil {
 				return
 			}
@@ -35,7 +35,7 @@ func Statements(statements ...string) Action {
 // It can be used in lieu of Statements, when parameterization is needed
 func Exec(statement string, args ...interface{}) Action {
 	return func(ctx context.Context, c *db.Connection, tx *sql.Tx) (err error) {
-		err = c.Invoke(db.OptContext(ctx), db.OptTx(tx)).Exec(statement, args...)
+		err = db.IgnoreExecResult(c.Invoke(db.OptContext(ctx), db.OptTx(tx)).Exec(statement, args...))
 		return
 	}
 }

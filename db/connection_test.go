@@ -66,15 +66,15 @@ func TestConnectionStatementCacheExecute(t *testing.T) {
 	a.Nil(conn.Open())
 	defer conn.Close()
 	conn.PlanCache.WithEnabled(true)
-	err = conn.Exec("select 'ok!'")
+	err = IgnoreExecResult(conn.Exec("select 'ok!'"))
 	a.Nil(err)
-	err = conn.Exec("select 'ok!'")
+	err = IgnoreExecResult(conn.Exec("select 'ok!'"))
 	a.Nil(err)
 	a.False(conn.PlanCache.HasStatement("select 'ok!'"))
 
-	err = conn.Invoke(OptCachedPlanKey("ping")).Exec("select 'ok!'")
+	err = IgnoreExecResult(conn.Invoke(OptCachedPlanKey("ping")).Exec("select 'ok!'"))
 	a.Nil(err)
-	err = conn.Invoke(OptCachedPlanKey("ping")).Exec("select 'ok!'")
+	err = IgnoreExecResult(conn.Invoke(OptCachedPlanKey("ping")).Exec("select 'ok!'"))
 	a.Nil(err)
 	a.True(conn.PlanCache.HasStatement("ping"))
 }
@@ -120,7 +120,7 @@ func TestExec(t *testing.T) {
 	a.Nil(err)
 	defer tx.Rollback()
 
-	err = defaultDB().Invoke(OptTx(tx)).Exec("select 'ok!'")
+	err = IgnoreExecResult(defaultDB().Invoke(OptTx(tx)).Exec("select 'ok!'"))
 	a.Nil(err)
 }
 
@@ -141,23 +141,23 @@ func TestConnectionInvalidatesBadCachedStatements(t *testing.T) {
 	queryStatement := `SELECT * from state_invalidation`
 
 	defer func() {
-		err = conn.Exec(dropTableStatement)
+		err = IgnoreExecResult(conn.Exec(dropTableStatement))
 		assert.Nil(err)
 	}()
 
-	err = conn.Exec(createTableStatement)
+	err = IgnoreExecResult(conn.Exec(createTableStatement))
 	assert.Nil(err)
 
-	err = conn.Exec(insertStatement, 1, "Foo")
+	err = IgnoreExecResult(conn.Exec(insertStatement, 1, "Foo"))
 	assert.Nil(err)
 
-	err = conn.Exec(insertStatement, 2, "Bar")
+	err = IgnoreExecResult(conn.Exec(insertStatement, 2, "Bar"))
 	assert.Nil(err)
 
 	_, err = conn.Query(queryStatement).Any()
 	assert.Nil(err)
 
-	err = conn.Exec(alterTableStatement)
+	err = IgnoreExecResult(conn.Exec(alterTableStatement))
 	assert.Nil(err)
 
 	// normally this would result in a busted cached query plan.

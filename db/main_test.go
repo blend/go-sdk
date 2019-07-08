@@ -113,7 +113,7 @@ func (uo upsertObj) TableName() string {
 
 func createUpserObjectTable(tx *sql.Tx) error {
 	createSQL := `CREATE TABLE IF NOT EXISTS upsert_object (uuid varchar(255) primary key, timestamp_utc timestamp, category varchar(255));`
-	return defaultDB().Invoke(OptTx(tx)).Exec(createSQL)
+	return IgnoreExecResult(defaultDB().Invoke(OptTx(tx)).Exec(createSQL))
 }
 
 //------------------------------------------------------------------------------------------------
@@ -148,17 +148,17 @@ func createTable(tx *sql.Tx) error {
 		, pending boolean
 		, category varchar(255)
 	);`
-	return defaultDB().Invoke(OptTx(tx)).Exec(createSQL)
+	return IgnoreExecResult(defaultDB().Invoke(OptTx(tx)).Exec(createSQL))
 }
 
 func dropTableIfExists(tx *sql.Tx) error {
 	dropSQL := `DROP TABLE IF EXISTS bench_object;`
-	return defaultDB().Invoke(OptTx(tx)).Exec(dropSQL)
+	return IgnoreExecResult(defaultDB().Invoke(OptTx(tx)).Exec(dropSQL))
 }
 
 func ensureUUIDExtension() error {
 	uuidCreate := `CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`
-	return defaultDB().Exec(uuidCreate)
+	return IgnoreExecResult(defaultDB().Exec(uuidCreate))
 }
 
 func createObject(index int, tx *sql.Tx) error {

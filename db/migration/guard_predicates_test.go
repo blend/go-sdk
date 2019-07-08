@@ -43,7 +43,7 @@ func TestGuardPredicatesReal(t *testing.T) {
 	assert.Nil(err)
 	assert.True(didRun)
 
-	err = defaultDB().Invoke(db.OptTx(tx)).Exec("CREATE TABLE table_test_foo (id serial not null primary key, something varchar(32) not null)")
+	err = db.IgnoreExecResult(defaultDB().Invoke(db.OptTx(tx)).Exec("CREATE TABLE table_test_foo (id serial not null primary key, something varchar(32) not null)"))
 	assert.Nil(err)
 
 	didRun = false
@@ -60,7 +60,7 @@ func TestGuardPredicatesReal(t *testing.T) {
 	assert.Nil(err)
 	assert.True(didRun)
 
-	err = defaultDB().Invoke(db.OptTx(tx)).Exec("ALTER TABLE table_test_foo ADD CONSTRAINT constraint_foo UNIQUE (something)")
+	err = db.IgnoreExecResult(defaultDB().Invoke(db.OptTx(tx)).Exec("ALTER TABLE table_test_foo ADD CONSTRAINT constraint_foo UNIQUE (something)"))
 	assert.Nil(err)
 
 	didRun = false
@@ -77,7 +77,7 @@ func TestGuardPredicatesReal(t *testing.T) {
 	assert.Nil(err)
 	assert.True(didRun)
 
-	err = defaultDB().Invoke(db.OptTx(tx)).Exec("ALTER TABLE table_test_foo ADD COLUMN created_foo timestamp not null")
+	err = db.IgnoreExecResult(defaultDB().Invoke(db.OptTx(tx)).Exec("ALTER TABLE table_test_foo ADD COLUMN created_foo timestamp not null"))
 	assert.Nil(err)
 
 	didRun = false
@@ -94,7 +94,7 @@ func TestGuardPredicatesReal(t *testing.T) {
 	assert.Nil(err)
 	assert.True(didRun)
 
-	err = defaultDB().Invoke(db.OptTx(tx)).Exec("CREATE INDEX index_foo ON table_test_foo(created_foo DESC)")
+	err = db.IgnoreExecResult(defaultDB().Invoke(db.OptTx(tx)).Exec("CREATE INDEX index_foo ON table_test_foo(created_foo DESC)"))
 	assert.Nil(err)
 
 	didRun = false
@@ -115,7 +115,7 @@ func TestGuardPredicatsRealSchema(t *testing.T) {
 	iName := "index_bar"
 	tName := "table_test_bar"
 
-	err = defaultDB().Invoke(db.OptTx(tx)).Exec("CREATE SCHEMA schema_test_bar")
+	err = db.IgnoreExecResult(defaultDB().Invoke(db.OptTx(tx)).Exec("CREATE SCHEMA schema_test_bar"))
 	assert.Nil(err)
 
 	var didRun bool
@@ -132,7 +132,7 @@ func TestGuardPredicatsRealSchema(t *testing.T) {
 	assert.Nil(err)
 	assert.True(didRun)
 
-	err = defaultDB().Invoke(db.OptTx(tx)).Exec("CREATE TABLE schema_test_bar.table_test_bar (id serial not null primary key, something varchar(32) not null, created timestamp not null)")
+	err = db.IgnoreExecResult(defaultDB().Invoke(db.OptTx(tx)).Exec("CREATE TABLE schema_test_bar.table_test_bar (id serial not null primary key, something varchar(32) not null, created timestamp not null)"))
 	assert.Nil(err)
 
 	didRun = false
@@ -149,7 +149,7 @@ func TestGuardPredicatsRealSchema(t *testing.T) {
 	assert.Nil(err)
 	assert.True(didRun)
 
-	err = defaultDB().Invoke(db.OptTx(tx)).Exec("ALTER TABLE schema_test_bar.table_test_bar ADD CONSTRAINT constraint_bar UNIQUE (something)")
+	err = db.IgnoreExecResult(defaultDB().Invoke(db.OptTx(tx)).Exec("ALTER TABLE schema_test_bar.table_test_bar ADD CONSTRAINT constraint_bar UNIQUE (something)"))
 	assert.Nil(err)
 
 	didRun = false
@@ -166,7 +166,7 @@ func TestGuardPredicatsRealSchema(t *testing.T) {
 	assert.Nil(err)
 	assert.True(didRun)
 
-	err = defaultDB().Invoke(db.OptTx(tx)).Exec("ALTER TABLE schema_test_bar.table_test_bar ADD COLUMN created_bar timestamp not null")
+	err = db.IgnoreExecResult(defaultDB().Invoke(db.OptTx(tx)).Exec("ALTER TABLE schema_test_bar.table_test_bar ADD COLUMN created_bar timestamp not null"))
 	assert.Nil(err)
 
 	didRun = false
@@ -183,7 +183,7 @@ func TestGuardPredicatsRealSchema(t *testing.T) {
 	assert.Nil(err)
 	assert.True(didRun)
 
-	err = defaultDB().Invoke(db.OptTx(tx)).Exec("CREATE INDEX index_bar ON schema_test_bar.table_test_bar(created_bar DESC)")
+	err = db.IgnoreExecResult(defaultDB().Invoke(db.OptTx(tx)).Exec("CREATE INDEX index_bar ON schema_test_bar.table_test_bar(created_bar DESC)"))
 	assert.Nil(err)
 
 	didRun = false

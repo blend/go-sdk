@@ -287,10 +287,11 @@ func TestOutWithDirtyStructs(t *testing.T) {
 
 	uniq := uuid.V4().ToFullString()
 
-	i, err := defaultDB().Invoke(OptTx(tx)).ExecStats("INSERT INTO bench_object (uuid, name, category) VALUES ($1, $2, $3)",
+	i, err := defaultDB().Invoke(OptTx(tx)).Exec("INSERT INTO bench_object (uuid, name, category) VALUES ($1, $2, $3)",
 		uniq, "Foo", "Bar")
 	assert.Nil(err)
-	assert.Equal(1, i)
+	ra, _ := i.RowsAffected()
+	assert.Equal(1, ra)
 
 	timeObj := time.Now()
 
@@ -321,10 +322,11 @@ func TestIntoWithDirtyStructs(t *testing.T) {
 
 	uniq := uuid.V4().ToFullString()
 
-	i, err := defaultDB().Invoke(OptTx(tx)).ExecStats("INSERT INTO bench_object (uuid, name, category) VALUES ($1, $2, $3)",
+	i, err := defaultDB().Invoke(OptTx(tx)).Exec("INSERT INTO bench_object (uuid, name, category) VALUES ($1, $2, $3)",
 		uniq, "Foo", "Bar")
 	assert.Nil(err)
-	assert.Equal(1, i)
+	ra, _ := i.RowsAffected()
+	assert.Equal(1, ra)
 
 	timeObj := time.Now()
 
