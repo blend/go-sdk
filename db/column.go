@@ -75,14 +75,14 @@ func (c Column) SetValue(object interface{}, value interface{}) error {
 	objectField := objectValue.FieldByName(c.FieldName)
 	objectFieldType := objectField.Type()
 
-	// check if we've been passed a reference for the object
+	// check if we've been passed a reference for the target object
 	if !objectField.CanSet() {
 		return ex.New("hit a field we can't set; did you forget to pass the object as a reference?").WithMessagef("field: %s", c.FieldName)
 	}
 
 	valueReflected := ReflectValue(value)
-	if !valueReflected.IsValid() {
-		objectField.Set(reflect.Zero(objectFieldType))
+	if !valueReflected.IsValid() { // if the value is nil
+		objectField.Set(reflect.Zero(objectFieldType)) // zero the field
 		return nil
 	}
 
@@ -105,6 +105,8 @@ func (c Column) SetValue(object interface{}, value interface{}) error {
 	}
 
 	// if we can direct assign
+	// this will handle cases where you're setting a * to a *
+	// or the intrinsic type to itself.
 	if valueReflected.Type().AssignableTo(objectFieldType) {
 		if objectField.Kind() == reflect.Ptr && valueReflected.CanAddr() {
 			objectField.Set(valueReflected.Addr())
@@ -115,73 +117,22 @@ func (c Column) SetValue(object interface{}, value interface{}) error {
 	}
 
 	if objectField.Kind() == reflect.Ptr {
-		// handle nilable sql.* types
-		switch tv := value.(type) {
-		case sql.NullBool:
-			if tv.Valid {
-				objectField.SetBool(tv.Bool)
-			} else {
-				objectField.Set(reflect.Zero(objectFieldType))
-			}
-			return nil
-		case sql.NullFloat64:
-			if tv.Valid {
-				objectField.SetFloat(tv.Float64)
-			} else {
-				objectField.Set(reflect.Zero(objectFieldType))
-			}
-			return nil
-		case sql.NullString:
-			if tv.Valid {
-				objectField.SetString(tv.String)
-			} else {
-				objectField.Set(reflect.Zero(objectFieldType))
-			}
-			return nil
-		}
-
 		if valueReflected.CanAddr() {
-			if objectFieldType.Elem() == valueReflected.Type() {
+			if valueReflected.Type().AssignableTo(objectFieldType.Elem()) {
 				objectField.Set(valueReflected.Addr())
-			} else {
-				convertedValue := valueReflected.Convert(objectFieldType.Elem())
-				if convertedValue.CanAddr() {
-					objectField.Set(convertedValue.Addr())
-				} else {
-					return ex.New("cannot address converted value")
-				}
+				return nil
+			}
+
+			convertedValue := valueReflected.Convert(objectFieldType.Elem())
+			if convertedValue.CanAddr() {
+				objectField.Set(convertedValue.Addr())
+				return nil
 			}
 			// what should we do here?
-			return nil
+			return ex.New("cannot convert value to destination pointer type")
 		}
 
 		return ex.New("cannot take address of value")
-	}
-
-	// sniff nullable versions of types and handle specifically
-
-	switch tv := value.(type) {
-	case sql.NullBool:
-		if tv.Valid {
-			objectField.SetBool(tv.Bool)
-		} else {
-			objectField.SetBool(false)
-		}
-		return nil
-	case sql.NullFloat64:
-		if tv.Valid {
-			objectField.SetFloat(tv.Float64)
-		} else {
-			objectField.SetFloat(0)
-		}
-		return nil
-	case sql.NullString:
-		if tv.Valid {
-			objectField.SetString(tv.String)
-		} else {
-			objectField.SetString("")
-		}
-		return nil
 	}
 
 	// convert and assign
