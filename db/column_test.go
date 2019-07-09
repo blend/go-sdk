@@ -72,9 +72,48 @@ func TestSetValueNil(t *testing.T) {
 	a.NotNil(col)
 
 	var myValue *int
-	err := col.SetValue(&obj, &myValue)
+	err := col.SetValue(&obj, myValue)
 	a.Nil(err)
 	a.Nil(obj.PointerColumn)
+}
+
+func TestSetValueSQLNullable(t *testing.T) {
+	a := assert.New(t)
+
+	obj := myStruct{
+		Unique:        "foo",
+		PointerColumn: ref.Int(1234),
+	}
+	meta := CachedColumnCollectionFromInstance(obj)
+
+	col := meta.Lookup()["unique"]
+	a.NotNil(col)
+
+	myValue := sql.NullString{
+		String: "bar",
+		Valid:  true,
+	}
+	err := col.SetValue(&obj, myValue)
+	a.Nil(err)
+	a.Equal("bar", obj.Unique)
+}
+
+func TestSetValueSQLNullableInvalid(t *testing.T) {
+	a := assert.New(t)
+
+	obj := myStruct{
+		Unique:        "foo",
+		PointerColumn: ref.Int(1234),
+	}
+	meta := CachedColumnCollectionFromInstance(obj)
+
+	col := meta.Lookup()["unique"]
+	a.NotNil(col)
+
+	myValue := sql.NullString{}
+	err := col.SetValue(&obj, myValue)
+	a.Nil(err)
+	a.Equal("", obj.Unique)
 }
 
 func TestGetValue(t *testing.T) {
