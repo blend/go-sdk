@@ -91,9 +91,8 @@ func (q *Query) Scan(args ...interface{}) (found bool, err error) {
 }
 
 // Out writes the query result to a single object via. reflection mapping. If there is more than one result, the first
-// result is mapped to to object, and ErrTooManyRows is returned. Out() is different than ReadInto(), in that is DOES NOT change
-// struct fields on object that are empty in the result set. If a result field is null the value that was present in
-// object is maintained.
+// result is mapped to to object, and ErrTooManyRows is returned. Out() will apply column values for any colums
+// in the row result to the object, potentially zeroing existing values out.
 func (q *Query) Out(object interface{}) (found bool, err error) {
 	defer func() { err = q.finish(recover(), err) }()
 

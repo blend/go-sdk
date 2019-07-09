@@ -131,8 +131,7 @@ func (c Column) SetValue(object interface{}, value interface{}) error {
 			// what should we do here?
 			return ex.New("cannot convert value to destination pointer type")
 		}
-
-		return ex.New("cannot take address of value")
+		return ex.New("cannot take address of value for assignment to object field (which is itself a pointer)")
 	}
 
 	// convert and assign
