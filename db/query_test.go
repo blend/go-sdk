@@ -256,7 +256,7 @@ func TestQueryQueryPopulateByname(t *testing.T) {
 	var first benchObj
 	cols := Columns(first)
 	err = defaultDB().Invoke(OptTx(tx)).Query("select * from bench_object").First(func(r Rows) error {
-		return PopulateByName(&first, r, cols, true)
+		return PopulateByName(&first, r, cols)
 	})
 	assert.Nil(err)
 	assert.Equal(1, first.ID)
@@ -304,7 +304,7 @@ func TestOutWithDirtyStructs(t *testing.T) {
 		Category:  "Baz",
 	}
 
-	b, err := defaultDB().Invoke(OptTx(tx)).Query("SELECT * FROM bench_object WHERE uuid = $1", uniq).ReadInto(&dirty)
+	b, err := defaultDB().Invoke(OptTx(tx)).Query("SELECT * FROM bench_object WHERE uuid = $1", uniq).Out(&dirty)
 	assert.Nil(err)
 	assert.True(b)
 	assert.Nil(dirty.Timestamp)
@@ -342,6 +342,6 @@ func TestIntoWithDirtyStructs(t *testing.T) {
 	b, err := defaultDB().Invoke(OptTx(tx)).Query("SELECT * FROM bench_object WHERE uuid = $1", uniq).Out(&dirty)
 	assert.Nil(err)
 	assert.True(b)
-	assert.NotNil(dirty.Timestamp)
-	assert.True(dirty.Amount == 4.99)
+	assert.Nil(dirty.Timestamp)
+	assert.Zero(dirty.Amount)
 }

@@ -69,62 +69,124 @@ func (c Column) SetZero(object interface{}) {
 }
 
 // SetValue sets the field on a database mapped object to the instance of `value`.
-func (c Column) SetValue(object interface{}, value interface{}, resetRowEmpty bool) error {
-	objValue := ReflectValue(object)
-	field := objValue.FieldByName(c.FieldName)
-	fieldType := field.Type()
-	if !field.CanSet() {
-		return ex.New("hit a field we can't set: '" + c.FieldName + "', did you forget to pass the object as a reference?")
+func (c Column) SetValue(object interface{}, value interface{}) error {
+	objectValue := ReflectValue(object)
+
+	objectField := objectValue.FieldByName(c.FieldName)
+	objectFieldType := objectField.Type()
+
+	// check if we've been passed a reference for the object
+	if !objectField.CanSet() {
+		return ex.New("hit a field we can't set; did you forget to pass the object as a reference?").WithMessagef("field: %s", c.FieldName)
 	}
 
 	valueReflected := ReflectValue(value)
 	if !valueReflected.IsValid() {
-		if resetRowEmpty {
-			field.Set(reflect.Zero(field.Type()))
-		}
+		objectField.Set(reflect.Zero(objectFieldType))
 		return nil
 	}
 
+	// special case for `db:"...,json"` fields.
 	if c.IsJSON {
+		// check if we have a driver nullable string for the given value
 		valueContents, ok := valueReflected.Interface().(sql.NullString)
+		// if it's a nullable string, and it's valid (set) and not empty
 		if ok && valueContents.Valid && len(valueContents.String) > 0 {
-			fieldAddr := field.Addr().Interface()
+			// grab a pointer to the field on the object
+			fieldAddr := objectField.Addr().Interface()
 			jsonErr := json.Unmarshal([]byte(valueContents.String), fieldAddr)
 			if jsonErr != nil {
 				return ex.New(jsonErr)
 			}
-			field.Set(reflect.ValueOf(fieldAddr).Elem())
+			// set the field to the indirect of the value we just set
+			objectField.Set(reflect.ValueOf(fieldAddr).Elem())
 		}
 		return nil
 	}
 
-	if valueReflected.Type().AssignableTo(fieldType) {
-		if field.Kind() == reflect.Ptr && valueReflected.CanAddr() {
-			field.Set(valueReflected.Addr())
+	// if we can direct assign
+	if valueReflected.Type().AssignableTo(objectFieldType) {
+		if objectField.Kind() == reflect.Ptr && valueReflected.CanAddr() {
+			objectField.Set(valueReflected.Addr())
 		} else {
-			field.Set(valueReflected)
+			objectField.Set(valueReflected)
 		}
 		return nil
 	}
 
-	if field.Kind() == reflect.Ptr {
-		if valueReflected.CanAddr() {
-			if fieldType.Elem() == valueReflected.Type() {
-				field.Set(valueReflected.Addr())
+	if objectField.Kind() == reflect.Ptr {
+		// handle nilable sql.* types
+		switch tv := value.(type) {
+		case sql.NullBool:
+			if tv.Valid {
+				objectField.SetBool(tv.Bool)
 			} else {
-				convertedValue := valueReflected.Convert(fieldType.Elem())
+				objectField.Set(reflect.Zero(objectFieldType))
+			}
+			return nil
+		case sql.NullFloat64:
+			if tv.Valid {
+				objectField.SetFloat(tv.Float64)
+			} else {
+				objectField.Set(reflect.Zero(objectFieldType))
+			}
+			return nil
+		case sql.NullString:
+			if tv.Valid {
+				objectField.SetString(tv.String)
+			} else {
+				objectField.Set(reflect.Zero(objectFieldType))
+			}
+			return nil
+		}
+
+		if valueReflected.CanAddr() {
+			if objectFieldType.Elem() == valueReflected.Type() {
+				objectField.Set(valueReflected.Addr())
+			} else {
+				convertedValue := valueReflected.Convert(objectFieldType.Elem())
 				if convertedValue.CanAddr() {
-					field.Set(convertedValue.Addr())
+					objectField.Set(convertedValue.Addr())
+				} else {
+					return ex.New("cannot address converted value")
 				}
 			}
+			// what should we do here?
 			return nil
 		}
 
 		return ex.New("cannot take address of value")
 	}
 
-	convertedValue := valueReflected.Convert(fieldType)
-	field.Set(convertedValue)
+	// sniff nullable versions of types and handle specifically
+
+	switch tv := value.(type) {
+	case sql.NullBool:
+		if tv.Valid {
+			objectField.SetBool(tv.Bool)
+		} else {
+			objectField.SetBool(false)
+		}
+		return nil
+	case sql.NullFloat64:
+		if tv.Valid {
+			objectField.SetFloat(tv.Float64)
+		} else {
+			objectField.SetFloat(0)
+		}
+		return nil
+	case sql.NullString:
+		if tv.Valid {
+			objectField.SetString(tv.String)
+		} else {
+			objectField.SetString("")
+		}
+		return nil
+	}
+
+	// convert and assign
+	convertedValue := valueReflected.Convert(objectFieldType)
+	objectField.Set(convertedValue)
 	return nil
 }
 

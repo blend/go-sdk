@@ -750,7 +750,7 @@ func (i *Invocation) AutoValues(autos *ColumnCollection) []interface{} {
 // SetAutos sets the automatic values for a given object.
 func (i *Invocation) SetAutos(object DatabaseMapped, autos *ColumnCollection, autoValues []interface{}) (err error) {
 	for index := 0; index < len(autoValues); index++ {
-		err = autos.Columns()[index].SetValue(object, autoValues[index], false)
+		err = autos.Columns()[index].SetValue(object, autoValues[index])
 		if err != nil {
 			err = Error(err)
 			return
