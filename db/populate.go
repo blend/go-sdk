@@ -7,13 +7,6 @@ import (
 	"github.com/blend/go-sdk/ex"
 )
 
-// PopulateEmpty populates all the column fields of a struct with empty value
-func PopulateEmpty(object interface{}, cols *ColumnCollection) {
-	for _, v := range cols.columns {
-		v.SetZero(object)
-	}
-}
-
 // PopulateByName sets the values of an object from the values of a sql.Rows object using column names.
 func PopulateByName(object interface{}, row Rows, cols *ColumnCollection) error {
 	rowColumns, err := row.Columns()
@@ -45,7 +38,7 @@ func PopulateByName(object interface{}, row Rows, cols *ColumnCollection) error 
 		if field, ok = columnLookup[colName]; ok {
 			err = field.SetValue(object, v)
 			if err != nil {
-				return ex.New(Error(err), ex.OptMessagef("column: %s", colName))
+				return err
 			}
 		}
 	}
@@ -79,12 +72,24 @@ func PopulateInOrder(object DatabaseMapped, row Scanner, cols *ColumnCollection)
 	return
 }
 
+// Zero resets an object.
+func Zero(object interface{}) error {
+	objectValue := reflect.ValueOf(object)
+	if !objectValue.Elem().CanSet() {
+		return ex.New("zero; cannot set object, did you pass a reference?")
+	}
+	objectValue.Elem().Set(reflect.Zero(objectValue.Type().Elem()))
+	return nil
+}
+
 // initColumnValue inserts the correct placeholder in the scan array of values.
 // it will use `sql.Null` forms where appropriate.
 // JSON fields are implicitly nullable.
 func initColumnValue(index int, values []interface{}, col *Column) {
 	if col.IsJSON {
 		values[index] = &sql.NullString{}
+	} else if col.FieldType.Kind() == reflect.Ptr {
+		values[index] = reflect.New(col.FieldType).Interface()
 	} else {
 		values[index] = reflect.New(reflect.PtrTo(col.FieldType)).Interface()
 	}

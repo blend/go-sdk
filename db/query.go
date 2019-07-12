@@ -120,14 +120,13 @@ func (q *Query) Out(object interface{}) (found bool, err error) {
 		if err != nil {
 			return
 		}
-	} else if _, ok := object.(Populatable); !ok {
-		PopulateEmpty(object, columnMeta)
+	} else if err = Zero(object); err != nil {
+		return
 	}
 
 	if q.Rows.Next() {
 		err = Error(ErrTooManyRows)
 	}
-
 	return
 }
 

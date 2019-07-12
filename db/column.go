@@ -61,83 +61,119 @@ type Column struct {
 	Inline       bool
 }
 
-// SetZero sets the empty value on a field on a database mapped object
-func (c Column) SetZero(object interface{}) {
-	objValue := ReflectValue(object)
-	field := objValue.FieldByName(c.FieldName)
-	field.Set(reflect.Zero(field.Type()))
+// SetValue sets the field on a database mapped object to the instance of `value`.
+func (c Column) SetValue(object, value interface{}) error {
+	return c.SetValueReflected(ReflectValue(object), value)
 }
 
-// SetValue sets the field on a database mapped object to the instance of `value`.
-func (c Column) SetValue(object interface{}, value interface{}) error {
-	objectValue := ReflectValue(object)
-
+// SetValueReflected sets the field on a reflect value object to the instance of `value`.
+func (c Column) SetValueReflected(objectValue reflect.Value, value interface{}) error {
 	objectField := objectValue.FieldByName(c.FieldName)
-	objectFieldType := objectField.Type()
 
 	// check if we've been passed a reference for the target object
 	if !objectField.CanSet() {
 		return ex.New("hit a field we can't set; did you forget to pass the object as a reference?").WithMessagef("field: %s", c.FieldName)
 	}
 
-	valueReflected := ReflectValue(value)
-	if !valueReflected.IsValid() { // if the value is nil
-		objectField.Set(reflect.Zero(objectFieldType)) // zero the field
-		return nil
-	}
-
 	// special case for `db:"...,json"` fields.
 	if c.IsJSON {
-		// check if we have a driver nullable string for the given value
-		valueContents, ok := valueReflected.Interface().(sql.NullString)
-		// if it's a nullable string, and it's valid (set) and not empty
-		if ok && valueContents.Valid && len(valueContents.String) > 0 {
-			// grab a pointer to the field on the object
-			fieldAddr := objectField.Addr().Interface()
-			jsonErr := json.Unmarshal([]byte(valueContents.String), fieldAddr)
-			if jsonErr != nil {
-				return ex.New(jsonErr)
-			}
-			// set the field to the indirect of the value we just set
-			objectField.Set(reflect.ValueOf(fieldAddr).Elem())
-		}
-		return nil
-	}
-
-	// if we can direct assign
-	// this will handle cases where you're setting a * to a *
-	// or the intrinsic type to itself.
-	if valueReflected.Type().AssignableTo(objectFieldType) {
-		if objectField.Kind() == reflect.Ptr && valueReflected.CanAddr() {
-			objectField.Set(valueReflected.Addr())
+		var deserialized interface{}
+		if objectField.Kind() == reflect.Ptr {
+			deserialized = reflect.New(objectField.Type().Elem()).Interface()
 		} else {
-			objectField.Set(valueReflected)
+			deserialized = objectField.Addr().Interface()
+		}
+
+		switch valueContents := value.(type) {
+		case *sql.NullString:
+			if !valueContents.Valid {
+				objectField.Set(reflect.Zero(objectField.Type()))
+				return nil
+			}
+			if err := json.Unmarshal([]byte(valueContents.String), deserialized); err != nil {
+				return ex.New(err).WithMessage(valueContents.String)
+			}
+		case sql.NullString:
+			if !valueContents.Valid {
+				objectField.Set(reflect.Zero(objectField.Type()))
+				return nil
+			}
+			if err := json.Unmarshal([]byte(valueContents.String), deserialized); err != nil {
+				return ex.New(err)
+			}
+		case *string:
+			if err := json.Unmarshal([]byte(*valueContents), deserialized); err != nil {
+				return ex.New(err)
+			}
+		case string:
+			if err := json.Unmarshal([]byte(valueContents), deserialized); err != nil {
+				return ex.New(err)
+			}
+		case *[]byte:
+			if err := json.Unmarshal(*valueContents, deserialized); err != nil {
+				return ex.New(err)
+			}
+		case []byte:
+			if err := json.Unmarshal(valueContents, deserialized); err != nil {
+				return ex.New(err)
+			}
+		default:
+			return ex.New("set value; invalid type for assignment to json field").WithMessagef("field: %s, value: %t", value)
+		}
+
+		if rv := reflect.ValueOf(deserialized); !rv.IsValid() {
+			objectField.Set(reflect.Zero(objectField.Type()))
+		} else {
+			if objectField.Kind() == reflect.Ptr {
+				objectField.Set(rv)
+			} else {
+				objectField.Set(rv.Elem())
+			}
 		}
 		return nil
 	}
 
-	if objectField.Kind() == reflect.Ptr {
-		if valueReflected.CanAddr() {
-			if valueReflected.Type().AssignableTo(objectFieldType.Elem()) {
-				objectField.Set(valueReflected.Addr())
-				return nil
-			}
+	valueReflected := ReflectValue(value)
+	if !valueReflected.IsValid() { // if the value is nil
+		objectField.Set(reflect.Zero(objectField.Type())) // zero the field
+		return nil
+	}
 
-			convertedValue := valueReflected.Convert(objectFieldType.Elem())
-			if convertedValue.CanAddr() {
-				objectField.Set(convertedValue.Addr())
-				return nil
-			}
-			// what should we do here?
-			return ex.New("cannot convert value to destination pointer type")
-		}
-		return ex.New("cannot take address of value for assignment to object field (which is itself a pointer)")
+	// if we can direct assign the value to the field
+	if valueReflected.Type().AssignableTo(objectField.Type()) {
+		objectField.Set(valueReflected)
+		return nil
 	}
 
 	// convert and assign
-	convertedValue := valueReflected.Convert(objectFieldType)
-	objectField.Set(convertedValue)
-	return nil
+	if valueReflected.Type().ConvertibleTo(objectField.Type()) ||
+		haveSameUnderlyingTypes(objectField, valueReflected) {
+		objectField.Set(valueReflected.Convert(objectField.Type()))
+		return nil
+	}
+
+	if objectField.Kind() == reflect.Ptr && valueReflected.CanAddr() {
+		if valueReflected.Addr().Type().AssignableTo(objectField.Type()) {
+			objectField.Set(valueReflected.Addr())
+			return nil
+		}
+		if valueReflected.Addr().Type().ConvertibleTo(objectField.Type()) {
+			objectField.Set(valueReflected.Convert(objectField.Elem().Type()).Addr())
+			return nil
+		}
+		return ex.New("set value; can addr value but can't figure out how to assign or convert").WithMessagef("field: %s, value: %#v", c.FieldName, value)
+	}
+
+	return ex.New("set value; ran out of ways to set the field").WithMessagef("field: %s, value: %#v", c.FieldName, value)
+}
+
+// haveSameUnderlyingTypes returns if T and V are such that V is *T or V is **T etc.
+// It handles the cases where we're assigning T = convert(**T) which can happen when we're setting up
+// scan output array.s
+func haveSameUnderlyingTypes(t, v reflect.Value) bool {
+	tt := t.Type()
+	tv := ReflectType(v)
+	return tv.AssignableTo(tt) || tv.ConvertibleTo(tt)
 }
 
 // GetValue returns the value for a column on a given database mapped object.
