@@ -169,7 +169,8 @@ func (c Column) SetValueReflected(objectValue reflect.Value, value interface{}) 
 
 // haveSameUnderlyingTypes returns if T and V are such that V is *T or V is **T etc.
 // It handles the cases where we're assigning T = convert(**T) which can happen when we're setting up
-// scan output array.s
+// scan output array.
+// Convert can smush T and **T together somehow.
 func haveSameUnderlyingTypes(t, v reflect.Value) bool {
 	tt := t.Type()
 	tv := ReflectType(v)
