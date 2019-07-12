@@ -59,11 +59,12 @@ func PopulateInOrder(object DatabaseMapped, row Scanner, cols *ColumnCollection)
 		return Error(err)
 	}
 
+	objectValue := reflect.ValueOf(object)
 	columns := cols.Columns()
 	var field Column
 	for i, v := range values {
 		field = columns[i]
-		if err = field.SetValue(object, v); err != nil {
+		if err = field.SetValueReflected(objectValue, v); err != nil {
 			err = ex.New(err)
 			return
 		}
