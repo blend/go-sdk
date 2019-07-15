@@ -14,6 +14,7 @@ func NewResponseWriter(w http.ResponseWriter) *ResponseWriter {
 // ResponseWriter a better response writer
 type ResponseWriter struct {
 	innerResponse http.ResponseWriter
+	http.Hijacker
 	contentLength int
 	statusCode    int
 }
