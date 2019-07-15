@@ -3,6 +3,9 @@ package reverseproxy
 import (
 	"net/http"
 	"net/url"
+	"strings"
+
+	"golang.org/x/net/http/httpguts"
 )
 
 // MustParseURL parses a url and panics if it's bad.
@@ -22,4 +25,11 @@ func RequestCopy(req *http.Request) *http.Request {
 		outreq.Body = nil
 	}
 	return outreq
+}
+
+func UpgradeType(h http.Header) string {
+	if !httpguts.HeaderValuesContainsToken(h["Connection"], "Upgrade") {
+		return ""
+	}
+	return strings.ToLower(h.Get("Upgrade"))
 }
