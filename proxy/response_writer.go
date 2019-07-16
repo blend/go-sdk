@@ -2,9 +2,10 @@ package proxy
 
 import (
 	"bufio"
-	"fmt"
 	"net"
 	"net/http"
+
+	ex "github.com/blend/go-sdk/exception"
 )
 
 // NewResponseWriter creates a new uncompressed response writer.
@@ -17,7 +18,6 @@ func NewResponseWriter(w http.ResponseWriter) *ResponseWriter {
 // ResponseWriter a better response writer
 type ResponseWriter struct {
 	innerResponse http.ResponseWriter
-	hijacker http.Hijacker
 	contentLength int
 	statusCode    int
 }
@@ -34,16 +34,13 @@ func (rw *ResponseWriter) Header() http.Header {
 	return rw.innerResponse.Header()
 }
 
-// Hijack assign hijacker to inner response if null and calls Hijack of inner response
+// Hijack wraps response writer's Hijack function.
 func (rw *ResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
-	if rw.hijacker == nil {
-		hijacker, ok := rw.innerResponse.(http.Hijacker)
-		if !ok {
-			return nil, nil, fmt.Errorf("can't assign Hijacker to innerResponse")
-		}
-		rw.hijacker = hijacker
+	hijacker, ok := rw.innerResponse.(http.Hijacker)
+	if !ok {
+		return nil, nil, ex.New("ResponseWriter doesn't support Hijacker interface")
 	}
-	return rw.hijacker.Hijack()
+	return hijacker.Hijack()
 }
 
 // WriteHeader is actually a terrible name and this writes the status code.
