@@ -1,6 +1,9 @@
 package proxy
 
 import (
+	"bufio"
+	"fmt"
+	"net"
 	"net/http"
 )
 
@@ -14,7 +17,7 @@ func NewResponseWriter(w http.ResponseWriter) *ResponseWriter {
 // ResponseWriter a better response writer
 type ResponseWriter struct {
 	innerResponse http.ResponseWriter
-	http.Hijacker
+	hijacker http.Hijacker
 	contentLength int
 	statusCode    int
 }
@@ -29,6 +32,18 @@ func (rw *ResponseWriter) Write(b []byte) (int, error) {
 // Header accesses the response header collection.
 func (rw *ResponseWriter) Header() http.Header {
 	return rw.innerResponse.Header()
+}
+
+// Hijack assign hijacker to inner response if null and calls Hijack of inner response
+func (rw *ResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if rw.hijacker == nil {
+		hijacker, ok := rw.innerResponse.(http.Hijacker)
+		if !ok {
+			return nil, nil, fmt.Errorf("can't assign Hijacker to innerResponse")
+		}
+		rw.hijacker = hijacker
+	}
+	return rw.hijacker.Hijack()
 }
 
 // WriteHeader is actually a terrible name and this writes the status code.

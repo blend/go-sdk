@@ -49,9 +49,6 @@ func (u *Upstream) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	start := time.Now()
 
 	w := NewResponseWriter(rw)
-	if hijacker, ok := w.innerResponse.(http.Hijacker); ok {
-		w.Hijacker = hijacker
-	}
 
 	// Add extra forwarded headers.
 	// these are required for a majority of services to function correctly behind

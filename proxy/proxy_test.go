@@ -3,8 +3,6 @@ package proxy
 import (
 	"bufio"
 	"fmt"
-	"github.com/gorilla/websocket"
-	"golang.org/x/net/http/httpguts"
 	"io"
 	"io/ioutil"
 	"net"
@@ -16,6 +14,8 @@ import (
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/webutil"
+	"github.com/gorilla/websocket"
+	"golang.org/x/net/http/httpguts"
 )
 
 func urlMustParse(urlToParse string) *url.URL {
