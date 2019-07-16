@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"bufio"
+	"fmt"
 	"net"
 	"net/http"
 
@@ -38,7 +39,7 @@ func (rw *ResponseWriter) Header() http.Header {
 func (rw *ResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	hijacker, ok := rw.innerResponse.(http.Hijacker)
 	if !ok {
-		return nil, nil, ex.New("ResponseWriter doesn't support Hijacker interface")
+		return nil, nil, ex.New(fmt.Errorf("ResponseWriter doesn't support Hijacker interface"))
 	}
 	return hijacker.Hijack()
 }
