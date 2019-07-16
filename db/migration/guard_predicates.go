@@ -7,7 +7,7 @@ func ColumnNotExists(tableName, columnName string) GuardFunc {
 
 // ConstraintNotExists creates a table on the given connection if it does not exist.
 func ConstraintNotExists(constraintName string) GuardFunc {
-	return ConstraintExistsWithPredicate(PredicateConstraintExists, constraintName)
+	return ConstraintNotExistsWithPredicate(PredicateConstraintExists, constraintName)
 }
 
 // TableNotExists creates a table on the given connection if it does not exist.

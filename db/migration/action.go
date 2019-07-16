@@ -18,6 +18,14 @@ type Action func(context.Context, *db.Connection, *sql.Tx) error
 // NoOp performs no action.
 func NoOp(ctx context.Context, c *db.Connection, tx *sql.Tx) error { return nil }
 
+// Exec runs a statement with a given set of arguments.
+func Exec(statement string, args ...interface{}) Action {
+	return func(ctx context.Context, c *db.Connection, tx *sql.Tx) (err error) {
+		err = c.Invoke(ctx, tx).Exec(statement, args...)
+		return
+	}
+}
+
 // Statements returns a body func that executes the statments serially.
 func Statements(statements ...string) Action {
 	return func(ctx context.Context, c *db.Connection, tx *sql.Tx) (err error) {

@@ -31,7 +31,7 @@ func TestConfigCreateDSN(t *testing.T) {
 		SSLMode:  SSLModeVerifyCA,
 	}
 
-	assert.Equal("postgres://bailey:dog@bar:1234/blend?sslmode=verify-ca", cfg.CreateDSN())
+	assert.Equal("postgres://bailey:dog@bar:1234/blend?search_path=mortgages&sslmode=verify-ca", cfg.CreateDSN())
 
 	cfg = &Config{
 		Host:     "bar",
@@ -42,7 +42,7 @@ func TestConfigCreateDSN(t *testing.T) {
 		Schema:   "mortgages",
 	}
 
-	assert.Equal("postgres://bailey:dog@bar:1234/blend", cfg.CreateDSN())
+	assert.Equal("postgres://bailey:dog@bar:1234/blend?search_path=mortgages", cfg.CreateDSN())
 
 	cfg = &Config{
 		Host:     "bar",

@@ -19,6 +19,9 @@ import (
 // assert VaultClient implements client
 var _ Client = &VaultClient{}
 
+// assert VaultClient implements TransitClient
+var _ TransitClient = &VaultClient{}
+
 // NewVaultClient returns a new client.
 func NewVaultClient() (*VaultClient, error) {
 	return NewVaultClientFromConfig(&Config{})
@@ -63,6 +66,7 @@ func NewVaultClientFromConfig(cfg *Config) (*VaultClient, error) {
 
 	client.kv1 = &KV1{Client: client}
 	client.kv2 = &KV2{Client: client}
+	client.Transit = &VaultTransit{Client: client}
 	return client, nil
 }
 
@@ -90,8 +94,9 @@ type VaultClient struct {
 	mount  string
 	log    logger.Log
 
-	kv1 *KV1
-	kv2 *KV2
+	kv1     *KV1
+	kv2     *KV2
+	Transit TransitClient
 
 	bufferPool *BufferPool
 	client     HTTPClient
@@ -160,7 +165,7 @@ func (c *VaultClient) Logger() logger.Log {
 
 // Put puts a value.
 func (c *VaultClient) Put(ctx context.Context, key string, data Values, options ...Option) error {
-	backend, err := c.backend(ctx, key)
+	backend, err := c.backendKV(ctx, key)
 	if err != nil {
 		return err
 	}
@@ -170,7 +175,7 @@ func (c *VaultClient) Put(ctx context.Context, key string, data Values, options 
 
 // Get gets a value at a given key.
 func (c *VaultClient) Get(ctx context.Context, key string, options ...Option) (Values, error) {
-	backend, err := c.backend(ctx, key)
+	backend, err := c.backendKV(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +185,7 @@ func (c *VaultClient) Get(ctx context.Context, key string, options ...Option) (V
 
 // Delete puts a key.
 func (c *VaultClient) Delete(ctx context.Context, key string, options ...Option) error {
-	backend, err := c.backend(ctx, key)
+	backend, err := c.backendKV(ctx, key)
 	if err != nil {
 		return err
 	}
@@ -189,7 +194,7 @@ func (c *VaultClient) Delete(ctx context.Context, key string, options ...Option)
 
 // List returns a slice of key and subfolder names at this path.
 func (c *VaultClient) List(ctx context.Context, path string, options ...Option) ([]string, error) {
-	backend, err := c.backend(ctx, path)
+	backend, err := c.backendKV(ctx, path)
 	if err != nil {
 		return nil, err
 	}
@@ -215,11 +220,21 @@ func (c *VaultClient) WriteInto(ctx context.Context, key string, obj interface{}
 	return c.Put(ctx, key, data, options...)
 }
 
+// Encrypt encrypts a given set of data.
+func (c *VaultClient) Encrypt(ctx context.Context, key string, context, data []byte) (string, error) {
+	return c.Transit.Encrypt(ctx, key, context, data)
+}
+
+// Decrypt decrypts a given set of data.
+func (c *VaultClient) Decrypt(ctx context.Context, key string, context []byte, ciphertext string) ([]byte, error) {
+	return c.Transit.Decrypt(ctx, key, context, ciphertext)
+}
+
 // --------------------------------------------------------------------------------
 // utility methods
 // --------------------------------------------------------------------------------
 
-func (c *VaultClient) backend(ctx context.Context, key string) (KV, error) {
+func (c *VaultClient) backendKV(ctx context.Context, key string) (KV, error) {
 	version, err := c.getVersion(ctx, key)
 	if err != nil {
 		return nil, err
