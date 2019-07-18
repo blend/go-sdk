@@ -11,16 +11,11 @@ import (
 
 // GetStackTrace is a utility method to get the current stack trace at call time.
 func GetStackTrace() string {
-	return fmt.Sprintf("%+v", callers(defaultStartDepth))
+	return fmt.Sprintf("%+v", Callers(DefaultStartDepth))
 }
 
-const (
-	defaultStartDepth = 3
-
-	defaultNewStartDepth = 4
-)
-
-func callers(startDepth int) StackPointers {
+// Callers returns stack pointers.
+func Callers(startDepth int) StackPointers {
 	const depth = 32
 	var pcs [depth]uintptr
 	n := runtime.Callers(startDepth, pcs[:])

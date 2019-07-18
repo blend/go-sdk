@@ -104,7 +104,7 @@ func TestErrorOptions(t *testing.T) {
 func TestCallers(t *testing.T) {
 	a := assert.New(t)
 
-	callStack := func() StackTrace { return callers(defaultStartDepth) }()
+	callStack := func() StackTrace { return Callers(DefaultStartDepth) }()
 
 	a.NotNil(callStack)
 	callstackStr := callStack.String()

@@ -18,7 +18,7 @@ var (
 // concrete types intentionally; it is important for the semantics of typed pointers and nil
 // for this to return an interface because (*Ex)(nil) != nil, but (error)(nil) == nil.
 func New(class interface{}, options ...Option) Exception {
-	return NewWithStackDepth(class, defaultNewStartDepth, options...)
+	return NewWithStackDepth(class, DefaultNewStartDepth, options...)
 }
 
 // Exception is a meta interface for exceptions.
@@ -41,17 +41,17 @@ func NewWithStackDepth(class interface{}, startDepth int, options ...Option) Exc
 	} else if err, ok := class.(error); ok {
 		ex = &Ex{
 			Class: err,
-			Stack: callers(startDepth),
+			Stack: Callers(startDepth),
 		}
 	} else if str, ok := class.(string); ok {
 		ex = &Ex{
 			Class: Class(str),
-			Stack: callers(startDepth),
+			Stack: Callers(startDepth),
 		}
 	} else {
 		ex = &Ex{
 			Class: Class(fmt.Sprint(class)),
-			Stack: callers(startDepth),
+			Stack: Callers(startDepth),
 		}
 	}
 
@@ -88,7 +88,7 @@ func OptStack(stack StackTrace) Option {
 // OptInner sets an inner or wrapped ex.
 func OptInner(inner error) Option {
 	return func(ex *Ex) {
-		ex.Inner = NewWithStackDepth(inner, defaultNewStartDepth)
+		ex.Inner = NewWithStackDepth(inner, DefaultNewStartDepth)
 	}
 }
 
@@ -122,7 +122,7 @@ func (e *Ex) WithMessagef(format string, args ...interface{}) Exception {
 // WithInner sets the inner ex.
 // Deprecation notice: This method is included as a migraition path from v2, and will be removed after v3.
 func (e *Ex) WithInner(err error) Exception {
-	e.Inner = NewWithStackDepth(err, defaultNewStartDepth)
+	e.Inner = NewWithStackDepth(err, DefaultNewStartDepth)
 	return e
 }
 
