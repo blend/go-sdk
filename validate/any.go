@@ -54,7 +54,7 @@ func (a AnyValidators) Required() Validator {
 	}
 }
 
-// Zero retruns a validator that asserts an object is it's zero value.
+// Zero returns a validator that asserts an object is it's zero value.
 // This nil for pointers, slices, maps, channels.
 // And whatever equality passes for everything else with it's initialized value.
 func (a AnyValidators) Zero() Validator {
