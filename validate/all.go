@@ -1,6 +1,6 @@
 package validate
 
-// All returns the all the failing validations.
+// All returns all the failing validations.
 func All(validators ...func() error) []error {
 	var output []error
 	var err error

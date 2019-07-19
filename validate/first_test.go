@@ -7,10 +7,6 @@ import (
 	"github.com/blend/go-sdk/assert"
 )
 
-func none() error { return nil }
-
-func some(err error) func() error { return func() error { return err } }
-
 func TestFirst(t *testing.T) {
 	assert := assert.New(t)
 

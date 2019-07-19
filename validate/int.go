@@ -10,18 +10,20 @@ const (
 	ErrIntNegative ex.Class = "int should be negative"
 )
 
-// Int validator singleton.
-func Int(v int) IntValidators {
-	return IntValidators(v)
+// Int contains helpers for int validation.
+func Int(value *int) IntValidators {
+	return IntValidators{value}
 }
 
-// IntValidators contains helpers for int validation.
-type IntValidators int
+// IntValidators implements int validators.
+type IntValidators struct {
+	Value *int
+}
 
 // Min returns a validator that an int is above a minimum value.
 func (i IntValidators) Min(min int) Validator {
 	return func() error {
-		if int(i) < min {
+		if i.Value == nil || *i.Value < min {
 			return Errorf(ErrIntMin, "min: %d", min)
 		}
 		return nil
@@ -31,7 +33,10 @@ func (i IntValidators) Min(min int) Validator {
 // Max returns a validator that a int is below a max value.
 func (i IntValidators) Max(max int) Validator {
 	return func() error {
-		if int(i) > max {
+		if i.Value == nil {
+			return nil
+		}
+		if *i.Value > max {
 			return Errorf(ErrIntMax, "max: %d", max)
 		}
 		return nil
@@ -41,10 +46,10 @@ func (i IntValidators) Max(max int) Validator {
 // Between returns a validator that an int is between a given min and max exclusive.
 func (i IntValidators) Between(min, max int) Validator {
 	return func() error {
-		if int(i) < min {
+		if i.Value == nil || *i.Value < min {
 			return Errorf(ErrIntMin, "min: %d", min)
 		}
-		if int(i) > max {
+		if *i.Value > max {
 			return Errorf(ErrIntMax, "max: %d", max)
 		}
 		return nil
@@ -53,7 +58,7 @@ func (i IntValidators) Between(min, max int) Validator {
 
 // Positive returns a validator that an int is positive.
 func (i IntValidators) Positive() error {
-	if int(i) < 0 {
+	if i.Value == nil || *i.Value < 0 {
 		return Error(ErrIntPositive)
 	}
 	return nil
@@ -61,7 +66,7 @@ func (i IntValidators) Positive() error {
 
 // Negative returns a validator that an int is negative.
 func (i IntValidators) Negative() error {
-	if int(i) > 0 {
+	if i.Value == nil || *i.Value > 0 {
 		return Error(ErrIntNegative)
 	}
 	return nil

@@ -8,7 +8,12 @@ import (
 
 // Basic errors
 const (
-	ErrZero       ex.Class = "object should be its zero or default value"
+	ErrZero       ex.Class = "object should be its default value or unset"
+	ErrNotZero    ex.Class = "object should not be its default value or unset"
+	ErrRequired   ex.Class = "field is required"
+	ErrForbidden  ex.Class = "field is forbidden"
+	ErrEmpty      ex.Class = "object should be empty"
+	ErrLen        ex.Class = "object should have a given length"
 	ErrNil        ex.Class = "object should be nil"
 	ErrNotNil     ex.Class = "object should not be nil"
 	ErrEquals     ex.Class = "objects should be equal"
@@ -27,42 +32,110 @@ type AnyValidators struct {
 	Obj interface{}
 }
 
+// Forbidden mirrors Zero but uses a specific error.
+// This is useful if you want to have more aggressive failure cases.
+func (a AnyValidators) Forbidden() Validator {
+	return func() error {
+		if err := a.Zero()(); err != nil {
+			return Error(ErrForbidden)
+		}
+		return nil
+	}
+}
+
+// Required mirrors NotZero but uses a specific error.
+// This is useful if you want to have more aggressive failure cases.
+func (a AnyValidators) Required() Validator {
+	return func() error {
+		if err := a.NotZero()(); err != nil {
+			return Error(ErrRequired)
+		}
+		return nil
+	}
+}
+
 // Zero retruns a validator that asserts an object is it's zero value.
 // This nil for pointers, slices, maps, channels.
 // And whatever equality passes for everything else with it's initialized value.
-func (a AnyValidators) Zero() error {
-	if a.Obj == nil {
-		return nil
-	}
+func (a AnyValidators) Zero() Validator {
+	return func() error {
+		if a.Obj == nil {
+			return nil
+		}
 
-	zero := reflect.Zero(reflect.TypeOf(a.Obj)).Interface()
-	if verr := a.Equals(zero)(); verr == nil {
+		zero := reflect.Zero(reflect.TypeOf(a.Obj)).Interface()
+		if verr := a.Equals(zero)(); verr == nil {
+			return nil
+		}
+		return Error(ErrZero)
+	}
+}
+
+// NotZero returns a validator that a given field is set.
+// It will return an error if the field is unset.
+func (a AnyValidators) NotZero() Validator {
+	return func() error {
+		if err := a.Zero()(); err == nil {
+			return Error(ErrNotZero)
+		}
 		return nil
 	}
-	return Error(ErrZero)
+}
+
+// Empty returns if a slice, map or channel is empty.
+// It will error if the object is not a slice, map or channel.
+func (a AnyValidators) Empty() Validator {
+	return func() error {
+		objLen, err := GetLength(a.Obj)
+		if err != nil {
+			return err
+		}
+		if objLen == 0 {
+			return nil
+		}
+		return Error(ErrEmpty)
+	}
+}
+
+// Len validates the length is a given value.
+func (a AnyValidators) Len(length int) Validator {
+	return func() error {
+		objLen, err := GetLength(a.Obj)
+		if err != nil {
+			return err
+		}
+		if objLen == length {
+			return nil
+		}
+		return Error(ErrLen)
+	}
 }
 
 // Nil validates the object is nil.
-func (a AnyValidators) Nil() error {
-	if a.Obj == nil {
-		return nil
-	}
+func (a AnyValidators) Nil() Validator {
+	return func() error {
+		if a.Obj == nil {
+			return nil
+		}
 
-	value := reflect.ValueOf(a.Obj)
-	kind := value.Kind()
-	if kind >= reflect.Chan && kind <= reflect.Slice && value.IsNil() {
-		return nil
+		value := reflect.ValueOf(a.Obj)
+		kind := value.Kind()
+		if kind >= reflect.Chan && kind <= reflect.Slice && value.IsNil() {
+			return nil
+		}
+		return Error(ErrNil)
 	}
-	return Error(ErrNil)
 }
 
 // NotNil validates the object is not nil.
 // It also validates that the object is not an unset pointer.
-func (a AnyValidators) NotNil() error {
-	if verr := a.Nil(); verr != nil {
-		return nil
+func (a AnyValidators) NotNil() Validator {
+	return func() error {
+		if verr := a.Nil()(); verr != nil {
+			return nil
+		}
+		return Error(ErrNotNil)
 	}
-	return Error(ErrNotNil)
 }
 
 // Equals validates an object equals another object.

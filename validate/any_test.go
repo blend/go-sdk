@@ -7,13 +7,60 @@ import (
 	"github.com/blend/go-sdk/ex"
 )
 
-type zeroTest struct {
-	ID    int
-	Value string
+func TestForbidden(t *testing.T) {
+	assert := assert.New(t)
+
+	var verr error
+	verr = Any(nil).Forbidden()()
+	assert.Nil(verr)
+
+	verr = Any((*string)(nil)).Forbidden()()
+	assert.Nil(verr)
+
+	verr = Any("foo").Forbidden()()
+	assert.NotNil(verr)
+	assert.Equal(ErrForbidden, ex.ErrInner(verr))
+}
+
+func TestRequired(t *testing.T) {
+	assert := assert.New(t)
+
+	var verr error
+	verr = Any("foo").Required()()
+	assert.Nil(verr)
+
+	verr = Any(nil).Required()()
+	assert.NotNil(verr)
+	assert.Equal(ErrRequired, ex.ErrInner(verr))
+
+	verr = Any((*string)(nil)).Required()()
+	assert.NotNil(verr)
+	assert.Equal(ErrRequired, ex.ErrInner(verr))
+}
+
+func TestNotZero(t *testing.T) {
+	assert := assert.New(t)
+
+	var verr error
+	verr = Any("foo").NotZero()()
+	assert.Nil(verr)
+
+	verr = Any(nil).NotZero()()
+	assert.NotNil(verr)
+	assert.Equal(ErrNotZero, ex.ErrInner(verr))
+
+	verr = Any((*string)(nil)).NotZero()()
+	assert.NotNil(verr)
+	assert.Equal(ErrNotZero, ex.ErrInner(verr))
 }
 
 func TestZero(t *testing.T) {
 	assert := assert.New(t)
+
+	type zeroTest struct {
+		ID    int
+		Value string
+	}
 
 	testCases := [...]struct {
 		Input    interface{}
@@ -46,23 +93,98 @@ func TestZero(t *testing.T) {
 	}
 
 	for index, tc := range testCases {
-		verr := Any(tc.Input).Zero()
+		verr := Any(tc.Input).Zero()()
 		assert.Equal(tc.Expected, ex.ErrInner(verr), index)
 	}
+}
+
+func TestEmpty(t *testing.T) {
+	assert := assert.New(t)
+
+	testCases := [...]struct {
+		Input    interface{}
+		Expected error
+	}{
+		{
+			Input:    []string{},
+			Expected: nil,
+		},
+		{
+			Input:    ([]string)(nil),
+			Expected: nil,
+		},
+		{
+			Input:    map[string]interface{}{},
+			Expected: nil,
+		},
+		{
+			Input:    (map[string]interface{})(nil),
+			Expected: nil,
+		},
+		{
+			Input:    "",
+			Expected: nil,
+		},
+		{
+			Input:    make(chan struct{}),
+			Expected: nil,
+		},
+		{
+			Input:    (chan struct{})(nil),
+			Expected: nil,
+		},
+		{
+			Input:    []string{"a", "b"},
+			Expected: ErrEmpty,
+		},
+		{
+			Input:    map[string]int{"hi": 1},
+			Expected: ErrEmpty,
+		},
+		{
+			Input:    "foo",
+			Expected: ErrEmpty,
+		},
+	}
+
+	for index, tc := range testCases {
+		verr := Any(tc.Input).Empty()()
+		assert.Equal(tc.Expected, ex.ErrInner(verr), index)
+	}
+}
+
+func TestLen(t *testing.T) {
+	assert := assert.New(t)
+
+	var err error
+	err = Any(1234).Len(10)()
+	assert.NotNil(err)
+	assert.Equal(ErrNonLengthType, ex.ErrClass(err))
+
+	var verr error
+	verr = Any([]int{1, 2, 3, 4}).Len(4)()
+	assert.Nil(verr)
+
+	verr = Any(map[int]bool{1: true, 2: true}).Len(2)()
+	assert.Nil(verr)
+
+	verr = Any([]int{}).Len(4)()
+	assert.NotNil(verr)
+	assert.Equal(ErrLen, ex.ErrInner(verr))
 }
 
 func TestNil(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	verr = Any(nil).Nil()
+	verr = Any(nil).Nil()()
 	assert.Nil(verr)
 
 	var nilPtr *string
-	verr = Any(nilPtr).Nil()
+	verr = Any(nilPtr).Nil()()
 	assert.Nil(verr)
 
-	verr = Any("foo").Nil()
+	verr = Any("foo").Nil()()
 	assert.NotNil(verr)
 	assert.Equal(ErrNil, ex.ErrInner(verr))
 }
@@ -71,15 +193,15 @@ func TestNotNil(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	verr = Any("foo").NotNil()
+	verr = Any("foo").NotNil()()
 	assert.Nil(verr)
 
-	verr = Any(nil).NotNil()
+	verr = Any(nil).NotNil()()
 	assert.NotNil(verr)
 	assert.Equal(ErrNotNil, ex.ErrInner(verr))
 
 	var nilPtr *string
-	verr = Any(nilPtr).NotNil()
+	verr = Any(nilPtr).NotNil()()
 	assert.NotNil(verr)
 	assert.Equal(ErrNotNil, ex.ErrInner(verr))
 }

@@ -13,12 +13,19 @@ const (
 )
 
 // Time validator singleton.
-type Time time.Time
+func Time(value *time.Time) TimeValidators {
+	return TimeValidators{value}
+}
+
+// TimeValidators implements validators for time.Time values.
+type TimeValidators struct {
+	Value *time.Time
+}
 
 // Before returns a validator that a time should be before a given time.
-func (t Time) Before(before time.Time) Validator {
+func (t TimeValidators) Before(before time.Time) Validator {
 	return func() error {
-		if time.Time(t).After(before) {
+		if t.Value == nil || (*t.Value).After(before) {
 			return Errorf(ErrTimeBefore, "before: %v", before)
 		}
 		return nil
@@ -26,18 +33,18 @@ func (t Time) Before(before time.Time) Validator {
 }
 
 // BeforeNowUTC returns a validator that a time should be before a given time.
-func (t Time) BeforeNowUTC() error {
+func (t TimeValidators) BeforeNowUTC() error {
 	nowUTC := time.Now().UTC()
-	if time.Time(t).After(nowUTC) {
+	if t.Value == nil || (*t.Value).After(nowUTC) {
 		return Errorf(ErrTimeBefore, "before: %v", nowUTC)
 	}
 	return nil
 }
 
 // After returns a validator that a time should be after a given time.
-func (t Time) After(after time.Time) Validator {
+func (t TimeValidators) After(after time.Time) Validator {
 	return func() error {
-		if time.Time(t).Before(after) {
+		if t.Value == nil || (*t.Value).Before(after) {
 			return Errorf(ErrTimeAfter, "after: %v", after)
 		}
 		return nil
@@ -45,21 +52,21 @@ func (t Time) After(after time.Time) Validator {
 }
 
 // AfterNowUTC returns a validator that a time should be after a given time.
-func (t Time) AfterNowUTC() error {
+func (t TimeValidators) AfterNowUTC() error {
 	nowUTC := time.Now().UTC()
-	if time.Time(t).Before(nowUTC) {
+	if t.Value == nil || (*t.Value).Before(nowUTC) {
 		return Errorf(ErrTimeAfter, "after: %v", nowUTC)
 	}
 	return nil
 }
 
 // Between returns a validator that a time should be after a given time.
-func (t Time) Between(before, after time.Time) Validator {
+func (t TimeValidators) Between(before, after time.Time) Validator {
 	return func() error {
-		if time.Time(t).Before(before) {
+		if t.Value == nil || (*t.Value).Before(before) {
 			return Errorf(ErrTimeAfter, "after: %v", before)
 		}
-		if time.Time(t).After(after) {
+		if (*t.Value).After(after) {
 			return Errorf(ErrTimeBefore, "before: %v", after)
 		}
 		return nil
