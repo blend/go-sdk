@@ -106,85 +106,99 @@ func (s StringValidators) Matches(expression string) Validator {
 }
 
 // IsUpper returns a validator if a string is all uppercase.
-func (s StringValidators) IsUpper() error {
-	if s.Value == nil {
+func (s StringValidators) IsUpper() Validator {
+	return func() error {
+		if s.Value == nil {
+			return nil
+		}
+		runes := []rune(string(*s.Value))
+		for _, r := range runes {
+			if !unicode.IsUpper(r) {
+				return Error(ErrStringIsUpper)
+			}
+		}
 		return nil
 	}
-	runes := []rune(string(*s.Value))
-	for _, r := range runes {
-		if !unicode.IsUpper(r) {
-			return Error(ErrStringIsUpper)
-		}
-	}
-	return nil
 }
 
 // IsLower returns a validator if a string is all lowercase.
-func (s StringValidators) IsLower() error {
-	if s.Value == nil {
+func (s StringValidators) IsLower() Validator {
+	return func() error {
+		if s.Value == nil {
+			return nil
+		}
+		runes := []rune(string(*s.Value))
+		for _, r := range runes {
+			if !unicode.IsLower(r) {
+				return Error(ErrStringIsLower)
+			}
+		}
 		return nil
 	}
-	runes := []rune(string(*s.Value))
-	for _, r := range runes {
-		if !unicode.IsLower(r) {
-			return Error(ErrStringIsLower)
-		}
-	}
-	return nil
 }
 
 // IsTitle returns a validator if a string is titlecase.
 // Titlecase is defined as the output of strings.ToTitle(s).
-func (s StringValidators) IsTitle() error {
-	if s.Value == nil {
-		return nil
+func (s StringValidators) IsTitle() Validator {
+	return func() error {
+		if s.Value == nil {
+			return nil
+		}
+		if strings.ToTitle(string(*s.Value)) == string(*s.Value) {
+			return nil
+		}
+		return Error(ErrStringIsTitle)
 	}
-	if strings.ToTitle(string(*s.Value)) == string(*s.Value) {
-		return nil
-	}
-	return Error(ErrStringIsTitle)
 }
 
 // IsUUID returns if a string is a valid uuid.
-func (s StringValidators) IsUUID() error {
-	if s.Value == nil {
+func (s StringValidators) IsUUID() Validator {
+	return func() error {
+		if s.Value == nil {
+			return nil
+		}
+		if _, err := uuid.Parse(string(*s.Value)); err != nil {
+			return Error(ErrStringIsUUID)
+		}
 		return nil
 	}
-	if _, err := uuid.Parse(string(*s.Value)); err != nil {
-		return Error(ErrStringIsUUID)
-	}
-	return nil
 }
 
 // IsEmail returns if a string is a valid email address.
-func (s StringValidators) IsEmail() error {
-	if s.Value == nil {
+func (s StringValidators) IsEmail() Validator {
+	return func() error {
+		if s.Value == nil {
+			return nil
+		}
+		if _, err := mail.ParseAddress(string(*s.Value)); err != nil {
+			return Error(ErrStringIsEmail)
+		}
 		return nil
 	}
-	if _, err := mail.ParseAddress(string(*s.Value)); err != nil {
-		return Error(ErrStringIsEmail)
-	}
-	return nil
 }
 
 // IsURI returns if a string is a valid uri.
-func (s StringValidators) IsURI() error {
-	if s.Value == nil {
+func (s StringValidators) IsURI() Validator {
+	return func() error {
+		if s.Value == nil {
+			return nil
+		}
+		if _, err := url.ParseRequestURI(string(*s.Value)); err != nil {
+			return Error(ErrStringIsURI)
+		}
 		return nil
 	}
-	if _, err := url.ParseRequestURI(string(*s.Value)); err != nil {
-		return Error(ErrStringIsURI)
-	}
-	return nil
 }
 
 // IsIP returns if a string is a valid ip address.
-func (s StringValidators) IsIP() error {
-	if s.Value == nil {
+func (s StringValidators) IsIP() Validator {
+	return func() error {
+		if s.Value == nil {
+			return nil
+		}
+		if addr := net.ParseIP(string(*s.Value)); addr == nil {
+			return Error(ErrStringIsIP)
+		}
 		return nil
 	}
-	if addr := net.ParseIP(string(*s.Value)); addr == nil {
-		return Error(ErrStringIsIP)
-	}
-	return nil
 }
