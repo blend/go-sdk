@@ -2,7 +2,7 @@ package validate
 
 import "github.com/blend/go-sdk/ex"
 
-// String errors
+// Int errors
 const (
 	ErrIntMin      ex.Class = "int should be above a minimum value"
 	ErrIntMax      ex.Class = "int should be below a maximum value"
@@ -16,7 +16,7 @@ type IntValidator func(int) error
 // Int validator singleton.
 var Int intValidators
 
-// string contains helpers for string validation.
+// intValidators contains helpers for int validation.
 type intValidators struct{}
 
 // Min returns a validator that an int is above a minimum value.
