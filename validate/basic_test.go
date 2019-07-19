@@ -7,6 +7,11 @@ import (
 	"github.com/blend/go-sdk/ex"
 )
 
+type zeroTest struct {
+	ID    int
+	Value string
+}
+
 func TestZero(t *testing.T) {
 	assert := assert.New(t)
 
@@ -28,6 +33,14 @@ func TestZero(t *testing.T) {
 		},
 		{
 			Input:    "foo",
+			Expected: ErrZero,
+		},
+		{
+			Input:    zeroTest{},
+			Expected: nil,
+		},
+		{
+			Input:    zeroTest{ID: 2},
 			Expected: ErrZero,
 		},
 	}
