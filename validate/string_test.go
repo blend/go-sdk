@@ -11,39 +11,39 @@ func TestStringMin(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	verr = String.Min(3)("large")
+	verr = String("large").MinLen(3)()
 	assert.Nil(verr)
-	verr = String.Min(3)("a")
+	verr = String("a").MinLen(3)()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
 	assert.Equal(ErrStringLengthMin, ex.ErrInner(verr))
 }
 
-func TestStringMax(t *testing.T) {
+func TestStringMaxlen(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	verr = String.Max(3)("a")
+	verr = String("a").MaxLen(3)()
 	assert.Nil(verr)
-	verr = String.Max(3)("large")
+	verr = String("large").MaxLen(3)()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
 	assert.Equal(ErrStringLengthMax, ex.ErrInner(verr))
 }
 
-func TestStringBetween(t *testing.T) {
+func TestStringBetweenLen(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	verr = String.Between(1, 3)("a")
+	verr = String("a").BetweenLen(1, 3)()
 	assert.Nil(verr)
 
-	verr = String.Between(1, 3)("large")
+	verr = String("large").BetweenLen(1, 3)()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
 	assert.Equal(ErrStringLengthMax, ex.ErrInner(verr))
 
-	verr = String.Between(1, 3)("")
+	verr = String("").BetweenLen(1, 3)()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
 	assert.Equal(ErrStringLengthMin, ex.ErrInner(verr))
@@ -53,10 +53,10 @@ func TestStringMatches(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	verr = String.Matches("foo$")("a foo")
+	verr = String("a foo").Matches("foo$")()
 	assert.Nil(verr)
 
-	verr = String.Matches("foo$")("foo not")
+	verr = String("foo not").Matches("foo$")()
 	assert.NotNil(verr)
 	assert.Equal(ErrStringMatches, ex.ErrInner(verr))
 }
@@ -65,7 +65,7 @@ func TestStringMatchesError(t *testing.T) {
 	assert := assert.New(t)
 
 	var err error
-	err = String.Matches("((")("a foo") // this should be an invalid regex "(("
+	err = String("a foo").Matches("((")() // this should be an invalid regex "(("
 	assert.NotNil(err)
 	assert.NotEqual(ErrValidation, ex.ErrClass(err))
 }

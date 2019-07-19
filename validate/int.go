@@ -10,19 +10,18 @@ const (
 	ErrIntNegative ex.Class = "int should be negative"
 )
 
-// IntValidator is a validator for strings.
-type IntValidator func(int) error
-
 // Int validator singleton.
-var Int intValidators
+func Int(v int) IntValidators {
+	return IntValidators(v)
+}
 
-// intValidators contains helpers for int validation.
-type intValidators struct{}
+// IntValidators contains helpers for int validation.
+type IntValidators int
 
 // Min returns a validator that an int is above a minimum value.
-func (i intValidators) Min(min int) IntValidator {
-	return func(v int) error {
-		if v < min {
+func (i IntValidators) Min(min int) Validator {
+	return func() error {
+		if int(i) < min {
 			return Errorf(ErrIntMin, "min: %d", min)
 		}
 		return nil
@@ -30,9 +29,9 @@ func (i intValidators) Min(min int) IntValidator {
 }
 
 // Max returns a validator that a int is below a max value.
-func (i intValidators) Max(max int) IntValidator {
-	return func(v int) error {
-		if v > max {
+func (i IntValidators) Max(max int) Validator {
+	return func() error {
+		if int(i) > max {
 			return Errorf(ErrIntMax, "max: %d", max)
 		}
 		return nil
@@ -40,12 +39,12 @@ func (i intValidators) Max(max int) IntValidator {
 }
 
 // Between returns a validator that an int is between a given min and max exclusive.
-func (i intValidators) Between(min, max int) IntValidator {
-	return func(v int) error {
-		if v < min {
+func (i IntValidators) Between(min, max int) Validator {
+	return func() error {
+		if int(i) < min {
 			return Errorf(ErrIntMin, "min: %d", min)
 		}
-		if v > max {
+		if int(i) > max {
 			return Errorf(ErrIntMax, "max: %d", max)
 		}
 		return nil
@@ -53,16 +52,16 @@ func (i intValidators) Between(min, max int) IntValidator {
 }
 
 // Positive returns a validator that an int is positive.
-func (i intValidators) Positive(v int) error {
-	if v < 0 {
+func (i IntValidators) Positive() error {
+	if int(i) < 0 {
 		return Error(ErrIntPositive)
 	}
 	return nil
 }
 
 // Negative returns a validator that an int is negative.
-func (i intValidators) Negative(v int) error {
-	if v > 0 {
+func (i IntValidators) Negative() error {
+	if int(i) > 0 {
 		return Error(ErrIntNegative)
 	}
 	return nil

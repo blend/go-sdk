@@ -13,56 +13,50 @@ const (
 	ErrStringMatches   ex.Class = "string should match regular expression"
 )
 
-// StringValidator is a validator for strings.
-type StringValidator func(string) error
+// String contains helpers for string validation.
+type String string
 
-// String validator singleton.
-var String stringValidators
-
-// string contains helpers for string validation.
-type stringValidators struct{}
-
-// Min returns a validator that a string is a minimum length.
-func (s stringValidators) Min(length int) StringValidator {
-	return func(v string) error {
-		if len(v) < length {
+// MinLen returns a validator that a string is a minimum length.
+func (s String) MinLen(length int) Validator {
+	return func() error {
+		if len(s) < length {
 			return Errorf(ErrStringLengthMin, "length: %d", length)
 		}
 		return nil
 	}
 }
 
-// Max returns a validator that a string is a minimum length.
-func (s stringValidators) Max(length int) StringValidator {
-	return func(v string) error {
-		if len(v) > length {
+// MaxLen returns a validator that a string is a minimum length.
+func (s String) MaxLen(length int) Validator {
+	return func() error {
+		if len(s) > length {
 			return Errorf(ErrStringLengthMax, "length: %d", length)
 		}
 		return nil
 	}
 }
 
-// Between returns a validator that a string is a between a minimum and maximum length.
-func (s stringValidators) Between(min, max int) StringValidator {
-	return func(v string) error {
-		if len(v) < min {
+// BetweenLen returns a validator that a string is a between a minimum and maximum length.
+func (s String) BetweenLen(min, max int) Validator {
+	return func() error {
+		if len(s) < min {
 			return Errorf(ErrStringLengthMin, "length: %d", min)
 		}
-		if len(v) > max {
+		if len(s) > max {
 			return Errorf(ErrStringLengthMax, "length: %d", max)
 		}
 		return nil
 	}
 }
 
-// Min returns a validator that a string is a minimum length.
-func (s stringValidators) Matches(expression string) StringValidator {
+// Matches returns a validator that a string matches a given regex.
+func (s String) Matches(expression string) Validator {
 	exp, err := regexp.Compile(expression)
-	return func(v string) error {
+	return func() error {
 		if err != nil {
 			return ex.New(err)
 		}
-		if !exp.MatchString(v) {
+		if !exp.MatchString(string(s)) {
 			return Errorf(ErrStringMatches, "expression: %s", expression)
 		}
 		return nil

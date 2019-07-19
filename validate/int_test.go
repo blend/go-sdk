@@ -11,13 +11,13 @@ func TestIntMin(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	verr = Int.Min(1)(10)
+	verr = Int(10).Min(1)()
 	assert.Nil(verr)
 
-	verr = Int.Min(10)(10)
+	verr = Int(10).Min(10)()
 	assert.Nil(verr)
 
-	verr = Int.Min(10)(1)
+	verr = Int(1).Min(10)()
 	assert.NotNil(verr)
 	assert.Equal(ErrIntMin, ex.ErrInner(verr))
 }
@@ -26,13 +26,13 @@ func TestIntMax(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	verr = Int.Max(10)(1)
+	verr = Int(1).Max(10)()
 	assert.Nil(verr)
 
-	verr = Int.Max(10)(10)
+	verr = Int(10).Max(10)()
 	assert.Nil(verr)
 
-	verr = Int.Max(1)(10)
+	verr = Int(10).Max(1)()
 	assert.NotNil(verr)
 	assert.Equal(ErrIntMax, ex.ErrInner(verr))
 }
@@ -41,14 +41,14 @@ func TestIntBetween(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	verr = Int.Between(1, 10)(5)
+	verr = Int(5).Between(1, 10)()
 	assert.Nil(verr)
 
-	verr = Int.Between(5, 10)(1)
+	verr = Int(1).Between(5, 10)()
 	assert.NotNil(verr)
 	assert.Equal(ErrIntMin, ex.ErrInner(verr))
 
-	verr = Int.Between(1, 10)(11)
+	verr = Int(11).Between(1, 10)()
 	assert.NotNil(verr)
 	assert.Equal(ErrIntMax, ex.ErrInner(verr))
 }
@@ -57,10 +57,10 @@ func TestIntPositive(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	verr = Int.Positive(5)
+	verr = Int(5).Positive()
 	assert.Nil(verr)
 
-	verr = Int.Positive(-5)
+	verr = Int(-5).Positive()
 	assert.NotNil(verr)
 	assert.Equal(ErrIntPositive, ex.ErrInner(verr))
 }
@@ -69,10 +69,10 @@ func TestIntNegative(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	verr = Int.Negative(-5)
+	verr = Int(-5).Negative()
 	assert.Nil(verr)
 
-	verr = Int.Negative(5)
+	verr = Int(5).Negative()
 	assert.NotNil(verr)
 	assert.Equal(ErrIntNegative, ex.ErrInner(verr))
 }
