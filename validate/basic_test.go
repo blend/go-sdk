@@ -7,6 +7,36 @@ import (
 	"github.com/blend/go-sdk/ex"
 )
 
+func TestZero(t *testing.T) {
+	assert := assert.New(t)
+
+	testCases := [...]struct {
+		Input    interface{}
+		Expected error
+	}{
+		{
+			Input:    int(0),
+			Expected: nil,
+		},
+		{
+			Input:    int(1),
+			Expected: ErrZero,
+		},
+		{
+			Input:    "",
+			Expected: nil,
+		},
+		{
+			Input:    "foo",
+			Expected: ErrZero,
+		},
+	}
+
+	for index, tc := range testCases {
+		assert.Equal(tc.Expected, ex.ErrInner(Zero(tc.Input)), index)
+	}
+}
+
 func TestNil(t *testing.T) {
 	assert := assert.New(t)
 

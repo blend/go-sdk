@@ -8,6 +8,7 @@ import (
 
 // Basic errors
 const (
+	ErrZero       ex.Class = "object should be its zero or default value"
 	ErrNil        ex.Class = "object should be nil"
 	ErrNotNil     ex.Class = "object should not be nil"
 	ErrEquals     ex.Class = "objects should be equal"
@@ -28,7 +29,10 @@ func Zero(obj interface{}) error {
 	}
 
 	zero := reflect.Zero(reflect.TypeOf(obj)).Interface()
-	return Equals(zero)(obj)
+	if verr := Equals(zero)(obj); verr == nil {
+		return nil
+	}
+	return Error(ErrZero)
 }
 
 // Nil validates the object is nil.
