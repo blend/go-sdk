@@ -19,6 +19,18 @@ const (
 // BasicValidator validates any object.
 type BasicValidator func(interface{}) error
 
+// Zero retruns a validator that asserts an object is it's zero value.
+// This nil for pointers, slices, maps, channels.
+// And whatever equality passes for everything else with it's initialized value.
+func Zero(obj interface{}) error {
+	if obj == nil {
+		return nil
+	}
+
+	zero := reflect.Zero(reflect.TypeOf(obj)).Interface()
+	return Equals(zero)(obj)
+}
+
 // Nil validates the object is nil.
 func Nil(obj interface{}) error {
 	if obj == nil {
