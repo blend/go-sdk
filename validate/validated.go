@@ -5,7 +5,8 @@ type Validated interface {
 	Validate() error
 }
 
-// IsValidated returns if an object is validated.
+// IsValidated returns if an object implements Validated.
+// It does not detect if the Validate function has been called.
 func IsValidated(obj interface{}) bool {
 	_, ok := obj.(Validated)
 	return ok
