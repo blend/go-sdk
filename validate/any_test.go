@@ -47,23 +47,22 @@ func TestZero(t *testing.T) {
 
 	for index, tc := range testCases {
 		verr := Any(tc.Input).Zero()
-		assert.Equal(tc.Expected, ex.ErrClass(ex.ErrInner(verr)), index)
+		assert.Equal(tc.Expected, ex.ErrInner(verr), index)
 	}
 }
 
-/*
 func TestNil(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	verr = Nil(nil)()
+	verr = Any(nil).Nil()
 	assert.Nil(verr)
 
 	var nilPtr *string
-	verr = Nil(nilPtr)()
+	verr = Any(nilPtr).Nil()
 	assert.Nil(verr)
 
-	verr = Nil("foo")()
+	verr = Any("foo").Nil()
 	assert.NotNil(verr)
 	assert.Equal(ErrNil, ex.ErrInner(verr))
 }
@@ -72,15 +71,15 @@ func TestNotNil(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	verr = NotNil("foo")()
+	verr = Any("foo").NotNil()
 	assert.Nil(verr)
 
-	verr = NotNil(nil)()
+	verr = Any(nil).NotNil()
 	assert.NotNil(verr)
 	assert.Equal(ErrNotNil, ex.ErrInner(verr))
 
 	var nilPtr *string
-	verr = NotNil(nilPtr)()
+	verr = Any(nilPtr).NotNil()
 	assert.NotNil(verr)
 	assert.Equal(ErrNotNil, ex.ErrInner(verr))
 }
@@ -89,17 +88,17 @@ func TestEquals(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	verr = Equals("foo")("foo")()
+	verr = Any("foo").Equals("foo")()
 	assert.Nil(verr)
 
-	verr = Equals(nil)(nil)()
+	verr = Any(nil).Equals(nil)()
 	assert.Nil(verr)
 
-	verr = Equals("foo")("bar")()
+	verr = Any("foo").Equals("bar")()
 	assert.NotNil(verr)
 	assert.Equal(ErrEquals, ex.ErrInner(verr))
 
-	verr = Equals(nil)("foo")()
+	verr = Any(nil).Equals("foo")()
 	assert.NotNil(verr)
 	assert.Equal(ErrEquals, ex.ErrInner(verr))
 }
@@ -108,17 +107,17 @@ func TestNotEquals(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	verr = NotEquals("foo")("bar")()
+	verr = Any("foo").NotEquals("bar")()
 	assert.Nil(verr)
 
-	verr = NotEquals(nil)("foo")()
+	verr = Any(nil).NotEquals("foo")()
 	assert.Nil(verr)
 
-	verr = NotEquals("foo")("foo")()
+	verr = Any("foo").NotEquals("foo")()
 	assert.NotNil(verr)
 	assert.Equal(ErrNotEquals, ex.ErrInner(verr))
 
-	verr = NotEquals(nil)(nil)()
+	verr = Any(nil).NotEquals(nil)()
 	assert.NotNil(verr)
 	assert.Equal(ErrNotEquals, ex.ErrInner(verr))
 }
@@ -127,14 +126,14 @@ func TestAllow(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	verr = Allow("foo")("foo", "bar", "baz")()
+	verr = Any("foo").Allow("foo", "bar", "baz")()
 	assert.Nil(verr)
-	verr = Allow("bar")("foo", "bar", "baz")()
+	verr = Any("bar").Allow("foo", "bar", "baz")()
 	assert.Nil(verr)
-	verr = Allow("baz")("foo", "bar", "baz")()
+	verr = Any("baz").Allow("foo", "bar", "baz")()
 	assert.Nil(verr)
 
-	verr = Allow("what")("foo", "bar", "baz")()
+	verr = Any("what").Allow("foo", "bar", "baz")()
 	assert.NotNil(verr)
 	assert.Equal(ErrAllowed, ex.ErrInner(verr))
 }
@@ -143,17 +142,16 @@ func TestDisallow(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	verr = Disallow("what")("foo", "bar", "baz")()
+	verr = Any("what").Disallow("foo", "bar", "baz")()
 	assert.Nil(verr)
 
-	verr = Disallow("foo")("foo", "bar", "baz")()
+	verr = Any("foo").Disallow("foo", "bar", "baz")()
 	assert.NotNil(verr)
 	assert.Equal(ErrDisallowed, ex.ErrInner(verr))
-	verr = Disallow("bar")("foo", "bar", "baz")()
+	verr = Any("bar").Disallow("foo", "bar", "baz")()
 	assert.NotNil(verr)
 	assert.Equal(ErrDisallowed, ex.ErrInner(verr))
-	verr = Disallow("baz")("foo", "bar", "baz")()
+	verr = Any("baz").Disallow("foo", "bar", "baz")()
 	assert.NotNil(verr)
 	assert.Equal(ErrDisallowed, ex.ErrInner(verr))
 }
-*/

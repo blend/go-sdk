@@ -1,7 +1,6 @@
 package validate
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/blend/go-sdk/ex"
@@ -33,11 +32,12 @@ type AnyValidators struct {
 // And whatever equality passes for everything else with it's initialized value.
 func (a AnyValidators) Zero() error {
 	if a.Obj == nil {
+		println("a.Obj is nil")
 		return nil
 	}
 
 	zero := reflect.Zero(reflect.TypeOf(a.Obj)).Interface()
-	if verr := a.Equals(zero); verr == nil {
+	if verr := a.Equals(zero)(); verr == nil {
 		return nil
 	}
 	return Error(ErrZero)
@@ -71,8 +71,6 @@ func (a AnyValidators) Equals(expected interface{}) Validator {
 	return func() error {
 		actual := a.Obj
 
-		fmt.Printf("equals expected: %v actual: %v\n", expected, actual)
-
 		if expected == nil && actual == nil {
 			return nil
 		}
@@ -101,7 +99,7 @@ func (a AnyValidators) Equals(expected interface{}) Validator {
 // NotEquals validates an object does not equal another object.
 func (a AnyValidators) NotEquals(expected interface{}) Validator {
 	return func() error {
-		if verr := a.Equals(expected); verr != nil {
+		if verr := a.Equals(expected)(); verr != nil {
 			return nil
 		}
 		return Error(ErrNotEquals)
@@ -112,7 +110,7 @@ func (a AnyValidators) NotEquals(expected interface{}) Validator {
 func (a AnyValidators) Allow(values ...interface{}) Validator {
 	return func() error {
 		for _, expected := range values {
-			if verr := a.Equals(expected); verr == nil {
+			if verr := a.Equals(expected)(); verr == nil {
 				return nil
 			}
 		}
@@ -124,7 +122,7 @@ func (a AnyValidators) Allow(values ...interface{}) Validator {
 func (a AnyValidators) Disallow(values ...interface{}) Validator {
 	return func() error {
 		for _, expected := range values {
-			if verr := a.Equals(expected); verr == nil {
+			if verr := a.Equals(expected)(); verr == nil {
 				return Error(ErrDisallowed)
 			}
 		}
