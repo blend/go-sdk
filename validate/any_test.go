@@ -46,11 +46,12 @@ func TestZero(t *testing.T) {
 	}
 
 	for index, tc := range testCases {
-		verr := Zero(tc.Input)()
+		verr := Any(tc.Input).Zero()
 		assert.Equal(tc.Expected, ex.ErrClass(ex.ErrInner(verr)), index)
 	}
 }
 
+/*
 func TestNil(t *testing.T) {
 	assert := assert.New(t)
 
@@ -155,3 +156,4 @@ func TestDisallow(t *testing.T) {
 	assert.NotNil(verr)
 	assert.Equal(ErrDisallowed, ex.ErrInner(verr))
 }
+*/
