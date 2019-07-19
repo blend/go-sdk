@@ -32,7 +32,6 @@ type AnyValidators struct {
 // And whatever equality passes for everything else with it's initialized value.
 func (a AnyValidators) Zero() error {
 	if a.Obj == nil {
-		println("a.Obj is nil")
 		return nil
 	}
 
