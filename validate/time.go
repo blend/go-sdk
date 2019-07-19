@@ -32,14 +32,12 @@ func (t timeValidators) Before(before time.Time) TimeValidator {
 }
 
 // Before returns a validator that a time should be before a given time.
-func (t timeValidators) BeforeNowUTC() TimeValidator {
-	return func(t0 time.Time) error {
-		nowUTC := time.Now().UTC()
-		if t0.After(nowUTC) {
-			return Errorf(ErrTimeBefore, "before: %v", nowUTC)
-		}
-		return nil
+func (t timeValidators) BeforeNowUTC(t0 time.Time) error {
+	nowUTC := time.Now().UTC()
+	if t0.After(nowUTC) {
+		return Errorf(ErrTimeBefore, "before: %v", nowUTC)
 	}
+	return nil
 }
 
 // After returns a validator that a time should be after a given time.
@@ -53,24 +51,22 @@ func (t timeValidators) After(after time.Time) TimeValidator {
 }
 
 // After returns a validator that a time should be after a given time.
-func (t timeValidators) AfterNowUTC() TimeValidator {
-	return func(t0 time.Time) error {
-		nowUTC := time.Now().UTC()
-		if t0.Before(nowUTC) {
-			return Errorf(ErrTimeAfter, "after: %v", nowUTC)
-		}
-		return nil
+func (t timeValidators) AfterNowUTC(t0 time.Time) error {
+	nowUTC := time.Now().UTC()
+	if t0.Before(nowUTC) {
+		return Errorf(ErrTimeAfter, "after: %v", nowUTC)
 	}
+	return nil
 }
 
 // After returns a validator that a time should be after a given time.
 func (t timeValidators) Between(before, after time.Time) TimeValidator {
 	return func(t0 time.Time) error {
-		if t0.After(before) {
-			return Errorf(ErrTimeBefore, "before: %v", before)
-		}
-		if t0.Before(after) {
+		if t0.Before(before) {
 			return Errorf(ErrTimeAfter, "after: %v", before)
+		}
+		if t0.After(after) {
+			return Errorf(ErrTimeBefore, "before: %v", after)
 		}
 		return nil
 	}

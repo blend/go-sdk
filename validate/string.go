@@ -57,8 +57,11 @@ func (s stringValidators) Between(min, max int) StringValidator {
 
 // Min returns a validator that a string is a minimum length.
 func (s stringValidators) Matches(expression string) StringValidator {
-	exp := regexp.MustCompile(expression)
+	exp, err := regexp.Compile(expression)
 	return func(v string) error {
+		if err != nil {
+			return ex.New(err)
+		}
 		if !exp.MatchString(v) {
 			return Errorf(ErrStringMatches, "expression: %s", expression)
 		}

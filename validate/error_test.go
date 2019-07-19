@@ -20,7 +20,7 @@ func TestError(t *testing.T) {
 	verr = Error(fmt.Errorf("this is a test"), "foo", "bar")
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
-	assert.Equal("foo bar", ex.ErrMessage(verr))
+	assert.Equal("foobar", ex.ErrMessage(verr))
 	assert.Equal(fmt.Errorf("this is a test"), ex.ErrInner(verr))
 }
 

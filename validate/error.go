@@ -36,3 +36,23 @@ func Errorf(cause error, format string, args ...interface{}) error {
 		Stack:   ex.Callers(ex.DefaultNewStartDepth + 1),
 	}
 }
+
+// Format formats an error.
+func Format(err error) string {
+	if err == nil {
+		return ""
+	}
+	class := ex.ErrClass(err)
+	inner := ex.ErrInner(err)
+	innerClass := ex.ErrClass(inner)
+	innerMessage := ex.ErrMessage(inner)
+	if innerMessage != "" {
+		return fmt.Sprintf("%v; %v (%v)", class, innerClass, innerMessage)
+	}
+	return fmt.Sprintf("%v; %v", class, innerClass)
+}
+
+// Is returns if an error is a validation error.
+func Is(err error) bool {
+	return ex.Is(err, ErrValidation)
+}

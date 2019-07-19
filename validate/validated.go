@@ -5,14 +5,14 @@ type Validated interface {
 	Validate() error
 }
 
-// Is returns if an object is validated.
-func Is(obj interface{}) bool {
+// IsValidated returns if an object is validated.
+func IsValidated(obj interface{}) bool {
 	_, ok := obj.(Validated)
 	return ok
 }
 
-// As returns the object as a validated and a no-op if it's not.
-func As(obj interface{}) Validated {
+// AsValidated returns the object as a validated and a no-op if it's not.
+func AsValidated(obj interface{}) Validated {
 	typed, ok := obj.(Validated)
 	if !ok {
 		return NoOp{}

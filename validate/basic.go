@@ -8,10 +8,12 @@ import (
 
 // Basic errors
 const (
-	ErrNil       ex.Class = "object should be nil"
-	ErrNotNil    ex.Class = "object should not be nil"
-	ErrEquals    ex.Class = "objects should be equal"
-	ErrNotEquals ex.Class = "objects should not be equal"
+	ErrNil        ex.Class = "object should be nil"
+	ErrNotNil     ex.Class = "object should not be nil"
+	ErrEquals     ex.Class = "objects should be equal"
+	ErrNotEquals  ex.Class = "objects should not be equal"
+	ErrAllowed    ex.Class = "objects should be one of a given set of allowed values"
+	ErrDisallowed ex.Class = "objects should not be one of a given set of disallowed values"
 )
 
 // BasicValidator validates any object.
@@ -20,15 +22,15 @@ type BasicValidator func(interface{}) error
 // Nil validates the object is nil.
 func Nil(obj interface{}) error {
 	if obj == nil {
-		return Error(ErrNil)
+		return nil
 	}
 
 	value := reflect.ValueOf(obj)
 	kind := value.Kind()
 	if kind >= reflect.Chan && kind <= reflect.Slice && value.IsNil() {
-		return Error(ErrNil)
+		return nil
 	}
-	return nil
+	return Error(ErrNil)
 }
 
 // NotNil validates the object is not nil.
@@ -75,5 +77,29 @@ func NotEquals(expected interface{}) BasicValidator {
 			return nil
 		}
 		return Error(ErrNotEquals)
+	}
+}
+
+// Allow validates a field is one of a given set of allowed values.
+func Allow(values ...interface{}) BasicValidator {
+	return func(actual interface{}) error {
+		for _, expected := range values {
+			if verr := Equals(expected)(actual); verr == nil {
+				return nil
+			}
+		}
+		return Error(ErrAllowed)
+	}
+}
+
+// Disallow validates a field is one of a given set of allowed values.
+func Disallow(values ...interface{}) BasicValidator {
+	return func(actual interface{}) error {
+		for _, expected := range values {
+			if verr := Equals(expected)(actual); verr == nil {
+				return Error(ErrDisallowed)
+			}
+		}
+		return nil
 	}
 }

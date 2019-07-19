@@ -135,23 +135,14 @@ func (e *Ex) WithInner(err error) Exception {
 func (e *Ex) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':
-		if s.Flag('+') {
-			if e.Class != nil && len(e.Class.Error()) > 0 {
-				fmt.Fprintf(s, "%s", e.Class)
-				if len(e.Message) > 0 {
-					fmt.Fprintf(s, "\n%s", e.Message)
-				}
-			} else if len(e.Message) > 0 {
-				io.WriteString(s, e.Message)
-			}
-			e.Stack.Format(s, verb)
-		} else if s.Flag('-') {
-			e.Stack.Format(s, verb)
-		} else {
+		if e.Class != nil && len(e.Class.Error()) > 0 {
 			io.WriteString(s, e.Class.Error())
-			if len(e.Message) > 0 {
-				fmt.Fprintf(s, "\n%s", e.Message)
-			}
+		}
+		if len(e.Message) > 0 {
+			io.WriteString(s, "; "+e.Message)
+		}
+		if s.Flag('+') {
+			e.Stack.Format(s, verb)
 		}
 		if e.Inner != nil {
 			if typed, ok := e.Inner.(fmt.Formatter); ok {
@@ -166,7 +157,11 @@ func (e *Ex) Format(s fmt.State, verb rune) {
 		io.WriteString(s, e.Class.Error())
 	case 'i':
 		if e.Inner != nil {
-			io.WriteString(s, e.Inner.Error())
+			if typed, ok := e.Inner.(fmt.Formatter); ok {
+				typed.Format(s, verb)
+			} else {
+				fmt.Fprintf(s, "%v", e.Inner)
+			}
 		}
 	case 'm':
 		io.WriteString(s, e.Message)
