@@ -40,14 +40,14 @@ func Errorf(cause error, format string, args ...interface{}) error {
 // Format formats an error.
 func Format(err error) string {
 	if err == nil {
-		return ""
+		return "ok!"
 	}
 	class := ex.ErrClass(err)
+	message := ex.ErrMessage(err)
 	inner := ex.ErrInner(err)
 	innerClass := ex.ErrClass(inner)
-	innerMessage := ex.ErrMessage(inner)
-	if innerMessage != "" {
-		return fmt.Sprintf("%v; %v (%v)", class, innerClass, innerMessage)
+	if message != "" {
+		return fmt.Sprintf("%v; %v (%v)", class, innerClass, message)
 	}
 	return fmt.Sprintf("%v; %v", class, innerClass)
 }
