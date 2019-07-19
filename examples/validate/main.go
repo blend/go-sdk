@@ -23,12 +23,12 @@ type Validated struct {
 
 // Validate implements validated.
 func (v Validated) Validate() error {
-	return joi.Any(
-		joi.NotNil(v.ID),
-		joi.String.Matches("foo$")(v.Name),
-		joi.Int.Between(0, 99)(v.Count),
-		joi.NotEquals(81)(v.Count),
-		joi.Time.BeforeNowUTC(v.Created),
+	return joi.First(
+		joi.Any(v.ID).NotNil,
+		joi.String(v.Name).Matches("foo$"),
+		joi.Int(v.Count).Between(0, 99),
+		joi.Any(v.Count).NotEquals(81),
+		joi.Time(v.Created).BeforeNowUTC,
 	)
 }
 
