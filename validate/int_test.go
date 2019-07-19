@@ -67,11 +67,11 @@ func TestIntPositive(t *testing.T) {
 
 	var verr error
 	val := 5
-	verr = Int(&val).Positive()
+	verr = Int(&val).Positive()()
 	assert.Nil(verr)
 
 	val = -5
-	verr = Int(&val).Positive()
+	verr = Int(&val).Positive()()
 	assert.NotNil(verr)
 	assert.Equal(ErrIntPositive, ex.ErrInner(verr))
 }
@@ -81,11 +81,11 @@ func TestIntNegative(t *testing.T) {
 
 	var verr error
 	val := -5
-	verr = Int(&val).Negative()
+	verr = Int(&val).Negative()()
 	assert.Nil(verr)
 
 	val = 5
-	verr = Int(&val).Negative()
+	verr = Int(&val).Negative()()
 	assert.NotNil(verr)
 	assert.Equal(ErrIntNegative, ex.ErrInner(verr))
 }

@@ -57,17 +57,21 @@ func (i IntValidators) Between(min, max int) Validator {
 }
 
 // Positive returns a validator that an int is positive.
-func (i IntValidators) Positive() error {
-	if i.Value == nil || *i.Value < 0 {
-		return Error(ErrIntPositive)
+func (i IntValidators) Positive() Validator {
+	return func() error {
+		if i.Value == nil || *i.Value < 0 {
+			return Error(ErrIntPositive)
+		}
+		return nil
 	}
-	return nil
 }
 
 // Negative returns a validator that an int is negative.
-func (i IntValidators) Negative() error {
-	if i.Value == nil || *i.Value > 0 {
-		return Error(ErrIntNegative)
+func (i IntValidators) Negative() Validator {
+	return func() error {
+		if i.Value == nil || *i.Value > 0 {
+			return Error(ErrIntNegative)
+		}
+		return nil
 	}
-	return nil
 }

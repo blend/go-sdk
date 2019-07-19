@@ -30,9 +30,9 @@ func TestTimeBeforeNowUTC(t *testing.T) {
 	ts := time.Now().UTC()
 
 	var verr error
-	verr = Time(tv(ts.Add(-time.Hour))).BeforeNowUTC()
+	verr = Time(tv(ts.Add(-time.Hour))).BeforeNowUTC()()
 	assert.Nil(verr)
-	verr = Time(tv(ts.Add(time.Hour))).BeforeNowUTC()
+	verr = Time(tv(ts.Add(time.Hour))).BeforeNowUTC()()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
 	assert.Equal(ErrTimeBefore, ex.ErrInner(verr))
@@ -58,9 +58,9 @@ func TestTimeAfterNowUTC(t *testing.T) {
 	ts := time.Now().UTC()
 
 	var verr error
-	verr = Time(tv(ts.Add(time.Hour))).AfterNowUTC()
+	verr = Time(tv(ts.Add(time.Hour))).AfterNowUTC()()
 	assert.Nil(verr)
-	verr = Time(tv(ts.Add(-time.Hour))).AfterNowUTC()
+	verr = Time(tv(ts.Add(-time.Hour))).AfterNowUTC()()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
 	assert.Equal(ErrTimeAfter, ex.ErrInner(verr))
