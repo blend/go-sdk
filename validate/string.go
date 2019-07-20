@@ -42,8 +42,11 @@ type StringValidators struct {
 // If the string is unset (nil) it will fail.
 func (s StringValidators) MinLen(length int) Validator {
 	return func() error {
-		if s.Value == nil || len(*s.Value) < length { //if it's unset, it should fail the minimum check.
-			return Errorf(ErrStringLengthMin, "length: %d", length)
+		if s.Value == nil {
+			return Errorf(ErrStringLengthMin, nil, "length: %d", length)
+		}
+		if len(*s.Value) < length { //if it's unset, it should fail the minimum check.
+			return Errorf(ErrStringLengthMin, *s.Value, "length: %d", length)
 		}
 		return nil
 	}
@@ -56,7 +59,7 @@ func (s StringValidators) MaxLen(length int) Validator {
 			return nil
 		}
 		if len(*s.Value) > length {
-			return Errorf(ErrStringLengthMax, "length: %d", length)
+			return Errorf(ErrStringLengthMax, *s.Value, "length: %d", length)
 		}
 		return nil
 	}
@@ -66,8 +69,11 @@ func (s StringValidators) MaxLen(length int) Validator {
 // It will fail if the value is unset (nil).
 func (s StringValidators) Length(length int) Validator {
 	return func() error {
-		if s.Value == nil || len(*s.Value) != length {
-			return Errorf(ErrStringLength, "length: %d", length)
+		if s.Value == nil {
+			return Errorf(ErrStringLength, nil, "length: %d", length)
+		}
+		if len(*s.Value) != length {
+			return Errorf(ErrStringLength, *s.Value, "length: %d", length)
 		}
 		return nil
 	}
@@ -77,11 +83,14 @@ func (s StringValidators) Length(length int) Validator {
 // If the string is unset (nil) it will fail the minimum check.
 func (s StringValidators) BetweenLen(min, max int) Validator {
 	return func() error {
-		if s.Value == nil || len(*s.Value) < min {
-			return Errorf(ErrStringLengthMin, "length: %d", min)
+		if s.Value == nil {
+			return Errorf(ErrStringLengthMin, nil, "length: %d", min)
+		}
+		if len(*s.Value) < min {
+			return Errorf(ErrStringLengthMin, *s.Value, "length: %d", min)
 		}
 		if len(*s.Value) > max {
-			return Errorf(ErrStringLengthMax, "length: %d", max)
+			return Errorf(ErrStringLengthMax, *s.Value, "length: %d", max)
 		}
 		return nil
 	}
@@ -99,7 +108,7 @@ func (s StringValidators) Matches(expression string) Validator {
 			return nil
 		}
 		if !exp.MatchString(string(*s.Value)) {
-			return Errorf(ErrStringMatches, "expression: %s", expression)
+			return Errorf(ErrStringMatches, *s.Value, "expression: %s", expression)
 		}
 		return nil
 	}
@@ -114,7 +123,7 @@ func (s StringValidators) IsUpper() Validator {
 		runes := []rune(string(*s.Value))
 		for _, r := range runes {
 			if !unicode.IsUpper(r) {
-				return Error(ErrStringIsUpper)
+				return Error(ErrStringIsUpper, *s.Value)
 			}
 		}
 		return nil
@@ -130,7 +139,7 @@ func (s StringValidators) IsLower() Validator {
 		runes := []rune(string(*s.Value))
 		for _, r := range runes {
 			if !unicode.IsLower(r) {
-				return Error(ErrStringIsLower)
+				return Error(ErrStringIsLower, *s.Value)
 			}
 		}
 		return nil
@@ -147,7 +156,7 @@ func (s StringValidators) IsTitle() Validator {
 		if strings.ToTitle(string(*s.Value)) == string(*s.Value) {
 			return nil
 		}
-		return Error(ErrStringIsTitle)
+		return Error(ErrStringIsTitle, *s.Value)
 	}
 }
 
@@ -158,7 +167,7 @@ func (s StringValidators) IsUUID() Validator {
 			return nil
 		}
 		if _, err := uuid.Parse(string(*s.Value)); err != nil {
-			return Error(ErrStringIsUUID)
+			return Error(ErrStringIsUUID, *s.Value)
 		}
 		return nil
 	}
@@ -171,7 +180,7 @@ func (s StringValidators) IsEmail() Validator {
 			return nil
 		}
 		if _, err := mail.ParseAddress(string(*s.Value)); err != nil {
-			return Error(ErrStringIsEmail)
+			return Error(ErrStringIsEmail, *s.Value)
 		}
 		return nil
 	}
@@ -184,7 +193,7 @@ func (s StringValidators) IsURI() Validator {
 			return nil
 		}
 		if _, err := url.ParseRequestURI(string(*s.Value)); err != nil {
-			return Error(ErrStringIsURI)
+			return Error(ErrStringIsURI, *s.Value)
 		}
 		return nil
 	}
@@ -197,7 +206,7 @@ func (s StringValidators) IsIP() Validator {
 			return nil
 		}
 		if addr := net.ParseIP(string(*s.Value)); addr == nil {
-			return Error(ErrStringIsIP)
+			return Error(ErrStringIsIP, *s.Value)
 		}
 		return nil
 	}

@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
-	"github.com/blend/go-sdk/ex"
 )
 
 func TestIntMin(t *testing.T) {
@@ -22,7 +21,7 @@ func TestIntMin(t *testing.T) {
 	val = 1
 	verr = Int(&val).Min(10)()
 	assert.NotNil(verr)
-	assert.Equal(ErrIntMin, ex.ErrInner(verr))
+	assert.Equal(ErrIntMin, Cause(verr))
 }
 
 func TestIntMax(t *testing.T) {
@@ -40,7 +39,7 @@ func TestIntMax(t *testing.T) {
 	val = 10
 	verr = Int(&val).Max(1)()
 	assert.NotNil(verr)
-	assert.Equal(ErrIntMax, ex.ErrInner(verr))
+	assert.Equal(ErrIntMax, Cause(verr))
 }
 
 func TestIntBetween(t *testing.T) {
@@ -54,12 +53,12 @@ func TestIntBetween(t *testing.T) {
 	val = 1
 	verr = Int(&val).Between(5, 10)()
 	assert.NotNil(verr)
-	assert.Equal(ErrIntMin, ex.ErrInner(verr))
+	assert.Equal(ErrIntMin, Cause(verr))
 
 	val = 11
 	verr = Int(&val).Between(1, 10)()
 	assert.NotNil(verr)
-	assert.Equal(ErrIntMax, ex.ErrInner(verr))
+	assert.Equal(ErrIntMax, Cause(verr))
 }
 
 func TestIntPositive(t *testing.T) {
@@ -73,7 +72,7 @@ func TestIntPositive(t *testing.T) {
 	val = -5
 	verr = Int(&val).Positive()()
 	assert.NotNil(verr)
-	assert.Equal(ErrIntPositive, ex.ErrInner(verr))
+	assert.Equal(ErrIntPositive, Cause(verr))
 }
 
 func TestIntNegative(t *testing.T) {
@@ -87,5 +86,5 @@ func TestIntNegative(t *testing.T) {
 	val = 5
 	verr = Int(&val).Negative()()
 	assert.NotNil(verr)
-	assert.Equal(ErrIntNegative, ex.ErrInner(verr))
+	assert.Equal(ErrIntNegative, Cause(verr))
 }

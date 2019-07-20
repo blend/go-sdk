@@ -12,22 +12,32 @@ func Is(err interface{}, cause error) bool {
 		return (err == cause) || (typed.Error() == cause.Error())
 	}
 	return err == cause
+}
 
+// As is a helper method that returns an error as an ex.
+func As(err interface{}) *Ex {
+	if typed, typedOk := err.(*Ex); typedOk {
+		return typed
+	}
+	return nil
 }
 
 // ErrClass returns the exception class or the error message.
 // This depends on if the err is itself an exception or not.
-func ErrClass(err interface{}) string {
+func ErrClass(err interface{}) error {
 	if err == nil {
-		return ""
+		return nil
 	}
 	if ex := As(err); ex != nil && ex.Class != nil {
-		return ex.Class.Error()
+		return ex.Class
+	}
+	if typed, ok := err.(ClassProvider); ok && typed != nil {
+		return typed.Class()
 	}
 	if typed, ok := err.(error); ok && typed != nil {
-		return typed.Error()
+		return typed
 	}
-	return ""
+	return nil
 }
 
 // ErrMessage returns the exception message.
@@ -43,18 +53,18 @@ func ErrMessage(err interface{}) string {
 	return ""
 }
 
+// InnerProvider is a type that returns an inner error.
+type InnerProvider interface {
+	Inner() error
+}
+
 // ErrInner returns an inner error if the error is an ex.
 func ErrInner(err interface{}) error {
 	if typed := As(err); typed != nil {
 		return typed.Inner
 	}
-	return nil
-}
-
-// As is a helper method that returns an error as an ex.
-func As(err interface{}) *Ex {
-	if typed, typedOk := err.(*Ex); typedOk {
-		return typed
+	if typed, ok := err.(InnerProvider); ok && typed != nil {
+		return typed.Inner()
 	}
 	return nil
 }

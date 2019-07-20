@@ -22,5 +22,5 @@ func TestMapKeys(t *testing.T) {
 
 	verr = Map(bag).Keys("foo", "buzz")()
 	assert.NotNil(verr)
-	assert.Equal(ErrMapKeys, ex.ErrInner(verr))
+	assert.Equal(ErrMapKeys, Cause(verr))
 }

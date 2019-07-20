@@ -21,13 +21,13 @@ func Map(instance interface{}) MapValidators {
 
 // MapValidators is a set of validators for maps.
 type MapValidators struct {
-	Instance interface{}
+	Value interface{}
 }
 
 // Keys validates a map contains a given set of keys.
 func (mv MapValidators) Keys(keys ...interface{}) Validator {
 	return func() error {
-		value := reflectutil.Value(mv.Instance)
+		value := reflectutil.Value(mv.Value)
 		if value.Kind() != reflect.Map {
 			return ErrInstanceNotMap
 		}
@@ -35,7 +35,7 @@ func (mv MapValidators) Keys(keys ...interface{}) Validator {
 		for _, key := range keys {
 			mapValue := value.MapIndex(reflect.ValueOf(key))
 			if !mapValue.IsValid() {
-				return Errorf(ErrMapKeys, "missing key: %v", key)
+				return Errorf(ErrMapKeys, mv.Value, "missing key: %v", key)
 			}
 		}
 		return nil

@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/blend/go-sdk/ref"
 	"github.com/blend/go-sdk/uuid"
+	"github.com/blend/go-sdk/validate"
+
 	// if you're feeling evil.
 	joi "github.com/blend/go-sdk/validate"
 )
@@ -39,9 +42,14 @@ func (v Validated) Validate() error {
 }
 
 func main() {
-	fmt.Println(joi.Format(Validated{ID: uuid.V4(), Name: "my foo", Count: 10, Created: time.Now().UTC()}.Validate()))
-	fmt.Println(joi.Format(Validated{ID: uuid.V4(), Name: "my bar", Count: 10, Created: time.Now().UTC()}.Validate()))
-	fmt.Println(joi.Format(Validated{ID: uuid.V4(), Name: "my foo", Count: 102, Created: time.Now().UTC()}.Validate()))
-	fmt.Println(joi.Format(Validated{ID: nil, Name: "my foo", Count: 10, Created: time.Now().UTC()}.Validate()))
-	fmt.Println(joi.Format(Validated{ID: uuid.V4(), Name: "my foo", Count: 10, Created: time.Now().UTC()}.Validate()))
+	objects := []Validated{
+		{ID: uuid.V4(), Name: "foo", Count: 55, Created: time.Now().UTC(), Optional: ref.String("https://google.com")},
+		{ID: uuid.Empty(), Name: "foo", Count: 55, Created: time.Now().UTC(), Optional: ref.String("127.0.0.1")},
+	}
+
+	for index, obj := range objects {
+		if err := obj.Validate(); err != nil {
+			fmt.Printf("object %d fails validation: %v\n", index, validate.Format(err))
+		}
+	}
 }

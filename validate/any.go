@@ -37,7 +37,7 @@ type AnyValidators struct {
 func (a AnyValidators) Forbidden() Validator {
 	return func() error {
 		if err := a.Zero()(); err != nil {
-			return Error(ErrForbidden)
+			return Error(ErrForbidden, a.Obj)
 		}
 		return nil
 	}
@@ -48,7 +48,7 @@ func (a AnyValidators) Forbidden() Validator {
 func (a AnyValidators) Required() Validator {
 	return func() error {
 		if err := a.NotZero()(); err != nil {
-			return Error(ErrRequired)
+			return Error(ErrRequired, a.Obj)
 		}
 		return nil
 	}
@@ -67,7 +67,7 @@ func (a AnyValidators) Zero() Validator {
 		if verr := a.Equals(zero)(); verr == nil {
 			return nil
 		}
-		return Error(ErrZero)
+		return Error(ErrZero, a.Obj)
 	}
 }
 
@@ -76,7 +76,7 @@ func (a AnyValidators) Zero() Validator {
 func (a AnyValidators) NotZero() Validator {
 	return func() error {
 		if err := a.Zero()(); err == nil {
-			return Error(ErrNotZero)
+			return Error(ErrNotZero, a.Obj)
 		}
 		return nil
 	}
@@ -93,7 +93,7 @@ func (a AnyValidators) Empty() Validator {
 		if objLen == 0 {
 			return nil
 		}
-		return Error(ErrEmpty)
+		return Error(ErrEmpty, a.Obj)
 	}
 }
 
@@ -107,7 +107,7 @@ func (a AnyValidators) Len(length int) Validator {
 		if objLen == length {
 			return nil
 		}
-		return Error(ErrLen)
+		return Error(ErrLen, a.Obj)
 	}
 }
 
@@ -123,7 +123,7 @@ func (a AnyValidators) Nil() Validator {
 		if kind >= reflect.Chan && kind <= reflect.Slice && value.IsNil() {
 			return nil
 		}
-		return Error(ErrNil)
+		return Error(ErrNil, a.Obj)
 	}
 }
 
@@ -134,7 +134,7 @@ func (a AnyValidators) NotNil() Validator {
 		if verr := a.Nil()(); verr != nil {
 			return nil
 		}
-		return Error(ErrNotNil)
+		return Error(ErrNotNil, a.Obj)
 	}
 }
 
@@ -147,22 +147,22 @@ func (a AnyValidators) Equals(expected interface{}) Validator {
 			return nil
 		}
 		if (expected == nil && actual != nil) || (expected != nil && actual == nil) {
-			return Error(ErrEquals)
+			return Error(ErrEquals, a.Obj)
 		}
 
 		actualType := reflect.TypeOf(actual)
 		if actualType == nil {
-			return Error(ErrEquals)
+			return Error(ErrEquals, a.Obj)
 		}
 		expectedValue := reflect.ValueOf(expected)
 		if expectedValue.IsValid() && expectedValue.Type().ConvertibleTo(actualType) {
 			if !reflect.DeepEqual(expectedValue.Convert(actualType).Interface(), actual) {
-				return Error(ErrEquals)
+				return Error(ErrEquals, a.Obj)
 			}
 		}
 
 		if !reflect.DeepEqual(expected, actual) {
-			return Error(ErrEquals)
+			return Error(ErrEquals, a.Obj)
 		}
 		return nil
 	}
@@ -174,7 +174,7 @@ func (a AnyValidators) NotEquals(expected interface{}) Validator {
 		if verr := a.Equals(expected)(); verr != nil {
 			return nil
 		}
-		return Error(ErrNotEquals)
+		return Error(ErrNotEquals, a.Obj)
 	}
 }
 
@@ -186,7 +186,7 @@ func (a AnyValidators) Allow(values ...interface{}) Validator {
 				return nil
 			}
 		}
-		return Error(ErrAllowed)
+		return Error(ErrAllowed, a.Obj)
 	}
 }
 
@@ -195,7 +195,7 @@ func (a AnyValidators) Disallow(values ...interface{}) Validator {
 	return func() error {
 		for _, expected := range values {
 			if verr := a.Equals(expected)(); verr == nil {
-				return Error(ErrDisallowed)
+				return Error(ErrDisallowed, a.Obj)
 			}
 		}
 		return nil
