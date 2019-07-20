@@ -24,7 +24,7 @@ type IntValidators struct {
 func (i IntValidators) Min(min int) Validator {
 	return func() error {
 		if i.Value == nil || *i.Value < min {
-			return Errorf(ErrIntMin, i.Value, "min: %d", min)
+			return Errorf(ErrIntMin, *i.Value, "min: %d", min)
 		}
 		return nil
 	}
@@ -37,7 +37,7 @@ func (i IntValidators) Max(max int) Validator {
 			return nil
 		}
 		if *i.Value > max {
-			return Errorf(ErrIntMax, i.Value, "max: %d", max)
+			return Errorf(ErrIntMax, *i.Value, "max: %d", max)
 		}
 		return nil
 	}
@@ -47,10 +47,10 @@ func (i IntValidators) Max(max int) Validator {
 func (i IntValidators) Between(min, max int) Validator {
 	return func() error {
 		if i.Value == nil || *i.Value < min {
-			return Errorf(ErrIntMin, i.Value, "min: %d", min)
+			return Errorf(ErrIntMin, *i.Value, "min: %d", min)
 		}
 		if *i.Value > max {
-			return Errorf(ErrIntMax, i.Value, "max: %d", max)
+			return Errorf(ErrIntMax, *i.Value, "max: %d", max)
 		}
 		return nil
 	}
@@ -60,7 +60,7 @@ func (i IntValidators) Between(min, max int) Validator {
 func (i IntValidators) Positive() Validator {
 	return func() error {
 		if i.Value == nil || *i.Value < 0 {
-			return Error(ErrIntPositive, i.Value)
+			return Error(ErrIntPositive, *i.Value)
 		}
 		return nil
 	}
@@ -70,7 +70,7 @@ func (i IntValidators) Positive() Validator {
 func (i IntValidators) Negative() Validator {
 	return func() error {
 		if i.Value == nil || *i.Value > 0 {
-			return Error(ErrIntNegative, i.Value)
+			return Error(ErrIntNegative, *i.Value)
 		}
 		return nil
 	}
