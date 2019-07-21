@@ -36,6 +36,10 @@ func TestStringMaxlen(t *testing.T) {
 	bad := "a"
 	verr = String(&bad).MaxLen(3)()
 	assert.Nil(verr)
+
+	verr = String(nil).MaxLen(3)()
+	assert.Nil(verr)
+
 	good := "large"
 	verr = String(&good).MaxLen(3)()
 	assert.NotNil(verr)
@@ -77,6 +81,9 @@ func TestStringMatches(t *testing.T) {
 	verr = String(&good).Matches("foo$")()
 	assert.Nil(verr)
 
+	verr = String(nil).Matches("foo$")()
+	assert.Nil(verr)
+
 	bad := "foo not"
 	verr = String(&bad).Matches("foo$")()
 	assert.NotNil(verr)
@@ -101,6 +108,9 @@ func TestStringIsUpper(t *testing.T) {
 	verr = String(&good).IsUpper()()
 	assert.Nil(verr)
 
+	verr = String(nil).IsUpper()()
+	assert.Nil(verr)
+
 	bad := "FOo"
 	verr = String(&bad).IsUpper()()
 	assert.NotNil(verr)
@@ -113,6 +123,9 @@ func TestStringIsLower(t *testing.T) {
 	var verr error
 	good := "foo"
 	verr = String(&good).IsLower()()
+	assert.Nil(verr)
+
+	verr = String(nil).IsLower()()
 	assert.Nil(verr)
 
 	bad := "foO"
@@ -129,6 +142,9 @@ func TestStringIsTitle(t *testing.T) {
 	verr = String(&good).IsTitle()()
 	assert.Nil(verr)
 
+	verr = String(nil).IsTitle()()
+	assert.Nil(verr)
+
 	bad := "this is a test"
 	verr = String(&bad).IsTitle()()
 	assert.NotNil(verr)
@@ -141,6 +157,9 @@ func TestStringIsUUID(t *testing.T) {
 	var verr error
 	good := uuid.V4().String()
 	verr = String(&good).IsUUID()()
+	assert.Nil(verr)
+
+	verr = String(nil).IsUUID()()
 	assert.Nil(verr)
 
 	good = uuid.V4().ToFullString()
@@ -157,6 +176,9 @@ func TestStringIsEmail(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
+	verr = String(nil).IsEmail()()
+	assert.Nil(verr)
+
 	good := "foo@bar.com"
 	verr = String(&good).IsEmail()()
 	assert.Nil(verr)
@@ -179,7 +201,11 @@ func TestStringIsURI(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
+	verr = String(nil).IsURI()()
+	assert.Nil(verr)
+
 	good := "https://foo.com"
+
 	verr = String(&good).IsURI()()
 	assert.Nil(verr)
 
@@ -193,6 +219,9 @@ func TestStringIsIP(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
+	verr = String(nil).IsIP()()
+	assert.Nil(verr)
+
 	good := "127.0.0.1"
 	verr = String(&good).IsIP()()
 	assert.Nil(verr)

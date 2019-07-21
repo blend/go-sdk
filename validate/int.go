@@ -10,7 +10,7 @@ const (
 	ErrIntNegative ex.Class = "int should be negative"
 )
 
-// Int contains helpers for int validation.
+// Int returns validators for ints.
 func Int(value *int) IntValidators {
 	return IntValidators{value}
 }
@@ -20,20 +20,29 @@ type IntValidators struct {
 	Value *int
 }
 
-// Min returns a validator that an int is above a minimum value.
+// Min returns a validator that an int is above a minimum value inclusive.
+// Min will pass for a value 1 if the min is set to 1, that is no error
+// would be returned.
 func (i IntValidators) Min(min int) Validator {
 	return func() error {
-		if i.Value == nil || *i.Value < min {
+		if i.Value == nil {
+			// an unset value cannot satisfy a minimum because it has no value.
+			return Errorf(ErrIntMin, nil, "min: %d", min)
+		}
+		if *i.Value < min {
 			return Errorf(ErrIntMin, *i.Value, "min: %d", min)
 		}
 		return nil
 	}
 }
 
-// Max returns a validator that a int is below a max value.
+// Max returns a validator that a int is below a max value inclusive.
+// Max will pass for a value 10 if the max is set to 10, that is no error
+// would be returned.
 func (i IntValidators) Max(max int) Validator {
 	return func() error {
 		if i.Value == nil {
+			// an unset value cannot _violate_ a maximum because it has no value.
 			return nil
 		}
 		if *i.Value > max {
@@ -43,10 +52,16 @@ func (i IntValidators) Max(max int) Validator {
 	}
 }
 
-// Between returns a validator that an int is between a given min and max exclusive.
+// Between returns a validator that an int is between a given min and max inclusive,
+// that is, `.Between(1,5)` will _fail_ for [0] and [6] respectively, but pass
+// for [1] and [5].
 func (i IntValidators) Between(min, max int) Validator {
 	return func() error {
-		if i.Value == nil || *i.Value < min {
+		if i.Value == nil {
+			// an unset value cannot satisfy a minimum because it has no value.
+			return Errorf(ErrIntMin, nil, "min: %d", min)
+		}
+		if *i.Value < min {
 			return Errorf(ErrIntMin, *i.Value, "min: %d", min)
 		}
 		if *i.Value > max {
@@ -59,7 +74,11 @@ func (i IntValidators) Between(min, max int) Validator {
 // Positive returns a validator that an int is positive.
 func (i IntValidators) Positive() Validator {
 	return func() error {
-		if i.Value == nil || *i.Value < 0 {
+		if i.Value == nil {
+			// an unset value cannot be positive
+			return Error(ErrIntPositive, nil)
+		}
+		if *i.Value < 0 {
 			return Error(ErrIntPositive, *i.Value)
 		}
 		return nil
@@ -69,7 +88,11 @@ func (i IntValidators) Positive() Validator {
 // Negative returns a validator that an int is negative.
 func (i IntValidators) Negative() Validator {
 	return func() error {
-		if i.Value == nil || *i.Value > 0 {
+		if i.Value == nil {
+			// an unset value cannot be negative
+			return Error(ErrIntNegative, nil)
+		}
+		if *i.Value > 0 {
 			return Error(ErrIntNegative, *i.Value)
 		}
 		return nil

@@ -97,7 +97,8 @@ func (s StringValidators) BetweenLen(min, max int) Validator {
 }
 
 // Matches returns a validator that a string matches a given regex.
-// If the value is unset it will match, i.e. not fail validation.
+// If the value is unset (nil) it will match, i.e. not fail validation and no error will
+// be returned.
 func (s StringValidators) Matches(expression string) Validator {
 	exp, err := regexp.Compile(expression)
 	return func() error {

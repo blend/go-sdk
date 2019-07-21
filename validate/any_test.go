@@ -67,6 +67,14 @@ func TestZero(t *testing.T) {
 		Expected error
 	}{
 		{
+			Input:    nil,
+			Expected: nil,
+		},
+		{
+			Input:    (*string)(nil),
+			Expected: nil,
+		},
+		{
 			Input:    0,
 			Expected: nil,
 		},
@@ -105,6 +113,14 @@ func TestEmpty(t *testing.T) {
 		Input    interface{}
 		Expected error
 	}{
+		{
+			Input:    nil,
+			Expected: ErrNonLengthType,
+		},
+		{
+			Input:    0,
+			Expected: ErrNonLengthType,
+		},
 		{
 			Input:    []string{},
 			Expected: nil,

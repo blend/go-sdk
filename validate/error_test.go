@@ -33,3 +33,15 @@ func TestErrorf(t *testing.T) {
 	assert.Equal("minimum: 30", Message(verr))
 	assert.Equal(fmt.Errorf("this is a test"), Cause(verr))
 }
+
+func TestCause(t *testing.T) {
+	assert := assert.New(t)
+
+	err := ex.New(ErrNonLengthType)
+	assert.Equal(ErrNonLengthType, ex.ErrClass(err))
+	assert.Equal(ErrNonLengthType, Cause(err))
+
+	verr := Error(ErrEmpty, "foo")
+	assert.Equal(ErrValidation, ex.ErrClass(verr))
+	assert.Equal(ErrEmpty, Cause(verr))
+}

@@ -87,7 +87,11 @@ func Inner(err error) *ValidationError {
 }
 
 // Cause returns the underlying validation failure for an error.
+// If the error is not a validation error, it returns the error class.
 func Cause(err error) error {
+	if exClass := ex.ErrClass(err); exClass != ErrValidation {
+		return exClass
+	}
 	if inner := Inner(err); inner != nil {
 		return inner.Cause
 	}
