@@ -6,7 +6,7 @@ import (
 	"github.com/blend/go-sdk/ex"
 )
 
-// Int errors
+// Float64 errors
 const (
 	ErrFloat64Min      ex.Class = "float64 should be above a minimum value"
 	ErrFloat64Max      ex.Class = "float64 should be below a maximum value"
@@ -25,7 +25,7 @@ type Float64Validators struct {
 	Value *float64
 }
 
-// Min returns a validator that an int is above a minimum value inclusive.
+// Min returns a validator that a float64 is above a minimum value inclusive.
 // Min will pass for a value 1 if the min is set to 1, that is no error
 // would be returned.
 func (f Float64Validators) Min(min float64) Validator {
@@ -41,7 +41,7 @@ func (f Float64Validators) Min(min float64) Validator {
 	}
 }
 
-// Max returns a validator that a int is below a max value inclusive.
+// Max returns a validator that a float64 is below a max value inclusive.
 // Max will pass for a value 10 if the max is set to 10, that is no error
 // would be returned.
 func (f Float64Validators) Max(max float64) Validator {
@@ -57,7 +57,7 @@ func (f Float64Validators) Max(max float64) Validator {
 	}
 }
 
-// Between returns a validator that an int is between a given min and max inclusive,
+// Between returns a validator that a float64 is between a given min and max inclusive,
 // that is, `.Between(1,5)` will _fail_ for [0] and [6] respectively, but pass
 // for [1] and [5].
 func (f Float64Validators) Between(min, max float64) Validator {
@@ -76,7 +76,7 @@ func (f Float64Validators) Between(min, max float64) Validator {
 	}
 }
 
-// Positive returns a validator that an int is positive.
+// Positive returns a validator that a float64 is positive.
 func (f Float64Validators) Positive() Validator {
 	return func() error {
 		if f.Value == nil {
@@ -90,7 +90,7 @@ func (f Float64Validators) Positive() Validator {
 	}
 }
 
-// Negative returns a validator that an int is negative.
+// Negative returns a validator that a float64 is negative.
 func (f Float64Validators) Negative() Validator {
 	return func() error {
 		if f.Value == nil {
