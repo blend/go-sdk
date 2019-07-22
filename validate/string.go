@@ -53,6 +53,7 @@ func (s StringValidators) MinLen(length int) Validator {
 }
 
 // MaxLen returns a validator that a string is a minimum length.
+// It will pass if the string is unset (nil).
 func (s StringValidators) MaxLen(length int) Validator {
 	return func() error {
 		if s.Value == nil {
@@ -66,7 +67,7 @@ func (s StringValidators) MaxLen(length int) Validator {
 }
 
 // Length returns a validator that a string is a minimum length.
-// It will fail if the value is unset (nil).
+// It will error if the string is unset (nil).
 func (s StringValidators) Length(length int) Validator {
 	return func() error {
 		if s.Value == nil {
@@ -80,7 +81,7 @@ func (s StringValidators) Length(length int) Validator {
 }
 
 // BetweenLen returns a validator that a string is a between a minimum and maximum length.
-// If the string is unset (nil) it will fail the minimum check.
+// It will error if the string is unset (nil).
 func (s StringValidators) BetweenLen(min, max int) Validator {
 	return func() error {
 		if s.Value == nil {
@@ -97,8 +98,7 @@ func (s StringValidators) BetweenLen(min, max int) Validator {
 }
 
 // Matches returns a validator that a string matches a given regex.
-// If the value is unset (nil) it will match, i.e. not fail validation and no error will
-// be returned.
+// It will error if the string is unset (nil).
 func (s StringValidators) Matches(expression string) Validator {
 	exp, err := regexp.Compile(expression)
 	return func() error {
@@ -116,6 +116,7 @@ func (s StringValidators) Matches(expression string) Validator {
 }
 
 // IsUpper returns a validator if a string is all uppercase.
+// It will error if the string is unset (nil).
 func (s StringValidators) IsUpper() Validator {
 	return func() error {
 		if s.Value == nil {
@@ -132,6 +133,7 @@ func (s StringValidators) IsUpper() Validator {
 }
 
 // IsLower returns a validator if a string is all lowercase.
+// It will error if the string is unset (nil).
 func (s StringValidators) IsLower() Validator {
 	return func() error {
 		if s.Value == nil {
@@ -149,6 +151,7 @@ func (s StringValidators) IsLower() Validator {
 
 // IsTitle returns a validator if a string is titlecase.
 // Titlecase is defined as the output of strings.ToTitle(s).
+// It will error if the string is unset (nil).
 func (s StringValidators) IsTitle() Validator {
 	return func() error {
 		if s.Value == nil {
@@ -162,6 +165,7 @@ func (s StringValidators) IsTitle() Validator {
 }
 
 // IsUUID returns if a string is a valid uuid.
+// It will error if the string is unset (nil).
 func (s StringValidators) IsUUID() Validator {
 	return func() error {
 		if s.Value == nil {
@@ -188,6 +192,7 @@ func (s StringValidators) IsEmail() Validator {
 }
 
 // IsURI returns if a string is a valid uri.
+// It will error if the string is unset (nil).
 func (s StringValidators) IsURI() Validator {
 	return func() error {
 		if s.Value == nil {
@@ -201,6 +206,7 @@ func (s StringValidators) IsURI() Validator {
 }
 
 // IsIP returns if a string is a valid ip address.
+// It will error if the string is unset (nil).
 func (s StringValidators) IsIP() Validator {
 	return func() error {
 		if s.Value == nil {
