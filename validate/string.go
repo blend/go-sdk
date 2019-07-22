@@ -106,7 +106,7 @@ func (s StringValidators) Matches(expression string) Validator {
 			return ex.New(err)
 		}
 		if s.Value == nil {
-			return nil
+			return Errorf(ErrStringMatches, nil, "expression: %s", expression)
 		}
 		if !exp.MatchString(string(*s.Value)) {
 			return Errorf(ErrStringMatches, *s.Value, "expression: %s", expression)
@@ -119,7 +119,7 @@ func (s StringValidators) Matches(expression string) Validator {
 func (s StringValidators) IsUpper() Validator {
 	return func() error {
 		if s.Value == nil {
-			return nil
+			return Error(ErrStringIsUpper, nil)
 		}
 		runes := []rune(string(*s.Value))
 		for _, r := range runes {
@@ -135,7 +135,7 @@ func (s StringValidators) IsUpper() Validator {
 func (s StringValidators) IsLower() Validator {
 	return func() error {
 		if s.Value == nil {
-			return nil
+			return Error(ErrStringIsLower, nil)
 		}
 		runes := []rune(string(*s.Value))
 		for _, r := range runes {
@@ -152,7 +152,7 @@ func (s StringValidators) IsLower() Validator {
 func (s StringValidators) IsTitle() Validator {
 	return func() error {
 		if s.Value == nil {
-			return nil
+			return Error(ErrStringIsTitle, nil)
 		}
 		if strings.ToTitle(string(*s.Value)) == string(*s.Value) {
 			return nil
@@ -165,7 +165,7 @@ func (s StringValidators) IsTitle() Validator {
 func (s StringValidators) IsUUID() Validator {
 	return func() error {
 		if s.Value == nil {
-			return nil
+			return Error(ErrStringIsUUID, nil)
 		}
 		if _, err := uuid.Parse(string(*s.Value)); err != nil {
 			return Error(ErrStringIsUUID, *s.Value)
@@ -178,7 +178,7 @@ func (s StringValidators) IsUUID() Validator {
 func (s StringValidators) IsEmail() Validator {
 	return func() error {
 		if s.Value == nil {
-			return nil
+			return Error(ErrStringIsEmail, nil)
 		}
 		if _, err := mail.ParseAddress(string(*s.Value)); err != nil {
 			return Error(ErrStringIsEmail, *s.Value)
@@ -191,7 +191,7 @@ func (s StringValidators) IsEmail() Validator {
 func (s StringValidators) IsURI() Validator {
 	return func() error {
 		if s.Value == nil {
-			return nil
+			return Error(ErrStringIsURI, nil)
 		}
 		if _, err := url.ParseRequestURI(string(*s.Value)); err != nil {
 			return Error(ErrStringIsURI, *s.Value)
@@ -204,7 +204,7 @@ func (s StringValidators) IsURI() Validator {
 func (s StringValidators) IsIP() Validator {
 	return func() error {
 		if s.Value == nil {
-			return nil
+			return Error(ErrStringIsIP, nil)
 		}
 		if addr := net.ParseIP(string(*s.Value)); addr == nil {
 			return Error(ErrStringIsIP, *s.Value)

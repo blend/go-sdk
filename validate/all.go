@@ -1,7 +1,7 @@
 package validate
 
 // All returns all the failing validations.
-func All(validators ...func() error) []error {
+func All(validators ...Validator) []error {
 	var output []error
 	var err error
 	for _, validator := range validators {

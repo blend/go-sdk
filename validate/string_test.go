@@ -82,7 +82,9 @@ func TestStringMatches(t *testing.T) {
 	assert.Nil(verr)
 
 	verr = String(nil).Matches("foo$")()
-	assert.Nil(verr)
+	assert.NotNil(verr)
+	assert.Nil(Value(verr))
+	assert.Equal(ErrStringMatches, Cause(verr))
 
 	bad := "foo not"
 	verr = String(&bad).Matches("foo$")()
@@ -109,7 +111,9 @@ func TestStringIsUpper(t *testing.T) {
 	assert.Nil(verr)
 
 	verr = String(nil).IsUpper()()
-	assert.Nil(verr)
+	assert.NotNil(verr)
+	assert.Nil(Value(verr))
+	assert.Equal(ErrStringIsUpper, Cause(verr))
 
 	bad := "FOo"
 	verr = String(&bad).IsUpper()()
@@ -126,7 +130,9 @@ func TestStringIsLower(t *testing.T) {
 	assert.Nil(verr)
 
 	verr = String(nil).IsLower()()
-	assert.Nil(verr)
+	assert.NotNil(verr)
+	assert.Nil(Value(verr))
+	assert.Equal(ErrStringIsLower, Cause(verr))
 
 	bad := "foO"
 	verr = String(&bad).IsLower()()
@@ -143,7 +149,9 @@ func TestStringIsTitle(t *testing.T) {
 	assert.Nil(verr)
 
 	verr = String(nil).IsTitle()()
-	assert.Nil(verr)
+	assert.NotNil(verr)
+	assert.Nil(Value(verr))
+	assert.Equal(ErrStringIsTitle, Cause(verr))
 
 	bad := "this is a test"
 	verr = String(&bad).IsTitle()()
@@ -160,7 +168,10 @@ func TestStringIsUUID(t *testing.T) {
 	assert.Nil(verr)
 
 	verr = String(nil).IsUUID()()
-	assert.Nil(verr)
+	assert.NotNil(verr)
+	assert.NotNil(verr)
+	assert.Nil(Value(verr))
+	assert.Equal(ErrStringIsUUID, Cause(verr))
 
 	good = uuid.V4().ToFullString()
 	verr = String(&good).IsUUID()()
@@ -177,7 +188,9 @@ func TestStringIsEmail(t *testing.T) {
 
 	var verr error
 	verr = String(nil).IsEmail()()
-	assert.Nil(verr)
+	assert.NotNil(verr)
+	assert.Nil(Value(verr))
+	assert.Equal(ErrStringIsEmail, Cause(verr))
 
 	good := "foo@bar.com"
 	verr = String(&good).IsEmail()()
@@ -202,7 +215,9 @@ func TestStringIsURI(t *testing.T) {
 
 	var verr error
 	verr = String(nil).IsURI()()
-	assert.Nil(verr)
+	assert.NotNil(verr)
+	assert.Nil(Value(verr))
+	assert.Equal(ErrStringIsURI, Cause(verr))
 
 	good := "https://foo.com"
 
@@ -212,6 +227,7 @@ func TestStringIsURI(t *testing.T) {
 	bad := "this is a test"
 	verr = String(&bad).IsURI()()
 	assert.NotNil(verr)
+	assert.Equal(bad, Value(verr))
 	assert.Equal(ErrStringIsURI, Cause(verr))
 }
 
@@ -220,7 +236,9 @@ func TestStringIsIP(t *testing.T) {
 
 	var verr error
 	verr = String(nil).IsIP()()
-	assert.Nil(verr)
+	assert.NotNil(verr)
+	assert.Nil(Value(verr))
+	assert.Equal(ErrStringIsIP, Cause(verr))
 
 	good := "127.0.0.1"
 	verr = String(&good).IsIP()()
