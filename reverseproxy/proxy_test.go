@@ -45,6 +45,9 @@ func TestProxy(t *testing.T) {
 	assert.Nil(err)
 	defer res.Body.Close()
 
+	assert.Empty(res.Header.Get("x-forwarded-proto"))
+	assert.Empty(res.Header.Get("x-forwarded-port"))
+
 	fullBody, err := ioutil.ReadAll(res.Body)
 	assert.Nil(err)
 

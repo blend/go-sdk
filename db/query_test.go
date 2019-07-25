@@ -1,10 +1,11 @@
 package db
 
 import (
-	"github.com/blend/go-sdk/uuid"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/blend/go-sdk/uuid"
 
 	"github.com/blend/go-sdk/assert"
 )
@@ -255,20 +256,20 @@ func TestQueryQueryPopulateByname(t *testing.T) {
 	var first benchObj
 	cols := Columns(first)
 	err = defaultDB().Invoke(OptTx(tx)).Query("select * from bench_object").First(func(r Rows) error {
-		return PopulateByName(&first, r, cols, true)
+		return PopulateByName(&first, r, cols)
 	})
 	assert.Nil(err)
 	assert.Equal(1, first.ID)
 }
 
 type benchWithPointer struct {
-	ID        int       `db:"id,pk,auto"`
-	UUID      string    `db:"uuid,nullable,uk"`
-	Name      string    `db:"name"`
+	ID        int        `db:"id,pk,auto"`
+	UUID      string     `db:"uuid,nullable,uk"`
+	Name      string     `db:"name"`
 	Timestamp *time.Time `db:"timestamp_utc"`
-	Amount    float32   `db:"amount"`
-	Pending   bool      `db:"pending"`
-	Category  string    `db:"category"`
+	Amount    float32    `db:"amount"`
+	Pending   bool       `db:"pending"`
+	Category  string     `db:"category"`
 }
 
 func (t benchWithPointer) TableName() string {
@@ -289,17 +290,18 @@ func TestOutWithDirtyStructs(t *testing.T) {
 	i, err := defaultDB().Invoke(OptTx(tx)).Exec("INSERT INTO bench_object (uuid, name, category) VALUES ($1, $2, $3)",
 		uniq, "Foo", "Bar")
 	assert.Nil(err)
-	assert.Equal(1,i)
+	ra, _ := i.RowsAffected()
+	assert.Equal(1, ra)
 
 	timeObj := time.Now()
 
 	dirty := benchWithPointer{
-		ID: 192,
-		UUID: uuid.V4().ToFullString(),
-		Name: "Widget",
+		ID:        192,
+		UUID:      uuid.V4().ToFullString(),
+		Name:      "Widget",
 		Timestamp: &timeObj,
-		Amount: 4.99,
-		Category: "Baz",
+		Amount:    4.99,
+		Category:  "Baz",
 	}
 
 	b, err := defaultDB().Invoke(OptTx(tx)).Query("SELECT * FROM bench_object WHERE uuid = $1", uniq).Out(&dirty)
@@ -323,22 +325,23 @@ func TestIntoWithDirtyStructs(t *testing.T) {
 	i, err := defaultDB().Invoke(OptTx(tx)).Exec("INSERT INTO bench_object (uuid, name, category) VALUES ($1, $2, $3)",
 		uniq, "Foo", "Bar")
 	assert.Nil(err)
-	assert.Equal(1,i)
+	ra, _ := i.RowsAffected()
+	assert.Equal(1, ra)
 
 	timeObj := time.Now()
 
 	dirty := benchWithPointer{
-		ID: 192,
-		UUID: uuid.V4().ToFullString(),
-		Name: "Widget",
+		ID:        192,
+		UUID:      uuid.V4().ToFullString(),
+		Name:      "Widget",
 		Timestamp: &timeObj,
-		Amount: 4.99,
-		Category: "Baz",
+		Amount:    4.99,
+		Category:  "Baz",
 	}
 
-	b, err := defaultDB().Invoke(OptTx(tx)).Query("SELECT * FROM bench_object WHERE uuid = $1", uniq).Into(&dirty)
+	b, err := defaultDB().Invoke(OptTx(tx)).Query("SELECT * FROM bench_object WHERE uuid = $1", uniq).Out(&dirty)
 	assert.Nil(err)
 	assert.True(b)
-	assert.NotNil(dirty.Timestamp)
-	assert.True(dirty.Amount == 4.99)
+	assert.Nil(dirty.Timestamp)
+	assert.Zero(dirty.Amount)
 }

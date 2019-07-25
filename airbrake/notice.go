@@ -16,14 +16,14 @@ func NewNotice(err interface{}, req *http.Request) *gobrake.Notice {
 	if exErr := ex.As(err); exErr != nil {
 		var errors []gobrake.Error
 		errors = append(errors, gobrake.Error{
-			Type:      ex.ErrClass(exErr),
+			Type:      fmt.Sprintf("%v", ex.ErrClass(exErr)),
 			Message:   exErr.Message,
 			Backtrace: frames(exErr.Stack),
 		})
 
 		for inner := ex.As(exErr.Inner); inner != nil; inner = ex.As(inner.Inner) {
 			errors = append(errors, gobrake.Error{
-				Type:      ex.ErrClass(inner),
+				Type:      fmt.Sprintf("%v", ex.ErrClass(inner)),
 				Message:   fmt.Sprintf("%+v", inner),
 				Backtrace: frames(inner.Stack),
 			})

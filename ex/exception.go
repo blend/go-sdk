@@ -18,7 +18,7 @@ var (
 // concrete types intentionally; it is important for the semantics of typed pointers and nil
 // for this to return an interface because (*Ex)(nil) != nil, but (error)(nil) == nil.
 func New(class interface{}, options ...Option) Exception {
-	return NewWithStackDepth(class, defaultNewStartDepth, options...)
+	return NewWithStackDepth(class, DefaultNewStartDepth, options...)
 }
 
 // Exception is a meta interface for exceptions.
@@ -41,17 +41,17 @@ func NewWithStackDepth(class interface{}, startDepth int, options ...Option) Exc
 	} else if err, ok := class.(error); ok {
 		ex = &Ex{
 			Class: err,
-			Stack: callers(startDepth),
+			Stack: Callers(startDepth),
 		}
 	} else if str, ok := class.(string); ok {
 		ex = &Ex{
 			Class: Class(str),
-			Stack: callers(startDepth),
+			Stack: Callers(startDepth),
 		}
 	} else {
 		ex = &Ex{
 			Class: Class(fmt.Sprint(class)),
-			Stack: callers(startDepth),
+			Stack: Callers(startDepth),
 		}
 	}
 
@@ -88,7 +88,7 @@ func OptStack(stack StackTrace) Option {
 // OptInner sets an inner or wrapped ex.
 func OptInner(inner error) Option {
 	return func(ex *Ex) {
-		ex.Inner = NewWithStackDepth(inner, defaultNewStartDepth)
+		ex.Inner = NewWithStackDepth(inner, DefaultNewStartDepth)
 	}
 }
 
@@ -122,7 +122,7 @@ func (e *Ex) WithMessagef(format string, args ...interface{}) Exception {
 // WithInner sets the inner ex.
 // Deprecation notice: This method is included as a migraition path from v2, and will be removed after v3.
 func (e *Ex) WithInner(err error) Exception {
-	e.Inner = NewWithStackDepth(err, defaultNewStartDepth)
+	e.Inner = NewWithStackDepth(err, DefaultNewStartDepth)
 	return e
 }
 
@@ -135,23 +135,14 @@ func (e *Ex) WithInner(err error) Exception {
 func (e *Ex) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':
-		if s.Flag('+') {
-			if e.Class != nil && len(e.Class.Error()) > 0 {
-				fmt.Fprintf(s, "%s", e.Class)
-				if len(e.Message) > 0 {
-					fmt.Fprintf(s, "\n%s", e.Message)
-				}
-			} else if len(e.Message) > 0 {
-				io.WriteString(s, e.Message)
-			}
-			e.Stack.Format(s, verb)
-		} else if s.Flag('-') {
-			e.Stack.Format(s, verb)
-		} else {
+		if e.Class != nil && len(e.Class.Error()) > 0 {
 			io.WriteString(s, e.Class.Error())
-			if len(e.Message) > 0 {
-				fmt.Fprintf(s, "\n%s", e.Message)
-			}
+		}
+		if len(e.Message) > 0 {
+			io.WriteString(s, "; "+e.Message)
+		}
+		if s.Flag('+') {
+			e.Stack.Format(s, verb)
 		}
 		if e.Inner != nil {
 			if typed, ok := e.Inner.(fmt.Formatter); ok {
@@ -166,7 +157,11 @@ func (e *Ex) Format(s fmt.State, verb rune) {
 		io.WriteString(s, e.Class.Error())
 	case 'i':
 		if e.Inner != nil {
-			io.WriteString(s, e.Inner.Error())
+			if typed, ok := e.Inner.(fmt.Formatter); ok {
+				typed.Format(s, verb)
+			} else {
+				fmt.Fprintf(s, "%v", e.Inner)
+			}
 		}
 	case 'm':
 		io.WriteString(s, e.Message)

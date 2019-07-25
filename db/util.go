@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -48,17 +49,33 @@ func ParamTokens(startAt, count int) string {
 	return str
 }
 
+// IgnoreExecResult is a helper for use with .Exec() (sql.Result, error)
+// that ignores the result return.
+func IgnoreExecResult(_ sql.Result, err error) error {
+	return err
+}
+
+// ExecRowsAffected is a helper for use with .Exec() (sql.Result, error)
+// that returns the rows affected.
+func ExecRowsAffected(i sql.Result, err error) (int64, error) {
+	if err != nil {
+		return 0, err
+	}
+	ra, _ := i.RowsAffected()
+	return ra, nil
+}
+
 // --------------------------------------------------------------------------------
 // Internal / Reflection Utility Methods
 // --------------------------------------------------------------------------------
 
 // AsPopulatable casts an object as populatable.
-func asPopulatable(object interface{}) Populatable {
+func AsPopulatable(object interface{}) Populatable {
 	return object.(Populatable)
 }
 
-// isPopulatable returns if an object is populatable
-func isPopulatable(object interface{}) bool {
+// IsPopulatable returns if an object is populatable
+func IsPopulatable(object interface{}) bool {
 	_, isPopulatable := object.(Populatable)
 	return isPopulatable
 }

@@ -35,7 +35,7 @@ func (q *Query) Execute() (rows *sql.Rows, err error) {
 }
 
 // Any returns if there are any results for the query.
-func (q *Query) Any() (hasRows bool, err error) {
+func (q *Query) Any() (found bool, err error) {
 	defer func() { err = q.finish(recover(), err) }()
 
 	q.Rows, q.Err = q.query()
@@ -45,12 +45,12 @@ func (q *Query) Any() (hasRows bool, err error) {
 	}
 	defer func() { err = ex.Nest(err, q.Rows.Close()) }()
 
-	hasRows = q.Rows.Next()
+	found = q.Rows.Next()
 	return
 }
 
 // None returns if there are no results for the query.
-func (q *Query) None() (hasRows bool, err error) {
+func (q *Query) None() (notFound bool, err error) {
 	defer func() { err = q.finish(recover(), err) }()
 
 	q.Rows, q.Err = q.query()
@@ -59,12 +59,14 @@ func (q *Query) None() (hasRows bool, err error) {
 		return
 	}
 	defer func() { err = ex.Nest(err, Error(q.Rows.Close())) }()
-	hasRows = !q.Rows.Next()
+	notFound = !q.Rows.Next()
 	return
 }
 
 // Scan writes the results to a given set of local variables.
-func (q *Query) Scan(args ...interface{}) (err error) {
+// It returns if the query produced a row, and returns `ErrTooManyRows` if there
+// are multiple row results.
+func (q *Query) Scan(args ...interface{}) (found bool, err error) {
 	defer func() { err = q.finish(recover(), err) }()
 
 	q.Rows, q.Err = q.query()
@@ -75,33 +77,25 @@ func (q *Query) Scan(args ...interface{}) (err error) {
 	defer func() { err = ex.Nest(err, Error(q.Rows.Close())) }()
 
 	if q.Rows.Next() {
+		found = true
 		if err = q.Rows.Scan(args...); err != nil {
 			err = Error(err)
 			return
 		}
+	}
+	if q.Rows.Next() {
+		err = Error(ErrTooManyRows)
 	}
 
 	return
 }
 
 // Out writes the query result to a single object via. reflection mapping. If there is more than one result, the first
-// result is mapped to to object, and ErrTooManyRows is returned. Unlike Into(), if a field on the stuct is not present
-// or is an "empty" value in the result set, Out clears the field on object it is populating. In short Out maps the
-// output of your query into object as "exactly" as possible. Where you can, prefer Out over Into
+// result is mapped to to object, and ErrTooManyRows is returned. Out() will apply column values for any colums
+// in the row result to the object, potentially zeroing existing values out.
 func (q *Query) Out(object interface{}) (found bool, err error) {
-	return q.populateImpl(object, true)
-}
-
-// Into writes the query result to a single object via. reflection mapping. If there is more than one result, the first
-// result is mapped to to object, and ErrTooManyRows is returned. Into is different than Out, in that is DOES NOT change
-// struct fields on object that are empty in the result set. If a result field is null the value that was present in
-// object is maintained. If you need multiple queries to fill up your object struct, you should be using Into()
-func (q *Query) Into(object interface{}) (found bool, err error) {
-	return q.populateImpl(object, false)
-}
-
-func (q *Query) populateImpl(object interface{}, clearEmpty bool) (found bool, err error) {
 	defer func() { err = q.finish(recover(), err) }()
+
 	q.Rows, q.Err = q.query()
 	if q.Err != nil {
 		err = q.Err
@@ -121,19 +115,18 @@ func (q *Query) populateImpl(object interface{}, clearEmpty bool) (found bool, e
 		if populatable, ok := object.(Populatable); ok {
 			err = populatable.Populate(q.Rows)
 		} else {
-			err = PopulateByName(object, q.Rows, columnMeta, clearEmpty)
+			err = PopulateByName(object, q.Rows, columnMeta)
 		}
 		if err != nil {
 			return
 		}
-	} else if _, ok := object.(Populatable); !ok {
-		PopulateEmpty(object, columnMeta)
+	} else if err = Zero(object); err != nil {
+		return
 	}
 
 	if q.Rows.Next() {
 		err = Error(ErrTooManyRows)
 	}
-
 	return
 }
 
@@ -159,16 +152,15 @@ func (q *Query) OutMany(collection interface{}) (err error) {
 	v := makeNew(sliceInnerType)
 	meta := CachedColumnCollectionFromType(newColumnCacheKey(sliceInnerType), sliceInnerType)
 
-	isPopulatable := isPopulatable(v)
+	isPopulatable := IsPopulatable(v)
 
-	didSetRows := false
+	var didSetRows bool
 	for q.Rows.Next() {
 		newObj := makeNew(sliceInnerType)
-
 		if isPopulatable {
-			err = asPopulatable(newObj).Populate(q.Rows)
+			err = AsPopulatable(newObj).Populate(q.Rows)
 		} else {
-			err = PopulateByName(newObj, q.Rows, meta, true)
+			err = PopulateByName(newObj, q.Rows, meta)
 		}
 		if err != nil {
 			return
@@ -179,6 +171,7 @@ func (q *Query) OutMany(collection interface{}) (err error) {
 		didSetRows = true
 	}
 
+	// this initializes the slice if we didn't add elements to it.
 	if !didSetRows {
 		collectionValue.Set(reflect.MakeSlice(sliceType, 0, 0))
 	}
@@ -206,6 +199,7 @@ func (q *Query) Each(consumer RowsConsumer) (err error) {
 }
 
 // First executes the consumer for the first result of a query.
+// It returns `ErrTooManyRows` if more than one result is returned.
 func (q *Query) First(consumer RowsConsumer) (err error) {
 	defer func() { err = q.finish(recover(), err) }()
 

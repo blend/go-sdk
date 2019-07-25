@@ -34,13 +34,11 @@ func secondArgErr(_ interface{}, err error) error {
 }
 
 func createJSONTestTable(tx *sql.Tx) error {
-	_, err := defaultDB().Invoke(OptTx(tx)).Exec("create table json_test (id serial primary key, name varchar(255), not_null json, nullable json)")
-	return err
+	return IgnoreExecResult(defaultDB().Invoke(OptTx(tx)).Exec("create table json_test (id serial primary key, name varchar(255), not_null json, nullable json)"))
 }
 
 func dropJSONTextTable(tx *sql.Tx) error {
-	_, err := defaultDB().Invoke(OptTx(tx)).Exec("drop table if exists json_test")
-	return err
+	return IgnoreExecResult(defaultDB().Invoke(OptTx(tx)).Exec("drop table if exists json_test"))
 }
 
 func TestInvocationJSONNulls(t *testing.T) {
@@ -90,7 +88,7 @@ func TestInvocationJSONNulls(t *testing.T) {
 	assert.True(any, "we should have written a sql null, not a literal string 'null'")
 
 	// set it to literal 'null' to test this is backward compatible
-	_, err = defaultDB().Invoke(OptTx(tx)).Exec("update json_test set nullable = 'null' where id = $1", obj1.ID)
+	err = IgnoreExecResult(defaultDB().Invoke(OptTx(tx)).Exec("update json_test set nullable = 'null' where id = $1", obj1.ID))
 	assert.Nil(err)
 
 	var verify2 jsonTest
@@ -119,7 +117,7 @@ func TestInvocationCreateRepeatInTx(t *testing.T) {
 	assert.Nil(err)
 	defer tx.Rollback()
 
-	assert.Nil(secondArgErr(defaultDB().Invoke(OptTx(tx)).Exec("CREATE TABLE IF NOT EXISTS unique_obj (id int not null primary key, name varchar)")))
+	assert.Nil(IgnoreExecResult(defaultDB().Invoke(OptTx(tx)).Exec("CREATE TABLE IF NOT EXISTS unique_obj (id int not null primary key, name varchar)")))
 	assert.Nil(defaultDB().Invoke(OptTx(tx)).Create(&uniqueObj{ID: 1, Name: "one"}))
 	var verify uniqueObj
 	assert.Nil(secondArgErr(defaultDB().Invoke(OptTx(tx)).Get(&verify, 1)))
@@ -136,10 +134,10 @@ func TestInvocationExecError(t *testing.T) {
 	assert.Nil(err)
 	conn.PlanCache.WithEnabled(false)
 	assert.Nil(conn.Open())
-	assert.NotNil(conn.Invoke().Exec("not a select"))
+	assert.NotNil(IgnoreExecResult(conn.Invoke().Exec("not a select")))
 	conn.PlanCache.WithEnabled(true)
-	assert.NotNil(conn.Invoke().Exec("not a select"))
-	assert.NotNil(conn.Invoke(OptCachedPlanKey("exec_error_test")).Exec("not a select"))
+	assert.NotNil(IgnoreExecResult(conn.Invoke().Exec("not a select")))
+	assert.NotNil(IgnoreExecResult(conn.Invoke(OptCachedPlanKey("exec_error_test")).Exec("not a select")))
 }
 
 type modelTableNameError struct {
@@ -310,7 +308,7 @@ func TestInvocationUUIDs(t *testing.T) {
 	assert.Nil(err)
 	defer tx.Rollback()
 
-	assert.Nil(secondArgErr(defaultDB().Invoke(OptTx(tx)).Exec("CREATE TABLE IF NOT EXISTS uuid_test (id uuid not null, name varchar(255) not null)")))
+	assert.Nil(IgnoreExecResult(defaultDB().Invoke(OptTx(tx)).Exec("CREATE TABLE IF NOT EXISTS uuid_test (id uuid not null, name varchar(255) not null)")))
 
 	assert.Nil(defaultDB().Invoke(OptTx(tx)).Create(&uuidTest{ID: uuid.V4(), Name: "foo"}))
 	assert.Nil(defaultDB().Invoke(OptTx(tx)).Create(&uuidTest{ID: uuid.V4(), Name: "foo2"}))
@@ -356,7 +354,7 @@ func TestInlineMeta(t *testing.T) {
 
 	id0 := uuid.V4()
 	id1 := uuid.V4()
-	assert.Nil(secondArgErr(defaultDB().Invoke(OptTx(tx)).Exec("CREATE TABLE IF NOT EXISTS embedded_test (id uuid not null primary key, timestamp_utc timestamp not null, name varchar(255) not null)")))
+	assert.Nil(IgnoreExecResult(defaultDB().Invoke(OptTx(tx)).Exec("CREATE TABLE IF NOT EXISTS embedded_test (id uuid not null primary key, timestamp_utc timestamp not null, name varchar(255) not null)")))
 	assert.Nil(defaultDB().Invoke(OptTx(tx)).Create(&embeddedTest{EmbeddedTestMeta: EmbeddedTestMeta{ID: id0, TimestampUTC: time.Now().UTC()}, Name: "foo"}))
 	assert.Nil(defaultDB().Invoke(OptTx(tx)).Create(&embeddedTest{EmbeddedTestMeta: EmbeddedTestMeta{ID: id1, TimestampUTC: time.Now().UTC()}, Name: "foo2"}))
 
@@ -392,7 +390,7 @@ func TestInvocationStatementInterceptor(t *testing.T) {
 	}))
 	assert.NotNil(invocation.StatementInterceptor)
 
-	_, err = invocation.Exec("select 'ok!'")
+	err = IgnoreExecResult(invocation.Exec("select 'ok!'"))
 	assert.NotNil(err)
 	assert.Equal("only a test", err.Error())
 }
@@ -739,9 +737,9 @@ func TestInvocationEarlyExitOnError(t *testing.T) {
 	defer tx.Rollback()
 
 	i := defaultDB().Invoke(OptTx(tx))
-	assert.Nil(secondArgErr(i.Exec("select 1")))
+	assert.Nil(IgnoreExecResult(i.Exec("select 1")))
 
 	i.Err = fmt.Errorf("this is a test")
-	_, err = i.Exec("select 1")
+	err = IgnoreExecResult(i.Exec("select 1"))
 	assert.Equal("this is a test", err.Error())
 }

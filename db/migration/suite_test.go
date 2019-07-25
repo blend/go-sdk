@@ -4,21 +4,22 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"testing"
+
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/db"
 	"github.com/blend/go-sdk/logger"
-	"testing"
 )
 
 func TestSuite_Apply(t *testing.T) {
 	a := assert.New(t)
 	testSchemaName := buildTestSchemaName()
-	_, err := defaultDB().Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE;", testSchemaName))
+	err := db.IgnoreExecResult(defaultDB().Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE;", testSchemaName)))
 	a.Nil(err)
 	s := New(OptLog(logger.None()), OptGroups(createTestMigrations(testSchemaName)...))
 	defer func() {
 		// pq can't parameterize Drop
-		_, err := defaultDB().Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE;", testSchemaName))
+		err := db.IgnoreExecResult(defaultDB().Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE;", testSchemaName)))
 		a.Nil(err)
 	}()
 	err = s.Apply(context.Background(), defaultDB())
@@ -38,13 +39,13 @@ func TestSuite_Apply(t *testing.T) {
 func TestSuite_ApplyFails(t *testing.T) {
 	a := assert.New(t)
 	testSchemaName := buildTestSchemaName()
-	_, err := defaultDB().Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE;", testSchemaName))
+	err := db.IgnoreExecResult(defaultDB().Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE;", testSchemaName)))
 	a.Nil(err)
 	s := New(OptLog(logger.None()), OptGroups(createTestMigrations(testSchemaName)...))
 	s.Groups = append(s.Groups, NewGroupWithActions(NewStep(Always(), Actions(Statements(`INSERT INTO tab_not_exists VALUES (1, 'blah', CURRENT_TIMESTAMP');`)))))
 	defer func() {
 		// pq can't parameterize Drop
-		_, err := defaultDB().Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE;", testSchemaName))
+		err := db.IgnoreExecResult(defaultDB().Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE;", testSchemaName)))
 		a.Nil(err)
 	}()
 	err = s.Apply(context.Background(), defaultDB())
@@ -69,7 +70,7 @@ func createTestMigrations(testSchemaName string) []*Group {
 				Actions(
 					// pq can't parameterize Create
 					func(i context.Context, connection *db.Connection, tx *sql.Tx) error {
-						_, err := connection.Exec(fmt.Sprintf("CREATE SCHEMA %s;", testSchemaName))
+						err := db.IgnoreExecResult(connection.Exec(fmt.Sprintf("CREATE SCHEMA %s;", testSchemaName)))
 						if err != nil {
 							return err
 						}

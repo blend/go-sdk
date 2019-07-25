@@ -94,7 +94,7 @@ func (dfr *DataFileReader) Action(ctx context.Context, c *db.Connection, tx *sql
 				continue
 			}
 
-			_, err = c.Invoke(db.OptTx(tx)).Exec(line)
+			err = db.IgnoreExecResult(c.Invoke(db.OptTx(tx)).Exec(line))
 			if err != nil {
 				return
 			}

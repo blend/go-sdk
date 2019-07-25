@@ -104,7 +104,7 @@ func TestErrorOptions(t *testing.T) {
 func TestCallers(t *testing.T) {
 	a := assert.New(t)
 
-	callStack := func() StackTrace { return callers(defaultStartDepth) }()
+	callStack := func() StackTrace { return Callers(DefaultStartDepth) }()
 
 	a.NotNil(callStack)
 	callstackStr := callStack.String()
@@ -119,7 +119,7 @@ func TestExceptionFormatters(t *testing.T) {
 	assert.Equal("this is a test", fmt.Sprintf("%v", class))
 
 	classAndMessage := &Ex{Class: Class("foo"), Message: "bar"}
-	assert.Equal("foo\nbar", fmt.Sprintf("%v", classAndMessage))
+	assert.Equal("foo; bar", fmt.Sprintf("%v", classAndMessage))
 }
 
 func TestMarshalJSON(t *testing.T) {
