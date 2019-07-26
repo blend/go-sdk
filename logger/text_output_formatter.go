@@ -131,7 +131,6 @@ func (tf TextOutputFormatter) WriteFormat(ctx context.Context, output io.Writer,
 	}
 
 	subContextPath, subContextFields := GetSubContextMeta(ctx)
-
 	if subContextPath != nil {
 		buffer.WriteString(tf.FormatPath(subContextPath...))
 		buffer.WriteString(Space)

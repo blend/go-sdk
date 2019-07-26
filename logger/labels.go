@@ -3,13 +3,21 @@ package logger
 // Labels are a collection of labels for an event.
 type Labels map[string]string
 
-// AddLabelValue adds a label value.
-func (l Labels) AddLabelValue(key, value string) {
+// SetLabel adds a label value.
+func (l Labels) SetLabel(key, value string) {
 	l[key] = value
 }
 
-// GetLabelValue gets a label value.
-func (l Labels) GetLabelValue(key string) (value string, ok bool) {
+// GetLabelKeys returns the keys represented in the labels set.
+func (l Labels) GetLabelKeys() (keys []string) {
+	for key := range l {
+		keys = append(keys, key)
+	}
+	return
+}
+
+// GetLabel gets a label value.
+func (l Labels) GetLabel(key string) (value string, ok bool) {
 	value, ok = l[key]
 	return
 }

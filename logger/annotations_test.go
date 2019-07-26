@@ -24,6 +24,13 @@ func TestAnnotations(t *testing.T) {
 	assert.Equal("fuzz", value(a.GetAnnotationValue("buzz")))
 	assert.Equal("bar", value(a.GetAnnotationValue("foo")))
 
+	assert.Any(a.GetAnnotationKeys(), func(v interface{}) bool {
+		return v.(string) == "foo"
+	})
+	assert.Any(a.GetAnnotationKeys(), func(v interface{}) bool {
+		return v.(string) == "fuzz"
+	})
+
 	values := a.Decompose()
 	assert.NotEmpty(values)
 

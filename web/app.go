@@ -92,6 +92,10 @@ func (a *App) Start() (err error) {
 		serverProtocol = "https (tls)"
 	}
 
+	if a.Config.DebugInsecure {
+		logger.MaybeFatalf(a.Log, "server starting in debug insecure mode")
+	}
+
 	logger.MaybeInfof(a.Log, "%s server started, listening on %s", serverProtocol, a.Config.BindAddrOrDefault())
 
 	if a.Server.TLSConfig != nil && a.Server.TLSConfig.ClientCAs != nil {
@@ -521,6 +525,10 @@ func (a *App) httpResponseEvent(ctx *Ctx) *logger.HTTPResponseEvent {
 		logger.OptHTTPResponseContentLength(ctx.Response.ContentLength()),
 		logger.OptHTTPResponseElapsed(ctx.Elapsed()),
 	)
+
+	if a.Config.DebugInsecure {
+		event.Headers = ctx.Response.Header()
+	}
 
 	if ctx.Route != nil {
 		event.Route = ctx.Route.String()

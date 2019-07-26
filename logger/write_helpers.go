@@ -45,6 +45,21 @@ func WriteHTTPResponse(tf TextFormatter, wr io.Writer, req *http.Request, status
 	io.WriteString(wr, stringutil.FileSize(contentLength))
 }
 
+// FormatHeaders formats headers for output.
+func FormatHeaders(tf TextFormatter, keyColor ansi.Color, header http.Header) string {
+	var keys []string
+	for key := range header {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	var values []string
+	for _, key := range keys {
+		values = append(values, fmt.Sprintf("%s: %s", tf.Colorize(key, keyColor), header.Get(key)))
+	}
+	return strings.Join(values, " ")
+}
+
 // FormatFields formats the output of fields.
 func FormatFields(tf TextFormatter, keyColor ansi.Color, fields Fields) string {
 	var keys []string

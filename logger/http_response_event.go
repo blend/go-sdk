@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/blend/go-sdk/ansi"
+
 	"github.com/blend/go-sdk/timeutil"
 	"github.com/blend/go-sdk/webutil"
 )
@@ -101,12 +103,16 @@ type HTTPResponseEvent struct {
 	ContentEncoding string
 	StatusCode      int
 	Elapsed         time.Duration
+	Header          http.Header
 	State           interface{}
 }
 
 // WriteText implements TextWritable.
 func (e HTTPResponseEvent) WriteText(formatter TextFormatter, wr io.Writer) {
 	WriteHTTPResponse(formatter, wr, e.Request, e.StatusCode, e.ContentLength, e.ContentType, e.Elapsed)
+	if e.Header != nil && len(e.Header) > 0 {
+		io.WriteString(wr, " Headers: "+FormatHeaders(formatter, ansi.ColorLightBlue, e.Header))
+	}
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -123,6 +129,7 @@ func (e HTTPResponseEvent) MarshalJSON() ([]byte, error) {
 		"contentType":     e.ContentType,
 		"contentEncoding": e.ContentEncoding,
 		"statusCode":      e.StatusCode,
+		"header":          e.Header,
 		"elapsed":         timeutil.Milliseconds(e.Elapsed),
 		"state":           e.State,
 	}))
