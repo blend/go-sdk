@@ -57,7 +57,7 @@ func FormatHeaders(tf TextFormatter, keyColor ansi.Color, header http.Header) st
 	for _, key := range keys {
 		values = append(values, fmt.Sprintf("%s: %s", tf.Colorize(key, keyColor), header.Get(key)))
 	}
-	return strings.Join(values, " ")
+	return "{ " + strings.Join(values, " ") + " }"
 }
 
 // FormatFields formats the output of fields.

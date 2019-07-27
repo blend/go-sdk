@@ -3,7 +3,6 @@ package web
 import (
 	"net/http"
 
-	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -13,16 +12,6 @@ type CtxOption func(*Ctx)
 // OptCtxApp sets the context app.
 func OptCtxApp(a *App) CtxOption {
 	return func(c *Ctx) { c.App = a }
-}
-
-// OptCtxAuth sets the context auth manager.
-func OptCtxAuth(a AuthManager) CtxOption {
-	return func(c *Ctx) { c.Auth = a }
-}
-
-// OptCtxViews sets the context view cache.
-func OptCtxViews(v *ViewCache) CtxOption {
-	return func(c *Ctx) { c.Views = v }
 }
 
 // OptCtxState sets the context state.
@@ -45,19 +34,9 @@ func OptCtxRouteParams(r RouteParameters) CtxOption {
 	return func(c *Ctx) { c.RouteParams = r }
 }
 
-// OptCtxLog sets the context logger.
-func OptCtxLog(log logger.Log) CtxOption {
-	return func(c *Ctx) { c.Log = log }
-}
-
 // OptCtxTracer sets the context tracer.
 func OptCtxTracer(tracer Tracer) CtxOption {
 	return func(c *Ctx) { c.Tracer = tracer }
-}
-
-// OptCtxDefaultProvider sets the context default result provider.
-func OptCtxDefaultProvider(rp ResultProvider) CtxOption {
-	return func(c *Ctx) { c.DefaultProvider = rp }
 }
 
 // OptCtxRouteParamValue sets the context default result provider.

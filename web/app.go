@@ -465,10 +465,6 @@ func (a *App) createCtx(w ResponseWriter, r *http.Request, route *Route, p Route
 		OptCtxRouteParams(p),
 		OptCtxState(a.State.Copy()),
 		OptCtxTracer(a.Tracer),
-		OptCtxViews(a.Views),
-		OptCtxAuth(a.Auth),
-		OptCtxLog(a.Log),
-		OptCtxDefaultProvider(a.DefaultProvider),
 	}
 	return NewCtx(w, r, append(options, extra...)...)
 }
@@ -525,9 +521,8 @@ func (a *App) httpResponseEvent(ctx *Ctx) *logger.HTTPResponseEvent {
 		logger.OptHTTPResponseContentLength(ctx.Response.ContentLength()),
 		logger.OptHTTPResponseElapsed(ctx.Elapsed()),
 	)
-
 	if a.Config.DebugInsecure {
-		event.Headers = ctx.Response.Header()
+		event.Header = ctx.Response.Header()
 	}
 
 	if ctx.Route != nil {

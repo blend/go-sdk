@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/ex"
-	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -30,22 +29,21 @@ func NewCtx(w ResponseWriter, r *http.Request, options ...CtxOption) *Ctx {
 
 // Ctx is the struct that represents the context for an hc request.
 type Ctx struct {
-	Auth            AuthManager
-	Response        ResponseWriter
-	Request         *http.Request
 	App             *App
-	Views           *ViewCache
-	Log             logger.Log
-	Tracer          Tracer
-	Body            []byte
-	Form            url.Values
 	DefaultProvider ResultProvider
-	State           State
-	Session         *Session
-	Route           *Route
-	RouteParams     RouteParameters
-	RequestStart    time.Time
-	RequestEnd      time.Time
+
+	Response    ResponseWriter
+	Request     *http.Request
+	Tracer      Tracer
+	Body        []byte
+	Form        url.Values
+	State       State
+	Session     *Session
+	Route       *Route
+	RouteParams RouteParameters
+
+	RequestStart time.Time
+	RequestEnd   time.Time
 }
 
 // WithContext sets the background context for the request.

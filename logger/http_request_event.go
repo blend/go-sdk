@@ -93,7 +93,7 @@ func (e *HTTPRequestEvent) MarshalJSON() ([]byte, error) {
 		"verb":      e.Request.Method,
 		"path":      e.Request.URL.Path,
 		"host":      e.Request.Host,
-		"headers":   e.Request.Header,
+		"header":    e.Request.Header,
 		"route":     e.Route,
 		"ip":        webutil.GetRemoteAddr(e.Request),
 		"userAgent": webutil.GetUserAgent(e.Request),

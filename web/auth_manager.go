@@ -6,30 +6,55 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/webutil"
 )
 
+// MustNewAuthManager returns a new auth manager with a given set of options but panics on error.
+func MustNewAuthManager(options ...AuthManagerOption) AuthManager {
+	am, err := NewAuthManager(options...)
+	if err != nil {
+		panic(err)
+	}
+	return am
+}
+
 // NewAuthManager returns a new auth manager from a given config.
 // For remote mode, you must provide a fetch, persist, and remove handler, and optionally a login redirect handler.
-func NewAuthManager(cfg Config) (manager AuthManager) {
-	switch cfg.AuthManagerModeOrDefault() {
-	case AuthManagerModeJWT:
-		manager = NewJWTAuthManager(cfg.MustAuthSecret())
-	case AuthManagerModeLocal: // local should only be used for debugging.
-		manager = NewLocalAuthManager()
-	case AuthManagerModeRemote:
-		manager = NewRemoteAuthManager()
-	default:
-		panic("invalid auth manager mode")
+func NewAuthManager(options ...AuthManagerOption) (manager AuthManager, err error) {
+	for _, opt := range options {
+		if err = opt(&manager); err != nil {
+			return
+		}
 	}
+	return
+}
 
-	manager.CookieSecure = cfg.CookieSecureOrDefault()
-	manager.CookieHTTPOnly = cfg.CookieHTTPOnlyOrDefault()
-	manager.CookieName = cfg.CookieNameOrDefault()
-	manager.CookiePath = cfg.CookiePathOrDefault()
-	manager.CookieSameSite = cfg.CookieSameSiteOrDefault()
-	manager.SessionTimeoutProvider = SessionTimeoutProvider(!cfg.SessionTimeoutIsRelative, cfg.SessionTimeoutOrDefault())
-	return manager
+// AuthManagerOption is a variadic option for auth managers.
+type AuthManagerOption func(*AuthManager) error
+
+// OptAuthManagerFromConfig returns an auth manager from a config.
+func OptAuthManagerFromConfig(cfg Config) AuthManagerOption {
+	return func(am *AuthManager) error {
+		switch cfg.AuthManagerModeOrDefault() {
+		case AuthManagerModeJWT:
+			*am = NewJWTAuthManager(cfg.MustAuthSecret())
+		case AuthManagerModeLocal: // local should only be used for debugging.
+			*am = NewLocalAuthManager()
+		case AuthManagerModeRemote:
+			*am = NewRemoteAuthManager()
+		default:
+			return ex.New("invalid auth manager mode")
+		}
+
+		am.CookieSecure = cfg.CookieSecureOrDefault()
+		am.CookieHTTPOnly = cfg.CookieHTTPOnlyOrDefault()
+		am.CookieName = cfg.CookieNameOrDefault()
+		am.CookiePath = cfg.CookiePathOrDefault()
+		am.CookieSameSite = cfg.CookieSameSiteOrDefault()
+		am.SessionTimeoutProvider = SessionTimeoutProvider(!cfg.SessionTimeoutIsRelative, cfg.SessionTimeoutOrDefault())
+		return nil
+	}
 }
 
 // NewRemoteAuthManager returns an empty auth manager.
@@ -252,7 +277,7 @@ func (am AuthManager) LoginRedirect(ctx *Ctx) Result {
 			return Redirect(redirectTo.String())
 		}
 	}
-	return ctx.DefaultProvider.NotAuthorized()
+	return ctx.App.DefaultProvider.NotAuthorized()
 }
 
 // PostLoginRedirect returns a redirect result for when auth fails and you need to
