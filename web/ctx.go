@@ -31,6 +31,7 @@ func NewCtx(w ResponseWriter, r *http.Request, options ...CtxOption) *Ctx {
 type Ctx struct {
 	App             *App
 	DefaultProvider ResultProvider
+	Views           *ViewCache
 
 	Response    ResponseWriter
 	Request     *http.Request

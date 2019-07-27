@@ -14,6 +14,16 @@ func OptCtxApp(a *App) CtxOption {
 	return func(c *Ctx) { c.App = a }
 }
 
+// OptCtxDefaultProvider sets the context default result provider.
+func OptCtxDefaultProvider(rp ResultProvider) CtxOption {
+	return func(c *Ctx) { c.DefaultProvider = rp }
+}
+
+// OptCtxViews sets the context views cache.
+func OptCtxViews(vc *ViewCache) CtxOption {
+	return func(c *Ctx) { c.Views = vc }
+}
+
 // OptCtxState sets the context state.
 func OptCtxState(s State) CtxOption {
 	return func(c *Ctx) { c.State = s }

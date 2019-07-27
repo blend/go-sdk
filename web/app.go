@@ -461,6 +461,8 @@ func (a *App) NestMiddleware(action Action, middleware ...Middleware) Action {
 func (a *App) createCtx(w ResponseWriter, r *http.Request, route *Route, p RouteParameters, extra ...CtxOption) *Ctx {
 	options := []CtxOption{
 		OptCtxApp(a),
+		OptCtxDefaultProvider(a.DefaultProvider),
+		OptCtxViews(a.Views),
 		OptCtxRoute(route),
 		OptCtxRouteParams(p),
 		OptCtxState(a.State.Copy()),
