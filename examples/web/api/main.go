@@ -125,7 +125,7 @@ func (ac *APIController) delete(r *web.Ctx) web.Result {
 }
 
 func main() {
-	app := web.New(web.OptLog(logger.All()))
+	app := web.MustNew(web.OptLog(logger.All()))
 	app.Register(new(APIController))
 	if err := graceful.Shutdown(app); err != nil {
 		log.Fatal(err)

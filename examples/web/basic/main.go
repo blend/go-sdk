@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	app := web.New(web.OptBindAddr(":8080"), web.OptLog(logger.All()))
+	app := web.MustNew(web.OptBindAddr(":8080"), web.OptLog(logger.All()))
 	app.GET("/", func(r *web.Ctx) web.Result {
 		return web.Text.Result("ok!")
 	})

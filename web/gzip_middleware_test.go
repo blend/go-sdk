@@ -13,7 +13,7 @@ import (
 func TestGZipMiddlewarePlaintext(t *testing.T) {
 	assert := assert.New(t)
 
-	app := New()
+	app := MustNew()
 	app.Use(GZip)
 	app.GET("/", ok)
 
@@ -27,7 +27,7 @@ func TestGZipMiddlewarePlaintext(t *testing.T) {
 func TestGZipMiddlewareCompressed(t *testing.T) {
 	assert := assert.New(t)
 
-	app := New()
+	app := MustNew()
 	app.Use(GZip)
 
 	app.GET("/", ok)

@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	app := web.New(web.OptLog(logger.All()))
+	app := web.MustNew(web.OptLog(logger.All()))
 
 	app.GET("/", func(_ *web.Ctx) web.Result {
 		return web.NoContent

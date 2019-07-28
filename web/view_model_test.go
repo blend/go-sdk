@@ -13,7 +13,7 @@ func TestViewModelWrap(t *testing.T) {
 	indexTemplate := `{{ define "index" }}{{ range $index, $obj := .ViewModel }}<div>{{ template "control" ( $.Wrap $obj ) }}</div>{{ end }}{{ end }}`
 	controlTemplate := `{{ define "control" }}{{ if .Ctx }}{{ .ViewModel }}{{ end }}{{ end }}`
 
-	app := New()
+	app := MustNew()
 	app.Views.AddLiterals(indexTemplate, controlTemplate)
 
 	app.GET("/", func(r *Ctx) Result {

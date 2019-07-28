@@ -18,7 +18,7 @@ func TestSessionAware(t *testing.T) {
 	var didExecuteHandler bool
 	var sessionWasSet bool
 
-	app := New(OptAuth(NewLocalAuthManager()))
+	app := MustNew(OptAuth(NewLocalAuthManager()))
 	app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "bailey"})
 
 	app.GET("/", func(r *Ctx) Result {
@@ -46,7 +46,7 @@ func TestSessionRequired(t *testing.T) {
 	sessionID := stringutil.Random(stringutil.LettersAndNumbers, 64)
 
 	var sessionWasSet bool
-	app := New(OptAuth(NewLocalAuthManager()))
+	app := MustNew(OptAuth(NewLocalAuthManager()))
 	app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "bailey"})
 
 	app.GET("/", func(r *Ctx) Result {
@@ -71,7 +71,7 @@ func TestSessionRequiredCustomParamName(t *testing.T) {
 	sessionID := stringutil.Random(stringutil.LettersAndNumbers, 64)
 
 	var sessionWasSet bool
-	app := New(OptAuth(NewLocalAuthManager()))
+	app := MustNew(OptAuth(NewLocalAuthManager()))
 	app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "bailey"})
 	app.Auth.CookieName = "web_auth"
 
@@ -102,7 +102,7 @@ func TestSessionMiddleware(t *testing.T) {
 	sessionID := stringutil.Random(stringutil.LettersAndNumbers, 64)
 
 	var sessionWasSet bool
-	app := New(OptAuth(NewLocalAuthManager()), OptBindAddr(DefaultMockBindAddr))
+	app := MustNew(OptAuth(NewLocalAuthManager()), OptBindAddr(DefaultMockBindAddr))
 	app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "bailey"})
 
 	go app.Start()

@@ -55,6 +55,12 @@ func OptOutput(output io.Writer) Option {
 	}
 }
 
+// OptHeading sets a logger message heading.
+// It will write through as the first element of the logger context path.
+func OptHeading(heading string) Option {
+	return func(l *Logger) error { l.Context.Path = []string{heading}; return nil }
+}
+
 // OptPath sets an initial logger context path.
 // This is useful if you want to label a logger to differentiate multiple loggers.
 func OptPath(path ...string) Option {

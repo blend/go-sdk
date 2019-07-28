@@ -28,7 +28,7 @@ func TestAnnotations(t *testing.T) {
 		return v.(string) == "foo"
 	})
 	assert.Any(a.GetAnnotationKeys(), func(v interface{}) bool {
-		return v.(string) == "fuzz"
+		return v.(string) == "buzz"
 	})
 
 	values := a.Decompose()

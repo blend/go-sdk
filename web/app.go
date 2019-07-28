@@ -12,8 +12,17 @@ import (
 	"github.com/blend/go-sdk/logger"
 )
 
+// MustNew creates a new app and panics if there is an error.
+func MustNew(options ...Option) *App {
+	app, err := New(options...)
+	if err != nil {
+		panic(err)
+	}
+	return app
+}
+
 // New returns a new web app.
-func New(options ...Option) *App {
+func New(options ...Option) (*App, error) {
 	views := NewViewCache()
 	a := App{
 		Latch:           async.NewLatch(),
@@ -24,10 +33,13 @@ func New(options ...Option) *App {
 		DefaultProvider: views,
 	}
 
+	var err error
 	for _, option := range options {
-		option(&a)
+		if err = option(&a); err != nil {
+			return nil, err
+		}
 	}
-	return &a
+	return &a, nil
 }
 
 // App is the server for the app.
@@ -479,7 +491,7 @@ func (a *App) allowed(path, reqMethod string) (allow string) {
 			}
 
 			// add request method to list of allowed methods
-			if len(allow) == 0 {
+			if allow == "" {
 				allow = method
 			} else {
 				allow += ", " + method
@@ -496,14 +508,14 @@ func (a *App) allowed(path, reqMethod string) (allow string) {
 		handle, _, _ := a.Routes[method].getValue(path)
 		if handle != nil {
 			// add request method to list of allowed methods
-			if len(allow) == 0 {
+			if allow == "" {
 				allow = method
 			} else {
 				allow += ", " + method
 			}
 		}
 	}
-	if len(allow) > 0 {
+	if allow != "" {
 		allow += ", OPTIONS"
 	}
 	return

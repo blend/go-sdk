@@ -12,7 +12,7 @@ import (
 
 func main() {
 	log := logger.All()
-	app := web.New(web.OptLog(log))
+	app := web.MustNew(web.OptLog(log))
 	app.GET("/", func(r *web.Ctx) web.Result {
 		return web.Text.Result("foo")
 	})
