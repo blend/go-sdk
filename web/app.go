@@ -64,7 +64,8 @@ type App struct {
 	State                   *SyncState
 }
 
-// CreateServer returns the basic http.Server for the app.
+// CreateServer creates a new http.Server for the app.
+// This is ultimately what is started when you call `.Start()`.
 func (a *App) CreateServer() *http.Server {
 	return &http.Server{
 		Handler:           a,
@@ -78,7 +79,7 @@ func (a *App) CreateServer() *http.Server {
 	}
 }
 
-// Use adds a new default middleware.
+// Use adds a new default middleware to the middleware chain.
 func (a *App) Use(middleware Middleware) {
 	a.DefaultMiddleware = append(a.DefaultMiddleware, middleware)
 }
@@ -102,10 +103,6 @@ func (a *App) Start() (err error) {
 	serverProtocol := "http"
 	if a.Server.TLSConfig != nil {
 		serverProtocol = "https (tls)"
-	}
-
-	if a.Config.DebugInsecure {
-		logger.MaybeFatalf(a.Log, "server starting in debug insecure mode")
 	}
 
 	logger.MaybeInfof(a.Log, "%s server started, listening on %s", serverProtocol, a.Config.BindAddrOrDefault())
@@ -533,16 +530,13 @@ func (a *App) httpResponseEvent(ctx *Ctx) *logger.HTTPResponseEvent {
 	event := logger.NewHTTPResponseEvent(ctx.Request,
 		logger.OptHTTPResponseStatusCode(ctx.Response.StatusCode()),
 		logger.OptHTTPResponseContentLength(ctx.Response.ContentLength()),
+		logger.OptHTTPResponseHeader(ctx.Response.Header()), // caveat: these do not get written out in text or json ever.
 		logger.OptHTTPResponseElapsed(ctx.Elapsed()),
 	)
-	if a.Config.DebugInsecure {
-		event.Header = ctx.Response.Header()
-	}
 
 	if ctx.Route != nil {
 		event.Route = ctx.Route.String()
 	}
-
 	if ctx.Response.Header() != nil {
 		event.ContentType = ctx.Response.Header().Get(HeaderContentType)
 		event.ContentEncoding = ctx.Response.Header().Get(HeaderContentEncoding)

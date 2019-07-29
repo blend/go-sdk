@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/blend/go-sdk/ansi"
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -82,9 +81,6 @@ type HTTPRequestEvent struct {
 // WriteText implements TextWritable.
 func (e *HTTPRequestEvent) WriteText(formatter TextFormatter, wr io.Writer) {
 	WriteHTTPRequest(formatter, wr, e.Request)
-	if e.Request != nil && e.Request.Header != nil && len(e.Request.Header) > 0 {
-		io.WriteString(wr, " Headers: "+FormatHeaders(formatter, ansi.ColorLightBlue, e.Request.Header))
-	}
 }
 
 // MarshalJSON marshals the event as json.
@@ -93,7 +89,6 @@ func (e *HTTPRequestEvent) MarshalJSON() ([]byte, error) {
 		"verb":      e.Request.Method,
 		"path":      e.Request.URL.Path,
 		"host":      e.Request.Host,
-		"header":    e.Request.Header,
 		"route":     e.Route,
 		"ip":        webutil.GetRemoteAddr(e.Request),
 		"userAgent": webutil.GetUserAgent(e.Request),

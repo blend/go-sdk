@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/blend/go-sdk/ansi"
-
 	"github.com/blend/go-sdk/timeutil"
 	"github.com/blend/go-sdk/webutil"
 )
@@ -87,6 +85,11 @@ func OptHTTPResponseElapsed(elapsed time.Duration) HTTPResponseEventOption {
 	return func(hre *HTTPResponseEvent) { hre.Elapsed = elapsed }
 }
 
+// OptHTTPResponseHeader sets a field.
+func OptHTTPResponseHeader(header http.Header) HTTPResponseEventOption {
+	return func(hre *HTTPResponseEvent) { hre.Header = header }
+}
+
 // OptHTTPResponseState sets a field.
 func OptHTTPResponseState(state interface{}) HTTPResponseEventOption {
 	return func(hre *HTTPResponseEvent) { hre.State = state }
@@ -95,7 +98,6 @@ func OptHTTPResponseState(state interface{}) HTTPResponseEventOption {
 // HTTPResponseEvent is an event type for responses.
 type HTTPResponseEvent struct {
 	*EventMeta
-
 	Request         *http.Request
 	Route           string
 	ContentLength   int
@@ -110,9 +112,6 @@ type HTTPResponseEvent struct {
 // WriteText implements TextWritable.
 func (e HTTPResponseEvent) WriteText(formatter TextFormatter, wr io.Writer) {
 	WriteHTTPResponse(formatter, wr, e.Request, e.StatusCode, e.ContentLength, e.ContentType, e.Elapsed)
-	if e.Header != nil && len(e.Header) > 0 {
-		io.WriteString(wr, " Headers: "+FormatHeaders(formatter, ansi.ColorLightBlue, e.Header))
-	}
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -129,7 +128,6 @@ func (e HTTPResponseEvent) MarshalJSON() ([]byte, error) {
 		"contentType":     e.ContentType,
 		"contentEncoding": e.ContentEncoding,
 		"statusCode":      e.StatusCode,
-		"header":          e.Header,
 		"elapsed":         timeutil.Milliseconds(e.Elapsed),
 		"state":           e.State,
 	}))

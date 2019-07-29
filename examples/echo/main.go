@@ -96,7 +96,11 @@ func main() {
 		log.Infof("read config: %s", path)
 	}
 
-	app := web.New(cfg.WebOptions()...)
+	app, err := web.New(cfg.WebOptions()...)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
 	app.Log = log
 	app.Register(echo{})
 

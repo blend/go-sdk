@@ -29,22 +29,44 @@ func NewCtx(w ResponseWriter, r *http.Request, options ...CtxOption) *Ctx {
 
 // Ctx is the struct that represents the context for an hc request.
 type Ctx struct {
-	App             *App
+	// App is a reference back to the parent application.
+	App *App
+	// DefaultProvider is the app default result provider by default
+	// but can be overwritten by middleware.
 	DefaultProvider ResultProvider
-	Views           *ViewCache
-
-	Response    ResponseWriter
-	Request     *http.Request
-	Tracer      Tracer
-	Body        []byte
-	Form        url.Values
-	State       State
-	Session     *Session
-	Route       *Route
+	// Views is the app view cache by default but can be
+	// overwritten by middleware.
+	Views *ViewCache
+	// Response is the response writer for the request.
+	Response ResponseWriter
+	// Request is the inbound request metadata.
+	Request *http.Request
+	// Body is a cached copy of the body of a request.
+	// It is typically set by calling `.PostBody()` on this context.
+	// If you're expecting a large post body, do not use
+	// the `.PostBody()` function, instead read directly from `.Request.Body` with
+	// a stream reader or similar.
+	Body []byte
+	// Form is a cache of parsed url form values from the post body.
+	Form url.Values
+	// State is a mutable bag of state, it contains by default
+	// state set on the application.
+	State State
+	// Session is the current auth session
+	Session *Session
+	// Route is the maching route for the request if relevant.
+	Route *Route
+	// RouteParams is a cache of parameters or variables
+	// within the route and their values.
 	RouteParams RouteParameters
-
+	// Tracer is the app tracer by default if one is set.
+	// It can be overwritten by middleware.
+	Tracer Tracer
+	// RequestStart is the time the request was received.
 	RequestStart time.Time
-	RequestEnd   time.Time
+	// RequestEnd is the time the request is finished processing.
+	// It is used to compute elapsed time (with RequestStart).
+	RequestEnd time.Time
 }
 
 // WithContext sets the background context for the request.
@@ -170,8 +192,10 @@ func (rc *Ctx) HeaderValue(key string) (value string, err error) {
 	return
 }
 
-// PostBody returns the bytes in a post body.
-// It will store those bytes for re-use on the context itself.
+// PostBody reads, caches and returns the bytes on a request post body.
+// It will store those bytes for re-use on this context object.
+// If you're expecting a large post body, or a large post body is even possible
+// use a stream reader on `.Request.Body` instead of this method.
 func (rc *Ctx) PostBody() ([]byte, error) {
 	var err error
 	if len(rc.Body) == 0 {

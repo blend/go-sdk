@@ -25,13 +25,17 @@ func getData() (interface{}, error) {
 
 func main() {
 	log := logger.Prod()
-	log.Disable(logger.HTTPRequest, logger.HTTPResponse)
-	app := web.New(
+	log.Disable(logger.HTTPRequest, logger.HTTPResponse) // disable noisey events.
+	app, err := web.New(
 		web.OptConfigFromEnv(),
 		web.OptLog(log),
-		web.OptUse(web.GZip),
+		web.OptUse(web.GZip), // NOTE: as of v3.0.0 gzip response compression middleware is not enabled by default, you _must_ enable it explicitly.
 		web.OptShutdownGracePeriod(time.Second),
 	)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
 	app.PanicAction = func(_ *web.Ctx, r interface{}) web.Result {
 		return web.Text.InternalError(ex.New(r))
 	}
