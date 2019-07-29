@@ -59,7 +59,11 @@ func main() {
 	}
 
 	// create a server
-	app := web.New(web.OptLog(log), web.OptBindAddr("127.0.0.1:5000"), web.OptTLSConfig(serverCertManager.TLSConfig))
+	app, err := web.New(web.OptLog(log), web.OptBindAddr("127.0.0.1:5000"), web.OptTLSConfig(serverCertManager.TLSConfig))
+	if err != nil {
+		fatal(log, err)
+	}
+
 	go func() {
 		if err := graceful.Shutdown(app); err != nil {
 			fatal(log, err)

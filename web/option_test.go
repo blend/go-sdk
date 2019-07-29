@@ -12,8 +12,8 @@ func TestOptConfig(t *testing.T) {
 	assert := assert.New(t)
 
 	var app App
-	assert.Nil(OptConfig(Config{})(&app))
-	assert.NotNil(app.Auth.FetchHandler)
+	assert.Nil(OptConfig(Config{CookieName: "FOOBAR"})(&app))
+	assert.Equal("FOOBAR", app.Auth.CookieName)
 }
 
 func TestOptConfigError(t *testing.T) {

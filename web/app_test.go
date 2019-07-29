@@ -441,7 +441,7 @@ func TestAppDefaultHeaders(t *testing.T) {
 	assert := assert.New(t)
 	app, err := New(OptDefaultHeader("foo", "bar"), OptDefaultHeader("baz", "buzz"))
 	assert.Nil(err)
-	assert.Equal("buzz", app.DefaultHeaders["baz"])
+	assert.Equal([]string{"buzz"}, app.DefaultHeaders[http.CanonicalHeaderKey("baz")])
 
 	app.GET("/", func(r *Ctx) Result {
 		return Text.Result("ok")
