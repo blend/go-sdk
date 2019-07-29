@@ -14,6 +14,11 @@ func OptCtxApp(a *App) CtxOption {
 	return func(c *Ctx) { c.App = a }
 }
 
+// OptCtxAuth sets the context auth manager.
+func OptCtxAuth(auth AuthManager) CtxOption {
+	return func(c *Ctx) { c.Auth = auth }
+}
+
 // OptCtxDefaultProvider sets the context default result provider.
 func OptCtxDefaultProvider(rp ResultProvider) CtxOption {
 	return func(c *Ctx) { c.DefaultProvider = rp }

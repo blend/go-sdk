@@ -31,6 +31,9 @@ func NewCtx(w ResponseWriter, r *http.Request, options ...CtxOption) *Ctx {
 type Ctx struct {
 	// App is a reference back to the parent application.
 	App *App
+	// Auth is a reference to the app default auth manager, but
+	// can be overwritten by middleware.
+	Auth AuthManager
 	// DefaultProvider is the app default result provider by default
 	// but can be overwritten by middleware.
 	DefaultProvider ResultProvider
