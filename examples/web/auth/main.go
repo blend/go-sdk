@@ -52,7 +52,7 @@ func main() {
 		if !strings.HasSuffix(userID, "_valid") { //maximum security
 			return web.Text.NotAuthorized()
 		}
-		_, err := r.App.Auth.Login(userID, r)
+		_, err := r.Auth.Login(userID, r)
 		if err != nil {
 			return web.Text.InternalError(err)
 		}
@@ -63,7 +63,7 @@ func main() {
 		if r.Session == nil {
 			return web.Text.Result("Weren't logged in anyway.")
 		}
-		err := r.App.Auth.Logout(r)
+		err := r.Auth.Logout(r)
 		if err != nil {
 			return web.Text.InternalError(err)
 		}
