@@ -3,6 +3,8 @@ package web
 import (
 	"bytes"
 	"context"
+	"net/http"
+	"net/url"
 	"testing"
 	"time"
 
@@ -14,9 +16,93 @@ import (
 func TestNewAuthManager(t *testing.T) {
 	assert := assert.New(t)
 
-	am, err := NewAuthManager(OptAuthManagerCookieName("X-FOO"))
+	am, err := NewAuthManager(OptAuthManagerCookieDefaults(http.Cookie{
+		Name:     "_FOO_AUTH_",
+		Path:     "/admin",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	}))
 	assert.Nil(err)
-	assert.Equal("X-Foo", am.CookieDefaults.Name)
+	assert.Equal("_FOO_AUTH_", am.CookieDefaults.Name)
+	assert.Equal("/admin", am.CookieDefaults.Path)
+	assert.Equal(true, am.CookieDefaults.HttpOnly)
+	assert.Equal(true, am.CookieDefaults.Secure)
+	assert.Equal(http.SameSiteLaxMode, am.CookieDefaults.SameSite)
+
+	am, err = NewAuthManager(OptAuthManagerCookieName("X-FOO"))
+	assert.Nil(err)
+	assert.Equal("X-FOO", am.CookieDefaults.Name)
+
+	am, err = NewAuthManager(OptAuthManagerCookiePath("/foo"))
+	assert.Nil(err)
+	assert.Equal("/foo", am.CookieDefaults.Path)
+
+	am, err = NewAuthManager(OptAuthManagerCookieHTTPOnly(true))
+	assert.Nil(err)
+	assert.Equal(true, am.CookieDefaults.HttpOnly)
+
+	am, err = NewAuthManager(OptAuthManagerCookieSecure(true))
+	assert.Nil(err)
+	assert.Equal(true, am.CookieDefaults.Secure)
+
+	am, err = NewAuthManager(OptAuthManagerCookieSameSite(http.SameSiteLaxMode))
+	assert.Nil(err)
+	assert.Equal(http.SameSiteLaxMode, am.CookieDefaults.SameSite)
+
+	am, err = NewAuthManager(OptAuthManagerSerializeSessionValueHandler(func(context.Context, *Session) (string, error) {
+		return "blabla", nil
+	}))
+	assert.Nil(err)
+	assert.NotNil(am.SerializeSessionValueHandler)
+
+	am, err = NewAuthManager(OptAuthManagerParseSessionValueHandler(func(context.Context, string) (*Session, error) {
+		return &Session{SessionID: "blabla"}, nil
+	}))
+	assert.Nil(err)
+	assert.NotNil(am.ParseSessionValueHandler)
+
+	am, err = NewAuthManager(OptAuthManagerPersistHandler(func(context.Context, *Session) error {
+		return nil
+	}))
+	assert.Nil(err)
+	assert.NotNil(am.PersistHandler)
+
+	am, err = NewAuthManager(OptAuthManagerFetchHandler(func(context.Context, string) (*Session, error) {
+		return &Session{SessionID: "blabla"}, nil
+	}))
+	assert.Nil(err)
+	assert.NotNil(am.FetchHandler)
+
+	am, err = NewAuthManager(OptAuthManagerRemoveHandler(func(context.Context, string) error {
+		return nil
+	}))
+	assert.Nil(err)
+	assert.NotNil(am.RemoveHandler)
+
+	am, err = NewAuthManager(OptAuthManagerValidateHandler(func(context.Context, *Session) error {
+		return nil
+	}))
+	assert.Nil(err)
+	assert.NotNil(am.ValidateHandler)
+
+	am, err = NewAuthManager(OptAuthManagerSessionTimeoutProvider(func(*Session) time.Time {
+		return time.Now().UTC()
+	}))
+	assert.Nil(err)
+	assert.NotNil(am.SessionTimeoutProvider)
+
+	am, err = NewAuthManager(OptAuthManagerLoginRedirectHandler(func(*Ctx) *url.URL {
+		return nil
+	}))
+	assert.Nil(err)
+	assert.NotNil(am.LoginRedirectHandler)
+
+	am, err = NewAuthManager(OptAuthManagerPostLoginRedirectHandler(func(*Ctx) *url.URL {
+		return nil
+	}))
+	assert.Nil(err)
+	assert.NotNil(am.PostLoginRedirectHandler)
 }
 
 func TestAuthManagerLogin(t *testing.T) {

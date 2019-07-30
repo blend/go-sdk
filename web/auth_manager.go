@@ -123,14 +123,6 @@ func OptAuthManagerCookieSameSite(sameSite http.SameSite) AuthManagerOption {
 	}
 }
 
-// OptAuthManagerSessionTimeoutProvider sets a field on an auth manager
-func OptAuthManagerSessionTimeoutProvider(provider AuthManagerSessionTimeoutProvider) AuthManagerOption {
-	return func(am *AuthManager) (err error) {
-		am.SessionTimeoutProvider = provider
-		return nil
-	}
-}
-
 // OptAuthManagerSerializeSessionValueHandler sets a field on an auth manager
 func OptAuthManagerSerializeSessionValueHandler(handler AuthManagerSerializeSessionValueHandler) AuthManagerOption {
 	return func(am *AuthManager) (err error) {
@@ -159,6 +151,46 @@ func OptAuthManagerPersistHandler(handler AuthManagerPersistHandler) AuthManager
 func OptAuthManagerFetchHandler(handler AuthManagerFetchHandler) AuthManagerOption {
 	return func(am *AuthManager) (err error) {
 		am.FetchHandler = handler
+		return nil
+	}
+}
+
+// OptAuthManagerRemoveHandler sets a field on an auth manager
+func OptAuthManagerRemoveHandler(handler AuthManagerRemoveHandler) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.RemoveHandler = handler
+		return nil
+	}
+}
+
+// OptAuthManagerValidateHandler sets a field on an auth manager
+func OptAuthManagerValidateHandler(handler AuthManagerValidateHandler) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.ValidateHandler = handler
+		return nil
+	}
+}
+
+// OptAuthManagerSessionTimeoutProvider sets a field on an auth manager
+func OptAuthManagerSessionTimeoutProvider(handler AuthManagerSessionTimeoutProvider) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.SessionTimeoutProvider = handler
+		return nil
+	}
+}
+
+// OptAuthManagerLoginRedirectHandler sets a field on an auth manager
+func OptAuthManagerLoginRedirectHandler(handler AuthManagerRedirectHandler) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.LoginRedirectHandler = handler
+		return nil
+	}
+}
+
+// OptAuthManagerPostLoginRedirectHandler sets a field on an auth manager
+func OptAuthManagerPostLoginRedirectHandler(handler AuthManagerRedirectHandler) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.PostLoginRedirectHandler = handler
 		return nil
 	}
 }
