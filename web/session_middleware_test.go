@@ -56,7 +56,7 @@ func TestSessionRequired(t *testing.T) {
 
 	unsetMeta, err := MockGet(app, "/").DiscardWithResponse()
 	assert.Nil(err)
-	assert.Equal(http.StatusForbidden, unsetMeta.StatusCode)
+	assert.Equal(http.StatusUnauthorized, unsetMeta.StatusCode)
 	assert.False(sessionWasSet)
 
 	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieNameOrDefault(), sessionID)).DiscardWithResponse()
@@ -82,7 +82,7 @@ func TestSessionRequiredCustomParamName(t *testing.T) {
 
 	unsetMeta, err := MockGet(app, "/").DiscardWithResponse()
 	assert.Nil(err)
-	assert.Equal(http.StatusForbidden, unsetMeta.StatusCode)
+	assert.Equal(http.StatusUnauthorized, unsetMeta.StatusCode)
 	assert.False(sessionWasSet)
 
 	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieNameOrDefault(), sessionID)).DiscardWithResponse()
@@ -92,7 +92,7 @@ func TestSessionRequiredCustomParamName(t *testing.T) {
 
 	meta, err = MockGet(app, "/", r2.OptCookieValue(DefaultCookieName, sessionID)).DiscardWithResponse()
 	assert.Nil(err)
-	assert.Equal(http.StatusForbidden, meta.StatusCode)
+	assert.Equal(http.StatusUnauthorized, meta.StatusCode)
 	assert.True(sessionWasSet)
 }
 

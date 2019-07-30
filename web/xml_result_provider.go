@@ -26,7 +26,7 @@ func (xrp XMLResultProvider) NotFound() Result {
 // NotAuthorized returns a service response.
 func (xrp XMLResultProvider) NotAuthorized() Result {
 	return &XMLResult{
-		StatusCode: http.StatusForbidden,
+		StatusCode: http.StatusUnauthorized,
 		Response:   "Not Authorized",
 	}
 }

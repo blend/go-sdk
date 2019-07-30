@@ -28,7 +28,7 @@ func (trp TextResultProvider) NotFound() Result {
 // NotAuthorized returns a plaintext result.
 func (trp TextResultProvider) NotAuthorized() Result {
 	return &RawResult{
-		StatusCode:  http.StatusForbidden,
+		StatusCode:  http.StatusUnauthorized,
 		ContentType: ContentTypeText,
 		Response:    []byte("Not Authorized"),
 	}

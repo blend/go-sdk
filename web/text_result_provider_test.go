@@ -14,7 +14,7 @@ func TestTextResultProvider(t *testing.T) {
 	assert.Equal(http.StatusNotFound, Text.NotFound().(*RawResult).StatusCode)
 	assert.Equal("Not Found", string(Text.NotFound().(*RawResult).Response))
 
-	assert.Equal(http.StatusForbidden, Text.NotAuthorized().(*RawResult).StatusCode)
+	assert.Equal(http.StatusUnauthorized, Text.NotAuthorized().(*RawResult).StatusCode)
 	assert.Equal("Not Authorized", string(Text.NotAuthorized().(*RawResult).Response))
 
 	assert.Equal(http.StatusBadRequest, Text.BadRequest(nil).(*RawResult).StatusCode)

@@ -197,7 +197,7 @@ func TestViewCacheNotAuthorized(t *testing.T) {
 	vr, _ := vc.NotAuthorized().(*ViewResult)
 	assert.NotNil(vr)
 	assert.Equal(vc.NotAuthorizedTemplateName, vr.ViewName)
-	assert.Equal(http.StatusForbidden, vr.StatusCode)
+	assert.Equal(http.StatusUnauthorized, vr.StatusCode)
 	assert.NotNil(vr.Views)
 	assert.NotNil(vr.Template)
 	assert.Nil(vr.ViewModel)
