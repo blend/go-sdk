@@ -74,7 +74,7 @@ func TestAppNewFromConfig(t *testing.T) {
 	assert.Equal(6*time.Second, app.Config.ReadTimeout)
 	assert.Equal(7*time.Second, app.Config.IdleTimeout)
 	assert.Equal(8*time.Second, app.Config.WriteTimeout)
-	assert.Equal("A GOOD ONE", app.Auth.CookieName, "we should use the auth config for the auth manager")
+	assert.Equal("A GOOD ONE", app.Auth.CookieDefaults.Name, "we should use the auth config for the auth manager")
 	assert.True(app.Views.LiveReload, "we should use the view cache config for the view cache")
 }
 

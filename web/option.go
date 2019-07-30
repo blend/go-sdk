@@ -79,8 +79,11 @@ func OptServer(server *http.Server) Option {
 }
 
 // OptAuth sets the auth manager.
-func OptAuth(auth AuthManager) Option {
+func OptAuth(auth AuthManager, err error) Option {
 	return func(a *App) error {
+		if err != nil {
+			return err
+		}
 		a.Auth = auth
 		return nil
 	}

@@ -18,8 +18,10 @@ Caveat; this will only work if you are deploying a single instance of the app.
 */
 
 func main() {
-	app := web.MustNew(web.OptLog(logger.All()))
-	app.Auth = web.NewLocalAuthManager()
+	app := web.MustNew(
+		web.OptLog(logger.All()),
+		web.OptAuth(web.NewLocalAuthManager()),
+	)
 
 	app.ServeStaticCached("/cached", []string{"_static"}, web.SessionMiddleware(func(ctx *web.Ctx) web.Result {
 		return web.Text.NotAuthorized()

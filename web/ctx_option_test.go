@@ -1,6 +1,7 @@
 package web
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
@@ -14,9 +15,9 @@ func TestCtxOption(t *testing.T) {
 	OptCtxApp(&App{})(&ctx)
 	assert.NotNil(ctx.App)
 
-	assert.Empty(ctx.Auth.CookieName)
-	OptCtxAuth(AuthManager{CookieName: "foo"})(&ctx)
-	assert.Equal("foo", ctx.Auth.CookieName)
+	assert.Empty(ctx.Auth.CookieDefaults.Name)
+	OptCtxAuth(AuthManager{CookieDefaults: http.Cookie{Name: "foo"}})(&ctx)
+	assert.Equal("foo", ctx.Auth.CookieDefaults.Name)
 
 	assert.Nil(ctx.DefaultProvider)
 	OptCtxDefaultProvider(JSON)(&ctx)

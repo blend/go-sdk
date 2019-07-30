@@ -13,15 +13,7 @@ func TestOptConfig(t *testing.T) {
 
 	var app App
 	assert.Nil(OptConfig(Config{CookieName: "FOOBAR"})(&app))
-	assert.Equal("FOOBAR", app.Auth.CookieName)
-}
-
-func TestOptConfigError(t *testing.T) {
-	assert := assert.New(t)
-
-	var app App
-	assert.NotNil(OptConfig(Config{AuthManagerMode: "NOT A REAL MODE"})(&app))
-	assert.Nil(app.Auth.FetchHandler)
+	assert.Equal("FOOBAR", app.Auth.CookieDefaults.Name)
 }
 
 func TestOptBindAddr(t *testing.T) {

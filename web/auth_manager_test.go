@@ -7,22 +7,23 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/assert"
-	"github.com/blend/go-sdk/crypto"
 	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/webutil"
 )
 
-func TestNewJWTAuthManager(t *testing.T) {
+func TestNewAuthManager(t *testing.T) {
 	assert := assert.New(t)
 
-	am := NewJWTAuthManager(crypto.MustCreateKey(64))
-	assert.NotNil(am.SessionTimeoutProvider, "must set a session timeout provider for a jwt manager")
+	am, err := NewAuthManager(OptAuthManagerCookieName("X-FOO"))
+	assert.Nil(err)
+	assert.Equal("X-Foo", am.CookieDefaults.Name)
 }
 
 func TestAuthManagerLogin(t *testing.T) {
 	assert := assert.New(t)
 
-	am := NewLocalAuthManager()
+	am, err := NewLocalAuthManager()
+	assert.Nil(err)
 
 	var calledPersistHandler bool
 	persistHandler := am.PersistHandler
@@ -72,15 +73,16 @@ func TestAuthManagerLogin(t *testing.T) {
 	cookies := ReadSetCookies(res.Header())
 	assert.NotEmpty(cookies)
 	cookie := cookies[0]
-	assert.Equal(am.CookieNameOrDefault(), cookie.Name)
-	assert.Equal(am.CookiePathOrDefault(), cookie.Path)
+	assert.Equal(am.CookieDefaults.Name, cookie.Name)
+	assert.Equal(am.CookieDefaults.Path, cookie.Path)
 	assert.Equal(session.SessionID, cookie.Value)
 }
 
 func TestAuthManagerLogout(t *testing.T) {
 	assert := assert.New(t)
 
-	am := NewLocalAuthManager()
+	am, err := NewLocalAuthManager()
+	assert.Nil(err)
 
 	var calledRemoveHandler bool
 	removeHandler := am.RemoveHandler
@@ -100,7 +102,7 @@ func TestAuthManagerLogout(t *testing.T) {
 	assert.NotNil(session)
 
 	res = webutil.NewMockResponse(new(bytes.Buffer))
-	r = NewCtx(res, webutil.NewMockRequestWithCookie("GET", "/", am.CookieNameOrDefault(), session.SessionID))
+	r = NewCtx(res, webutil.NewMockRequestWithCookie("GET", "/", am.CookieDefaults.Name, session.SessionID))
 
 	assert.Nil(am.Logout(r))
 	assert.True(calledRemoveHandler)
@@ -108,8 +110,8 @@ func TestAuthManagerLogout(t *testing.T) {
 	cookies := ReadSetCookies(res.Header())
 	assert.NotEmpty(cookies)
 	cookie := cookies[0]
-	assert.Equal(am.CookieNameOrDefault(), cookie.Name)
-	assert.Equal(am.CookiePathOrDefault(), cookie.Path)
+	assert.Equal(am.CookieDefaults.Name, cookie.Name)
+	assert.Equal(am.CookieDefaults.Path, cookie.Path)
 	assert.NotEqual(session.SessionID, cookie.Value, "we should randomize the session cookie on logout")
 	assert.True(time.Now().UTC().After(cookie.Expires))
 }
@@ -117,7 +119,8 @@ func TestAuthManagerLogout(t *testing.T) {
 func TestAuthManagerVerifySessionParsed(t *testing.T) {
 	assert := assert.New(t)
 
-	am := NewLocalAuthManager()
+	am, err := NewLocalAuthManager()
+	assert.Nil(err)
 
 	var calledParseHandler bool
 	am.ParseSessionValueHandler = func(ctx context.Context, sessionID string) (*Session, error) {
@@ -137,7 +140,7 @@ func TestAuthManagerVerifySessionParsed(t *testing.T) {
 		return nil
 	}
 
-	r := NewCtx(webutil.NewMockResponse(new(bytes.Buffer)), webutil.NewMockRequestWithCookie("GET", "/", am.CookieNameOrDefault(), NewSessionID()))
+	r := NewCtx(webutil.NewMockResponse(new(bytes.Buffer)), webutil.NewMockRequestWithCookie("GET", "/", am.CookieDefaults.Name, NewSessionID()))
 	session, err := am.VerifySession(r)
 	assert.Nil(err)
 	assert.NotNil(session)
@@ -150,7 +153,8 @@ func TestAuthManagerVerifySessionParsed(t *testing.T) {
 func TestAuthManagerVerifySessionFetched(t *testing.T) {
 	assert := assert.New(t)
 
-	am := NewLocalAuthManager()
+	am, err := NewLocalAuthManager()
+	assert.Nil(err)
 
 	var calledFetchHandler bool
 	fetchHandler := am.FetchHandler
@@ -179,7 +183,7 @@ func TestAuthManagerVerifySessionFetched(t *testing.T) {
 	assert.False(calledFetchHandler)
 	assert.False(calledValidateHandler)
 
-	r = NewCtx(webutil.NewMockResponse(new(bytes.Buffer)), webutil.NewMockRequestWithCookie("GET", "/", am.CookieNameOrDefault(), session.SessionID))
+	r = NewCtx(webutil.NewMockResponse(new(bytes.Buffer)), webutil.NewMockRequestWithCookie("GET", "/", am.CookieDefaults.Name, session.SessionID))
 	session, err = am.VerifySession(r)
 	assert.Nil(err)
 	assert.NotNil(session)
@@ -190,7 +194,8 @@ func TestAuthManagerVerifySessionFetched(t *testing.T) {
 func TestAuthManagerVerifySessionUnset(t *testing.T) {
 	assert := assert.New(t)
 
-	am := NewLocalAuthManager()
+	am, err := NewLocalAuthManager()
+	assert.Nil(err)
 
 	r := NewCtx(webutil.NewMockResponse(new(bytes.Buffer)), webutil.NewMockRequest("GET", "/"))
 
@@ -202,7 +207,9 @@ func TestAuthManagerVerifySessionUnset(t *testing.T) {
 func TestAuthManagerVerifySessionExpired(t *testing.T) {
 	assert := assert.New(t)
 
-	am := NewLocalAuthManager()
+	am, err := NewLocalAuthManager()
+	assert.Nil(err)
+
 	am.SessionTimeoutProvider = nil
 	am.ParseSessionValueHandler = func(ctx context.Context, sessionID string) (*Session, error) {
 		return &Session{UserID: uuid.V4().String(), SessionID: sessionID, ExpiresUTC: time.Now().UTC().Add(-time.Hour)}, nil
@@ -215,7 +222,7 @@ func TestAuthManagerVerifySessionExpired(t *testing.T) {
 	}
 
 	res := webutil.NewMockResponse(new(bytes.Buffer))
-	r := NewCtx(res, webutil.NewMockRequestWithCookie("GET", "/", am.CookieNameOrDefault(), NewSessionID()))
+	r := NewCtx(res, webutil.NewMockRequestWithCookie("GET", "/", am.CookieDefaults.Name, NewSessionID()))
 	session, err := am.VerifySession(r)
 	assert.Nil(err)
 	assert.Nil(session)
@@ -226,7 +233,7 @@ func TestAuthManagerVerifySessionExpired(t *testing.T) {
 	assert.NotEmpty(cookies)
 
 	cookie := cookies[0]
-	assert.Equal(am.CookieNameOrDefault(), cookie.Name)
-	assert.Equal(am.CookiePathOrDefault(), cookie.Path)
+	assert.Equal(am.CookieDefaults.Name, cookie.Name)
+	assert.Equal(am.CookieDefaults.Path, cookie.Path)
 	assert.True(cookie.Expires.Before(time.Now().UTC()), "the cookie should be expired")
 }

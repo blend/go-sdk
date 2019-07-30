@@ -27,7 +27,7 @@ func TestSessionAware(t *testing.T) {
 		return Text.Result("COOL")
 	}, SessionAware)
 
-	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieNameOrDefault(), sessionID)).DiscardWithResponse()
+	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieDefaults.Name, sessionID)).DiscardWithResponse()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.Equal(ContentTypeText, meta.Header.Get(HeaderContentType))
@@ -59,7 +59,7 @@ func TestSessionRequired(t *testing.T) {
 	assert.Equal(http.StatusUnauthorized, unsetMeta.StatusCode)
 	assert.False(sessionWasSet)
 
-	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieNameOrDefault(), sessionID)).DiscardWithResponse()
+	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieDefaults.Name, sessionID)).DiscardWithResponse()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.True(sessionWasSet)
@@ -73,7 +73,7 @@ func TestSessionRequiredCustomParamName(t *testing.T) {
 	var sessionWasSet bool
 	app := MustNew(OptAuth(NewLocalAuthManager()))
 	app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "bailey"})
-	app.Auth.CookieName = "web_auth"
+	app.Auth.CookieDefaults.Name = "web_auth"
 
 	app.GET("/", func(r *Ctx) Result {
 		sessionWasSet = r.Session != nil
@@ -85,7 +85,7 @@ func TestSessionRequiredCustomParamName(t *testing.T) {
 	assert.Equal(http.StatusUnauthorized, unsetMeta.StatusCode)
 	assert.False(sessionWasSet)
 
-	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieNameOrDefault(), sessionID)).DiscardWithResponse()
+	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieDefaults.Name, sessionID)).DiscardWithResponse()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.True(sessionWasSet)
@@ -123,7 +123,7 @@ func TestSessionMiddleware(t *testing.T) {
 	assert.Equal(http.StatusNoContent, unsetMeta.StatusCode)
 	assert.False(sessionWasSet)
 
-	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieNameOrDefault(), sessionID)).DiscardWithResponse()
+	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieDefaults.Name, sessionID)).DiscardWithResponse()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.True(sessionWasSet)
