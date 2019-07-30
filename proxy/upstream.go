@@ -50,12 +50,6 @@ func (u *Upstream) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	w := NewResponseWriter(rw)
 
-	// Add extra forwarded headers.
-	// these are required for a majority of services to function correctly behind
-	// a reverse proxy.
-	w.Header().Set("X-Forwarded-Port", req.URL.Port())
-	w.Header().Set("X-Forwarded-Proto", req.URL.Scheme)
-
 	u.ReverseProxy.ServeHTTP(w, req)
 
 	if u.Log != nil {
