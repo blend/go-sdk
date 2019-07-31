@@ -22,7 +22,7 @@ func TestNewAuthManager(t *testing.T) {
 	assert.Equal(DefaultCookiePath, am.CookieDefaults.Path)
 	assert.Equal(DefaultCookieHTTPOnly, am.CookieDefaults.HttpOnly)
 	assert.Equal(DefaultCookieSecure, am.CookieDefaults.Secure)
-	assert.Equal(DefaultCookieSameSite, am.CookieDefaults.SameSite)
+	assert.Zero(am.CookieDefaults.SameSite)
 
 	am, err = NewAuthManager(OptAuthManagerCookieDefaults(http.Cookie{
 		Name:     "_FOO_AUTH_",
