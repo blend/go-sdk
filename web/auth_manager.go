@@ -116,6 +116,14 @@ func OptAuthManagerCookiePath(cookiePath string) AuthManagerOption {
 	}
 }
 
+// OptAuthManagerCookieDomain sets a field on an auth manager
+func OptAuthManagerCookieDomain(domain string) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.CookieDefaults.Domain = domain
+		return nil
+	}
+}
+
 // OptAuthManagerCookieSameSite sets a field on an auth manager
 func OptAuthManagerCookieSameSite(sameSite http.SameSite) AuthManagerOption {
 	return func(am *AuthManager) (err error) {
