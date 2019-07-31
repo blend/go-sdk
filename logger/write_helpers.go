@@ -46,6 +46,7 @@ func WriteHTTPResponse(tf TextFormatter, wr io.Writer, req *http.Request, status
 }
 
 // FormatHeaders formats headers for output.
+// Header keys will be printed in alphabetic order.
 func FormatHeaders(tf TextFormatter, keyColor ansi.Color, header http.Header) string {
 	var keys []string
 	for key := range header {
@@ -61,6 +62,7 @@ func FormatHeaders(tf TextFormatter, keyColor ansi.Color, header http.Header) st
 }
 
 // FormatFields formats the output of fields.
+// Field keys will be printed in alphabetic order.
 func FormatFields(tf TextFormatter, keyColor ansi.Color, fields Fields) string {
 	var keys []string
 	for key := range fields {
