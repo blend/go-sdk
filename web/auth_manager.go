@@ -357,7 +357,7 @@ func (am AuthManager) LoginRedirect(ctx *Ctx) Result {
 			return Redirect(redirectTo.String())
 		}
 	}
-	return ctx.App.DefaultProvider.NotAuthorized()
+	return ctx.DefaultProvider.NotAuthorized()
 }
 
 // PostLoginRedirect returns a redirect result for when auth fails and you need to
