@@ -22,6 +22,7 @@ func MustNewAuthManager(options ...AuthManagerOption) AuthManager {
 // For remote mode, you must provide a fetch, persist, and remove handler, and optionally a login redirect handler.
 func NewAuthManager(options ...AuthManagerOption) (manager AuthManager, err error) {
 	manager.CookieDefaults.Name = DefaultCookieName
+	manager.CookieDefaults.Path = DefaultCookiePath
 	manager.CookieDefaults.Secure = DefaultCookieSecure
 	manager.CookieDefaults.HttpOnly = DefaultCookieHTTPOnly
 	manager.CookieDefaults.SameSite = DefaultCookieSameSite
