@@ -402,6 +402,7 @@ func (am AuthManager) injectCookie(ctx *Ctx, value string, expire time.Time) {
 		Expires:  expire,
 		Name:     am.CookieDefaults.Name,
 		Path:     am.CookieDefaults.Path,
+		Domain:   am.CookieDefaults.Domain,
 		HttpOnly: am.CookieDefaults.HttpOnly,
 		Secure:   am.CookieDefaults.Secure,
 		SameSite: am.CookieDefaults.SameSite,
