@@ -21,7 +21,7 @@ func WriteHTTPRequest(tf TextFormatter, wr io.Writer, req *http.Request) {
 	}
 	io.WriteString(wr, tf.Colorize(req.Method, ansi.ColorBlue))
 	io.WriteString(wr, Space)
-	io.WriteString(wr, req.URL.Path)
+	io.WriteString(wr, req.URL.RawPath)
 }
 
 // WriteHTTPResponse is a helper method to write request complete events to a writer.
