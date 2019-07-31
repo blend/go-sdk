@@ -64,6 +64,7 @@ func OptAuthManagerFromConfig(cfg Config) AuthManagerOption {
 			OptAuthManagerCookieHTTPOnly(cfg.CookieHTTPOnlyOrDefault()),
 			OptAuthManagerCookieName(cfg.CookieNameOrDefault()),
 			OptAuthManagerCookiePath(cfg.CookiePathOrDefault()),
+			OptAuthManagerCookieDomain(cfg.CookieDomainOrDefault()),
 			OptAuthManagerCookieSameSite(cfg.CookieSameSiteOrDefault()),
 			OptAuthManagerSessionTimeoutProvider(SessionTimeoutProvider(!cfg.SessionTimeoutIsRelative, cfg.SessionTimeoutOrDefault())),
 		}
