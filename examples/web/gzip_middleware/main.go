@@ -10,7 +10,7 @@ import (
 
 func main() {
 	log := logger.Prod()
-	app := web.New(
+	app := web.MustNew(
 		web.OptLog(log),
 		web.OptConfigFromEnv(),
 		web.OptUse(web.GZip),

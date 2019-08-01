@@ -1,11 +1,12 @@
 package web
 
 import (
-	"encoding/base64"
+	"net/http"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/env"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -38,14 +39,6 @@ func TestConfigBaseURLIsSecureScheme(t *testing.T) {
 	assert.False(c.BaseURLIsSecureScheme())
 	c.BaseURL = "https://hello.com"
 	assert.True(c.BaseURLIsSecureScheme())
-}
-
-func TestConfigAuthManagerModeOrDefault(t *testing.T) {
-	assert := assert.New(t)
-	var c Config
-	assert.Equal(AuthManagerModeRemote, c.AuthManagerModeOrDefault())
-	c.AuthManagerMode = string(AuthManagerModeJWT)
-	assert.Equal(c.AuthManagerMode, c.AuthManagerModeOrDefault())
 }
 
 func TestConfigSessionTimeoutOrDefault(t *testing.T) {
@@ -98,8 +91,20 @@ func TestConfigCookieSameSiteOrDefault(t *testing.T) {
 	assert := assert.New(t)
 	var c Config
 	assert.Equal(DefaultCookieSameSite, c.CookieSameSiteOrDefault())
-	c.CookieSameSite = "helloworld"
-	assert.Equal(c.CookieSameSite, c.CookieSameSiteOrDefault())
+
+	c.CookieSameSite = webutil.SameSiteLax
+	assert.Equal(http.SameSiteLaxMode, c.CookieSameSiteOrDefault())
+
+	assert.NotNil(func() (err error) {
+		defer func() {
+			if r := recover(); r != nil {
+				err = ex.New(r)
+			}
+		}()
+		c.CookieSameSite = "not valid"
+		assert.Equal(c.CookieSameSite, c.CookieSameSiteOrDefault())
+		return
+	}())
 }
 
 func TestConfigMaxHeaderBytesOrDefault(t *testing.T) {
@@ -148,24 +153,6 @@ func TestConfigShutdownGracePeriodOrDefault(t *testing.T) {
 	assert.Equal(DefaultShutdownGracePeriod, c.ShutdownGracePeriodOrDefault())
 	c.ShutdownGracePeriod = 1000
 	assert.Equal(c.ShutdownGracePeriod, c.ShutdownGracePeriodOrDefault())
-}
-
-func TestConfigMustAuthSecret(t *testing.T) {
-	assert := assert.New(t)
-	var c Config
-	s := []byte("secret")
-	c.AuthSecret = base64.StdEncoding.EncodeToString(s)
-	assert.Equal(string(s), string(c.MustAuthSecret()))
-
-	c.AuthSecret = "non decodable"
-	panicy := func() {
-		defer func() {
-			err := recover()
-			assert.NotNil(err)
-		}()
-		c.MustAuthSecret()
-	}
-	panicy()
 }
 
 func TestConfigResolve(t *testing.T) {

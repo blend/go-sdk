@@ -9,76 +9,190 @@ import (
 	"github.com/blend/go-sdk/webutil"
 )
 
+// MustNewAuthManager returns a new auth manager with a given set of options but panics on error.
+func MustNewAuthManager(options ...AuthManagerOption) AuthManager {
+	am, err := NewAuthManager(options...)
+	if err != nil {
+		panic(err)
+	}
+	return am
+}
+
 // NewAuthManager returns a new auth manager from a given config.
 // For remote mode, you must provide a fetch, persist, and remove handler, and optionally a login redirect handler.
-func NewAuthManager(cfg Config) (manager AuthManager) {
-	switch cfg.AuthManagerModeOrDefault() {
-	case AuthManagerModeJWT:
-		manager = NewJWTAuthManager(cfg.MustAuthSecret())
-	case AuthManagerModeLocal: // local should only be used for debugging.
-		manager = NewLocalAuthManager()
-	case AuthManagerModeRemote:
-		manager = NewRemoteAuthManager()
-	default:
-		panic("invalid auth manager mode")
-	}
+func NewAuthManager(options ...AuthManagerOption) (manager AuthManager, err error) {
+	manager.CookieDefaults.Name = DefaultCookieName
+	manager.CookieDefaults.Path = DefaultCookiePath
+	manager.CookieDefaults.Secure = DefaultCookieSecure
+	manager.CookieDefaults.HttpOnly = DefaultCookieHTTPOnly
+	manager.CookieDefaults.SameSite = DefaultCookieSameSite
 
-	manager.CookieSecure = cfg.CookieSecureOrDefault()
-	manager.CookieHTTPOnly = cfg.CookieHTTPOnlyOrDefault()
-	manager.CookieName = cfg.CookieNameOrDefault()
-	manager.CookiePath = cfg.CookiePathOrDefault()
-	manager.CookieSameSite = cfg.CookieSameSiteOrDefault()
-	manager.SessionTimeoutProvider = SessionTimeoutProvider(!cfg.SessionTimeoutIsRelative, cfg.SessionTimeoutOrDefault())
-	return manager
-}
-
-// NewRemoteAuthManager returns an empty auth manager.
-// You must provide a fetch, persist, and remove handler, and optionally a login redirect handler.
-func NewRemoteAuthManager() AuthManager {
-	return AuthManager{
-		Mode:           AuthManagerModeRemote,
-		CookieSecure:   DefaultCookieSecure,
-		CookieHTTPOnly: DefaultCookieHTTPOnly,
-		CookieSameSite: DefaultCookieSameSite,
+	for _, opt := range options {
+		if err = opt(&manager); err != nil {
+			return
+		}
 	}
-}
-
-// NewLocalAuthManagerFromCache returns a new locally cached session manager that saves sessions to the cache provided
-func NewLocalAuthManagerFromCache(cache *LocalSessionCache) AuthManager {
-	return AuthManager{
-		Mode:           AuthManagerModeLocal,
-		CookieSecure:   DefaultCookieSecure,
-		CookieHTTPOnly: DefaultCookieHTTPOnly,
-		CookieSameSite: DefaultCookieSameSite,
-		PersistHandler: cache.PersistHandler,
-		FetchHandler:   cache.FetchHandler,
-		RemoveHandler:  cache.RemoveHandler,
-	}
+	return
 }
 
 // NewLocalAuthManager returns a new locally cached session manager.
 // It saves sessions to a local store.
-func NewLocalAuthManager() AuthManager {
-	cache := NewLocalSessionCache()
-	return AuthManager{
-		Mode:           AuthManagerModeJWT,
-		CookieSecure:   DefaultCookieSecure,
-		CookieHTTPOnly: DefaultCookieHTTPOnly,
-		CookieSameSite: DefaultCookieSameSite,
-		PersistHandler: cache.PersistHandler,
-		FetchHandler:   cache.FetchHandler,
-		RemoveHandler:  cache.RemoveHandler,
+func NewLocalAuthManager(options ...AuthManagerOption) (AuthManager, error) {
+	return NewLocalAuthManagerFromCache(NewLocalSessionCache(), options...)
+}
+
+// NewLocalAuthManagerFromCache returns a new locally cached session manager that saves sessions to the cache provided
+func NewLocalAuthManagerFromCache(cache *LocalSessionCache, options ...AuthManagerOption) (manager AuthManager, err error) {
+	manager, err = NewAuthManager(options...)
+	if err != nil {
+		return
+	}
+	manager.PersistHandler = cache.PersistHandler
+	manager.FetchHandler = cache.FetchHandler
+	manager.RemoveHandler = cache.RemoveHandler
+	return
+}
+
+// AuthManagerOption is a variadic option for auth managers.
+type AuthManagerOption func(*AuthManager) error
+
+// OptAuthManagerFromConfig returns an auth manager from a config.
+func OptAuthManagerFromConfig(cfg Config) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		opts := []AuthManagerOption{
+			OptAuthManagerCookieSecure(cfg.CookieSecureOrDefault()),
+			OptAuthManagerCookieHTTPOnly(cfg.CookieHTTPOnlyOrDefault()),
+			OptAuthManagerCookieName(cfg.CookieNameOrDefault()),
+			OptAuthManagerCookiePath(cfg.CookiePathOrDefault()),
+			OptAuthManagerCookieSameSite(cfg.CookieSameSiteOrDefault()),
+			OptAuthManagerSessionTimeoutProvider(SessionTimeoutProvider(!cfg.SessionTimeoutIsRelative, cfg.SessionTimeoutOrDefault())),
+		}
+		for _, opt := range opts {
+			if err = opt(am); err != nil {
+				return
+			}
+		}
+		return
 	}
 }
 
-// NewJWTAuthManager returns a new jwt session manager.
-// It issues JWT tokens to identify users.
-func NewJWTAuthManager(key []byte) AuthManager {
-	jwtm := NewJWTManager(key)
-	return AuthManager{
-		SerializeSessionValueHandler: jwtm.SerializeSessionValueHandler,
-		ParseSessionValueHandler:     jwtm.ParseSessionValueHandler,
-		SessionTimeoutProvider:       SessionTimeoutProviderAbsolute(DefaultSessionTimeout),
+// OptAuthManagerCookieDefaults sets a field on an auth manager
+func OptAuthManagerCookieDefaults(cookie http.Cookie) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.CookieDefaults = cookie
+		return nil
+	}
+}
+
+// OptAuthManagerCookieSecure sets a field on an auth manager
+func OptAuthManagerCookieSecure(secure bool) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.CookieDefaults.Secure = secure
+		return nil
+	}
+}
+
+// OptAuthManagerCookieHTTPOnly sets a field on an auth manager
+func OptAuthManagerCookieHTTPOnly(httpOnly bool) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.CookieDefaults.HttpOnly = httpOnly
+		return nil
+	}
+}
+
+// OptAuthManagerCookieName sets a field on an auth manager
+func OptAuthManagerCookieName(cookieName string) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.CookieDefaults.Name = cookieName
+		return nil
+	}
+}
+
+// OptAuthManagerCookiePath sets a field on an auth manager
+func OptAuthManagerCookiePath(cookiePath string) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.CookieDefaults.Path = cookiePath
+		return nil
+	}
+}
+
+// OptAuthManagerCookieSameSite sets a field on an auth manager
+func OptAuthManagerCookieSameSite(sameSite http.SameSite) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.CookieDefaults.SameSite = sameSite
+		return nil
+	}
+}
+
+// OptAuthManagerSerializeSessionValueHandler sets a field on an auth manager
+func OptAuthManagerSerializeSessionValueHandler(handler AuthManagerSerializeSessionValueHandler) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.SerializeSessionValueHandler = handler
+		return nil
+	}
+}
+
+// OptAuthManagerParseSessionValueHandler sets a field on an auth manager
+func OptAuthManagerParseSessionValueHandler(handler AuthManagerParseSessionValueHandler) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.ParseSessionValueHandler = handler
+		return nil
+	}
+}
+
+// OptAuthManagerPersistHandler sets a field on an auth manager
+func OptAuthManagerPersistHandler(handler AuthManagerPersistHandler) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.PersistHandler = handler
+		return nil
+	}
+}
+
+// OptAuthManagerFetchHandler sets a field on an auth manager
+func OptAuthManagerFetchHandler(handler AuthManagerFetchHandler) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.FetchHandler = handler
+		return nil
+	}
+}
+
+// OptAuthManagerRemoveHandler sets a field on an auth manager
+func OptAuthManagerRemoveHandler(handler AuthManagerRemoveHandler) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.RemoveHandler = handler
+		return nil
+	}
+}
+
+// OptAuthManagerValidateHandler sets a field on an auth manager
+func OptAuthManagerValidateHandler(handler AuthManagerValidateHandler) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.ValidateHandler = handler
+		return nil
+	}
+}
+
+// OptAuthManagerSessionTimeoutProvider sets a field on an auth manager
+func OptAuthManagerSessionTimeoutProvider(handler AuthManagerSessionTimeoutProvider) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.SessionTimeoutProvider = handler
+		return nil
+	}
+}
+
+// OptAuthManagerLoginRedirectHandler sets a field on an auth manager
+func OptAuthManagerLoginRedirectHandler(handler AuthManagerRedirectHandler) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.LoginRedirectHandler = handler
+		return nil
+	}
+}
+
+// OptAuthManagerPostLoginRedirectHandler sets a field on an auth manager
+func OptAuthManagerPostLoginRedirectHandler(handler AuthManagerRedirectHandler) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.PostLoginRedirectHandler = handler
+		return nil
 	}
 }
 
@@ -108,15 +222,7 @@ type AuthManagerRedirectHandler func(*Ctx) *url.URL
 
 // AuthManager is a manager for sessions.
 type AuthManager struct {
-	// Mode is the mechanism the auth manager tracks sessions.
-	// Possible values include local, remote, jwt.
-	Mode AuthManagerMode
-
-	CookieName     string
-	CookiePath     string
-	CookieSecure   bool
-	CookieHTTPOnly bool
-	CookieSameSite string
+	CookieDefaults http.Cookie
 
 	SerializeSessionValueHandler AuthManagerSerializeSessionValueHandler
 	ParseSessionValueHandler     AuthManagerParseSessionValueHandler
@@ -164,7 +270,7 @@ func (am AuthManager) Login(userID string, ctx *Ctx) (session *Session, err erro
 	}
 
 	// inject cookies into the response
-	am.injectCookie(ctx, am.CookieNameOrDefault(), sessionValue, session.ExpiresUTC)
+	am.injectCookie(ctx, sessionValue, session.ExpiresUTC)
 	return session, nil
 }
 
@@ -177,7 +283,7 @@ func (am AuthManager) Logout(ctx *Ctx) error {
 	}
 
 	// issue the expiration cookies to the response
-	ctx.ExpireCookie(am.CookieNameOrDefault(), am.CookiePathOrDefault())
+	ctx.ExpireCookie(am.CookieDefaults.Name, am.CookieDefaults.Path)
 	ctx.Session = nil
 
 	// call the remove handler if one has been provided
@@ -238,7 +344,7 @@ func (am AuthManager) VerifySession(ctx *Ctx) (session *Session, err error) {
 				return nil, err
 			}
 		}
-		am.injectCookie(ctx, am.CookieNameOrDefault(), sessionValue, session.ExpiresUTC)
+		am.injectCookie(ctx, sessionValue, session.ExpiresUTC)
 	}
 	return
 }
@@ -268,28 +374,13 @@ func (am AuthManager) PostLoginRedirect(ctx *Ctx) Result {
 	return RedirectWithMethod("GET", "/")
 }
 
-// CookieNameOrDefault returns the cookie name or a default.
-func (am AuthManager) CookieNameOrDefault() string {
-	if am.CookieName == "" {
-		return DefaultCookieName
-	}
-	return am.CookieName
-}
-
-// CookiePathOrDefault returns the session param path.
-func (am AuthManager) CookiePathOrDefault() string {
-	if am.CookiePath == "" {
-		return DefaultCookiePath
-	}
-	return am.CookiePath
-}
-
 // --------------------------------------------------------------------------------
 // Utility Methods
 // --------------------------------------------------------------------------------
 
 func (am AuthManager) expire(ctx *Ctx, sessionValue string) error {
-	ctx.ExpireCookie(am.CookieNameOrDefault(), am.CookiePathOrDefault())
+	ctx.ExpireCookie(am.CookieDefaults.Name, am.CookieDefaults.Path)
+
 	// if we have a remove handler and the sessionID is set
 	if am.RemoveHandler != nil {
 		err := am.RemoveHandler(ctx.Context(), sessionValue)
@@ -305,20 +396,20 @@ func (am AuthManager) shouldUpdateSessionExpiry() bool {
 }
 
 // InjectCookie injects a session cookie into the context.
-func (am AuthManager) injectCookie(ctx *Ctx, name, value string, expire time.Time) {
+func (am AuthManager) injectCookie(ctx *Ctx, value string, expire time.Time) {
 	ctx.WriteNewCookie(&http.Cookie{
-		Name:     name,
 		Value:    value,
 		Expires:  expire,
-		Path:     am.CookiePathOrDefault(),
-		HttpOnly: am.CookieHTTPOnly,
-		Secure:   am.CookieSecure,
-		SameSite: webutil.MustParseSameSite(am.CookieSameSite),
+		Name:     am.CookieDefaults.Name,
+		Path:     am.CookieDefaults.Path,
+		HttpOnly: am.CookieDefaults.HttpOnly,
+		Secure:   am.CookieDefaults.Secure,
+		SameSite: am.CookieDefaults.SameSite,
 	})
 }
 
-// readParam reads a param from a given request context from either the cookies or headers.
-func (am AuthManager) readParam(name string, ctx *Ctx) (output string) {
+// cookieValue reads a param from a given request context from either the cookies or headers.
+func (am AuthManager) cookieValue(name string, ctx *Ctx) (output string) {
 	if cookie := ctx.Cookie(name); cookie != nil {
 		output = cookie.Value
 	}
@@ -327,5 +418,5 @@ func (am AuthManager) readParam(name string, ctx *Ctx) (output string) {
 
 // ReadSessionID reads a session id from a given request context.
 func (am AuthManager) readSessionValue(ctx *Ctx) string {
-	return am.readParam(am.CookieNameOrDefault(), ctx)
+	return am.cookieValue(am.CookieDefaults.Name, ctx)
 }

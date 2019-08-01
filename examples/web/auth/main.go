@@ -18,8 +18,10 @@ Caveat; this will only work if you are deploying a single instance of the app.
 */
 
 func main() {
-	app := web.New(web.OptLog(logger.All()))
-	app.Auth = web.NewLocalAuthManager()
+	app := web.MustNew(
+		web.OptLog(logger.All()),
+		web.OptAuth(web.NewLocalAuthManager()),
+	)
 
 	app.ServeStaticCached("/cached", []string{"_static"}, web.SessionMiddleware(func(ctx *web.Ctx) web.Result {
 		return web.Text.NotAuthorized()
@@ -44,7 +46,7 @@ func main() {
 
 	app.GET("/login/:userID", func(r *web.Ctx) web.Result {
 		if r.Session != nil {
-			r.Log.Debugf("already logged in, redirecting")
+			r.App.Log.Debugf("already logged in, redirecting")
 			return web.RedirectWithMethodf("GET", "/")
 		}
 

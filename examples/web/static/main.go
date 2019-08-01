@@ -10,7 +10,7 @@ import (
 
 func main() {
 	log := logger.All()
-	app := web.New(web.OptLog(log))
+	app := web.MustNew(web.OptLog(log))
 	csf := web.NewStaticFileServer(http.Dir("."))
 
 	app.ServeStatic("/static/*filepath", []string{"_static"})

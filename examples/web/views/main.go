@@ -9,8 +9,7 @@ import (
 )
 
 func main() {
-	log := logger.All()
-	app := web.New(web.OptLog(log))
+	app := web.MustNew(web.OptLog(logger.All(logger.OptHeading("views-test"))))
 	app.Views.AddPaths(
 		"_views/header.html",
 		"_views/footer.html",
@@ -28,8 +27,9 @@ func main() {
 	app.GET("/", func(r *web.Ctx) web.Result {
 		return r.Views.View("index", nil)
 	})
+
 	if err := graceful.Shutdown(app); err != nil {
-		log.Fatal(err)
+		app.Log.Fatal(err)
 		os.Exit(1)
 	}
 }

@@ -35,7 +35,8 @@ func (tc testController) Register(app *App) {
 func TestAppNew(t *testing.T) {
 	assert := assert.New(t)
 
-	app := New()
+	app, err := New()
+	assert.Nil(err)
 	assert.NotNil(app.State)
 	assert.NotNil(app.Views)
 }
@@ -43,7 +44,7 @@ func TestAppNew(t *testing.T) {
 func TestAppNewFromConfig(t *testing.T) {
 	assert := assert.New(t)
 
-	app := New(OptConfig(Config{
+	app, err := New(OptConfig(Config{
 		BindAddr:               ":5555",
 		Port:                   5000,
 		HandleMethodNotAllowed: true,
@@ -62,6 +63,8 @@ func TestAppNewFromConfig(t *testing.T) {
 		},
 	}))
 
+	assert.Nil(err)
+
 	assert.Equal(":5555", app.Config.BindAddr)
 	assert.True(app.Config.HandleMethodNotAllowed)
 	assert.True(app.Config.HandleOptions)
@@ -71,7 +74,7 @@ func TestAppNewFromConfig(t *testing.T) {
 	assert.Equal(6*time.Second, app.Config.ReadTimeout)
 	assert.Equal(7*time.Second, app.Config.IdleTimeout)
 	assert.Equal(8*time.Second, app.Config.WriteTimeout)
-	assert.Equal("A GOOD ONE", app.Auth.CookieName, "we should use the auth config for the auth manager")
+	assert.Equal("A GOOD ONE", app.Auth.CookieDefaults.Name, "we should use the auth config for the auth manager")
 	assert.True(app.Views.LiveReload, "we should use the view cache config for the view cache")
 }
 
@@ -83,8 +86,9 @@ func TestAppRegister(t *testing.T) {
 			called = true
 		},
 	}
-	app := New()
+	app, err := New()
 
+	assert.Nil(err)
 	assert.False(called)
 	app.Register(c)
 	assert.True(called)
@@ -95,7 +99,8 @@ func TestAppPathParams(t *testing.T) {
 
 	var route *Route
 	var params RouteParameters
-	app := New()
+	app, err := New()
+	assert.Nil(err)
 	app.GET("/:uuid", func(c *Ctx) Result {
 		route = c.Route
 		params = c.RouteParams
@@ -130,7 +135,8 @@ func TestAppPathParamsForked(t *testing.T) {
 
 	var route *Route
 	var params RouteParameters
-	app := New()
+	app, err := New()
+	assert.Nil(err)
 	app.GET("/foo/:uuid", func(c *Ctx) Result { return NoContent })
 	app.GET("/foos/bar/:uuid", func(c *Ctx) Result {
 		route = c.Route
@@ -155,14 +161,15 @@ func TestAppSetLogger(t *testing.T) {
 	assert := assert.New(t)
 
 	log := logger.MustNew()
-	app := New(OptLog(log))
+	app, err := New(OptLog(log))
+	assert.Nil(err)
 	assert.NotNil(app.Log)
 }
 
 func TestAppCreateStaticMountedRoute(t *testing.T) {
 	assert := assert.New(t)
-	app := New()
-
+	app, err := New()
+	assert.Nil(err)
 	assert.Equal("/testPath/*filepath", app.formatStaticMountRoute("/testPath/*filepath"))
 	assert.Equal("/testPath/*filepath", app.formatStaticMountRoute("/testPath/"))
 	assert.Equal("/testPath/*filepath", app.formatStaticMountRoute("/testPath"))
@@ -170,7 +177,8 @@ func TestAppCreateStaticMountedRoute(t *testing.T) {
 
 func TestAppStaticRewrite(t *testing.T) {
 	assert := assert.New(t)
-	app := New()
+	app, err := New()
+	assert.Nil(err)
 
 	app.ServeStatic("/testPath", []string{"_static"})
 	assert.NotEmpty(app.Statics)
@@ -187,12 +195,14 @@ func TestAppStaticRewrite(t *testing.T) {
 
 func TestAppStaticRewriteBadExp(t *testing.T) {
 	assert := assert.New(t)
-	app := New()
+	app, err := New()
+	assert.Nil(err)
+
 	app.ServeStatic("/testPath", []string{"_static"})
 	assert.NotEmpty(app.Statics)
 	assert.NotNil(app.Statics["/testPath/*filepath"])
 
-	err := app.SetStaticRewriteRule("/testPath", "((((", func(path string, pieces ...string) string {
+	err = app.SetStaticRewriteRule("/testPath", "((((", func(path string, pieces ...string) string {
 		return path
 	})
 
@@ -202,7 +212,9 @@ func TestAppStaticRewriteBadExp(t *testing.T) {
 
 func TestAppStaticHeader(t *testing.T) {
 	assert := assert.New(t)
-	app := New()
+	app, err := New()
+	assert.Nil(err)
+
 	app.ServeStatic("/testPath", []string{"_static"})
 	assert.NotEmpty(app.Statics)
 	assert.NotNil(app.Statics["/testPath/*filepath"])
@@ -216,7 +228,9 @@ func TestAppMiddleWarePipeline(t *testing.T) {
 
 	didRun := false
 
-	app := New()
+	app, err := New()
+	assert.Nil(err)
+
 	app.GET("/",
 		func(r *Ctx) Result { return Raw([]byte("OK!")) },
 		func(action Action) Action {
@@ -239,7 +253,9 @@ func TestAppMiddleWarePipeline(t *testing.T) {
 func TestAppStatic(t *testing.T) {
 	assert := assert.New(t)
 
-	app := New()
+	app, err := New()
+	assert.Nil(err)
+
 	app.ServeStatic("/static/*filepath", []string{"testdata"})
 
 	index, err := MockGet(app, "/static/test_file.html").Bytes()
@@ -249,7 +265,9 @@ func TestAppStatic(t *testing.T) {
 
 func TestAppStaticSingleFile(t *testing.T) {
 	assert := assert.New(t)
-	app := New()
+	app, err := New()
+	assert.Nil(err)
+
 	app.GET("/", func(r *Ctx) Result {
 		return Static("testdata/test_file.html")
 	})
@@ -267,17 +285,20 @@ func TestAppProviderMiddleware(t *testing.T) {
 		return Raw([]byte("OK!"))
 	}
 
-	app := New()
+	app, err := New()
+	assert.Nil(err)
+
 	app.GET("/", okAction, JSONProviderAsDefault)
 
-	err := MockGet(app, "/").Discard()
+	err = MockGet(app, "/").Discard()
 	assert.Nil(err)
 }
 
 func TestAppProviderMiddlewareOrder(t *testing.T) {
 	assert := assert.New(t)
 
-	app := New()
+	app, err := New()
+	assert.Nil(err)
 
 	var okAction = func(r *Ctx) Result {
 		assert.NotNil(r.DefaultProvider)
@@ -298,7 +319,9 @@ func TestAppProviderMiddlewareOrder(t *testing.T) {
 func TestAppDefaultResultProvider(t *testing.T) {
 	assert := assert.New(t)
 
-	app := New(OptUse(ViewProviderAsDefault))
+	app, err := New(OptUse(ViewProviderAsDefault))
+	assert.Nil(err)
+
 	assert.NotEmpty(app.DefaultMiddleware)
 	rc := app.createCtx(nil, nil, nil, nil)
 	assert.NotNil(rc.DefaultProvider)
@@ -308,7 +331,8 @@ func TestAppDefaultResultProvider(t *testing.T) {
 func TestAppDefaultResultProviderWithDefault(t *testing.T) {
 	assert := assert.New(t)
 
-	app := New(OptUse(ViewProviderAsDefault))
+	app, err := New(OptUse(ViewProviderAsDefault))
+	assert.Nil(err)
 	assert.NotEmpty(app.DefaultMiddleware)
 
 	rc := app.createCtx(nil, nil, nil, nil)
@@ -328,7 +352,9 @@ func TestAppDefaultResultProviderWithDefault(t *testing.T) {
 func TestAppDefaultResultProviderWithDefaultFromRoute(t *testing.T) {
 	assert := assert.New(t)
 
-	app := New(OptUse(JSONProviderAsDefault))
+	app, err := New(OptUse(JSONProviderAsDefault))
+	assert.Nil(err)
+
 	app.Views.AddLiterals(DefaultTemplateNotAuthorized)
 	app.GET("/", controllerNoOp, SessionRequired, ViewProviderAsDefault)
 
@@ -343,7 +369,9 @@ func TestAppDefaultResultProviderWithDefaultFromRoute(t *testing.T) {
 func TestAppViewResult(t *testing.T) {
 	assert := assert.New(t)
 
-	app := New()
+	app, err := New()
+	assert.Nil(err)
+
 	app.Views.AddPaths("testdata/test_file.html")
 	app.GET("/", func(r *Ctx) Result {
 		return r.Views.View("test", "foobarbaz")
@@ -362,11 +390,13 @@ func TestAppWritesLogs(t *testing.T) {
 	buffer := bytes.NewBuffer(nil)
 	agent := logger.MustNew(logger.OptAll(), logger.OptOutput(buffer))
 
-	app := New(OptLog(agent))
+	app, err := New(OptLog(agent))
+	assert.Nil(err)
+
 	app.GET("/", func(r *Ctx) Result {
 		return Raw([]byte("ok!"))
 	})
-	err := MockGet(app, "/").Discard()
+	err = MockGet(app, "/").Discard()
 	assert.Nil(err)
 	assert.Nil(agent.Drain())
 
@@ -381,14 +411,16 @@ func TestAppBindAddr(t *testing.T) {
 	env.Env().Set(EnvironmentVariablePort, "1111")
 	defer env.Restore()
 
-	assert.Equal(":3333", New(OptBindAddr(":3333")).Config.BindAddr)
-	assert.Equal(":2222", New(OptPort(2222)).Config.BindAddr)
+	assert.Equal(":3333", MustNew(OptBindAddr(":3333")).Config.BindAddr)
+	assert.Equal(":2222", MustNew(OptPort(2222)).Config.BindAddr)
 }
 
 func TestAppNotFound(t *testing.T) {
 	assert := assert.New(t)
 
-	app := New()
+	app, err := New()
+	assert.Nil(err)
+
 	app.GET("/", func(r *Ctx) Result {
 		return Raw([]byte("ok!"))
 	})
@@ -400,14 +432,17 @@ func TestAppNotFound(t *testing.T) {
 		defer wg.Done()
 		return JSON.NotFound()
 	})
-	err := MockGet(app, "/doesntexist").Discard()
+	err = MockGet(app, "/doesntexist").Discard()
 	assert.Nil(err)
 	wg.Wait()
 }
 
 func TestAppDefaultHeaders(t *testing.T) {
 	assert := assert.New(t)
-	app := New(OptDefaultHeader("foo", "bar"), OptDefaultHeader("baz", "buzz"))
+	app, err := New(OptDefaultHeader("foo", "bar"), OptDefaultHeader("baz", "buzz"))
+	assert.Nil(err)
+	assert.Equal([]string{"buzz"}, app.DefaultHeaders[http.CanonicalHeaderKey("baz")])
+
 	app.GET("/", func(r *Ctx) Result {
 		return Text.Result("ok")
 	})
@@ -422,7 +457,10 @@ func TestAppDefaultHeaders(t *testing.T) {
 func TestAppViewErrorsRenderErrorView(t *testing.T) {
 	assert := assert.New(t)
 
-	app := New()
+	app, err := New()
+	assert.Nil(err)
+	assert.NotNil(app.Views)
+
 	app.Views.AddLiterals(`{{ define "malformed" }} {{ .Ctx ALSKADJALSKDJA }} {{ end }}`)
 	app.GET("/", func(r *Ctx) Result {
 		return r.Views.View("malformed", nil)
@@ -433,7 +471,9 @@ func TestAppViewErrorsRenderErrorView(t *testing.T) {
 func TestAppAddsDefaultHeaders(t *testing.T) {
 	assert := assert.New(t)
 
-	app := New(OptBindAddr(DefaultMockBindAddr))
+	app, err := New(OptBindAddr(DefaultMockBindAddr))
+	assert.Nil(err)
+
 	app.GET("/", func(r *Ctx) Result {
 		return Text.Result("OK!")
 	})
@@ -451,7 +491,9 @@ func TestAppAddsDefaultHeaders(t *testing.T) {
 func TestAppHandlesPanics(t *testing.T) {
 	assert := assert.New(t)
 
-	app := New(OptBindAddr(DefaultMockBindAddr))
+	app, err := New(OptBindAddr(DefaultMockBindAddr))
+	assert.Nil(err)
+
 	app.GET("/", func(r *Ctx) Result {
 		panic("this is only a test")
 	})
@@ -529,7 +571,9 @@ func TestAppTracer(t *testing.T) {
 
 	var hasValue bool
 
-	app := New()
+	app, err := New()
+	assert.Nil(err)
+
 	app.GET("/", ok)
 	app.Tracer = mockTracer{
 		OnStart: func(ctx *Ctx) {
@@ -556,7 +600,9 @@ func TestAppTracerError(t *testing.T) {
 
 	var hasError bool
 
-	app := New()
+	app, err := New()
+	assert.Nil(err)
+
 	app.GET("/", ok)
 	app.GET("/error", internalError)
 	app.Tracer = mockTracer{
@@ -579,7 +625,9 @@ func TestAppViewTracer(t *testing.T) {
 
 	var hasValue bool
 
-	app := New()
+	app, err := New()
+	assert.Nil(err)
+
 	app.Views.AddLiterals("{{ define \"ok\" }}ok{{end}}")
 	assert.Nil(app.Views.Initialize())
 
@@ -611,7 +659,9 @@ func TestAppViewTracerError(t *testing.T) {
 
 	var hasValue, hasError, hasViewError bool
 
-	app := New()
+	app, err := New()
+	assert.Nil(err)
+
 	app.Views.AddLiterals("{{ define \"ok\" }}{{template \"fake\"}}ok{{end}}")
 	app.GET("/view", viewOK)
 	app.Tracer = mockTracer{
@@ -640,7 +690,9 @@ func TestAppViewTracerError(t *testing.T) {
 
 func TestAppAllowed(t *testing.T) {
 	assert := assert.New(t)
-	app := New()
+
+	app, err := New()
+	assert.Nil(err)
 	app.GET("/test", nil)
 
 	allowed := strings.Split(app.allowed("*", ""), ", ")
@@ -659,7 +711,9 @@ func TestAppAllowed(t *testing.T) {
 		return ok && s == "POST"
 	})
 
-	app = New()
+	app, err = New()
+	assert.Nil(err)
+
 	app.GET("/hello", controllerNoOp)
 	allowed = strings.Split(app.allowed("/hello", ""), ", ")
 	assert.Len(allowed, 2)

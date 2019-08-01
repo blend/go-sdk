@@ -8,6 +8,14 @@ func (a Annotations) AddAnnotationValue(key, value string) {
 	a[key] = value
 }
 
+// GetAnnotationKeys returns the keys represented in the annotations set.
+func (a Annotations) GetAnnotationKeys() (keys []string) {
+	for key := range a {
+		keys = append(keys, key)
+	}
+	return
+}
+
 // GetAnnotationValue gets a label value.
 func (a Annotations) GetAnnotationValue(key string) (value string, ok bool) {
 	value, ok = a[key]

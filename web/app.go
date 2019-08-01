@@ -12,8 +12,17 @@ import (
 	"github.com/blend/go-sdk/logger"
 )
 
+// MustNew creates a new app and panics if there is an error.
+func MustNew(options ...Option) *App {
+	app, err := New(options...)
+	if err != nil {
+		panic(err)
+	}
+	return app
+}
+
 // New returns a new web app.
-func New(options ...Option) *App {
+func New(options ...Option) (*App, error) {
 	views := NewViewCache()
 	a := App{
 		Latch:           async.NewLatch(),
@@ -24,10 +33,13 @@ func New(options ...Option) *App {
 		DefaultProvider: views,
 	}
 
+	var err error
 	for _, option := range options {
-		option(&a)
+		if err = option(&a); err != nil {
+			return nil, err
+		}
 	}
-	return &a
+	return &a, nil
 }
 
 // App is the server for the app.
@@ -52,7 +64,8 @@ type App struct {
 	State                   *SyncState
 }
 
-// CreateServer returns the basic http.Server for the app.
+// CreateServer creates a new http.Server for the app.
+// This is ultimately what is started when you call `.Start()`.
 func (a *App) CreateServer() *http.Server {
 	return &http.Server{
 		Handler:           a,
@@ -66,7 +79,7 @@ func (a *App) CreateServer() *http.Server {
 	}
 }
 
-// Use adds a new default middleware.
+// Use adds a new default middleware to the middleware chain.
 func (a *App) Use(middleware Middleware) {
 	a.DefaultMiddleware = append(a.DefaultMiddleware, middleware)
 }
@@ -457,14 +470,13 @@ func (a *App) NestMiddleware(action Action, middleware ...Middleware) Action {
 func (a *App) createCtx(w ResponseWriter, r *http.Request, route *Route, p RouteParameters, extra ...CtxOption) *Ctx {
 	options := []CtxOption{
 		OptCtxApp(a),
+		OptCtxAuth(a.Auth),
+		OptCtxDefaultProvider(a.DefaultProvider),
+		OptCtxViews(a.Views),
 		OptCtxRoute(route),
 		OptCtxRouteParams(p),
 		OptCtxState(a.State.Copy()),
 		OptCtxTracer(a.Tracer),
-		OptCtxViews(a.Views),
-		OptCtxAuth(a.Auth),
-		OptCtxLog(a.Log),
-		OptCtxDefaultProvider(a.DefaultProvider),
 	}
 	return NewCtx(w, r, append(options, extra...)...)
 }
@@ -477,7 +489,7 @@ func (a *App) allowed(path, reqMethod string) (allow string) {
 			}
 
 			// add request method to list of allowed methods
-			if len(allow) == 0 {
+			if allow == "" {
 				allow = method
 			} else {
 				allow += ", " + method
@@ -494,14 +506,14 @@ func (a *App) allowed(path, reqMethod string) (allow string) {
 		handle, _, _ := a.Routes[method].getValue(path)
 		if handle != nil {
 			// add request method to list of allowed methods
-			if len(allow) == 0 {
+			if allow == "" {
 				allow = method
 			} else {
 				allow += ", " + method
 			}
 		}
 	}
-	if len(allow) > 0 {
+	if allow != "" {
 		allow += ", OPTIONS"
 	}
 	return
@@ -519,13 +531,13 @@ func (a *App) httpResponseEvent(ctx *Ctx) *logger.HTTPResponseEvent {
 	event := logger.NewHTTPResponseEvent(ctx.Request,
 		logger.OptHTTPResponseStatusCode(ctx.Response.StatusCode()),
 		logger.OptHTTPResponseContentLength(ctx.Response.ContentLength()),
+		logger.OptHTTPResponseHeader(ctx.Response.Header()), // caveat: these do not get written out in text or json ever.
 		logger.OptHTTPResponseElapsed(ctx.Elapsed()),
 	)
 
 	if ctx.Route != nil {
 		event.Route = ctx.Route.String()
 	}
-
 	if ctx.Response.Header() != nil {
 		event.ContentType = ctx.Response.Header().Get(HeaderContentType)
 		event.ContentEncoding = ctx.Response.Header().Get(HeaderContentEncoding)

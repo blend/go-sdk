@@ -188,7 +188,7 @@ func (vc *ViewCache) NotAuthorized() Result {
 
 	return &ViewResult{
 		ViewName:   vc.NotAuthorizedTemplateName,
-		StatusCode: http.StatusForbidden,
+		StatusCode: http.StatusUnauthorized,
 		Template:   t,
 		Views:      vc,
 	}

@@ -14,7 +14,7 @@ func TestXMLResultProvider(t *testing.T) {
 	assert.Equal(http.StatusNotFound, XML.NotFound().(*XMLResult).StatusCode)
 	assert.Equal("Not Found", XML.NotFound().(*XMLResult).Response)
 
-	assert.Equal(http.StatusForbidden, XML.NotAuthorized().(*XMLResult).StatusCode)
+	assert.Equal(http.StatusUnauthorized, XML.NotAuthorized().(*XMLResult).StatusCode)
 	assert.Equal("Not Authorized", XML.NotAuthorized().(*XMLResult).Response)
 
 	assert.Equal(http.StatusBadRequest, XML.BadRequest(nil).(*XMLResult).StatusCode)

@@ -11,7 +11,7 @@ import (
 func TestTimeout(t *testing.T) {
 	assert := assert.New(t)
 
-	app := New(
+	app := MustNew(
 		OptBindAddr(DefaultMockBindAddr),
 		OptUse(WithTimeout(1*time.Millisecond)),
 	)

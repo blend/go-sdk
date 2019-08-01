@@ -51,3 +51,18 @@ func TestFormatFields(t *testing.T) {
 	actual = FormatFields(tf, ansi.ColorBlue, Fields{"moo": "loo", "foo": "bar"})
 	assert.Equal(ansi.ColorBlue.Apply("foo")+"=bar "+ansi.ColorBlue.Apply("moo")+"=loo", actual)
 }
+
+func TestFormatHeaders(t *testing.T) {
+	assert := assert.New(t)
+
+	tf := NewTextOutputFormatter(OptTextNoColor())
+	actual := FormatHeaders(tf, ansi.ColorBlue, http.Header{"Foo": []string{"bar"}, "Moo": []string{"loo"}})
+	assert.Equal("{ Foo:bar Moo:loo }", actual)
+
+	actual = FormatHeaders(tf, ansi.ColorBlue, http.Header{"Moo": []string{"loo"}, "Foo": []string{"bar"}})
+	assert.Equal("{ Foo:bar Moo:loo }", actual)
+
+	tf = NewTextOutputFormatter()
+	actual = FormatHeaders(tf, ansi.ColorBlue, http.Header{"Foo": []string{"bar"}, "Moo": []string{"loo"}})
+	assert.Equal("{ "+ansi.ColorBlue.Apply("Foo")+":bar "+ansi.ColorBlue.Apply("Moo")+":loo }", actual)
+}

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -13,7 +12,6 @@ import (
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/webutil"
-	"github.com/gorilla/websocket"
 )
 
 func TestProxy(t *testing.T) {
@@ -111,64 +109,4 @@ func TestReverseProxyWebSocket(t *testing.T) {
 	got := bs.Text()
 	want := `backend got "Hello"`
 	assert.Equal(got, want)
-}
-
-// Referencing https://github.com/samsarahq/oauth2_proxy/blob/master/websocket_test.go#L13
-func TestReverseProxyWebsocketWithScheme(t *testing.T) {
-	assert := assert.New(t)
-
-	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		upgrader := &websocket.Upgrader{
-			ReadBufferSize:  1024,
-			WriteBufferSize: 1024,
-			CheckOrigin: func(r *http.Request) bool {
-				return true
-			},
-		}
-
-		conn, err := upgrader.Upgrade(w, r, nil)
-		if err != nil {
-			t.Fatal(err)
-			return
-		}
-
-		messageType, p, err := conn.ReadMessage()
-		if err != nil {
-			t.Fatal(err)
-			return
-		}
-
-		if err = conn.WriteMessage(messageType, p); err != nil {
-			t.Error(err)
-			return
-		}
-	}))
-	defer backend.Close()
-
-	backendURL := MustParseURL(backend.URL)
-	backendHostname, backendPort, _ := net.SplitHostPort(backendURL.Host)
-	backendHost := net.JoinHostPort(backendHostname, backendPort)
-	proxyURL := MustParseURL(backendURL.Scheme + "://" + backendHost + "/")
-
-	proxy := NewProxy(
-		OptProxyUpstream(NewUpstream(backendURL)),
-		OptProxySetHeaderValue(webutil.HeaderXForwardedProto, webutil.SchemeHTTP),
-	)
-	frontend := httptest.NewServer(proxy)
-	defer frontend.Close()
-
-	wsUrl := new(url.URL)
-	*wsUrl = *proxyURL
-	wsUrl.Scheme = "ws"
-	conn, _, err := websocket.DefaultDialer.Dial(wsUrl.String(), nil)
-	assert.Nil(err)
-
-	expected := "hello world"
-	err = conn.WriteMessage(websocket.TextMessage, []byte(expected))
-	assert.Nil(err)
-
-	messageType, received, err := conn.ReadMessage()
-	assert.Nil(err)
-	assert.Equal(messageType, websocket.TextMessage)
-	assert.Equal(string(received), expected)
 }

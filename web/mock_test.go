@@ -11,7 +11,7 @@ import (
 func TestMock(t *testing.T) {
 	assert := assert.New(t)
 
-	app := New()
+	app := MustNew()
 	app.GET("/", func(_ *Ctx) Result { return NoContent })
 
 	res, err := Mock(app, &http.Request{Method: "GET", URL: &url.URL{Scheme: SchemeHTTP, Path: "/"}}).DiscardWithResponse()
@@ -24,7 +24,7 @@ func TestMock(t *testing.T) {
 func TestMockGet(t *testing.T) {
 	assert := assert.New(t)
 
-	app := New()
+	app := MustNew()
 	app.GET("/", func(_ *Ctx) Result { return NoContent })
 
 	res, err := MockGet(app, "/").DiscardWithResponse()

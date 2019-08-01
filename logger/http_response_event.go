@@ -85,6 +85,11 @@ func OptHTTPResponseElapsed(elapsed time.Duration) HTTPResponseEventOption {
 	return func(hre *HTTPResponseEvent) { hre.Elapsed = elapsed }
 }
 
+// OptHTTPResponseHeader sets a field.
+func OptHTTPResponseHeader(header http.Header) HTTPResponseEventOption {
+	return func(hre *HTTPResponseEvent) { hre.Header = header }
+}
+
 // OptHTTPResponseState sets a field.
 func OptHTTPResponseState(state interface{}) HTTPResponseEventOption {
 	return func(hre *HTTPResponseEvent) { hre.State = state }
@@ -93,7 +98,6 @@ func OptHTTPResponseState(state interface{}) HTTPResponseEventOption {
 // HTTPResponseEvent is an event type for responses.
 type HTTPResponseEvent struct {
 	*EventMeta
-
 	Request         *http.Request
 	Route           string
 	ContentLength   int
@@ -101,6 +105,7 @@ type HTTPResponseEvent struct {
 	ContentEncoding string
 	StatusCode      int
 	Elapsed         time.Duration
+	Header          http.Header
 	State           interface{}
 }
 
