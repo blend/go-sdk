@@ -42,6 +42,8 @@ const (
 	TagKeyGRPCUserAgent = "grpc.user_agent"
 	// TagKeyGRPCContentType is the grpc content type.
 	TagKeyGRPCContentType = "grpc.content_type"
+	// TagKeyOAuthUsername defines the oauth Username name for the Span.
+	TagKeyOAuthUsername = "oauth.username"
 )
 
 // Operations are actions represented by spans.

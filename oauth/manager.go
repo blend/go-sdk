@@ -73,9 +73,9 @@ func (m *Manager) OAuthURL(r *http.Request, stateOptions ...StateOption) (oauthU
 // Finish processes the returned code, exchanging for an access token, and fetches the user profile.
 func (m *Manager) Finish(r *http.Request) (result *Result, err error) {
 	if m.Tracer != nil {
-		tf := m.Tracer.Start(r)
+		tf := m.Tracer.Start(m.conf(r))
 		if tf != nil {
-			defer func() { tf.Finish(r, result, err) }()
+			defer func() { tf.Finish(m.conf(r), result, err) }()
 		}
 	}
 
