@@ -94,6 +94,10 @@ func (sc *StaticFileServer) ServeCachedFile(r *Ctx, filepath string) Result {
 	if err != nil {
 		return r.DefaultProvider.InternalError(err)
 	}
+	if file == nil {
+		http.NotFound(r.Response, r.Request)
+		return nil
+	}
 	http.ServeContent(r.Response, r.Request, filepath, file.ModTime, file.Contents)
 	return nil
 }
@@ -136,9 +140,18 @@ func (sc *StaticFileServer) ResolveCachedFile(filepath string) (*CachedStaticFil
 	sc.Lock()
 	defer sc.Unlock()
 
+	if sc.Cache == nil {
+		sc.Cache = make(map[string]*CachedStaticFile)
+	}
+
 	diskFile, err := sc.ResolveFile(filepath)
 	if err != nil {
 		return nil, err
+	}
+
+	if diskFile == nil {
+		sc.Cache[filepath] = nil
+		return nil, nil
 	}
 
 	finfo, err := diskFile.Stat()
@@ -156,10 +169,6 @@ func (sc *StaticFileServer) ResolveCachedFile(filepath string) (*CachedStaticFil
 		Contents: bytes.NewReader(contents),
 		ModTime:  finfo.ModTime(),
 		Size:     len(contents),
-	}
-
-	if sc.Cache == nil {
-		sc.Cache = make(map[string]*CachedStaticFile)
 	}
 
 	sc.Cache[filepath] = file

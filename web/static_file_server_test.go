@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -62,4 +63,20 @@ func TestStaticFileserverRewriteRule(t *testing.T) {
 
 	assert.Nil(result)
 	assert.NotEmpty(buffer.Bytes(), "we should still have reached the file")
+}
+
+func TestStaticFileserverNotFound(t *testing.T) {
+	assert := assert.New(t)
+
+	cfs := NewStaticFileServer(http.Dir("testdata"))
+	buffer := bytes.NewBuffer(nil)
+	res := webutil.NewMockResponse(buffer)
+	req := webutil.NewMockRequest("GET", "/"+uuid.V4().String())
+	result := cfs.Action(NewCtx(res, req, OptCtxRouteParams(RouteParameters{
+		RouteTokenFilepath: req.URL.Path,
+	})))
+
+	assert.Nil(result)
+	assert.Equal(http.StatusNotFound, res.StatusCode())
+	assert.NotEmpty(buffer.Bytes())
 }
