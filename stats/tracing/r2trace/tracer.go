@@ -23,6 +23,7 @@ type r2Tracer struct {
 func (rt r2Tracer) Start(req *http.Request) r2.TraceFinisher {
 	startOptions := []opentracing.StartSpanOption{
 		opentracing.Tag{Key: tracing.TagKeySpanType, Value: tracing.SpanTypeHTTP},
+		opentracing.Tag{Key: tracing.TagKeyResourceName, Value: req.URL.String()},
 		opentracing.Tag{Key: tracing.TagKeyHTTPMethod, Value: strings.ToUpper(req.Method)},
 		opentracing.Tag{Key: tracing.TagKeyHTTPURL, Value: req.URL.String()},
 		opentracing.StartTime(time.Now().UTC()),
