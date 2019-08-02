@@ -10,6 +10,11 @@ import (
 	"golang.org/x/oauth2"
 )
 
+var (
+	_ oauth.Tracer        = (*oauthTracer)(nil)
+	_ oauth.TraceFinisher = (*oauthTraceFinisher)(nil)
+)
+
 // Tracer returns a request tracer that also injects span context into outgoing headers.
 func Tracer(tracer opentracing.Tracer) oauth.Tracer {
 	return &oauthTracer{tracer: tracer}

@@ -11,6 +11,11 @@ import (
 	opentracing "github.com/opentracing/opentracing-go"
 )
 
+var (
+	_ r2.Tracer        = (*r2Tracer)(nil)
+	_ r2.TraceFinisher = (*r2TraceFinisher)(nil)
+)
+
 // Tracer returns a request tracer that also injects span context into outgoing headers.
 func Tracer(tracer opentracing.Tracer) r2.Tracer {
 	return &r2Tracer{tracer: tracer}
