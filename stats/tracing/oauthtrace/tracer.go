@@ -1,7 +1,7 @@
 package oauthtrace
 
 import (
-	"net/http"
+	"context"
 	"time"
 
 	"github.com/blend/go-sdk/oauth"
@@ -19,12 +19,12 @@ type oauthTracer struct {
 	tracer opentracing.Tracer
 }
 
-func (t oauthTracer) Start(config *oauth2.Config) oauth.TraceFinisher {
+func (t oauthTracer) Start(ctx context.Context, config *oauth2.Config) oauth.TraceFinisher {
 	startOptions := []opentracing.StartSpanOption{
 		opentracing.Tag{Key: tracing.TagKeySpanType, Value: tracing.SpanTypeHTTP},
 		opentracing.StartTime(time.Now().UTC()),
 	}
-	span, _ := tracing.StartSpanFromContext(req.Context(), t.tracer, tracing.OperationHTTPRequest, startOptions...)
+	span, _ := tracing.StartSpanFromContext(ctx, t.tracer, tracing.OperationHTTPRequest, startOptions...)
 	return oauthTraceFinisher{span: span}
 }
 
@@ -32,7 +32,7 @@ type oauthTraceFinisher struct {
 	span opentracing.Span
 }
 
-func (of oauthTraceFinisher) Finish(req *http.Request, result *oauth.Result, err error) {
+func (of oauthTraceFinisher) Finish(ctx context.Context, config *oauth2.Config, result *oauth.Result, err error) {
 	if of.span == nil {
 		return
 	}

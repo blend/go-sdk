@@ -18,7 +18,7 @@ func NewStaticFileServer(searchPaths ...http.FileSystem) *StaticFileServer {
 
 // StaticFileServer is a cache of static files.
 type StaticFileServer struct {
-	sync.Mutex
+	sync.RWMutex
 	SearchPaths   []http.FileSystem
 	RewriteRules  []RewriteRule
 	Middleware    []Middleware
@@ -124,12 +124,17 @@ func (sc *StaticFileServer) ResolveFile(filePath string) (f http.File, err error
 // ResolveCachedFile returns a cached file at a given path.
 // It returns the cached instance of a file if it exists, and adds it to the cache if there is a miss.
 func (sc *StaticFileServer) ResolveCachedFile(filepath string) (*CachedStaticFile, error) {
+	sc.RLock()
+	if sc.Cache != nil {
+		if file, ok := sc.Cache[filepath]; ok {
+			sc.RUnlock()
+			return file, nil
+		}
+	}
+	sc.RUnlock()
+
 	sc.Lock()
 	defer sc.Unlock()
-
-	if file, ok := sc.Cache[filepath]; ok {
-		return file, nil
-	}
 
 	diskFile, err := sc.ResolveFile(filepath)
 	if err != nil {
