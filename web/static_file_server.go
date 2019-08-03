@@ -10,18 +10,45 @@ import (
 )
 
 // NewStaticFileServer returns a new static file cache.
-func NewStaticFileServer(searchPaths ...http.FileSystem) *StaticFileServer {
-	return &StaticFileServer{
-		SearchPaths: searchPaths,
+func NewStaticFileServer(options ...StaticFileserverOption) *StaticFileServer {
+	var sfs StaticFileServer
+	for _, opt := range options {
+		opt(&sfs)
+	}
+	return &sfs
+}
+
+// StaticFileserverOption are options for static fileservers.
+type StaticFileserverOption func(*StaticFileServer)
+
+// OptStaticFileServerSearchPaths sets the static fileserver search paths.
+func OptStaticFileServerSearchPaths(searchPaths ...http.FileSystem) StaticFileserverOption {
+	return func(sfs *StaticFileServer) {
+		sfs.SearchPaths = searchPaths
+	}
+}
+
+// OptStaticFileServerHeaders sets the static fileserver default headers..
+func OptStaticFileServerHeaders(headers http.Header) StaticFileserverOption {
+	return func(sfs *StaticFileServer) {
+		sfs.Headers = headers
+	}
+}
+
+// OptStaticFileServerCacheDisabled sets the static fileserver should read from disk for each request.
+func OptStaticFileServerCacheDisabled(cacheDisabled bool) StaticFileserverOption {
+	return func(sfs *StaticFileServer) {
+		sfs.CacheDisabled = cacheDisabled
 	}
 }
 
 // StaticFileServer is a cache of static files.
+// It can operate in cached mode, or with `CacheDisabled` it will read from
+// disk for each request.
 type StaticFileServer struct {
 	sync.RWMutex
 	SearchPaths   []http.FileSystem
 	RewriteRules  []RewriteRule
-	Middleware    []Middleware
 	Headers       http.Header
 	CacheDisabled bool
 	Cache         map[string]*CachedStaticFile
@@ -36,6 +63,9 @@ func (sc *StaticFileServer) AddHeader(key, value string) {
 }
 
 // AddRewriteRule adds a static re-write rule.
+// This is meant to modify the path of a file from what is requested by the browser
+// to how a file may actually be accessed on disk.
+// Typically re-write rules are used to enforce caching semantics.
 func (sc *StaticFileServer) AddRewriteRule(match string, action RewriteAction) error {
 	expr, err := regexp.Compile(match)
 	if err != nil {
@@ -50,11 +80,16 @@ func (sc *StaticFileServer) AddRewriteRule(match string, action RewriteAction) e
 }
 
 // Action is the entrypoint for the static server.
-// It will run middleware if specified before serving the file.
+// It  adds default headers if specified, and then serves the file from disk
+// or from a pull-through cache if enabled.
 func (sc *StaticFileServer) Action(r *Ctx) Result {
 	filePath, err := r.RouteParam("filepath")
 	if err != nil {
-		return r.DefaultProvider.BadRequest(err)
+		if r.DefaultProvider != nil {
+			return r.DefaultProvider.BadRequest(err)
+		}
+		http.Error(r.Response, err.Error(), http.StatusBadRequest)
+		return nil
 	}
 
 	for key, values := range sc.Headers {
@@ -69,32 +104,53 @@ func (sc *StaticFileServer) Action(r *Ctx) Result {
 	return sc.ServeCachedFile(r, filePath)
 }
 
-// ServeFile writes the file to the response without running middleware.
+// ServeFile writes the file to the response by reading from disk
+// for each request (i.e. skipping the cache)
 func (sc *StaticFileServer) ServeFile(r *Ctx, filePath string) Result {
 	f, err := sc.ResolveFile(filePath)
 	if f == nil || (err != nil && os.IsNotExist(err)) {
-		return r.DefaultProvider.NotFound()
+		if r.DefaultProvider != nil {
+			return r.DefaultProvider.NotFound()
+		}
+		http.NotFound(r.Response, r.Request)
+		return nil
 	}
 	if err != nil {
-		return r.DefaultProvider.InternalError(err)
+		if r.DefaultProvider != nil {
+			return r.DefaultProvider.InternalError(err)
+		}
+		http.Error(r.Response, err.Error(), http.StatusInternalServerError)
+		return nil
 	}
 	defer f.Close()
 
 	finfo, err := f.Stat()
 	if err != nil {
-		return r.DefaultProvider.InternalError(err)
+		if r.DefaultProvider != nil {
+			return r.DefaultProvider.InternalError(err)
+		}
+		http.Error(r.Response, err.Error(), http.StatusInternalServerError)
+		return nil
 	}
 	http.ServeContent(r.Response, r.Request, filePath, finfo.ModTime(), f)
 	return nil
 }
 
-// ServeCachedFile writes the file to the response.
+// ServeCachedFile writes the file to the response, potentially
+// serving a cached instance of the file.
 func (sc *StaticFileServer) ServeCachedFile(r *Ctx, filepath string) Result {
 	file, err := sc.ResolveCachedFile(filepath)
 	if err != nil {
-		return r.DefaultProvider.InternalError(err)
+		if r.DefaultProvider != nil {
+			return r.DefaultProvider.InternalError(err)
+		}
+		http.Error(r.Response, err.Error(), http.StatusInternalServerError)
+		return nil
 	}
 	if file == nil {
+		if r.DefaultProvider != nil {
+			return r.DefaultProvider.NotFound()
+		}
 		http.NotFound(r.Response, r.Request)
 		return nil
 	}
@@ -103,6 +159,8 @@ func (sc *StaticFileServer) ServeCachedFile(r *Ctx, filepath string) Result {
 }
 
 // ResolveFile resolves a file from rewrite rules and search paths.
+// First the file path is modified according to the rewrite rules.
+// Then each search path is checked for the resolved file path.
 func (sc *StaticFileServer) ResolveFile(filePath string) (f http.File, err error) {
 	for _, rule := range sc.RewriteRules {
 		if matched, newFilePath := rule.Apply(filePath); matched {

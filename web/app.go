@@ -209,9 +209,10 @@ func (a *App) ServeStatic(route string, searchPaths []string, middleware ...Midd
 	for _, searchPath := range searchPaths {
 		searchPathFS = append(searchPathFS, http.Dir(searchPath))
 	}
-	sfs := NewStaticFileServer(searchPathFS...)
-	sfs.Middleware = middleware
-	sfs.CacheDisabled = true
+	sfs := NewStaticFileServer(
+		OptStaticFileServerSearchPaths(searchPathFS...),
+		OptStaticFileServerCacheDisabled(true),
+	)
 	mountedRoute := a.formatStaticMountRoute(route)
 	a.Statics[mountedRoute] = sfs
 	a.Handle("GET", mountedRoute, a.RenderAction(a.NestMiddleware(sfs.Action, middleware...)))
@@ -220,12 +221,13 @@ func (a *App) ServeStatic(route string, searchPaths []string, middleware ...Midd
 // ServeStaticCached serves files from the given file system root(s).
 // If the path does not end with "/*filepath" that suffix will be added for you internally.
 func (a *App) ServeStaticCached(route string, searchPaths []string, middleware ...Middleware) {
-	var searchPathFileSystems []http.FileSystem
+	var searchPathFS []http.FileSystem
 	for _, searchPath := range searchPaths {
-		searchPathFileSystems = append(searchPathFileSystems, http.Dir(searchPath))
+		searchPathFS = append(searchPathFS, http.Dir(searchPath))
 	}
-	sfs := NewStaticFileServer(searchPathFileSystems...)
-	sfs.Middleware = middleware
+	sfs := NewStaticFileServer(
+		OptStaticFileServerSearchPaths(searchPathFS...),
+	)
 	mountedRoute := a.formatStaticMountRoute(route)
 	a.Statics[mountedRoute] = sfs
 	a.Handle("GET", mountedRoute, a.RenderAction(a.NestMiddleware(sfs.Action, middleware...)))
