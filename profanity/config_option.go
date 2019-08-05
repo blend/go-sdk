@@ -43,8 +43,8 @@ func OptExclude(excludes ...string) ConfigOption {
 }
 
 // OptConfig sets the config in its entirety.
-func OptConfig(cfg *Config) ConfigOption {
+func OptConfig(cfg Config) ConfigOption {
 	return func(c *Config) {
-		*c = *cfg
+		*c = cfg
 	}
 }

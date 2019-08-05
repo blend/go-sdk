@@ -96,7 +96,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		engine := profanity.New(profanity.OptConfig(&cfg.Config))
+		engine := profanity.New(profanity.OptConfig(cfg.Config))
 		engine.Stdout = os.Stdout
 		engine.Stderr = os.Stderr
 

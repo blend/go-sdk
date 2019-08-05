@@ -64,7 +64,7 @@ func (p *Profanity) Process() error {
 	var didError bool
 
 	// rule cache is shared between files and directories during the full walk.
-	ruleCache := map[string]Rules{}
+	ruleCache := make(map[string]Rules)
 	// make sure the root rules are initialized if they exist.
 	if _, err := os.Stat("./" + p.Config.RulesFileOrDefault()); err == nil {
 		_, err = p.RulesForPathOrCached(ruleCache, ".")
@@ -244,16 +244,15 @@ func (p *Profanity) ReadRules(path string) (Rules, error) {
 
 // RulesFromPath reads rules from a path
 func (p *Profanity) RulesFromPath(path string) (rules Rules, err error) {
-	var contents []byte
-	contents, err = ioutil.ReadFile(path)
-	if err != nil {
-		err = ex.New(err, ex.OptMessagef("file: %s", path))
+	contents, readErr := ioutil.ReadFile(path)
+	if readErr != nil {
+		err = ex.New(readErr, ex.OptMessagef("file: %s", path))
 		return
 	}
 	var fileRules Rules
-	err = yaml.Unmarshal(contents, &fileRules)
-	if err != nil {
-		err = ex.New(err, ex.OptMessagef("file: %s", path))
+	yamlErr := yaml.Unmarshal(contents, &fileRules)
+	if yamlErr != nil {
+		err = ex.New(yamlErr, ex.OptMessagef("file: %s", path))
 		return
 	}
 	rules = make(Rules)
