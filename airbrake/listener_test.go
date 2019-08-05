@@ -12,9 +12,9 @@ func TestFrames(t *testing.T) {
 	assert := assert.New(t)
 
 	exErr := ex.As(ex.New("this is a test"))
-	fr := frames(exErr.Stack)
-	assert.NotEmpty(fr, fmt.Sprintf("%T", exErr.Stack))
+	fr := frames(exErr.StackTrace)
+	assert.NotEmpty(fr, fmt.Sprintf("%T", exErr.StackTrace))
 
-	fr = frames(ex.As(ex.New("this is a test", ex.OptStack(ex.StackStrings([]string{"foo", "bar"})))).Stack)
+	fr = frames(ex.As(ex.New("this is a test", ex.OptStackTrace(ex.StackStrings([]string{"foo", "bar"})))).StackTrace)
 	assert.Empty(fr)
 }

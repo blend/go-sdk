@@ -123,10 +123,11 @@ func TestExceptionFormatters(t *testing.T) {
 }
 
 func TestMarshalJSON(t *testing.T) {
+
 	type ReadableStackTrace struct {
 		Class   string   `json:"Class"`
 		Message string   `json:"Message"`
-		Stack   []string `json:"Stack"`
+		Stack   []string `json:"StackTrace"`
 	}
 
 	a := assert.New(t)

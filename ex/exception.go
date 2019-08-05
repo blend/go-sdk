@@ -78,8 +78,8 @@ func OptMessagef(format string, args ...interface{}) Option {
 	}
 }
 
-// OptStack sets the exception stack.
-func OptStack(stack StackTrace) Option {
+// OptStackTrace sets the exception stack.
+func OptStackTrace(stack StackTrace) Option {
 	return func(ex *Ex) {
 		ex.StackTrace = stack
 	}

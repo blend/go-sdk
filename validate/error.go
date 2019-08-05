@@ -53,7 +53,7 @@ func Error(cause error, value interface{}, messageArgs ...interface{}) error {
 			Value:   value,
 			Message: fmt.Sprint(messageArgs...),
 		},
-		Stack: ex.Callers(ex.DefaultNewStartDepth + 1),
+		StackTrace: ex.Callers(ex.DefaultNewStartDepth + 1),
 	}
 }
 
@@ -69,7 +69,7 @@ func Errorf(cause error, value interface{}, format string, args ...interface{}) 
 			Value:   value,
 			Message: fmt.Sprintf(format, args...),
 		},
-		Stack: ex.Callers(ex.DefaultNewStartDepth + 1),
+		StackTrace: ex.Callers(ex.DefaultNewStartDepth + 1),
 	}
 }
 

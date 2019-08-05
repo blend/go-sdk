@@ -39,9 +39,9 @@ func TestExceptionWithStackStrings(t *testing.T) {
 		"baz",
 	}
 
-	ex := As(New("foo", OptStack(StackStrings(stack))))
+	ex := As(New("foo", OptStackTrace(StackStrings(stack))))
 
 	values := ex.Decompose()
-	assert.NotEmpty(values["Stack"])
+	assert.NotEmpty(values["StackTrace"])
 	assert.NotNil(ex.StackTrace)
 }
