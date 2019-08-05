@@ -51,6 +51,10 @@ func (rtf r2TraceFinisher) Finish(req *http.Request, res *http.Response, ts time
 		return
 	}
 	tracing.SpanError(rtf.span, err)
-	rtf.span.SetTag(tracing.TagKeyHTTPCode, strconv.Itoa(res.StatusCode))
+	if res != nil {
+		rtf.span.SetTag(tracing.TagKeyHTTPCode, strconv.Itoa(res.StatusCode))
+	} else {
+		rtf.span.SetTag(tracing.TagKeyHTTPCode, http.StatusInternalServerError)
+	}
 	rtf.span.Finish()
 }
