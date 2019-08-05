@@ -1,5 +1,7 @@
 package oauth
 
+import "github.com/blend/go-sdk/r2"
+
 // Option is an option for oauth managers.
 type Option func(*Manager) error
 
@@ -64,6 +66,16 @@ func OptHostedDomain(hostedDomain string) Option {
 func OptScopes(scopes ...string) Option {
 	return func(m *Manager) error {
 		m.Scopes = scopes
+		return nil
+	}
+}
+
+// OptRequestDefaults sets the request defaults.
+// These affect making the profile fetch call
+// to google and do not affect the token exchange.
+func OptRequestDefaults(defaults ...r2.Option) Option {
+	return func(m *Manager) error {
+		m.RequestDefaults = defaults
 		return nil
 	}
 }
