@@ -43,5 +43,5 @@ func TestExceptionWithStackStrings(t *testing.T) {
 
 	values := ex.Decompose()
 	assert.NotEmpty(values["Stack"])
-	assert.NotNil(ex.Stack)
+	assert.NotNil(ex.StackTrace)
 }

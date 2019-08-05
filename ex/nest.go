@@ -11,8 +11,8 @@ func Nest(err ...error) error {
 			var wrappedEx *Ex
 			if typedEx, isTyped := e.(*Ex); !isTyped {
 				wrappedEx = &Ex{
-					Class: e,
-					Stack: Callers(DefaultStartDepth),
+					Class:      e,
+					StackTrace: Callers(DefaultStartDepth),
 				}
 			} else {
 				wrappedEx = typedEx

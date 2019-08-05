@@ -9,6 +9,11 @@ import (
 	"strings"
 )
 
+// StackTraceProvider is a type that can return an exception class.
+type StackTraceProvider interface {
+	StackTrace() StackTrace
+}
+
 // GetStackTrace is a utility method to get the current stack trace at call time.
 func GetStackTrace() string {
 	return fmt.Sprintf("%+v", Callers(DefaultStartDepth))
