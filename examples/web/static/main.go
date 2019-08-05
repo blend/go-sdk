@@ -11,7 +11,9 @@ import (
 func main() {
 	log := logger.All()
 	app := web.MustNew(web.OptLog(log))
-	csf := web.NewStaticFileServer(http.Dir("."))
+	csf := web.NewStaticFileServer(
+		web.OptStaticFileServerSearchPaths(http.Dir(".")),
+	)
 
 	app.ServeStatic("/static/*filepath", []string{"_static"})
 	app.ServeStaticCached("/static_cached/*filepath", []string{"_static"})
