@@ -92,6 +92,14 @@ func OptInner(inner error) Option {
 	}
 }
 
+// OptInnerClass sets an inner unwrapped exception.
+// Use this if you don't want to include a strack trace for a cause.
+func OptInnerClass(inner error) Option {
+	return func(ex *Ex) {
+		ex.Inner = inner
+	}
+}
+
 // Ex is an error with a stack trace.
 // It also can have an optional cause, it implements `Exception`
 type Ex struct {

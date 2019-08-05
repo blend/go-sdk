@@ -3,6 +3,7 @@ package profanity
 // Config is the profanity rules parsing config.
 type Config struct {
 	Verbose   *bool    `yaml:"verbose"`
+	Debug     *bool    `yaml:"debug"`
 	FailFast  *bool    `yaml:"failFast"`
 	Root      string   `yaml:"root"`
 	RulesFile string   `yaml:"rulesFile"`
@@ -14,6 +15,14 @@ type Config struct {
 func (c Config) VerboseOrDefault() bool {
 	if c.Verbose != nil {
 		return *c.Verbose
+	}
+	return false
+}
+
+// DebugOrDefault returns an option or a default.
+func (c Config) DebugOrDefault() bool {
+	if c.Debug != nil {
+		return *c.Debug
 	}
 	return false
 }

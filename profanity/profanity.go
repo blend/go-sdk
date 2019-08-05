@@ -160,7 +160,7 @@ func (p *Profanity) Process() error {
 
 				// handle the failure
 				failure := res.Failure(rule)
-				p.Errorf("%+v\n", failure)
+				p.Errorf("%v\n", failure)
 				if p.Config.FailFastOrDefault() {
 					return failure
 				}
@@ -228,6 +228,9 @@ func (p *Profanity) RulesForPath(workingSet map[string]Rules, path string) (Rule
 // ReadRules reads rules at a given directory path.
 // Path is meant to be the slash terminated dir, which will have the configured rule path appended to it.
 func (p *Profanity) ReadRules(path string) (Rules, error) {
+	if p.Config.DebugOrDefault() {
+		p.Printf("checking for profanity file: %s/%s", ansi.LightWhite(path), p.Config.RulesFileOrDefault())
+	}
 	profanityPath := filepath.Join(path, p.Config.RulesFileOrDefault())
 	if _, err := os.Stat(profanityPath); err != nil {
 		if p.Config.VerboseOrDefault() {
@@ -237,6 +240,9 @@ func (p *Profanity) ReadRules(path string) (Rules, error) {
 	}
 	rules, err := p.RulesFromPath(profanityPath)
 	if err != nil {
+		if p.Config.DebugOrDefault() {
+			p.Errorf("error reading profanity file: %s/%s %v", ansi.LightWhite(path), p.Config.RulesFileOrDefault(), err)
+		}
 		return nil, err
 	}
 	return rules, nil
@@ -252,7 +258,7 @@ func (p *Profanity) RulesFromPath(path string) (rules Rules, err error) {
 	var fileRules Rules
 	yamlErr := yaml.Unmarshal(contents, &fileRules)
 	if yamlErr != nil {
-		err = ex.New(yamlErr, ex.OptMessagef("file: %s", path))
+		err = ex.New("cannot unmarshal rules file", ex.OptMessagef("file: %s", path), ex.OptInnerClass(yamlErr))
 		return
 	}
 	rules = make(Rules)
