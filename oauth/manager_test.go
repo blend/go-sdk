@@ -1,14 +1,19 @@
 package oauth
 
 import (
+	"bytes"
+	"context"
 	"encoding/base64"
+	"io"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/crypto"
 	"github.com/blend/go-sdk/r2"
+	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -217,11 +222,42 @@ func TestManagerValidateState(t *testing.T) {
 func TestManagerRequestDefaulkts(t *testing.T) {
 	assert := assert.New(t)
 
+	mockedResponse := []byte(`
+	{
+		"id": "12012312390931",
+		"email": "bailey@blend.com",
+		"verified_email": true,
+		"name": "Bailey Dog",
+		"given_name": "Bailey",
+		"family_name": "Dog",
+		"picture": "https://github.com/blend/go-sdk/tree/master/assets/bailey.png",
+		"locale": "en",
+		"hd": "go-sdk.github.com"
+	  }
+`)
+
+	var didCallMock bool
+	mock := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		didCallMock = true
+		rw.WriteHeader(http.StatusOK)
+		io.Copy(rw, bytes.NewReader(mockedResponse))
+	}))
+
 	mgr := MustNew(
-		OptRequestDefaults(
+		OptFetchProfileDefaults(
 			r2.OptHeaderValue("foo", "bar"),
+			r2.OptURL(mock.URL),
 		),
 	)
-	assert.NotEmpty(mgr.RequestDefaults)
+	assert.NotEmpty(mgr.FetchProfileDefaults)
 
+	profile, err := mgr.FetchProfile(context.Background(), uuid.V4().String())
+	assert.Nil(err)
+	assert.True(didCallMock)
+	assert.Equal("bailey@blend.com", profile.Email)
+	assert.Equal("Bailey Dog", profile.Name)
+	assert.Equal("en", profile.Locale)
+	assert.Equal("Bailey", profile.GivenName)
+	assert.Equal("Dog", profile.FamilyName)
+	assert.Equal("https://github.com/blend/go-sdk/tree/master/assets/bailey.png", profile.PictureURL)
 }

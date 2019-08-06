@@ -70,12 +70,12 @@ func OptScopes(scopes ...string) Option {
 	}
 }
 
-// OptRequestDefaults sets the request defaults.
+// OptFetchProfileDefaults sets the request defaults.
 // These affect making the profile fetch call
 // to google and do not affect the token exchange.
-func OptRequestDefaults(defaults ...r2.Option) Option {
+func OptFetchProfileDefaults(defaults ...r2.Option) Option {
 	return func(m *Manager) error {
-		m.RequestDefaults = defaults
+		m.FetchProfileDefaults = defaults
 		return nil
 	}
 }

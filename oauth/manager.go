@@ -43,14 +43,14 @@ func MustNew(options ...Option) *Manager {
 
 // Manager is the oauth manager.
 type Manager struct {
-	RequestDefaults []r2.Option
-	Tracer          Tracer
-	Secret          []byte
-	Scopes          []string
-	RedirectURI     string
-	HostedDomain    string
-	ClientID        string
-	ClientSecret    string
+	FetchProfileDefaults []r2.Option
+	Tracer               Tracer
+	Secret               []byte
+	Scopes               []string
+	RedirectURI          string
+	HostedDomain         string
+	ClientID             string
+	ClientSecret         string
 }
 
 // OAuthURL is the auth url for google with a given clientID.
@@ -126,7 +126,7 @@ func (m *Manager) Finish(r *http.Request) (result *Result, err error) {
 
 // FetchProfile gets a google profile for an access token.
 func (m *Manager) FetchProfile(ctx context.Context, accessToken string) (profile Profile, err error) {
-	res, err := r2.New("https://www.googleapis.com/oauth2/v1/userinfo", append(m.RequestDefaults,
+	res, err := r2.New("https://www.googleapis.com/oauth2/v1/userinfo", append(m.FetchProfileDefaults,
 		r2.OptGet(),
 		r2.OptContext(ctx),
 		r2.OptQueryValue("alt", "json"),
