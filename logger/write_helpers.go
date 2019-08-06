@@ -20,12 +20,9 @@ func WriteHTTPRequest(tf TextFormatter, wr io.Writer, req *http.Request) {
 		io.WriteString(wr, Space)
 	}
 	io.WriteString(wr, tf.Colorize(req.Method, ansi.ColorBlue))
-	if req.URL.RawPath != "" {
+	if req.URL != nil {
 		io.WriteString(wr, Space)
-		io.WriteString(wr, req.URL.RawPath)
-	} else if req.URL.Path != "" {
-		io.WriteString(wr, Space)
-		io.WriteString(wr, req.URL.Path)
+		io.WriteString(wr, req.URL.String())
 	}
 }
 
