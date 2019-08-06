@@ -22,6 +22,17 @@ func TestWriteHTTPRequest(t *testing.T) {
 	assert.Equal("GET /foo", buf.String())
 }
 
+func TestWriteHTTPRequestPrefersRawPath(t *testing.T) {
+	assert := assert.New(t)
+
+	tf := TextOutputFormatter{
+		NoColor: true,
+	}
+	buf := new(bytes.Buffer)
+	WriteHTTPRequest(tf, buf, &http.Request{Method: "GET", URL: &url.URL{Scheme: "http", Host: "localhost", RawPath: "/foo?hi=there", Path: "/foo"}})
+	assert.Equal("GET /foo?hi=there", buf.String())
+}
+
 func TestWriteHTTPResponse(t *testing.T) {
 	assert := assert.New(t)
 

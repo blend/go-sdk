@@ -8,6 +8,7 @@ import (
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/crypto"
+	"github.com/blend/go-sdk/r2"
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -211,4 +212,16 @@ func TestManagerValidateState(t *testing.T) {
 	secure := MustNew()
 	secure.Secret = crypto.MustCreateKey(32)
 	assert.Nil(secure.ValidateState(secure.CreateState()))
+}
+
+func TestManagerRequestDefaulkts(t *testing.T) {
+	assert := assert.New(t)
+
+	mgr := MustNew(
+		OptRequestDefaults(
+			r2.OptHeaderValue("foo", "bar"),
+		),
+	)
+	assert.NotEmpty(mgr.RequestDefaults)
+
 }
