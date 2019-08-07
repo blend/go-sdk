@@ -32,7 +32,7 @@ func SpanError(span opentracing.Span, err error) {
 		if typed := ex.As(err); typed != nil {
 			span.SetTag(TagKeyError, typed.Class)
 			span.SetTag(TagKeyErrorMessage, typed.Message)
-			span.SetTag(TagKeyErrorStack, typed.Stack.String())
+			span.SetTag(TagKeyErrorStack, typed.StackTrace.String())
 		} else {
 			span.SetTag(TagKeyError, fmt.Sprintf("%v", err))
 		}

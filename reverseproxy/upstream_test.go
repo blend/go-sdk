@@ -33,13 +33,7 @@ func TestUpstreamServeHTTP(t *testing.T) {
 	proxy := NewProxy()
 	proxy.Upstreams = append(proxy.Upstreams, u)
 
-	server := &http.Server{}
-	server.Handler = proxy
-	server.Addr = fmt.Sprintf("localhost:%s", "5000")
-	go server.ListenAndServe()
-	defer server.Close()
-
-	req, err := http.NewRequest("GET", "http://localhost:5000", nil)
+	req, err := http.NewRequest("GET", srv.URL, nil)
 	assert.Nil(err)
 
 	res, err := http.DefaultClient.Do(req)

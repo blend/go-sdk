@@ -1,8 +1,6 @@
 package profanity
 
-import (
-	"github.com/blend/go-sdk/ref"
-)
+import "github.com/blend/go-sdk/ref"
 
 // ConfigOption is a function that modifies a config.
 type ConfigOption func(*Config)
@@ -11,6 +9,20 @@ type ConfigOption func(*Config)
 func OptVerbose(verbose bool) ConfigOption {
 	return func(c *Config) {
 		c.Verbose = ref.Bool(verbose)
+	}
+}
+
+// OptDebug sets if we should show debug output.
+func OptDebug(debug bool) ConfigOption {
+	return func(c *Config) {
+		c.Debug = ref.Bool(debug)
+	}
+}
+
+// OptFailFast sets if we should stop after the first failure.
+func OptFailFast(failFast bool) ConfigOption {
+	return func(c *Config) {
+		c.FailFast = ref.Bool(failFast)
 	}
 }
 
@@ -43,8 +55,8 @@ func OptExclude(excludes ...string) ConfigOption {
 }
 
 // OptConfig sets the config in its entirety.
-func OptConfig(cfg *Config) ConfigOption {
+func OptConfig(cfg Config) ConfigOption {
 	return func(c *Config) {
-		*c = *cfg
+		*c = cfg
 	}
 }

@@ -25,7 +25,6 @@ func NewAuthManager(options ...AuthManagerOption) (manager AuthManager, err erro
 	manager.CookieDefaults.Path = DefaultCookiePath
 	manager.CookieDefaults.Secure = DefaultCookieSecure
 	manager.CookieDefaults.HttpOnly = DefaultCookieHTTPOnly
-	manager.CookieDefaults.SameSite = DefaultCookieSameSite
 
 	for _, opt := range options {
 		if err = opt(&manager); err != nil {
@@ -64,6 +63,7 @@ func OptAuthManagerFromConfig(cfg Config) AuthManagerOption {
 			OptAuthManagerCookieHTTPOnly(cfg.CookieHTTPOnlyOrDefault()),
 			OptAuthManagerCookieName(cfg.CookieNameOrDefault()),
 			OptAuthManagerCookiePath(cfg.CookiePathOrDefault()),
+			OptAuthManagerCookieDomain(cfg.CookieDomainOrDefault()),
 			OptAuthManagerCookieSameSite(cfg.CookieSameSiteOrDefault()),
 			OptAuthManagerSessionTimeoutProvider(SessionTimeoutProvider(!cfg.SessionTimeoutIsRelative, cfg.SessionTimeoutOrDefault())),
 		}
@@ -112,6 +112,14 @@ func OptAuthManagerCookieName(cookieName string) AuthManagerOption {
 func OptAuthManagerCookiePath(cookiePath string) AuthManagerOption {
 	return func(am *AuthManager) (err error) {
 		am.CookieDefaults.Path = cookiePath
+		return nil
+	}
+}
+
+// OptAuthManagerCookieDomain sets a field on an auth manager
+func OptAuthManagerCookieDomain(domain string) AuthManagerOption {
+	return func(am *AuthManager) (err error) {
+		am.CookieDefaults.Domain = domain
 		return nil
 	}
 }
@@ -402,6 +410,7 @@ func (am AuthManager) injectCookie(ctx *Ctx, value string, expire time.Time) {
 		Expires:  expire,
 		Name:     am.CookieDefaults.Name,
 		Path:     am.CookieDefaults.Path,
+		Domain:   am.CookieDefaults.Domain,
 		HttpOnly: am.CookieDefaults.HttpOnly,
 		Secure:   am.CookieDefaults.Secure,
 		SameSite: am.CookieDefaults.SameSite,

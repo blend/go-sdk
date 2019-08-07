@@ -3,18 +3,20 @@ db
 
 This is a very bare bones database interface for golang. It abstracts away a bunch of boilerplate so that the developer can concentrate on writing their app.
 
-It does not abstract away actual sql, however. 
+It does not abstract away actual sql, however.
 
 # Gotchas & General Notes #
 
 - Stuct to database table / column mapping is done through field tags.
 - There are a bunch of helpers for common operations (Get, GetAll, Create, CreateMany, Update, Delete, etc.).
 	- These will write sql for you, and generally simplify basic operations.
+- Like other packages in this repo, the `db` package leverages the options pattern extensively. Most things can
+be configured with functions that start with `Opt...`.
 - We leverage statement caching aggressively. What this means is that if a query or exec is assigned a label, we will save the returned query plan for later increasing throughput.
-	- The pre-built (`Get`, `GetAll`, `Create`, `CreateMany` etc.) methods create query labels for you.
+	- The pre-built (`Get`, `All`, `Create`, `CreateMany` etc.) methods create query labels for you.
 	- Your statements will not be cached if you don't set a query label.
 	- You set the query label by:
-		`conn.Invoke().WithLabel("my_label").[Query(...)|Exec(...)]`
+		`conn.Invoke(db.OptCachedPlanKey("my_label")).[Query(...)|Exec(...)]`
 
 # Mapping Structs Using `go-sdk/db` #
 
@@ -32,37 +34,28 @@ func (mt MyTable) TableName() string {
 ```
 
 Two important things: we define `tags` on struct members to tell the orm how to interact with the db. We also define a method that returns
-the table name for the struct as it is mapped in the db. 
+the table name for the struct as it is mapped in the db.
 
-Tags are laid out in the following format `db:"<column_name>,<options>,..."`, where after the `column_name` there can be multiple `options`. An example above is `id,serial,pk`, which translates to a column name `id` and options `serial,pk` respectively. 
+Tags are laid out in the following format `db:"<column_name>,<options>,..."`, where after the `column_name` there can be multiple `options`. An example above is `id,auto,pk`, which translates to a column name `id` and options `auto,pk` respectively.
 
 Options include:
-- `auto` : denotes a column that will be read back on `Create` (there can be many of these).
+- `auto`,`serial` : denotes a column that will be read back on `Create` (there can be many of these).
 - `pk` : deontes a column that consitutes a primary key. Will be used when creating SQL where clauses.
 - `readonly` : denotes a column that is only read, not written to the db.
 
 # Managing Connections and Aliases #
 
-The next step in running a database driven app is to tell the app how to connect to the db. 
+The next step in running a database driven app is to tell the app how to connect to the db.
 
 We can create a connection with a configuration:
 ```golang
-conn, err := db.NewFromConfig(db.NewConfig().WithHost("localhost").WithDatabase("my_db").WithUser("postgres").WithPassword("super_secret_pw")).Open()
+conn, err := db.New(db.OptConfig(cfg))
+...
+err = conn.Open()
+...
 ```
 
 The above snipped creates a connection, and opens it (establishing the connection). We can then pass this connection around to other things like controllers.
-
-## The `Default` Connection ##
-
-If we don't want to manage connection references ourselves and just want to have a simple `.Default()` accessible anywhere, we can use:
-
-```golang
-err := db.OpenDefault(db.NewFromConfig(db.NewConfig().WithHost("localhost").WithDatabase("my_db").WithUser("postgres").WithPassword("super_secret_pw")))
-```
-
-This will then let the connection be accessible from a central place `db.Default()`.
-
-The downside of this is if we need multiple connections to multiple databases we'll need to create another default singleton, and it's easier in that case just to manage the references ourselves.
 
 # ORM Actions: Create, Update, Delete, Get, GetAll
 
@@ -70,31 +63,31 @@ To create an object that has been mapped to a table, simply call:
 
 ```golang
 obj := MyObj{...}
-err := db.Default().Create(&obj) //note the reference! this is incase we have to write back a auto id.
+err := conn.Create(&obj) //note the reference! this is incase we have to write back a auto id.
 ```
 
 Then we can get the object with:
 
 ```golang
 var obj MyObj
-err := db.Default().Get(&obj, "foo") // "foo" here is an imaginary primary key value.
+found, err := conn.Get(&obj, "foo") // "foo" here is an imaginary primary key value.
 ```
 
 To udpate an object:
 ```golang
 var obj  MyObj
-err := db.Default().Get(&obj, objID) //note, there can be multiple params (!!) if there are multiple pks
+found, err := conn.Get(&obj, objID) //note, there can be multiple params (!!) if there are multiple pks
 // .. handle the err
 obj.Property = "new_value"
-err = db.Default().Update(obj) //note we don't need a reference for this, as it's read only.
+found, err = conn.Update(obj) //note we don't need a reference for this, as it's read only.
 ```
 
 To delete an object:
 ```golang
 var obj MyObj
-err := db.Default().Get(&obj, objID) //note, there can be multiple params (!!) if there are multiple pks
+err := conn.Get(&obj, objID) //note, there can be multiple params (!!) if there are multiple pks
 // .. handle the err
-err = db.Default().Delete(obj) //note we don't need a reference for this, as it's read only.
+err = conn.Delete(obj) //note we don't need a reference for this, as it's read only.
 ```
 
 # Complex queries; using raw sql
@@ -107,15 +100,15 @@ There are a couple options / paths we can take to actually running a query, and 
 
 - We need to run a query against the database without a transaction or a statement cache label:
 ```golang
-db.Default().Query(<SQL Statement>, <Args...>).<Out(...)|OutMany(...)|Each(...)|First(...)|Scan(...)|Any()|None()>
+conn.Query(<SQL Statement>, <Args...>).<Out(...)|OutMany(...)|Each(...)|First(...)|Scan(...)|Any()|None()>
 ```
 - We need to run a query against the database with statement cache label:
 ```golang
-db.Default().Invoke().WithLabel("cached_statement").Query(<SQL Statement>, <Args...>).<Out(...)|OutMany(...)|Each(...)|First(...)|Scan(...)|Any()|None()>
+conn.Invoke(db.OptCachedPlanKey("cached_statement")).Query(<SQL Statement>, <Args...>).<Out(...)|OutMany(...)|Each(...)|First(...)|Scan(...)|Any()|None()>
 ```
 - We need to run a query against the database using a transaction, with a cache label:
 ```golang
-db.Default().InTx(tx).WithLabel("cached_statement").Query(<SQL Statement>, <Args...>).<Out(...)|OutMany(...)|Each(...)|First(...)|Scan(...)|Any()|None()>
+conn.Invoke(db.OptTx(tx), db.OptCachedPlanKey("cached_statement")).Query(<SQL Statement>, <Args...>).<Out(...)|OutMany(...)|Each(...)|First(...)|Scan(...)|Any()|None()>
 ```
 
 Note that after the `Query(...)` function itself, there can be various collectors. Each collector serves a different purpose:
@@ -124,7 +117,7 @@ Note that after the `Query(...)` function itself, there can be various collector
 - `Each(func(*sql.Rows) error)`: run the given handler for each result. This is useful if you need to read nested objects.
 - `First(func(*sql.Rows) error)`: run the given handler for the first result. This is useful if you need to read a single complicated object.
 - `Scan(<Args...>)`: read the first result into a given set of references. Useful for scalar return values.
-- `Any`, `None`: return if there are results present, or conversely no results present. 
+- `Any`, `None`: return if there are results present, or conversely no results present.
 
 ## Exec
 
@@ -132,10 +125,10 @@ Executes have very similar preambles to queries:
 
 - We need to execute a sql statement:
 ```golang
-db.Default().Exec(<SQL Statement>, <Args...>)
+conn.Exec(<SQL Statement>, <Args...>)
 ```
 
-The only difference is the lack of a collector.
+The only difference is the lack of a collector, `Exec` will only return the `sql.Result` and the `error` for the statement execution.
 
 # Common Patterns / Advanced Usage
 
@@ -164,10 +157,14 @@ We would want to query the parent objects, and while we're doing so, create a wa
 To do this we use a map as a lookup, and some careful handling of pointers.
 
 ```golang
-func GetAllParents() (parents []Parent, err error) {
+type Manager struct {
+	DB *db.Connection
+}
+
+func (m Manager) GetAllParents() (parents []Parent, err error) {
 	parentLookup := map[int]*Parent{} // note the pointer! this is so we can modify it.
 
-	if err = db.Default().Query("select * from parent").Each(func(r *sql.Rows) error {
+	if err = m.DB.Query("select * from parent").Each(func(r *sql.Rows) error {
 		var parent Parent
 		// populate by name is a helper to set an object from a given row result
 		// it is used internally by `OutMany` on `Query`.
@@ -178,11 +175,11 @@ func GetAllParents() (parents []Parent, err error) {
 		parentLookup[parent.ID] = &parent
 		return nil
 	}); err != nil {
-		return 
+		return
 	}
 
 	// now we need to do a second query to get all the children.
-	if err = db.Default().Query("select * from children").Each(func(r *sql.Rows) error {
+	if err = m.DB.Query("select * from children").Each(func(r *sql.Rows) error {
 		var child Child
 		if err := db.PopulateByName(&child, r. db.Columns(child)); err != nil {
 			return err
@@ -194,7 +191,7 @@ func GetAllParents() (parents []Parent, err error) {
 		}
 		return nil
 	}); err != nil {
-		return 
+		return
 	}
 	return
 }

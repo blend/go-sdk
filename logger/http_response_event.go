@@ -129,6 +129,5 @@ func (e HTTPResponseEvent) MarshalJSON() ([]byte, error) {
 		"contentEncoding": e.ContentEncoding,
 		"statusCode":      e.StatusCode,
 		"elapsed":         timeutil.Milliseconds(e.Elapsed),
-		"state":           e.State,
 	}))
 }

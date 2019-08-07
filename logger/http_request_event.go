@@ -88,10 +88,10 @@ func (e *HTTPRequestEvent) MarshalJSON() ([]byte, error) {
 	return json.Marshal(MergeDecomposed(e.EventMeta.Decompose(), map[string]interface{}{
 		"verb":      e.Request.Method,
 		"path":      e.Request.URL.Path,
+		"query":     e.Request.URL.RawQuery,
 		"host":      e.Request.Host,
 		"route":     e.Route,
 		"ip":        webutil.GetRemoteAddr(e.Request),
 		"userAgent": webutil.GetUserAgent(e.Request),
-		"state":     e.State,
 	}))
 }

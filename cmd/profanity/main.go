@@ -24,6 +24,7 @@ var (
 	flagRulesFile            *string
 	flagInclude, flagExclude *[]string
 	flagVerbose              *bool
+	flagDebug                *bool
 	flagFailFast             *bool
 )
 
@@ -35,6 +36,7 @@ type config struct {
 func (c *config) Resolve() error {
 	return configutil.AnyError(
 		configutil.SetBool(&c.Verbose, configutil.Bool(flagVerbose), configutil.Bool(c.Verbose), configutil.Bool(ref.Bool(false))),
+		configutil.SetBool(&c.FailFast, configutil.Bool(flagDebug), configutil.Bool(c.Debug), configutil.Bool(ref.Bool(false))),
 		configutil.SetBool(&c.FailFast, configutil.Bool(flagFailFast), configutil.Bool(c.FailFast), configutil.Bool(ref.Bool(false))),
 		configutil.SetString(&c.RulesFile, configutil.String(*flagRulesFile), configutil.String(c.RulesFile), configutil.String(profanity.DefaultRulesFile)),
 		configutil.SetStrings(&c.Include, configutil.Strings(*flagInclude), configutil.Strings(c.Include)),
@@ -82,7 +84,8 @@ For more example rule files, see https://github.com/blend/go-sdk/tree/master/PRO
 	flagRulesFile = root.Flags().StringP("rules", "r", profanity.DefaultRulesFile, "The rules file to search for in each valid directory")
 	flagInclude = root.Flags().StringArrayP("include", "i", nil, "Files to include in glob matching format; can be a csv.")
 	flagExclude = root.Flags().StringArrayP("exclude", "e", nil, "Files to exclude in glob matching format; can be a csv.")
-	flagVerbose = root.Flags().BoolP("verbose", "v", false, "If we should use verbose output.")
+	flagVerbose = root.Flags().BoolP("verbose", "v", false, "If we should show verbose output.")
+	flagDebug = root.Flags().BoolP("debug", "d", false, "If we should show debug output.")
 	flagFailFast = root.Flags().Bool("fail-fast", false, "If we should fail the run after the first error.")
 	return root
 }
@@ -92,22 +95,23 @@ func main() {
 	cmd.Run = func(parent *cobra.Command, args []string) {
 		var cfg config
 		if err := cfg.Resolve(); err != nil {
-			fmt.Fprintf(os.Stderr, "%+v\n\n", err)
+			fmt.Fprintf(os.Stderr, "%v\n", err)
 			os.Exit(1)
 		}
 
-		engine := profanity.New(profanity.OptConfig(&cfg.Config))
+		engine := profanity.New(profanity.OptConfig(cfg.Config))
 		engine.Stdout = os.Stdout
 		engine.Stderr = os.Stderr
 
 		if err := engine.Process(); err != nil {
+			fmt.Fprintf(os.Stderr, "%v\n", err)
 			os.Exit(1)
 			return
 		}
 	}
 
 	if err := cmd.Execute(); err != nil {
-		fmt.Fprintf(os.Stderr, "%+v\n", err)
+		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 		return
 	}

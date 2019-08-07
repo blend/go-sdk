@@ -18,14 +18,14 @@ func NewNotice(err interface{}, req *http.Request) *gobrake.Notice {
 		errors = append(errors, gobrake.Error{
 			Type:      fmt.Sprintf("%v", ex.ErrClass(exErr)),
 			Message:   exErr.Message,
-			Backtrace: frames(exErr.Stack),
+			Backtrace: frames(exErr.StackTrace),
 		})
 
 		for inner := ex.As(exErr.Inner); inner != nil; inner = ex.As(inner.Inner) {
 			errors = append(errors, gobrake.Error{
 				Type:      fmt.Sprintf("%v", ex.ErrClass(inner)),
 				Message:   fmt.Sprintf("%+v", inner),
-				Backtrace: frames(inner.Stack),
+				Backtrace: frames(inner.StackTrace),
 			})
 		}
 		notice = &gobrake.Notice{

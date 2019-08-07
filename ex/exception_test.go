@@ -15,7 +15,7 @@ func TestNewOfString(t *testing.T) {
 	a := assert.New(t)
 	ex := As(New("this is a test"))
 	a.Equal("this is a test", fmt.Sprintf("%v", ex))
-	a.NotNil(ex.Stack)
+	a.NotNil(ex.StackTrace)
 	a.Nil(ex.Inner)
 }
 
@@ -123,17 +123,18 @@ func TestExceptionFormatters(t *testing.T) {
 }
 
 func TestMarshalJSON(t *testing.T) {
+
 	type ReadableStackTrace struct {
 		Class   string   `json:"Class"`
 		Message string   `json:"Message"`
-		Stack   []string `json:"Stack"`
+		Stack   []string `json:"StackTrace"`
 	}
 
 	a := assert.New(t)
 	message := "new test error"
 	ex := As(New(message))
 	a.NotNil(ex)
-	stackTrace := ex.Stack
+	stackTrace := ex.StackTrace
 	typed, isTyped := stackTrace.(StackPointers)
 	a.True(isTyped)
 	a.NotNil(typed)
@@ -151,7 +152,7 @@ func TestMarshalJSON(t *testing.T) {
 
 	ex = As(New(fmt.Errorf(message)))
 	a.NotNil(ex)
-	stackTrace = ex.Stack
+	stackTrace = ex.StackTrace
 	typed, isTyped = stackTrace.(StackPointers)
 	a.True(isTyped)
 	a.NotNil(typed)

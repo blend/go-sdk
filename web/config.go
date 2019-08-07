@@ -27,6 +27,7 @@ type Config struct {
 	CookieSameSite string `json:"cookieSameSite,omitempty" yaml:"cookieSameSite,omitempty" env:"COOKIE_SAME_SITE"`
 	CookieName     string `json:"cookieName,omitempty" yaml:"cookieName,omitempty" env:"COOKIE_NAME"`
 	CookiePath     string `json:"cookiePath,omitempty" yaml:"cookiePath,omitempty" env:"COOKIE_PATH"`
+	CookieDomain   string `json:"cookieDomain,omitempty" yaml:"cookieDomain,omitempty" env:"COOKIE_DOMAIN"`
 
 	DefaultHeaders      map[string]string `json:"defaultHeaders,omitempty" yaml:"defaultHeaders,omitempty"`
 	MaxHeaderBytes      int               `json:"maxHeaderBytes,omitempty" yaml:"maxHeaderBytes,omitempty" env:"MAX_HEADER_BYTES"`
@@ -109,6 +110,14 @@ func (c Config) CookiePathOrDefault() string {
 	return DefaultCookiePath
 }
 
+// CookieDomainOrDefault returns a property or a default.
+func (c Config) CookieDomainOrDefault() string {
+	if c.CookieDomain != "" {
+		return c.CookieDomain
+	}
+	return ""
+}
+
 // CookieSecureOrDefault returns a property or a default.
 func (c Config) CookieSecureOrDefault() bool {
 	if c.CookieSecure != nil {
@@ -133,7 +142,7 @@ func (c Config) CookieSameSiteOrDefault() http.SameSite {
 	if c.CookieSameSite != "" {
 		return webutil.MustParseSameSite(c.CookieSameSite)
 	}
-	return DefaultCookieSameSite
+	return 0
 }
 
 // MaxHeaderBytesOrDefault returns the maximum header size in bytes or a default.
