@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
-	"github.com/wcharczuk/go-sdk/ex"
 )
 
 func TestIs(t *testing.T) {
@@ -37,7 +36,7 @@ func TestErrClass(t *testing.T) {
 
 	assert.Nil(ErrClass("foo"))
 
-	err := ex.New("this is a test")
+	err := New("this is a test")
 	assert.Equal("this is a test", ErrClass(err).Error())
 
 	cp := classProvider{
