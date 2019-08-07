@@ -33,6 +33,7 @@ func TestStaticFileserverHeaders(t *testing.T) {
 
 	cfs := NewStaticFileServer(
 		OptStaticFileServerSearchPaths(http.Dir("testdata")),
+		OptStaticFileServerHeaders(http.Header{"buzz": []string{"fuzz"}}),
 	)
 	cfs.AddHeader("foo", "bar")
 	assert.NotEmpty(cfs.Headers)
@@ -48,6 +49,7 @@ func TestStaticFileserverHeaders(t *testing.T) {
 	assert.NotEmpty(buffer.Bytes())
 
 	assert.Equal("bar", res.Header().Get("foo"), "the header should be set on the response")
+	assert.Equal("fuzz", res.Header().Get("buzz"), "the header should be set on the response")
 }
 
 func TestStaticFileserverRewriteRule(t *testing.T) {
