@@ -29,10 +29,17 @@ func New(action func(context.Context) error, options ...Option) (*Breaker, error
 type Breaker struct {
 	sync.Mutex
 
-	Action              func(context.Context) error
-	OnStateChange       func(ctx context.Context, from, to State, generation int64)
+	// Action is the function to preempt calling if it's failed a lot.
+	Action func(context.Context) error
+	// ClosedAction is an optional action to be called when the breaker is closed.
+	ClosedAction func(context.Context) error
+
+	// OnStateChange is an optional handler called when the breaker transitions state.
+	OnStateChange func(ctx context.Context, from, to State, generation int64)
+	// ShouldCloseProvider is called optionally to determine if we should close the breaker.
 	ShouldCloseProvider func(ctx context.Context, counts Counts) bool
-	NowProvider         func() time.Time
+	// NowProvider lets you optionally inject the current time for testing.
+	NowProvider func() time.Time
 
 	// HalfOpenMaxRequests is the maximum number of requests
 	// we can make when the state is HalfOpen.
@@ -71,8 +78,12 @@ type Breaker struct {
 func (b *Breaker) Execute(ctx context.Context) error {
 	generation, err := b.beforeAction(ctx)
 	if err != nil {
+		if b.ClosedAction != nil {
+			return b.ClosedAction(ctx)
+		}
 		return err
 	}
+
 	defer func() {
 		if r := recover(); r != nil {
 			b.afterAction(ctx, generation, false)
