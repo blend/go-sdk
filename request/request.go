@@ -538,6 +538,11 @@ func (r *Request) WithPostBodyAsXML(object interface{}) *Request {
 	return r.WithPostBodySerialized(object, r.serializeXML).WithContentType(ContentTypeApplicationXML)
 }
 
+// WithPostBodyAsTextXML sets the post body raw to be the xml representation of an object with type text.
+func (r *Request) WithPostBodyAsTextXML(object interface{}) *Request {
+	return r.WithPostBodySerialized(object, r.serializeXML).WithContentType(ContentTypeTextXML)
+}
+
 // WithPostBodySerialized sets the post body with the results of the given serializer.
 func (r *Request) WithPostBodySerialized(object interface{}, serialize Serializer) *Request {
 	body, _ := serialize(object)
