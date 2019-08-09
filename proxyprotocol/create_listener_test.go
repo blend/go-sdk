@@ -2,7 +2,7 @@ package proxyprotocol
 
 import (
 	"crypto/tls"
-	"reflect"
+	"net"
 	"testing"
 	"time"
 
@@ -49,6 +49,15 @@ func TestCreateTLSListener(t *testing.T) {
 	assert.Nil(err)
 	assert.NotNil(listener)
 
-	// hacky use of reflection to verify that the created listener can handle tls connections
-	assert.Equal("*tls.listener", reflect.TypeOf(listener).String())
+	go func() {
+		_, err := net.Dial("tcp", listener.Addr().String())
+		assert.Nil(err)
+	}()
+
+	conn, err := listener.Accept()
+	assert.Nil(err)
+
+	typed, ok := conn.(*tls.Conn)
+	assert.True(ok)
+	assert.NotNil(typed)
 }
