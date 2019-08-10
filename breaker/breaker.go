@@ -12,8 +12,6 @@ import (
 type (
 	// Action is a piece of code to run.
 	Action func(context.Context) (interface{}, error)
-	// OpenAction is called when the breaker is open.
-	OpenAction func(context.Context)
 	// OnStateChangeHandler is called when the state changes.
 	OnStateChangeHandler func(ctx context.Context, from, to State, generation int64)
 	// ShouldCloseProvider returns if the breaker should close.
@@ -52,7 +50,7 @@ type Breaker struct {
 
 	// OpenAction is an optional action to be called when the breaker is open (i.e. preventing calls
 	// to the main action handler.)
-	OpenAction
+	OpenAction Action
 
 	// OnStateChange is an optional handler called when the breaker transitions state.
 	OnStateChange OnStateChangeHandler
@@ -93,8 +91,7 @@ func (b *Breaker) Do(ctx context.Context, action Action) (interface{}, error) {
 	generation, err := b.beforeAction(ctx)
 	if err != nil {
 		if b.OpenAction != nil {
-			b.OpenAction(ctx)
-			return nil, err
+			return b.OpenAction(ctx)
 		}
 		return nil, err
 	}

@@ -157,20 +157,22 @@ func TestBreakerCallsClosedHandler(t *testing.T) {
 	assert := assert.New(t)
 
 	var didCall, didCallClosed bool
-	b, err := New(OptOpenAction(func(_ context.Context) {
+	b, err := New(OptOpenAction(func(_ context.Context) (interface{}, error) {
 		didCallClosed = true
+		return "on closed", nil
 	}))
 	assert.Nil(err)
 
 	b.state = StateOpen
 	b.stateExpiresAt = time.Now().Add(time.Hour)
 
-	_, err = b.Do(context.Background(), func(_ context.Context) (interface{}, error) {
+	res, err := b.Do(context.Background(), func(_ context.Context) (interface{}, error) {
 		didCall = true
 		return nil, nil
 	})
 
-	assert.True(ex.Is(err, ErrOpenState))
+	assert.Nil(err)
 	assert.False(didCall)
 	assert.True(didCallClosed)
+	assert.Equal("on closed", res)
 }

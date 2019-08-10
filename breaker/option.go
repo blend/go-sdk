@@ -1,7 +1,6 @@
 package breaker
 
 import (
-	"context"
 	"time"
 )
 
@@ -43,15 +42,15 @@ func OptConfig(cfg Config) Option {
 }
 
 // OptOpenAction sets the open action on the breaker.
-func OptOpenAction(action func(context.Context)) Option {
+func OptOpenAction(action Action) Option {
 	return func(b *Breaker) error {
 		b.OpenAction = action
 		return nil
 	}
 }
 
-// OptOnStateChange sets the OnFaiilure handler on the breaker.
-func OptOnStateChange(handler func(ctx context.Context, from, to State, generation int64)) Option {
+// OptOnStateChange sets the OnStateChange handler on the breaker.
+func OptOnStateChange(handler OnStateChangeHandler) Option {
 	return func(b *Breaker) error {
 		b.OnStateChange = handler
 		return nil
@@ -59,7 +58,7 @@ func OptOnStateChange(handler func(ctx context.Context, from, to State, generati
 }
 
 // OptShouldCloseProvider sets the ShouldCloseProvider provider on the breaker.
-func OptShouldCloseProvider(provider func(ctx context.Context, counts Counts) bool) Option {
+func OptShouldCloseProvider(provider ShouldCloseProvider) Option {
 	return func(b *Breaker) error {
 		b.ShouldCloseProvider = provider
 		return nil
@@ -67,7 +66,7 @@ func OptShouldCloseProvider(provider func(ctx context.Context, counts Counts) bo
 }
 
 // OptNowProvider sets the now provider on the breaker.
-func OptNowProvider(provider func() time.Time) Option {
+func OptNowProvider(provider NowProvider) Option {
 	return func(b *Breaker) error {
 		b.NowProvider = provider
 		return nil

@@ -57,7 +57,7 @@ func TestOptOpenAction(t *testing.T) {
 
 	b := new(Breaker)
 	assert.Nil(b.OpenAction)
-	OptOpenAction(func(_ context.Context) {})(b)
+	OptOpenAction(func(_ context.Context) (interface{}, error) { return nil, nil })(b)
 	assert.NotNil(b.OpenAction)
 }
 
