@@ -13,7 +13,7 @@ import (
 func TestNew(t *testing.T) {
 	assert := assert.New(t)
 
-	b, err := New(func(_ context.Context) error { return nil })
+	b, err := New(Always(func(_ context.Context) error { return nil }))
 	assert.Nil(err)
 	assert.Equal(DefaultHalfOpenMaxActions, b.HalfOpenMaxActions)
 	assert.Equal(DefaultOpenExpiryInterval, b.OpenExpiryInterval)
@@ -24,7 +24,7 @@ func TestNewOptions(t *testing.T) {
 	assert := assert.New(t)
 
 	b, err := New(
-		func(_ context.Context) error { return nil },
+		Always(func(_ context.Context) error { return nil }),
 		OptHalfOpenMaxActions(5),
 		OptOpenExpiryInterval(10*time.Second),
 		OptClosedExpiryInterval(20*time.Second),
@@ -40,7 +40,7 @@ func createTestBreaker() *Breaker {
 }
 
 func succeed(ctx context.Context, b *Breaker) error {
-	b.Action = func(_ context.Context) error { return nil }
+	b.ActionProvider = Always(func(_ context.Context) error { return nil })
 	return b.Execute(ctx)
 }
 
@@ -52,7 +52,7 @@ func pseudoSleep(b *Breaker, period time.Duration) {
 
 func fail(ctx context.Context, b *Breaker) error {
 	msg := "fail"
-	b.Action = func(_ context.Context) error { return fmt.Errorf(msg) }
+	b.ActionProvider = Always(func(_ context.Context) error { return fmt.Errorf(msg) })
 	err := b.Execute(ctx)
 	if err.Error() == msg {
 		return nil
@@ -122,10 +122,10 @@ func TestBreakerErrStateOpen(t *testing.T) {
 	assert := assert.New(t)
 
 	var didCall bool
-	b, err := New(func(_ context.Context) error {
+	b, err := New(Always(func(_ context.Context) error {
 		didCall = true
 		return nil
-	})
+	}))
 	assert.Nil(err)
 
 	b.state = StateOpen
@@ -140,10 +140,10 @@ func TestBreakerErrTooManyRequests(t *testing.T) {
 	assert := assert.New(t)
 
 	var didCall bool
-	b, err := New(func(_ context.Context) error {
+	b, err := New(Always(func(_ context.Context) error {
 		didCall = true
 		return nil
-	})
+	}))
 	assert.Nil(err)
 
 	b.state = StateHalfOpen
@@ -159,10 +159,10 @@ func TestBreakerCallsClosedHandler(t *testing.T) {
 	assert := assert.New(t)
 
 	var didCall, didCallClosed bool
-	b, err := New(func(_ context.Context) error {
+	b, err := New(Always(func(_ context.Context) error {
 		didCall = true
 		return nil
-	}, OptOpenAction(func(_ context.Context) {
+	}), OptOpenAction(func(_ context.Context) {
 		didCallClosed = true
 	}))
 	assert.Nil(err)

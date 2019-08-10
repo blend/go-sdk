@@ -9,9 +9,31 @@ import (
 	"github.com/blend/go-sdk/ex"
 )
 
+type (
+	// Action is a piece of code to run.
+	Action func(context.Context) error
+	// ActionProvider returns a new action.
+	ActionProvider func() Action
+	// OpenAction is called when the breaker is open.
+	OpenAction func(context.Context)
+	// OnStateChangeHandler is called when the state changes.
+	OnStateChangeHandler func(ctx context.Context, from, to State, generation int64)
+	// ShouldCloseProvider returns if the breaker should close.
+	ShouldCloseProvider func(ctx context.Context, counts Counts) bool
+	// NowProvider returns the current time.
+	NowProvider func() time.Time
+)
+
+// Always returns a static action provider.
+func Always(action Action) ActionProvider {
+	return func() Action {
+		return action
+	}
+}
+
 // MustNew returns a new breaker and panics if there is a construction error.
-func MustNew(action func(context.Context) error, options ...Option) *Breaker {
-	b, err := New(action, options...)
+func MustNew(actionProvider ActionProvider, options ...Option) *Breaker {
+	b, err := New(actionProvider, options...)
 	if err != nil {
 		panic(err)
 	}
@@ -19,9 +41,9 @@ func MustNew(action func(context.Context) error, options ...Option) *Breaker {
 }
 
 // New creates a new breaker with a given action and options.
-func New(action func(context.Context) error, options ...Option) (*Breaker, error) {
+func New(actionProvider ActionProvider, options ...Option) (*Breaker, error) {
 	b := Breaker{
-		Action:               action,
+		ActionProvider:       actionProvider,
 		ClosedExpiryInterval: DefaultClosedExpiryInterval,
 		OpenExpiryInterval:   DefaultOpenExpiryInterval,
 		HalfOpenMaxActions:   DefaultHalfOpenMaxActions,
@@ -39,17 +61,17 @@ type Breaker struct {
 	sync.Mutex
 
 	// Action is the function to preempt calling if it's failed a lot.
-	Action func(context.Context) error
+	ActionProvider ActionProvider
 	// OpenAction is an optional action to be called when the breaker is open (i.e. preventing calls
 	// to the main action handler.)
-	OpenAction func(context.Context)
+	OpenAction
 
 	// OnStateChange is an optional handler called when the breaker transitions state.
-	OnStateChange func(ctx context.Context, from, to State, generation int64)
+	OnStateChange OnStateChangeHandler
 	// ShouldCloseProvider is called optionally to determine if we should close the breaker.
-	ShouldCloseProvider func(ctx context.Context, counts Counts) bool
+	ShouldCloseProvider ShouldCloseProvider
 	// NowProvider lets you optionally inject the current time for testing.
-	NowProvider func() time.Time
+	NowProvider
 
 	// HalfOpenMaxActions is the maximum number of requests
 	// we can make when the state is HalfOpen.
@@ -96,7 +118,7 @@ func (b *Breaker) Execute(ctx context.Context) error {
 		}
 	}()
 
-	err = b.Action(ctx)
+	err = b.ActionProvider()(ctx)
 	b.afterAction(ctx, generation, err == nil)
 	return err
 }
