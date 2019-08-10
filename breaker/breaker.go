@@ -31,7 +31,7 @@ func MustNew(options ...Option) *Breaker {
 	return b
 }
 
-// New creates a new breaker with a given action and options.
+// New creates a new breaker with the given options.
 func New(options ...Option) (*Breaker, error) {
 	b := Breaker{
 		ClosedExpiryInterval: DefaultClosedExpiryInterval,
@@ -46,7 +46,7 @@ func New(options ...Option) (*Breaker, error) {
 	return &b, nil
 }
 
-// Breaker is a state machine to prevent sending requests that are likely to fail.
+// Breaker is a state machine to prevent performing actions that are likely to fail.
 type Breaker struct {
 	sync.Mutex
 
@@ -79,17 +79,16 @@ type Breaker struct {
 	state State
 	// generation is the current state generation.
 	generation int64
-	// StateExpiresAt is the time when the current state will expire.
+	// stateExpiresAt is the time when the current state will expire.
 	// It is set when we change state according to the interval
 	// and the current time.
 	stateExpiresAt time.Time
 }
 
-// Do runs the given request if the CircuitBreaker accepts it.
-// Execute returns an error instantly if the CircuitBreaker rejects the request.
-// Otherwise, Execute returns the result of the request.
-// If a panic occurs in the request, the CircuitBreaker handles it as an error
-// and causes the same panic again.
+// Do runs the given action if the Breaker accepts it.
+// Do returns an error instantly if the Breaker rejects the request.
+// Otherwise, Do returns the result of the request.
+// If a panic occurs in the request, the Breaker handles it as an error.
 func (b *Breaker) Do(ctx context.Context, action Action) (interface{}, error) {
 	generation, err := b.beforeAction(ctx)
 	if err != nil {

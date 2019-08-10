@@ -55,14 +55,14 @@ func main() {
 	var res interface{}
 	for x := 0; x < 1024; x++ {
 		if res, err = cb.Do(context.Background(), createCaller(mockServer.URL)); err != nil {
-			fmt.Printf("circuit breaker error: %v\n", err)
+			fmt.Printf("(%v) circuit breaker error: %v\n", cb.State(context.Background()), err)
 			if ex.Is(err, breaker.ErrOpenState) {
 				time.Sleep(5 * time.Second)
 			} else {
 				time.Sleep(100 * time.Millisecond)
 			}
 		} else {
-			fmt.Printf("result: %v\n", res)
+			fmt.Printf("(%v) result: %v\n", cb.State(context.Background()), res)
 			time.Sleep(100 * time.Millisecond)
 		}
 	}
