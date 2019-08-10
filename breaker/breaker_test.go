@@ -153,13 +153,13 @@ func TestBreakerErrTooManyRequests(t *testing.T) {
 	assert.False(didCall)
 }
 
-func TestBreakerCallsClosedHandler(t *testing.T) {
+func TestBreakerCallsOnOpenHandler(t *testing.T) {
 	assert := assert.New(t)
 
-	var didCall, didCallClosed bool
+	var didCall, didCallOpen bool
 	b, err := New(OptOpenAction(func(_ context.Context) (interface{}, error) {
-		didCallClosed = true
-		return "on closed", nil
+		didCallOpen = true
+		return "on open", nil
 	}))
 	assert.Nil(err)
 
@@ -173,6 +173,6 @@ func TestBreakerCallsClosedHandler(t *testing.T) {
 
 	assert.Nil(err)
 	assert.False(didCall)
-	assert.True(didCallClosed)
-	assert.Equal("on closed", res)
+	assert.True(didCallOpen)
+	assert.Equal("on open", res)
 }
