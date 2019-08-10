@@ -125,7 +125,6 @@ func (b *Breaker) beforeAction(ctx context.Context) (int64, error) {
 	defer b.Unlock()
 
 	now := b.now()
-	ctx = WithContextTime(ctx, now)
 	state, generation := b.getState(ctx, now)
 
 	if state == StateOpen {
@@ -143,7 +142,6 @@ func (b *Breaker) afterAction(ctx context.Context, generation int64, success boo
 	defer b.Unlock()
 
 	now := b.now()
-	ctx = WithContextTime(ctx, now)
 	state, generation := b.getState(ctx, now)
 	if generation != generation {
 		return
