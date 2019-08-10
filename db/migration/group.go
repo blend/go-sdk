@@ -22,6 +22,11 @@ func NewGroupWithActions(actions ...Actionable) *Group {
 	return NewGroup(OptActions(actions...))
 }
 
+// NewGroupWithAction returns a new group with a single action.
+func NewGroupWithAction(guard GuardFunc, action Action) *Group {
+	return NewGroup(OptActions(NewStep(guard, action)))
+}
+
 // Group is an series of migration actions.
 // It uses normally transactions to apply these actions as an atomic unit, but this transaction can be bypassed by
 // setting the SkipTransaction flag to true. This allows the use of CONCURRENT index creation and other operations that
