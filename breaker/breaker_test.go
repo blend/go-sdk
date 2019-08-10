@@ -35,7 +35,7 @@ func TestNewOptions(t *testing.T) {
 }
 
 func createTestBreaker() *Breaker {
-	return MustNew(nil, OptClosedExpiryInterval(0))
+	return MustNew(OptClosedExpiryInterval(0))
 }
 
 func succeed(ctx context.Context, b *Breaker) error {
