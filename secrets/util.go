@@ -2,12 +2,9 @@ package secrets
 
 import (
 	"fmt"
+	"github.com/blend/go-sdk/ex"
 	"net/http"
 	"net/url"
-	"path/filepath"
-
-	"github.com/blend/go-sdk/env"
-	"github.com/blend/go-sdk/ex"
 )
 
 // MustURL creates a new url and panics on error.
@@ -17,16 +14,6 @@ func MustURL(format string, args ...interface{}) *url.URL {
 		panic(err)
 	}
 	return output
-}
-
-// ServiceConfigPath returns the service config path from environment.
-func ServiceConfigPath(serviceEnv, serviceName string) string {
-	return filepath.Join("secret", "data", serviceEnv, "service", serviceName, "config")
-}
-
-// ServiceConfigPathFromEnv returns the service config path from environment.
-func ServiceConfigPathFromEnv() string {
-	return ServiceConfigPath(env.Env().ServiceEnv(), env.Env().ServiceName())
 }
 
 // ExceptionClassForStatus returns the exception class for a given remote status code.

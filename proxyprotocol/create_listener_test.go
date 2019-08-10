@@ -1,6 +1,8 @@
 package proxyprotocol
 
 import (
+	"crypto/tls"
+	"net"
 	"testing"
 	"time"
 
@@ -30,4 +32,32 @@ func TestCreateListener(t *testing.T) {
 	tcpListener, ok := typed.Listener.(webutil.TCPKeepAliveListener)
 	assert.True(ok)
 	assert.NotNil(tcpListener)
+}
+
+func TestCreateTLSListener(t *testing.T) {
+	assert := assert.New(t)
+
+	tlsConfig := &tls.Config{}
+	listener, err := CreateListener("127.0.0.1:",
+		OptKeepAlive(true),
+		OptUseProxyProtocol(true),
+		OptKeepAlivePeriod(30*time.Second),
+		OptTLSConfig(tlsConfig),
+	)
+	defer listener.Close()
+
+	assert.Nil(err)
+	assert.NotNil(listener)
+
+	go func() {
+		_, err := net.Dial("tcp", listener.Addr().String())
+		assert.Nil(err)
+	}()
+
+	conn, err := listener.Accept()
+	assert.Nil(err)
+
+	typed, ok := conn.(*tls.Conn)
+	assert.True(ok)
+	assert.NotNil(typed)
 }

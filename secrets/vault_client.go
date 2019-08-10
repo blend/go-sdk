@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"time"
 
 	"github.com/blend/go-sdk/bufferutil"
 
@@ -24,22 +25,16 @@ var (
 
 // New creates a new vault client with a default set of options.
 func New(options ...Option) (*VaultClient, error) {
-	xport := &http.Transport{}
-	err := http2.ConfigureTransport(xport)
-	if err != nil {
-		return nil, err
-	}
 	remote, err := url.ParseRequestURI(DefaultAddr)
 	if err != nil {
 		return nil, err
 	}
+
 	client := &VaultClient{
+		Timeout:    DefaultTimeout,
 		Remote:     remote,
 		Mount:      DefaultMount,
 		BufferPool: bufferutil.NewPool(DefaultBufferPoolSize),
-		Client: &http.Client{
-			Transport: xport,
-		},
 	}
 
 	client.KV1 = &KV1{Client: client}
@@ -50,6 +45,20 @@ func New(options ...Option) (*VaultClient, error) {
 		if err = option(client); err != nil {
 			return nil, err
 		}
+	}
+
+	xport := client.Transport
+	if xport == nil {
+		xport = &http.Transport{}
+		err = http2.ConfigureTransport(xport)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	client.Client = &http.Client{
+		Transport: xport,
+		Timeout: client.Timeout,
 	}
 
 	return client, nil
@@ -65,6 +74,8 @@ func Must(c *VaultClient, err error) *VaultClient {
 
 // VaultClient is a client to talk to the secrets store.
 type VaultClient struct {
+	Timeout    time.Duration
+	Transport  *http.Transport
 	Remote     *url.URL
 	Token      string
 	Mount      string
@@ -75,6 +86,7 @@ type VaultClient struct {
 	Transit    TransitClient
 	Client     HTTPClient
 	CertPool   *CertPool
+	Tracer 	   Tracer
 }
 
 // Put puts a value.
@@ -122,7 +134,13 @@ func (c *VaultClient) ReadInto(ctx context.Context, key string, obj interface{},
 	if err != nil {
 		return err
 	}
-	return RestoreJSON(response, obj)
+	asStrings := make(map[string]string)
+	for k, v := range response {
+		if s, ok := v.(string); ok {
+			asStrings[k] = s
+		}
+	}
+	return RestoreJSON(asStrings, obj)
 }
 
 // WriteInto writes an object into a secret at a given key.
@@ -131,17 +149,21 @@ func (c *VaultClient) WriteInto(ctx context.Context, key string, obj interface{}
 	if err != nil {
 		return err
 	}
-	return c.Put(ctx, key, data, options...)
+	asData := make(map[string]interface{})
+	for k, v := range data {
+		asData[k] = v
+	}
+	return c.Put(ctx, key, asData, options...)
 }
 
 // CreateTransitKey creates a transit key path
-func (c *VaultClient) CreateTransitKey(ctx context.Context, key string, params map[string]interface{}) error {
-	return c.Transit.CreateTransitKey(ctx, key, params)
+func (c *VaultClient) CreateTransitKey(ctx context.Context, key string, options ...CreateTransitKeyOption) error {
+	return c.Transit.CreateTransitKey(ctx, key, options...)
 }
 
 // ConfigureTransitKey configures a transit key path
-func (c *VaultClient) ConfigureTransitKey(ctx context.Context, key string, config map[string]interface{}) error {
-	return c.Transit.ConfigureTransitKey(ctx, key, config)
+func (c *VaultClient) ConfigureTransitKey(ctx context.Context, key string, options ...UpdateTransitKeyOption) error {
+	return c.Transit.ConfigureTransitKey(ctx, key, options...)
 }
 
 // ReadTransitKey returns data about a transit key path
@@ -248,9 +270,24 @@ func (c *VaultClient) createRequest(method, path string, options ...RequestOptio
 	return req
 }
 
-func (c *VaultClient) send(req *http.Request) (io.ReadCloser, error) {
+func (c *VaultClient) send(req *http.Request, traceOptions ...TraceOption) (io.ReadCloser, error) {
 	logger.MaybeTrigger(req.Context(), c.Log, NewEvent(req))
+	var finisher TraceFinisher
+	if c.Tracer != nil {
+		var traceErr error
+		finisher, traceErr = c.Tracer.Start(req.Context(), traceOptions...)
+		if traceErr != nil {
+			logger.MaybeError(c.Log, traceErr)
+		}
+	}
 	res, err := c.Client.Do(req)
+	if finisher != nil {
+		var statusCode = 500
+		if res != nil {
+			statusCode = res.StatusCode
+		}
+		finisher.Finish(req.Context(), statusCode, err)
+	}
 	if err != nil {
 		return nil, err
 	}

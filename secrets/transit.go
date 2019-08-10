@@ -6,8 +6,8 @@ import (
 
 // TransitClient is an interface for an encryption-as-a-service client
 type TransitClient interface {
-	CreateTransitKey(ctx context.Context, key string, params map[string]interface{}) error
-	ConfigureTransitKey(ctx context.Context, key string, config map[string]interface{}) error
+	CreateTransitKey(ctx context.Context, key string, options ...CreateTransitKeyOption) error
+	ConfigureTransitKey(ctx context.Context, key string,  options ...UpdateTransitKeyOption) error
 	ReadTransitKey(ctx context.Context, key string) (map[string]interface{}, error)
 	DeleteTransitKey(ctx context.Context, key string) error
 

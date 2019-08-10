@@ -3,7 +3,7 @@ package secrets
 import "time"
 
 // Values is a bag of values.
-type Values = map[string]string
+type Values = map[string]interface{}
 
 // SecretV1 is the structure returned for every secret within Vault.
 type SecretV1 struct {
@@ -208,4 +208,52 @@ type TransitResult struct {
 		Ciphertext string `json:"ciphertext"`
 		Plaintext  string `json:"plaintext"`
 	} `json:"data"`
+}
+
+// CreateTransitKeyConfig is the configuration data for creating a TransitKey
+type CreateTransitKeyConfig struct {
+	// Convergent - If enabled, the key will support convergent encryption, where the same plaintext creates the same
+	// ciphertext. This requires derived to be set to true. When enabled, each encryption(/decryption/rewrap/datakey)
+	// operation will derive a nonce value rather than randomly generate it.
+	Convergent bool `json:"convergent_encryption,omitempty"`
+	// Derived - Specifies if key derivation is to be used. If enabled, all encrypt/decrypt requests to this named key
+	// must provide a context which is used for key derivation.
+	Derived bool `json:"derived,omitempty"`
+	// Exportable - Enables keys to be exportable. This allows for all the valid keys in the key ring to be exported.
+	// Once set, this cannot be disabled.
+	Exportable bool `json:"exportable,omitempty"`
+	// AllowPlaintextBackup - If set, enables taking backup of named key in the plaintext format. Once set, this cannot
+	// be disabled.
+	AllowPlaintextBackup bool `json:"allow_plaintext_backup,omitempty"`
+	// Type specifies the type of key to create. The default type is "aes256-gcm96":
+	//   aes256-gcm96 – AES-256 wrapped with GCM using a 96-bit nonce size AEAD (symmetric, supports derivation and
+	//      convergent encryption)
+	//   chacha20-poly1305 – ChaCha20-Poly1305 AEAD (symmetric, supports derivation and convergent encryption)
+	//   ed25519 – ED25519 (asymmetric, supports derivation). When using derivation, a sign operation with the same
+	//      context will derive the same key and signature; this is a signing analogue to convergent_encryption.
+	//   ecdsa-p256 – ECDSA using the P-256 elliptic curve (asymmetric)
+	//   rsa-2048 - RSA with bit size of 2048 (asymmetric)
+	//   rsa-4096 - RSA with bit size of 4096 (asymmetric)
+	Type string `json:"type"`
+}
+
+// UpdateTransitKeyConfig is the configuration data for modifying a TransitKey
+type UpdateTransitKeyConfig struct {
+	// MinDecryptionVersion -  Specifies the minimum version of ciphertext allowed to be decrypted. Adjusting this as
+	// part of a key rotation policy can prevent old copies of ciphertext from being decrypted, should they fall into
+	// the wrong hands. For signatures, this value controls the minimum version of signature that can be verified
+	// against. For HMACs, this controls the minimum version of a key allowed to be used as the key for verification.
+	MinDecryptionVersion int `json:"min_decryption_version,omitempty"`
+	// MinEncryptionVersion - Specifies the minimum version of the key that can be used to encrypt plaintext, sign
+	// payloads, or generate HMACs. Must be 0 (which will use the latest version) or a value greater or equal to
+	// min_decryption_version.
+	MinEncryptionVersion int `json:"min_encryption_version,omitempty"`
+	// DeletionAllowed - Specifies if the key is allowed to be deleted.
+	DeletionAllowed *bool `json:"derived,omitempty"`
+	// Exportable - Enables keys to be exportable. This allows for all the valid keys in the key ring to be exported.
+	// Once set, this cannot be disabled.
+	Exportable bool `json:"exportable,omitempty"`
+	// AllowPlaintextBackup - If set, enables taking backup of named key in the plaintext format. Once set, this cannot
+	// be disabled.
+	AllowPlaintextBackup bool `json:"allow_plaintext_backup,omitempty"`
 }

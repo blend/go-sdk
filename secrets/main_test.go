@@ -3,10 +3,17 @@ package secrets
 import (
 	"bytes"
 	"fmt"
+	"github.com/blend/go-sdk/assert"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"testing"
 )
+
+// TestMain is the testing entrypoint.
+func TestMain(m *testing.M) {
+	assert.Main(m)
+}
 
 // NewMockHTTPClient returns a new mock http client.
 func NewMockHTTPClient() *MockHTTPClient {

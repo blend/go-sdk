@@ -26,11 +26,12 @@ func CreateListener(addr string, opts ...CreateListenerOption) (net.Listener, er
 
 	var output net.Listener = webutil.TCPKeepAliveListener{TCPListener: ln.(*net.TCPListener)}
 
-	if options.TLSConfig != nil {
-		output = tls.NewListener(output, options.TLSConfig)
-	}
 	if options.UseProxyProtocol {
 		output = &Listener{Listener: output}
 	}
+	if options.TLSConfig != nil {
+		output = tls.NewListener(output, options.TLSConfig)
+	}
+
 	return output, nil
 }
