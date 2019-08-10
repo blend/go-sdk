@@ -18,24 +18,24 @@ type VaultTransit struct {
 }
 
 // CreateTransitKey creates a transit key path
-func (vt VaultTransit) CreateTransitKey(ctx context.Context, key string, params map[string]interface{}) error {
+func (vt VaultTransit) CreateTransitKey(ctx context.Context, key string, options ...CreateTransitKeyOption) error {
+	var config CreateTransitKeyConfig
+	for _, o := range options {
+		err := o(&config)
+		if err != nil {
+			return err
+		}
+	}
+
 	req := vt.Client.createRequest(MethodPost, filepath.Join("/v1/transit/keys/", key)).WithContext(ctx)
 
-	if _, ok := params["type"]; !ok {
-		params["type"] = "aes256-gcm96"
-	}
-
-	if _, ok := params["derived"]; !ok {
-		params["derived"] = true
-	}
-
-	body, err := vt.Client.jsonBody(params)
+	body, err := vt.Client.jsonBody(config)
 	if err != nil {
 		return err
 	}
 	req.Body = body
 
-	res, err := vt.Client.send(req)
+	res, err := vt.Client.send(req, OptTraceVaultOperation("transit.create"), OptTraceKeyName(key))
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,15 @@ func (vt VaultTransit) CreateTransitKey(ctx context.Context, key string, params 
 }
 
 // ConfigureTransitKey configures a transit key path
-func (vt VaultTransit) ConfigureTransitKey(ctx context.Context, key string, config map[string]interface{}) error {
+func (vt VaultTransit) ConfigureTransitKey(ctx context.Context, key string, options ...UpdateTransitKeyOption) error {
+	var config UpdateTransitKeyConfig
+	for _, o := range options {
+		err := o(&config)
+		if err != nil {
+			return err
+		}
+	}
+
 	req := vt.Client.createRequest(MethodPost, filepath.Join("/v1/transit/keys/", key, "config")).WithContext(ctx)
 
 	body, err := vt.Client.jsonBody(config)
@@ -54,7 +62,7 @@ func (vt VaultTransit) ConfigureTransitKey(ctx context.Context, key string, conf
 	}
 	req.Body = body
 
-	res, err := vt.Client.send(req)
+	res, err := vt.Client.send(req, OptTraceVaultOperation("transit.configure"), OptTraceKeyName(key))
 	if err != nil {
 		return err
 	}
@@ -67,7 +75,7 @@ func (vt VaultTransit) ConfigureTransitKey(ctx context.Context, key string, conf
 func (vt VaultTransit) ReadTransitKey(ctx context.Context, key string) (map[string]interface{}, error) {
 	req := vt.Client.createRequest(MethodGet, filepath.Join("/v1/transit/keys/", key)).WithContext(ctx)
 
-	res, err := vt.Client.send(req)
+	res, err := vt.Client.send(req, OptTraceVaultOperation("transit.read"), OptTraceKeyName(key))
 	if err != nil {
 		return map[string]interface{}{}, err
 	}
@@ -85,7 +93,7 @@ func (vt VaultTransit) ReadTransitKey(ctx context.Context, key string) (map[stri
 func (vt VaultTransit) DeleteTransitKey(ctx context.Context, key string) error {
 	req := vt.Client.createRequest(MethodDelete, filepath.Join("/v1/transit/keys/", key)).WithContext(ctx)
 
-	res, err := vt.Client.send(req)
+	res, err := vt.Client.send(req, OptTraceVaultOperation("transit.delete"), OptTraceKeyName(key))
 	if err != nil {
 		return err
 	}
@@ -111,7 +119,7 @@ func (vt VaultTransit) Encrypt(ctx context.Context, key string, context, data []
 	}
 	req.Body = body
 
-	res, err := vt.Client.send(req)
+	res, err := vt.Client.send(req, OptTraceVaultOperation("transit.encrypt"), OptTraceKeyName(key))
 	if err != nil {
 		return "", err
 	}
@@ -142,7 +150,7 @@ func (vt VaultTransit) Decrypt(ctx context.Context, key string, context []byte, 
 	}
 	req.Body = body
 
-	res, err := vt.Client.send(req)
+	res, err := vt.Client.send(req, OptTraceVaultOperation("transit.decrypt"), OptTraceKeyName(key))
 	if err != nil {
 		return nil, err
 	}

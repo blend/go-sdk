@@ -4,8 +4,8 @@ import (
 	"crypto/tls"
 	"net/http"
 	"net/url"
+	"time"
 
-	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 )
 
@@ -47,6 +47,9 @@ func OptConfig(cfg Config) Option {
 		if err := OptToken(cfg.Token)(vc); err != nil {
 			return err
 		}
+		if err := OptTimeout(cfg.TimeoutOrDefault())(vc); err != nil {
+			return err
+		}
 		if err := OptRootCAs(cfg.RootCAs...)(vc); err != nil {
 			return err
 		}
@@ -82,9 +85,15 @@ func OptToken(token string) Option {
 	}
 }
 
+// OptTimeout sets the timeout to vault
+func OptTimeout(timeout time.Duration) Option{
+	return func(vc *VaultClient) error {
+		vc.Timeout = timeout
+		return nil
+	}
+}
+
 // OptRootCAs sets the root ca pool for client requests.
-// If unset, it will set the VaultClient Client to be an http.Client.
-// If unset, it will set the transport to be an http.Transport.
 func OptRootCAs(rootCAs ...string) Option {
 	return func(vc *VaultClient) error {
 		if len(rootCAs) > 0 {
@@ -96,32 +105,20 @@ func OptRootCAs(rootCAs ...string) Option {
 			if err != nil {
 				return err
 			}
-			var client *http.Client
-			if vc.Client == nil {
-				client = &http.Client{}
-				vc.Client = client
-			} else if typed, ok := vc.Client.(*http.Client); ok && typed != nil {
-				client = typed
-			}
-			if client == nil {
-				return ex.New("invalid http client for vault client; cannot set root cas")
-			}
 
-			var xport *http.Transport
-			if client.Transport == nil {
-				xport := &http.Transport{}
-				client.Transport = xport
-			} else if typed, ok := client.Transport.(*http.Transport); ok && typed != nil {
-				xport = typed
-			}
-			if xport == nil {
-				return ex.New("invalid http transport for vault client; cannot set root cas")
-			}
-			if xport.TLSClientConfig == nil {
-				xport.TLSClientConfig = &tls.Config{}
-			}
+			xport := &http.Transport{}
+			xport.TLSClientConfig = &tls.Config{}
 			xport.TLSClientConfig.RootCAs = certPool.Pool()
+			vc.Transport = xport
 		}
+		return nil
+	}
+}
+
+// OptTracer allows you to configure a tracer on the vault client
+func OptTracer(tracer Tracer) Option {
+	return func(vc *VaultClient) error {
+		vc.Tracer = tracer
 		return nil
 	}
 }
