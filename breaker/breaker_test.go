@@ -13,7 +13,7 @@ import (
 func TestNew(t *testing.T) {
 	assert := assert.New(t)
 
-	b, err := New(Always(func(_ context.Context) error { return nil }))
+	b, err := New()
 	assert.Nil(err)
 	assert.Equal(DefaultHalfOpenMaxActions, b.HalfOpenMaxActions)
 	assert.Equal(DefaultOpenExpiryInterval, b.OpenExpiryInterval)
@@ -24,7 +24,6 @@ func TestNewOptions(t *testing.T) {
 	assert := assert.New(t)
 
 	b, err := New(
-		Always(func(_ context.Context) error { return nil }),
 		OptHalfOpenMaxActions(5),
 		OptOpenExpiryInterval(10*time.Second),
 		OptClosedExpiryInterval(20*time.Second),
@@ -40,8 +39,8 @@ func createTestBreaker() *Breaker {
 }
 
 func succeed(ctx context.Context, b *Breaker) error {
-	b.ActionProvider = Always(func(_ context.Context) error { return nil })
-	return b.Execute(ctx)
+	_, err := b.Do(ctx, func(_ context.Context) (interface{}, error) { return nil, nil })
+	return err
 }
 
 func pseudoSleep(b *Breaker, period time.Duration) {
@@ -52,8 +51,7 @@ func pseudoSleep(b *Breaker, period time.Duration) {
 
 func fail(ctx context.Context, b *Breaker) error {
 	msg := "fail"
-	b.ActionProvider = Always(func(_ context.Context) error { return fmt.Errorf(msg) })
-	err := b.Execute(ctx)
+	_, err := b.Do(ctx, func(_ context.Context) (interface{}, error) { return nil, fmt.Errorf(msg) })
 	if err.Error() == msg {
 		return nil
 	}
@@ -122,16 +120,16 @@ func TestBreakerErrStateOpen(t *testing.T) {
 	assert := assert.New(t)
 
 	var didCall bool
-	b, err := New(Always(func(_ context.Context) error {
-		didCall = true
-		return nil
-	}))
+	b, err := New()
 	assert.Nil(err)
 
 	b.state = StateOpen
 	b.stateExpiresAt = time.Now().Add(time.Hour)
 
-	err = b.Execute(context.Background())
+	_, err = b.Do(context.Background(), func(_ context.Context) (interface{}, error) {
+		didCall = true
+		return nil, nil
+	})
 	assert.True(ex.Is(err, ErrOpenState), fmt.Sprintf("%v", err))
 	assert.False(didCall)
 }
@@ -140,17 +138,17 @@ func TestBreakerErrTooManyRequests(t *testing.T) {
 	assert := assert.New(t)
 
 	var didCall bool
-	b, err := New(Always(func(_ context.Context) error {
-		didCall = true
-		return nil
-	}))
+	b, err := New()
 	assert.Nil(err)
 
 	b.state = StateHalfOpen
 	b.Counts.Requests = 10
 	b.HalfOpenMaxActions = 5
 
-	err = b.Execute(context.Background())
+	_, err = b.Do(context.Background(), func(_ context.Context) (interface{}, error) {
+		didCall = true
+		return nil, nil
+	})
 	assert.True(ex.Is(err, ErrTooManyRequests))
 	assert.False(didCall)
 }
@@ -159,10 +157,7 @@ func TestBreakerCallsClosedHandler(t *testing.T) {
 	assert := assert.New(t)
 
 	var didCall, didCallClosed bool
-	b, err := New(Always(func(_ context.Context) error {
-		didCall = true
-		return nil
-	}), OptOpenAction(func(_ context.Context) {
+	b, err := New(OptOpenAction(func(_ context.Context) {
 		didCallClosed = true
 	}))
 	assert.Nil(err)
@@ -170,7 +165,11 @@ func TestBreakerCallsClosedHandler(t *testing.T) {
 	b.state = StateOpen
 	b.stateExpiresAt = time.Now().Add(time.Hour)
 
-	err = b.Execute(context.Background())
+	_, err = b.Do(context.Background(), func(_ context.Context) (interface{}, error) {
+		didCall = true
+		return nil, nil
+	})
+
 	assert.True(ex.Is(err, ErrOpenState))
 	assert.False(didCall)
 	assert.True(didCallClosed)

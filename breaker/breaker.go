@@ -11,9 +11,7 @@ import (
 
 type (
 	// Action is a piece of code to run.
-	Action func(context.Context) error
-	// ActionProvider returns a new action.
-	ActionProvider func() Action
+	Action func(context.Context) (interface{}, error)
 	// OpenAction is called when the breaker is open.
 	OpenAction func(context.Context)
 	// OnStateChangeHandler is called when the state changes.
@@ -24,16 +22,9 @@ type (
 	NowProvider func() time.Time
 )
 
-// Always returns a static action provider.
-func Always(action Action) ActionProvider {
-	return func() Action {
-		return action
-	}
-}
-
 // MustNew returns a new breaker and panics if there is a construction error.
-func MustNew(actionProvider ActionProvider, options ...Option) *Breaker {
-	b, err := New(actionProvider, options...)
+func MustNew(options ...Option) *Breaker {
+	b, err := New(options...)
 	if err != nil {
 		panic(err)
 	}
@@ -41,9 +32,8 @@ func MustNew(actionProvider ActionProvider, options ...Option) *Breaker {
 }
 
 // New creates a new breaker with a given action and options.
-func New(actionProvider ActionProvider, options ...Option) (*Breaker, error) {
+func New(options ...Option) (*Breaker, error) {
 	b := Breaker{
-		ActionProvider:       actionProvider,
 		ClosedExpiryInterval: DefaultClosedExpiryInterval,
 		OpenExpiryInterval:   DefaultOpenExpiryInterval,
 		HalfOpenMaxActions:   DefaultHalfOpenMaxActions,
@@ -60,8 +50,6 @@ func New(actionProvider ActionProvider, options ...Option) (*Breaker, error) {
 type Breaker struct {
 	sync.Mutex
 
-	// Action is the function to preempt calling if it's failed a lot.
-	ActionProvider ActionProvider
 	// OpenAction is an optional action to be called when the breaker is open (i.e. preventing calls
 	// to the main action handler.)
 	OpenAction
@@ -97,30 +85,29 @@ type Breaker struct {
 	stateExpiresAt time.Time
 }
 
-// Execute runs the given request if the CircuitBreaker accepts it.
+// Do runs the given request if the CircuitBreaker accepts it.
 // Execute returns an error instantly if the CircuitBreaker rejects the request.
 // Otherwise, Execute returns the result of the request.
 // If a panic occurs in the request, the CircuitBreaker handles it as an error
 // and causes the same panic again.
-func (b *Breaker) Execute(ctx context.Context) error {
+func (b *Breaker) Do(ctx context.Context, action Action) (interface{}, error) {
 	generation, err := b.beforeAction(ctx)
 	if err != nil {
 		if b.OpenAction != nil {
 			b.OpenAction(ctx)
-			return err
+			return nil, err
 		}
-		return err
+		return nil, err
 	}
-
 	defer func() {
 		if r := recover(); r != nil {
 			b.afterAction(ctx, generation, false)
 		}
 	}()
 
-	err = b.ActionProvider()(ctx)
+	res, err := action(ctx)
 	b.afterAction(ctx, generation, err == nil)
-	return err
+	return res, err
 }
 
 // State returns the current state of the CircuitBreaker.
