@@ -22,22 +22,19 @@ type Result struct {
 	Name string `json:"name"`
 }
 
-func createCaller(results chan Result, url string, opts ...r2.Option) breaker.ActionProvider {
-	return func() breaker.Action {
-		return func(ctx context.Context) error {
-			res, err := r2.New(url, opts...).Do()
-			if err != nil {
-				return err
-			}
-			defer res.Body.Close()
-			if res.StatusCode >= 300 {
-				return fmt.Errorf("non 200 status code returned from remote")
-			}
-			var result Result
-			json.NewDecoder(res.Body).Decode(&result)
-			results <- result
-			return nil
+func createCaller(url string, opts ...r2.Option) breaker.Action {
+	return func(ctx context.Context) (interface{}, error) {
+		res, err := r2.New(url, opts...).Do()
+		if err != nil {
+			return nil, err
 		}
+		defer res.Body.Close()
+		if res.StatusCode >= 300 {
+			return nil, fmt.Errorf("non 200 status code returned from remote")
+		}
+		var result Result
+		json.NewDecoder(res.Body).Decode(&result)
+		return result, nil
 	}
 }
 
@@ -53,14 +50,11 @@ func main() {
 	}))
 	defer mockServer.Close()
 
-	results := make(chan Result, 1)
-	cb := breaker.MustNew(createCaller(results, mockServer.URL),
-		breaker.OptOpenExpiryInterval(5*time.Second),
-	)
-
+	cb := breaker.MustNew(breaker.OptOpenExpiryInterval(5 * time.Second))
 	var err error
+	var res interface{}
 	for x := 0; x < 1024; x++ {
-		if err = cb.Execute(context.Background()); err != nil {
+		if res, err = cb.Do(context.Background(), createCaller(mockServer.URL)); err != nil {
 			fmt.Printf("circuit breaker error: %v\n", err)
 			if ex.Is(err, breaker.ErrOpenState) {
 				time.Sleep(5 * time.Second)
@@ -68,7 +62,7 @@ func main() {
 				time.Sleep(100 * time.Millisecond)
 			}
 		} else {
-			fmt.Printf("result: %v\n", <-results)
+			fmt.Printf("result: %v\n", res)
 			time.Sleep(100 * time.Millisecond)
 		}
 	}
