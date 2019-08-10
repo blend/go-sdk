@@ -6,5 +6,6 @@ import "time"
 const (
 	DefaultClosedExpiryInterval = 5 * time.Second
 	DefaultOpenExpiryInterval   = 60 * time.Second
-	DefaultHalfOpenMaxRequests  = 1
+	DefaultHalfOpenMaxActions   = 1
+	DefaultConsecutiveFailures  = 5
 )

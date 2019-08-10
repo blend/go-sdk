@@ -9,13 +9,22 @@ import (
 	"github.com/blend/go-sdk/ex"
 )
 
-// New creates a new breaker.
+// MustNew returns a new breaker and panics if there is a construction error.
+func MustNew(action func(context.Context) error, options ...Option) *Breaker {
+	b, err := New(action, options...)
+	if err != nil {
+		panic(err)
+	}
+	return b
+}
+
+// New creates a new breaker with a given action and options.
 func New(action func(context.Context) error, options ...Option) (*Breaker, error) {
 	b := Breaker{
 		Action:               action,
 		ClosedExpiryInterval: DefaultClosedExpiryInterval,
 		OpenExpiryInterval:   DefaultOpenExpiryInterval,
-		HalfOpenMaxRequests:  DefaultHalfOpenMaxRequests,
+		HalfOpenMaxActions:   DefaultHalfOpenMaxActions,
 	}
 	for _, opt := range options {
 		if err := opt(&b); err != nil {
@@ -31,8 +40,9 @@ type Breaker struct {
 
 	// Action is the function to preempt calling if it's failed a lot.
 	Action func(context.Context) error
-	// ClosedAction is an optional action to be called when the breaker is closed.
-	ClosedAction func(context.Context) error
+	// OpenAction is an optional action to be called when the breaker is open (i.e. preventing calls
+	// to the main action handler.)
+	OpenAction func(context.Context)
 
 	// OnStateChange is an optional handler called when the breaker transitions state.
 	OnStateChange func(ctx context.Context, from, to State, generation int64)
@@ -41,33 +51,28 @@ type Breaker struct {
 	// NowProvider lets you optionally inject the current time for testing.
 	NowProvider func() time.Time
 
-	// HalfOpenMaxRequests is the maximum number of requests
+	// HalfOpenMaxActions is the maximum number of requests
 	// we can make when the state is HalfOpen.
-	HalfOpenMaxRequests int64
-
+	HalfOpenMaxActions int64
 	// ClosedExpiryInterval is the cyclic period of the closed state for the CircuitBreaker to clear the internal Counts.
 	// If Interval is 0, the CircuitBreaker doesn't clear internal Counts during the closed state.
 	ClosedExpiryInterval time.Duration
-
 	// OpenExpiryInterval is the period of the open state,
 	// after which the state of the CircuitBreaker becomes half-open.
 	// If Timeout is 0, the timeout value of the CircuitBreaker is set to 60 seconds.
 	OpenExpiryInterval time.Duration
-
 	// State is the current breaker state (Open, HalfOpen, Closed).
 	// Counts are stats for the breaker.
 	Counts Counts
 
-	// State is the current Breaker state (Closed, HalfOpen, Open etc.)
-	State State
-
-	// Generation is the current state generation.
-	Generation int64
-
+	// state is the current Breaker state (Closed, HalfOpen, Open etc.)
+	state State
+	// generation is the current state generation.
+	generation int64
 	// StateExpiresAt is the time when the current state will expire.
 	// It is set when we change state according to the interval
 	// and the current time.
-	StateExpiresAt time.Time
+	stateExpiresAt time.Time
 }
 
 // Execute runs the given request if the CircuitBreaker accepts it.
@@ -78,8 +83,9 @@ type Breaker struct {
 func (b *Breaker) Execute(ctx context.Context) error {
 	generation, err := b.beforeAction(ctx)
 	if err != nil {
-		if b.ClosedAction != nil {
-			return b.ClosedAction(ctx)
+		if b.OpenAction != nil {
+			b.OpenAction(ctx)
+			return err
 		}
 		return err
 	}
@@ -95,6 +101,16 @@ func (b *Breaker) Execute(ctx context.Context) error {
 	return err
 }
 
+// State returns the current state of the CircuitBreaker.
+func (b *Breaker) State(ctx context.Context) State {
+	b.Lock()
+	defer b.Unlock()
+
+	now := time.Now()
+	state, _ := b.getState(ctx, now)
+	return state
+}
+
 func (b *Breaker) beforeAction(ctx context.Context) (int64, error) {
 	b.Lock()
 	defer b.Unlock()
@@ -105,7 +121,7 @@ func (b *Breaker) beforeAction(ctx context.Context) (int64, error) {
 
 	if state == StateOpen {
 		return generation, ex.New(ErrOpenState)
-	} else if state == StateHalfOpen && b.Counts.Requests >= b.HalfOpenMaxRequests {
+	} else if state == StateHalfOpen && b.Counts.Requests >= b.HalfOpenMaxActions {
 		return generation, ex.New(ErrTooManyRequests)
 	}
 
@@ -141,7 +157,7 @@ func (b *Breaker) success(ctx context.Context, state State, now time.Time) {
 		atomic.AddInt64(&b.Counts.TotalSuccesses, 1)
 		atomic.AddInt64(&b.Counts.ConsecutiveSuccesses, 1)
 		atomic.StoreInt64(&b.Counts.ConsecutiveFailures, 0)
-		if b.Counts.ConsecutiveSuccesses >= b.HalfOpenMaxRequests {
+		if b.Counts.ConsecutiveSuccesses >= b.HalfOpenMaxActions {
 			b.setState(ctx, StateClosed, now)
 		}
 	}
@@ -162,47 +178,48 @@ func (b *Breaker) failure(ctx context.Context, state State, now time.Time) {
 }
 
 func (b *Breaker) getState(ctx context.Context, t time.Time) (state State, generation int64) {
-	switch b.State {
+	switch b.state {
 	case StateClosed:
-		if !b.StateExpiresAt.IsZero() && b.StateExpiresAt.Before(t) {
+		if !b.stateExpiresAt.IsZero() && b.stateExpiresAt.Before(t) {
 			b.incrementGeneration(t)
 		}
 	case StateOpen:
-		if b.StateExpiresAt.Before(t) {
+		if b.stateExpiresAt.Before(t) {
 			b.setState(ctx, StateHalfOpen, t)
 		}
 	}
-	return b.State, b.Generation
+	return b.state, b.generation
 }
 
 func (b *Breaker) setState(ctx context.Context, state State, now time.Time) {
-	if b.State == state {
+	if b.state == state {
 		return
 	}
 
-	previousState := b.State
-	b.State = state
+	previousState := b.state
+	b.state = state
 	b.incrementGeneration(now)
 	if b.OnStateChange != nil {
-		b.OnStateChange(ctx, previousState, b.State, b.Generation)
+		b.OnStateChange(ctx, previousState, b.state, b.generation)
 	}
 }
 
 func (b *Breaker) incrementGeneration(now time.Time) {
-	atomic.AddInt64(&b.Generation, 1)
+	atomic.AddInt64(&b.generation, 1)
+	b.Counts = Counts{}
 
 	var zero time.Time
-	switch b.State {
+	switch b.state {
 	case StateClosed:
 		if b.ClosedExpiryInterval == 0 {
-			b.StateExpiresAt = zero
+			b.stateExpiresAt = zero
 		} else {
-			b.StateExpiresAt = now.Add(b.ClosedExpiryInterval)
+			b.stateExpiresAt = now.Add(b.ClosedExpiryInterval)
 		}
 	case StateOpen:
-		b.StateExpiresAt = now.Add(b.OpenExpiryInterval)
+		b.stateExpiresAt = now.Add(b.OpenExpiryInterval)
 	default: // StateHalfOpen
-		b.StateExpiresAt = zero
+		b.stateExpiresAt = zero
 	}
 }
 
@@ -210,7 +227,7 @@ func (b *Breaker) shouldClose(ctx context.Context) bool {
 	if b.ShouldCloseProvider != nil {
 		return b.ShouldCloseProvider(ctx, b.Counts)
 	}
-	return b.Counts.ConsecutiveFailures > 5
+	return b.Counts.ConsecutiveFailures > DefaultConsecutiveFailures
 }
 
 func (b *Breaker) now() time.Time {
