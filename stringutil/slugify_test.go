@@ -9,9 +9,22 @@ import (
 func TestSlugify(t *testing.T) {
 	assert := assert.New(t)
 
-	assert.Equal("foo", Slugify("foo"))
-	assert.Equal("foo-bar", Slugify("foo bar"))
-	assert.Equal("foo-bar", Slugify("foo\tbar"))
-	assert.Equal("foo-bar", Slugify("foo\nbar"))
-	assert.Equal("foo-bar-ba-", Slugify("foo bar ba/"))
+	testCases := [...]struct {
+		Input, Expected string
+	}{
+		{"foo", "foo"},
+		{"Foo", "foo"},
+		{"f00", "f00"},
+		{"foo bar", "foo-bar"},
+		{"foo  bar", "foo-bar"},
+		{"foo\tbar", "foo-bar"},
+		{"foo\nbar", "foo-bar"},
+		{"foo\t\nbar", "foo-bar"},
+		{"foo\t\nbar\t\n", "foo-bar-"},
+		{"Mt. Tam", "mt-tam"},
+	}
+
+	for _, tc := range testCases {
+		assert.Equal(tc.Expected, Slugify(tc.Input))
+	}
 }
