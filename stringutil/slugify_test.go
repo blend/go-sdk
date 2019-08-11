@@ -15,6 +15,8 @@ func TestSlugify(t *testing.T) {
 		{"foo", "foo"},
 		{"Foo", "foo"},
 		{"f00", "f00"},
+		{"foo-bar", "foo-bar"},
+		{"foo--bar", "foo-bar"},
 		{"foo bar", "foo-bar"},
 		{"foo  bar", "foo-bar"},
 		{"foo\tbar", "foo-bar"},

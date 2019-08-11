@@ -17,6 +17,13 @@ func Slugify(v string) string {
 			previousWasReplaced = false
 			continue
 		}
+		if c == '-' {
+			if !previousWasReplaced {
+				output = append(output, c)
+				previousWasReplaced = true
+			}
+			continue
+		}
 		if unicode.IsDigit(c) {
 			output = append(output, c)
 			previousWasReplaced = false
