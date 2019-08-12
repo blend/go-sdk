@@ -561,6 +561,7 @@ func (mvf mockViewTraceFinisher) FinishView(ctx *Ctx, vr *ViewResult, err error)
 }
 
 func ok(_ *Ctx) Result            { return JSON.OK() }
+func doPanic(_ *Ctx) Result       { panic("this is only a test") }
 func internalError(_ *Ctx) Result { return JSON.InternalError(fmt.Errorf("only a test")) }
 func viewOK(ctx *Ctx) Result      { return ctx.Views.View("ok", nil) }
 
@@ -745,18 +746,18 @@ func TestAppAllowed(t *testing.T) {
 	assert.Len(allowed, 7)
 }
 
-func TestAppNilLogger(t *testing.T) {
+func TestAppNilLoggerPanic(t *testing.T) {
 	assert := assert.New(t)
 
 	app, err := New(OptLog(nil))
+	assert.Nil(err)
 	app.PanicAction = func(r *Ctx, err interface{}) Result {
 		return r.DefaultProvider.InternalError(ex.New(err))
 	}
-
 	assert.Nil(err)
-	app.GET("/", ok)
+	app.GET("/", doPanic, ViewProviderAsDefault)
 
 	res, err := MockGet(app, "/").DiscardWithResponse()
 	assert.Nil(err)
-	assert.Equal(http.StatusOK, res.StatusCode)
+	assert.Equal(http.StatusInternalServerError, res.StatusCode)
 }

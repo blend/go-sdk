@@ -390,14 +390,11 @@ func (a *App) RenderAction(action Action) Handler {
 	return func(w http.ResponseWriter, r *http.Request, route *Route, p RouteParameters) {
 		var err error
 		var tf TraceFinisher
-
 		ctx := a.createCtx(NewRawResponseWriter(w), r, route, p)
 		ctx.onRequestStart()
+		a.maybeLogTrigger(r.Context(), a.httpRequestEvent(ctx))
 		if a.Tracer != nil {
 			tf = a.Tracer.Start(ctx)
-		}
-		if a.Log != nil {
-			a.Log.Trigger(r.Context(), a.httpRequestEvent(ctx))
 		}
 
 		if len(a.DefaultHeaders) > 0 {
@@ -432,12 +429,8 @@ func (a *App) RenderAction(action Action) Handler {
 		ctx.onRequestFinish()
 		ctx.Response.Close()
 
-		if err != nil {
-			a.logFatal(err, r)
-		}
-		if a.Log != nil {
-			a.Log.Trigger(r.Context(), a.httpResponseEvent(ctx))
-		}
+		a.maybeLogFatal(err, r)
+		a.maybeLogTrigger(r.Context(), a.httpResponseEvent(ctx))
 		if tf != nil {
 			tf.Finish(ctx, err)
 		}
@@ -536,7 +529,6 @@ func (a *App) httpResponseEvent(ctx *Ctx) *logger.HTTPResponseEvent {
 		logger.OptHTTPResponseHeader(ctx.Response.Header()), // caveat: these do not get written out in text or json ever.
 		logger.OptHTTPResponseElapsed(ctx.Elapsed()),
 	)
-
 	if ctx.Route != nil {
 		event.Route = ctx.Route.String()
 	}
@@ -550,29 +542,28 @@ func (a *App) httpResponseEvent(ctx *Ctx) *logger.HTTPResponseEvent {
 func (a *App) recover(w http.ResponseWriter, req *http.Request) {
 	if rcv := recover(); rcv != nil {
 		err := ex.New(rcv)
-		a.logFatal(err, req)
+		a.maybeLogFatal(err, req)
 		if a.PanicAction != nil {
-			a.handlePanic(w, req, rcv)
-		} else {
-			http.Error(w, "an internal server error occurred", http.StatusInternalServerError)
+			a.RenderAction(func(ctx *Ctx) Result {
+				return a.PanicAction(ctx, err)
+			})(w, req, nil, nil)
+			return
 		}
-	}
-}
-
-func (a *App) handlePanic(w http.ResponseWriter, r *http.Request, err interface{}) {
-	a.RenderAction(func(ctx *Ctx) Result {
-		if a.Log != nil {
-			a.Log.Fatalf("%v", err)
-		}
-		return a.PanicAction(ctx, err)
-	})(w, r, nil, nil)
-}
-
-func (a *App) logFatal(err error, req *http.Request) {
-	if a.Log == nil {
+		http.Error(w, "an internal server error occurred", http.StatusInternalServerError)
 		return
 	}
-	if err != nil {
-		a.Log.Trigger(req.Context(), logger.NewErrorEvent(logger.Fatal, err, logger.OptErrorEventState(req)))
+}
+
+func (a *App) maybeLogFatal(err error, req *http.Request) {
+	if err == nil {
+		return
 	}
+	a.maybeLogTrigger(req.Context(), logger.NewErrorEvent(logger.Fatal, err, logger.OptErrorEventState(req)))
+}
+
+func (a *App) maybeLogTrigger(ctx context.Context, e logger.Event) {
+	if a.Log == nil || e == nil {
+		return
+	}
+	a.Log.Trigger(ctx, e)
 }
