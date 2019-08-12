@@ -47,6 +47,7 @@ func OptStaticFileServerCacheDisabled(cacheDisabled bool) StaticFileserverOption
 // disk for each request.
 type StaticFileServer struct {
 	sync.RWMutex
+
 	SearchPaths   []http.FileSystem
 	RewriteRules  []RewriteRule
 	Headers       http.Header
@@ -108,14 +109,16 @@ func (sc *StaticFileServer) Action(r *Ctx) Result {
 // for each request (i.e. skipping the cache)
 func (sc *StaticFileServer) ServeFile(r *Ctx, filePath string) Result {
 	f, err := sc.ResolveFile(filePath)
-	if f == nil || (err != nil && os.IsNotExist(err)) {
-		if r.DefaultProvider != nil {
-			return r.DefaultProvider.NotFound()
-		}
-		http.NotFound(r.Response, r.Request)
-		return nil
-	}
 	if err != nil {
+		if os.IsNotExist(err) {
+			if r.DefaultProvider != nil {
+				return r.DefaultProvider.NotFound()
+			}
+			http.NotFound(r.Response, r.Request)
+			return nil
+		}
+
+		// otherwise it's a problem w/ the disk
 		if r.DefaultProvider != nil {
 			return r.DefaultProvider.InternalError(err)
 		}
@@ -141,17 +144,17 @@ func (sc *StaticFileServer) ServeFile(r *Ctx, filePath string) Result {
 func (sc *StaticFileServer) ServeCachedFile(r *Ctx, filepath string) Result {
 	file, err := sc.ResolveCachedFile(filepath)
 	if err != nil {
+		if os.IsNotExist(err) {
+			if r.DefaultProvider != nil {
+				return r.DefaultProvider.NotFound()
+			}
+			http.NotFound(r.Response, r.Request)
+			return nil
+		}
 		if r.DefaultProvider != nil {
 			return r.DefaultProvider.InternalError(err)
 		}
 		http.Error(r.Response, err.Error(), http.StatusInternalServerError)
-		return nil
-	}
-	if file == nil {
-		if r.DefaultProvider != nil {
-			return r.DefaultProvider.NotFound()
-		}
-		http.NotFound(r.Response, r.Request)
 		return nil
 	}
 	http.ServeContent(r.Response, r.Request, filepath, file.ModTime, file.Contents)
@@ -167,18 +170,14 @@ func (sc *StaticFileServer) ResolveFile(filePath string) (f http.File, err error
 			filePath = newFilePath
 		}
 	}
-
-	// for each searchpath, sniff if the file exists ...
-	var openErr error
 	for _, searchPath := range sc.SearchPaths {
-		f, openErr = searchPath.Open(filePath)
-		if openErr == nil {
-			break
+		f, err = searchPath.Open(filePath)
+		if err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return
 		}
-	}
-	if openErr != nil && !os.IsNotExist(openErr) {
-		err = openErr
-		return
 	}
 	return
 }
@@ -186,6 +185,7 @@ func (sc *StaticFileServer) ResolveFile(filePath string) (f http.File, err error
 // ResolveCachedFile returns a cached file at a given path.
 // It returns the cached instance of a file if it exists, and adds it to the cache if there is a miss.
 func (sc *StaticFileServer) ResolveCachedFile(filepath string) (*CachedStaticFile, error) {
+	// start in read shared mode
 	sc.RLock()
 	if sc.Cache != nil {
 		if file, ok := sc.Cache[filepath]; ok {
@@ -195,6 +195,7 @@ func (sc *StaticFileServer) ResolveCachedFile(filepath string) (*CachedStaticFil
 	}
 	sc.RUnlock()
 
+	// transition to exclusive write mode
 	sc.Lock()
 	defer sc.Unlock()
 
@@ -218,6 +219,9 @@ func (sc *StaticFileServer) ResolveCachedFile(filepath string) (*CachedStaticFil
 
 	finfo, err := diskFile.Stat()
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
