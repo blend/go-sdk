@@ -117,8 +117,6 @@ func (sc *StaticFileServer) ServeFile(r *Ctx, filePath string) Result {
 			http.NotFound(r.Response, r.Request)
 			return nil
 		}
-
-		// otherwise it's a problem w/ the disk
 		if r.DefaultProvider != nil {
 			return r.DefaultProvider.InternalError(err)
 		}
