@@ -11,6 +11,7 @@ import (
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/env"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/graceful"
 	"github.com/blend/go-sdk/logger"
 )
@@ -742,4 +743,20 @@ func TestAppAllowed(t *testing.T) {
 	app.PATCH("/hello", controllerNoOp)
 	allowed = strings.Split(app.allowed("/hello", ""), ", ")
 	assert.Len(allowed, 7)
+}
+
+func TestAppNilLogger(t *testing.T) {
+	assert := assert.New(t)
+
+	app, err := New(OptLog(nil))
+	app.PanicAction = func(r *Ctx, err interface{}) Result {
+		return r.DefaultProvider.InternalError(ex.New(err))
+	}
+
+	assert.Nil(err)
+	app.GET("/", ok)
+
+	res, err := MockGet(app, "/").DiscardWithResponse()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, res.StatusCode)
 }
