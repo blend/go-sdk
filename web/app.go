@@ -408,28 +408,30 @@ func (a *App) RenderAction(action Action) Handler {
 			if typed, ok := result.(ResultPreRender); ok {
 				if preRenderErr := typed.PreRender(ctx); preRenderErr != nil {
 					err = ex.Nest(err, preRenderErr)
+					a.maybeLogFatal(preRenderErr, r)
 				}
 			}
 
 			// do the render, log any errors emitted
 			if resultErr := result.Render(ctx); resultErr != nil {
 				err = ex.Nest(err, resultErr)
+				a.maybeLogFatal(resultErr, r)
 			}
 
 			// check for a render complete step
 			// typically this is used to render error results if there was a problem rendering
 			// the result.
+			// this is usually set by the view renderer.
 			if typed, ok := result.(ResultPostRender); ok {
 				if postRenderErr := typed.PostRender(ctx); postRenderErr != nil {
 					err = ex.Nest(err, postRenderErr)
+					a.maybeLogFatal(postRenderErr, r)
 				}
 			}
 		}
 
 		ctx.onRequestFinish()
 		ctx.Response.Close()
-
-		a.maybeLogFatal(err, r)
 		a.maybeLogTrigger(r.Context(), a.httpResponseEvent(ctx))
 		if tf != nil {
 			tf.Finish(ctx, err)
