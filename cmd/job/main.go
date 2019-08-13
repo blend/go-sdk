@@ -197,7 +197,7 @@ func run(cmd *cobra.Command, args []string) error {
 
 	if !*flagDisableServer {
 		ws := jobkit.NewManagementServer(jobs, cfg.Config)
-		ws.Log = log.SubContext("management server")
+		ws.Log = log.SubScope("management server")
 		hosted = append(hosted, ws)
 	} else {
 		log.Infof("management server disabled")

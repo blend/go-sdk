@@ -98,7 +98,7 @@ func main() {
 
 	http.HandleFunc("/", logged(log, indexHandler))
 
-	http.HandleFunc("/sub-context", logged(log.SubContext("a sub context"), subContextHandler))
+	http.HandleFunc("/sub-context", logged(log.SubScope("a sub scope"), subContextHandler))
 	http.HandleFunc("/fatalerror", logged(log, fatalErrorHandler))
 	http.HandleFunc("/error", logged(log, errorHandler))
 	http.HandleFunc("/warning", logged(log, warningHandler))

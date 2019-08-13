@@ -14,7 +14,7 @@ func main() {
 			<-ticker
 			log.Infof("this is foo")
 		}
-	}(all.SubContext("foo"))
+	}(all.SubScope("foo"))
 
 	go func(log logger.Log) {
 		ticker := time.Tick(500 * time.Millisecond)
@@ -22,7 +22,7 @@ func main() {
 			<-ticker
 			log.Infof("this is bar")
 		}
-	}(all.SubContext("bar"))
+	}(all.SubScope("bar"))
 
 	select {}
 }
