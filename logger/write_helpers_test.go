@@ -34,21 +34,21 @@ func TestWriteHTTPResponse(t *testing.T) {
 	assert.Equal("GET http://localhost/foo 200 1s text/html 1kB", buf.String())
 }
 
-func TestFormatFields(t *testing.T) {
+func TestFormatLabels(t *testing.T) {
 	assert := assert.New(t)
 
 	tf := NewTextOutputFormatter(OptTextNoColor())
-	actual := FormatFields(tf, ansi.ColorBlue, Fields{"foo": "bar", "moo": "loo"})
+	actual := FormatLabels(tf, ansi.ColorBlue, Labels{"foo": "bar", "moo": "loo"})
 	assert.Equal("foo=bar moo=loo", actual)
 
-	actual = FormatFields(tf, ansi.ColorBlue, Fields{"moo": "loo", "foo": "bar"})
+	actual = FormatLabels(tf, ansi.ColorBlue, Labels{"moo": "loo", "foo": "bar"})
 	assert.Equal("foo=bar moo=loo", actual)
 
 	tf = NewTextOutputFormatter()
-	actual = FormatFields(tf, ansi.ColorBlue, Fields{"foo": "bar", "moo": "loo"})
+	actual = FormatLabels(tf, ansi.ColorBlue, Labels{"foo": "bar", "moo": "loo"})
 	assert.Equal(ansi.ColorBlue.Apply("foo")+"=bar "+ansi.ColorBlue.Apply("moo")+"=loo", actual)
 
-	actual = FormatFields(tf, ansi.ColorBlue, Fields{"moo": "loo", "foo": "bar"})
+	actual = FormatLabels(tf, ansi.ColorBlue, Labels{"moo": "loo", "foo": "bar"})
 	assert.Equal(ansi.ColorBlue.Apply("foo")+"=bar "+ansi.ColorBlue.Apply("moo")+"=loo", actual)
 }
 

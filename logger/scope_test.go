@@ -14,15 +14,15 @@ func TestContext(t *testing.T) {
 	assert := assert.New(t)
 
 	log := None()
-	ctx := NewContext(log, []string{"foo", "bar"}, Fields{"zoo": "who"}, OptContextSetPath("bar", "bazz"), OptContextFields(Fields{"moo": "loo"}))
+	ctx := NewScope(log, []string{"foo", "bar"}, Labels{"zoo": "who"}, Annotations{"annotation0": "one"}, OptScopeSetPath("bar", "bazz"), OptScopeLabels(Labels{"moo": "loo"}))
 	assert.NotNil(ctx.Logger)
 	assert.Equal([]string{"bar", "bazz"}, ctx.Path)
-	assert.Equal("loo", ctx.Fields["moo"])
+	assert.Equal("loo", ctx.Labels["moo"])
 
-	subCtx := ctx.SubContext("bailey").WithFields(Fields{"what": "where"})
+	subCtx := ctx.SubScope("bailey").WithLabels(Labels{"what": "where"})
 	assert.Equal([]string{"bar", "bazz", "bailey"}, subCtx.Path)
-	assert.Equal("where", subCtx.Fields["what"])
-	assert.Equal("loo", subCtx.Fields["moo"])
+	assert.Equal("where", subCtx.Labels["what"])
+	assert.Equal("loo", subCtx.Labels["moo"])
 }
 
 func TestContextTrigger(t *testing.T) {
@@ -31,19 +31,21 @@ func TestContextTrigger(t *testing.T) {
 	log := MustNew(OptEnabled("test"))
 	log.Output = nil
 	fired := make(chan struct{})
-	var contextPath []string
-	var contextFields Fields
+	var scopePath []string
+	var scopeLabels Labels
+	var scopeAnnotations Annotations
 	log.Listen("test", DefaultListenerName, func(ctx context.Context, e Event) {
 		defer close(fired)
-		contextPath, contextFields = GetSubContextMeta(ctx)
+		scopePath, scopeLabels, scopeAnnotations = GetSubScopeMeta(ctx)
 	})
-	ctx := NewContext(log, []string{"path"}, Fields{"one": "two"})
+	ctx := NewScope(log, []string{"path"}, Labels{"one": "two"}, Annotations{"three": "four"})
 
 	ctx.Trigger(context.Background(), NewMessageEvent("test", "this is only a test"))
 	<-fired
 
-	assert.Equal([]string{"path"}, contextPath)
-	assert.Equal(Fields{"one": "two"}, contextFields)
+	assert.Equal([]string{"path"}, scopePath)
+	assert.Equal(Labels{"one": "two"}, scopeLabels)
+	assert.Equal(Annotations{"three": "four"}, scopeAnnotations)
 }
 
 func TestContextSyncTrigger(t *testing.T) {
@@ -52,26 +54,28 @@ func TestContextSyncTrigger(t *testing.T) {
 	log := MustNew(OptEnabled("test"))
 	log.Output = nil
 	fired := make(chan struct{})
-	var contextPath []string
-	var contextFields Fields
+	var scopePath []string
+	var scopeLabels Labels
+	var scopeAnnotations Annotations
 	log.Listen("test", DefaultListenerName, func(ctx context.Context, e Event) {
 		defer close(fired)
-		contextPath, contextFields = GetSubContextMeta(ctx)
+		scopePath, scopeLabels, scopeAnnotations = GetSubScopeMeta(ctx)
 	})
-	ctx := NewContext(log, []string{"path"}, Fields{"one": "two"})
+	ctx := NewScope(log, []string{"path"}, Labels{"one": "two"}, Annotations{"three": "four"})
 
 	go ctx.SyncTrigger(context.Background(), NewMessageEvent("test", "this is only a test"))
 	<-fired
 
-	assert.Equal([]string{"path"}, contextPath)
-	assert.Equal(Fields{"one": "two"}, contextFields)
+	assert.Equal([]string{"path"}, scopePath)
+	assert.Equal(Labels{"one": "two"}, scopeLabels)
+	assert.Equal(Annotations{"three": "four"}, scopeAnnotations)
 }
 
 func TestOptContextPath(t *testing.T) {
 	assert := assert.New(t)
 
 	log := None()
-	sc := log.SubContext("foo", OptContextPath("bar"))
+	sc := log.SubScope("foo", OptScopePath("bar"))
 	assert.Equal([]string{"foo", "bar"}, sc.Path)
 }
 
@@ -79,9 +83,9 @@ func TestOptContextSetFields(t *testing.T) {
 	assert := assert.New(t)
 
 	log := None()
-	log.Fields = Fields{"foo": "far"}
-	sc := log.SubContext("path", OptContextSetFields(Fields{"foo": "bar"}))
-	assert.Equal("bar", sc.Fields["foo"])
+	log.Labels = Labels{"foo": "far"}
+	sc := log.SubScope("path", OptScopeSetLabels(Labels{"foo": "bar"}))
+	assert.Equal("bar", sc.Labels["foo"])
 }
 
 func TestContextMethods(t *testing.T) {

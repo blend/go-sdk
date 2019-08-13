@@ -1,5 +1,16 @@
 package logger
 
+// CombineLabels combines one or many set of fields.
+func CombineLabels(labels ...Labels) Labels {
+	output := make(Labels)
+	for _, labelSet := range labels {
+		for key, value := range labelSet {
+			output[key] = value
+		}
+	}
+	return output
+}
+
 // Labels are a collection of labels for an event.
 type Labels map[string]string
 

@@ -20,8 +20,6 @@ func NewErrorEvent(flag string, err error, options ...ErrorEventOption) *ErrorEv
 	ee := &ErrorEvent{
 		EventMeta: NewEventMeta(
 			flag,
-			OptEventMetaLabels(ex.ErrLabels(err)),
-			OptEventMetaAnnotations(ex.ErrLabels(err)),
 		),
 		Err: err,
 	}

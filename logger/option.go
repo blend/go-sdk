@@ -58,18 +58,18 @@ func OptOutput(output io.Writer) Option {
 // OptHeading sets a logger message heading.
 // It will write through as the first element of the logger context path.
 func OptHeading(heading string) Option {
-	return func(l *Logger) error { l.Context.Path = []string{heading}; return nil }
+	return func(l *Logger) error { l.Scope.Path = []string{heading}; return nil }
 }
 
 // OptPath sets an initial logger context path.
 // This is useful if you want to label a logger to differentiate multiple loggers.
 func OptPath(path ...string) Option {
-	return func(l *Logger) error { l.Context.Path = path; return nil }
+	return func(l *Logger) error { l.Scope.Path = path; return nil }
 }
 
-// OptFields sets an initial logger context fields.
-func OptFields(fields Fields) Option {
-	return func(l *Logger) error { l.Context.Fields = fields; return nil }
+// OptLabels sets an initial logger scope labels.
+func OptLabels(labels Labels) Option {
+	return func(l *Logger) error { l.Scope.Labels = labels; return nil }
 }
 
 // OptJSON sets the output formatter for the logger as json.

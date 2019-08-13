@@ -16,7 +16,7 @@ func TestNew(t *testing.T) {
 
 	log, err := New()
 	assert.Nil(err)
-	assert.NotNil(log.Context)
+	assert.NotNil(log.Scope)
 	assert.NotNil(log.Formatter)
 	assert.NotNil(log.Output)
 	assert.True(log.RecoverPanics)
@@ -44,7 +44,7 @@ func TestLoggerE2ESubContext(t *testing.T) {
 	assert.Nil(err)
 
 	scID := uuid.V4().String()
-	sc := log.SubContext(scID)
+	sc := log.SubScope(scID)
 
 	sc.Infof("this is infof")
 	sc.Errorf("this is errorf")
@@ -74,7 +74,7 @@ func TestLoggerE2ESubContextFields(t *testing.T) {
 
 	fieldKey := uuid.V4().String()
 	fieldValue := uuid.V4().String()
-	sc := log.WithFields(Fields{fieldKey: fieldValue})
+	sc := log.WithLabels(Labels{fieldKey: fieldValue})
 
 	sc.Infof("this is infof")
 	sc.Errorf("this is errorf")

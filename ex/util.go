@@ -83,19 +83,3 @@ func ErrInner(err interface{}) error {
 	}
 	return nil
 }
-
-// ErrLabels returns the labels for an error.
-func ErrLabels(err interface{}) map[string]string {
-	if typed := As(err); typed != nil {
-		return typed.Labels
-	}
-	return nil
-}
-
-// ErrAnnotations returns the labels for an error.
-func ErrAnnotations(err interface{}) map[string]string {
-	if typed := As(err); typed != nil {
-		return typed.Annotations
-	}
-	return nil
-}

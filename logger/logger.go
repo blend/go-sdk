@@ -16,7 +16,7 @@ func New(options ...Option) (*Logger, error) {
 		RecoverPanics: DefaultRecoverPanics,
 		Flags:         NewFlags(DefaultFlags...),
 	}
-	l.Context = NewContext(l, nil, nil)
+	l.Scope = NewScope(l, nil, nil, nil)
 	var err error
 	for _, option := range options {
 		if err = option(l); err != nil {
@@ -67,7 +67,7 @@ func Prod(options ...Option) *Logger {
 type Logger struct {
 	sync.Mutex
 	*Flags
-	Context
+	Scope
 
 	RecoverPanics bool
 

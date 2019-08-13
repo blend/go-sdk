@@ -115,9 +115,9 @@ func (tf TextOutputFormatter) FormatPath(path ...string) string {
 	return fmt.Sprintf("[%s]", strings.Join(path, " > "))
 }
 
-// FormatFields returns the sub-context fields section of the message as a string.
-func (tf TextOutputFormatter) FormatFields(fields Fields) string {
-	return FormatFields(tf, ansi.ColorBlue, fields)
+// FormatLabels returns the subscope labels section of the message as a string.
+func (tf TextOutputFormatter) FormatLabels(labels Labels) string {
+	return FormatLabels(tf, ansi.ColorBlue, labels)
 }
 
 // WriteFormat implements write formatter.
@@ -130,9 +130,9 @@ func (tf TextOutputFormatter) WriteFormat(ctx context.Context, output io.Writer,
 		buffer.WriteString(Space)
 	}
 
-	subContextPath, subContextFields := GetSubContextMeta(ctx)
-	if subContextPath != nil {
-		buffer.WriteString(tf.FormatPath(subContextPath...))
+	subScopePath, subScopeLabels, _ := GetSubScopeMeta(ctx)
+	if subScopePath != nil {
+		buffer.WriteString(tf.FormatPath(subScopePath...))
 		buffer.WriteString(Space)
 	}
 
@@ -145,9 +145,9 @@ func (tf TextOutputFormatter) WriteFormat(ctx context.Context, output io.Writer,
 		buffer.WriteString(stringer.String())
 	}
 
-	if len(subContextFields) > 0 {
+	if len(subScopeLabels) > 0 {
 		buffer.WriteString("\t")
-		buffer.WriteString(tf.FormatFields(subContextFields))
+		buffer.WriteString(tf.FormatLabels(subScopeLabels))
 	}
 
 	buffer.WriteString(Newline)
