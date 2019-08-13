@@ -24,6 +24,9 @@ func (a Annotations) GetAnnotationValue(key string) (value string, ok bool) {
 
 // Decompose decomposes the labels into something we can write to json.
 func (a Annotations) Decompose() map[string]interface{} {
+	if a == nil {
+		return nil
+	}
 	output := make(map[string]interface{})
 	for key, value := range a {
 		output[key] = value

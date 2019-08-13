@@ -68,10 +68,12 @@ const (
 
 // Common json fields
 const (
-	FieldFlag      = "flag"
-	FieldTimestamp = "_timestamp"
-	FieldMessage   = "message"
-	FieldFields    = "fields"
+	FieldFlag        = "flag"
+	FieldTimestamp   = "_timestamp"
+	FieldMessage     = "message"
+	FieldFields      = "fields"
+	FieldLabels      = "labels"
+	FieldAnnotations = "annotations"
 )
 
 // JSON Formatter defaults

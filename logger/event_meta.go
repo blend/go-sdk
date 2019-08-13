@@ -41,6 +41,16 @@ func OptEventMetaFlagColor(color ansi.Color) EventMetaOption {
 	return func(em *EventMeta) { em.FlagColor = color }
 }
 
+// OptEventMetaLabels sets the event meta labels.
+func OptEventMetaLabels(labels Labels) EventMetaOption {
+	return func(em *EventMeta) { em.Labels = labels }
+}
+
+// OptEventMetaAnnotations sets the event meta labels.
+func OptEventMetaAnnotations(annotations Annotations) EventMetaOption {
+	return func(em *EventMeta) { em.Annotations = annotations }
+}
+
 // EventMeta is the metadata common to events.
 // It is useful for ensuring you have the minimum required fields on your events, and its typically embedded in types.
 type EventMeta struct {
@@ -70,8 +80,10 @@ func (em EventMeta) GetFlagColor() ansi.Color { return em.FlagColor }
 // Decompose decomposes the object into a map[string]interface{}.
 func (em EventMeta) Decompose() map[string]interface{} {
 	output := map[string]interface{}{
-		FieldFlag:      em.Flag,
-		FieldTimestamp: em.Timestamp.Format(time.RFC3339Nano),
+		FieldFlag:        em.Flag,
+		FieldTimestamp:   em.Timestamp.Format(time.RFC3339Nano),
+		FieldLabels:      em.Labels.Decompose(),
+		FieldAnnotations: em.Annotations.Decompose(),
 	}
 	return output
 }

@@ -64,6 +64,11 @@ func NewWithStackDepth(class interface{}, startDepth int, options ...Option) Exc
 // Ex is an error with a stack trace.
 // It also can have an optional cause, it implements `Exception`
 type Ex struct {
+	// Labels will be carried through to events as descriptive tags
+	Labels map[string]string
+	// Annotations are carried through to events but can be longer keyed.
+	Annotations map[string]string
+
 	// Class disambiguates between errors, it can be used to identify the type of the error.
 	Class error
 	// Message adds further detail to the error, and shouldn't be used for disambiguation.

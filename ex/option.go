@@ -40,3 +40,37 @@ func OptInnerClass(inner error) Option {
 		ex.Inner = inner
 	}
 }
+
+// OptLabelValue sets a label value.
+func OptLabelValue(key, value string) Option {
+	return func(ex *Ex) {
+		if ex.Labels == nil {
+			ex.Labels = make(map[string]string)
+		}
+		ex.Labels[key] = value
+	}
+}
+
+// OptLabels sets the labels on an exception.
+func OptLabels(labels map[string]string) Option {
+	return func(ex *Ex) {
+		ex.Labels = labels
+	}
+}
+
+// OptAnnotationValue sets an annotation value.
+func OptAnnotationValue(key, value string) Option {
+	return func(ex *Ex) {
+		if ex.Annotations == nil {
+			ex.Annotations = make(map[string]string)
+		}
+		ex.Annotations[key] = value
+	}
+}
+
+// OptAnnotations sets the annotations on an exception.
+func OptAnnotations(annoatations map[string]string) Option {
+	return func(ex *Ex) {
+		ex.Annotations = annoatations
+	}
+}

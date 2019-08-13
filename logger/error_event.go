@@ -18,8 +18,12 @@ var (
 // NewErrorEvent returns a new error event.
 func NewErrorEvent(flag string, err error, options ...ErrorEventOption) *ErrorEvent {
 	ee := &ErrorEvent{
-		EventMeta: NewEventMeta(flag),
-		Err:       err,
+		EventMeta: NewEventMeta(
+			flag,
+			OptEventMetaLabels(ex.ErrLabels(err)),
+			OptEventMetaAnnotations(ex.ErrLabels(err)),
+		),
+		Err: err,
 	}
 	for _, option := range options {
 		option(ee)
