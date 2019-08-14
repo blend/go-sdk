@@ -34,8 +34,7 @@ func TestEventWriteString(t *testing.T) {
 	e.Response = &http.Response{
 		StatusCode: http.StatusOK,
 	}
-	e.Started = time.Date(2019, 05, 02, 12, 13, 14, 15, time.UTC)
-	e.Timestamp = time.Date(2019, 05, 02, 12, 13, 15, 15, time.UTC)
+	e.Elapsed = time.Second
 	output2 := new(bytes.Buffer)
 	e.WriteText(logger.NewTextOutputFormatter(logger.OptTextNoColor()), output2)
 	assert.Equal("GET http://localhost/http://test.com 200 (1s)\nfoo", output2.String())
@@ -62,14 +61,12 @@ func TestEventMarshalJSON(t *testing.T) {
 	assert := assert.New(t)
 
 	e := NewEvent(Flag,
-		OptEventStarted(time.Date(2019, 05, 02, 12, 13, 14, 15, time.UTC)),
-		OptEventCompleted(time.Date(2019, 05, 02, 12, 13, 15, 15, time.UTC)),
 		OptEventRequest(webutil.NewMockRequest("GET", "/foo")),
 		OptEventResponse(&http.Response{StatusCode: http.StatusOK, ContentLength: 500}),
 		OptEventBody([]byte("foo")),
 	)
 
-	contents, err := e.MarshalJSON()
+	contents, err := json.Marshal(e.Decompose())
 	assert.Nil(err)
 	assert.NotEmpty(contents)
 

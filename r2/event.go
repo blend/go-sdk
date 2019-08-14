@@ -1,12 +1,13 @@
 package r2
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/blend/go-sdk/timeutil"
 
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/webutil"
@@ -20,35 +21,36 @@ const (
 )
 
 // NewEvent returns a new event.
-func NewEvent(flag string, options ...EventOption) *Event {
-	e := &Event{
-		EventMeta: logger.NewEventMeta(flag),
+func NewEvent(flag string, options ...EventOption) Event {
+	e := Event{
+		Flag: flag,
 	}
 	for _, option := range options {
-		option(e)
+		option(&e)
 	}
 	return e
 }
 
 // Event is a response to outgoing requests.
 type Event struct {
-	*logger.EventMeta
-
-	// Started is the time the request was started.
-	// It is used for elapsed time calculations.
-	Started time.Time
+	Flag string
 	// The request metadata.
 	Request *http.Request
 	// The response metadata (excluding the body).
 	Response *http.Response
 	// The response body.
 	Body []byte
+	// Elapsed is the time elapsed.
+	Elapsed time.Duration
 }
+
+// GetFlag implements logger.Event.
+func (e Event) GetFlag() string { return e.Flag }
 
 // WriteText writes the event to a text writer.
 func (e *Event) WriteText(tf logger.TextFormatter, wr io.Writer) {
 	if e.Request != nil && e.Response != nil {
-		io.WriteString(wr, fmt.Sprintf("%s %s %s (%v)", e.Request.Method, e.Request.URL.String(), logger.ColorizeStatusCodeWithFormatter(tf, e.Response.StatusCode), e.GetTimestamp().Sub(e.Started)))
+		io.WriteString(wr, fmt.Sprintf("%s %s %s (%v)", e.Request.Method, e.Request.URL.String(), logger.ColorizeStatusCodeWithFormatter(tf, e.Response.StatusCode), e.Elapsed))
 	} else if e.Request != nil {
 		io.WriteString(wr, fmt.Sprintf("%s %s", e.Request.Method, e.Request.URL.String()))
 	}
@@ -58,8 +60,8 @@ func (e *Event) WriteText(tf logger.TextFormatter, wr io.Writer) {
 	}
 }
 
-// MarshalJSON implements json.Marshaler.
-func (e *Event) MarshalJSON() ([]byte, error) {
+// Decompose implements logger.JSONWritable.
+func (e *Event) Decompose() map[string]interface{} {
 	output := make(map[string]interface{})
 	if e.Request != nil {
 		var url string
@@ -67,28 +69,27 @@ func (e *Event) MarshalJSON() ([]byte, error) {
 			url = e.Request.URL.String()
 		}
 		output["req"] = map[string]interface{}{
-			"startTime": e.Started,
-			"method":    e.Request.Method,
-			"url":       url,
-			"headers":   e.Request.Header,
+			"method":  e.Request.Method,
+			"url":     url,
+			"headers": e.Request.Header,
 		}
 	}
 	if e.Response != nil {
 		output["res"] = map[string]interface{}{
-			"completeTime":    e.GetTimestamp(),
 			"statusCode":      e.Response.StatusCode,
 			"contentLength":   e.Response.ContentLength,
 			"contentType":     tryHeader(e.Response.Header, "Content-Type", "content-type"),
 			"contentEncoding": tryHeader(e.Response.Header, "Content-Encoding", "content-encoding"),
 			"headers":         e.Response.Header,
 			"cert":            webutil.ParseCertInfo(e.Response),
+			"elapsed":         timeutil.Milliseconds(e.Elapsed),
 		}
 	}
 	if e.Body != nil {
 		output["body"] = string(e.Body)
 	}
 
-	return json.Marshal(logger.MergeDecomposed(e.EventMeta.Decompose(), output))
+	return output
 }
 
 // EventJSONSchema is the json schema of the logger event.

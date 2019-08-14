@@ -74,7 +74,7 @@ type Ctx struct {
 
 // WithContext sets the background context for the request.
 func (rc *Ctx) WithContext(context context.Context) *Ctx {
-	rc.Request = rc.Request.WithContext(context)
+	*rc.Request = *rc.Request.WithContext(context)
 	return rc
 }
 

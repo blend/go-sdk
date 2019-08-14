@@ -9,13 +9,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/blend/go-sdk/airbrake"
 	"github.com/blend/go-sdk/aws"
 	"github.com/blend/go-sdk/aws/ses"
 	"github.com/blend/go-sdk/configutil"
 	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/datadog"
-	"github.com/blend/go-sdk/diagnostics"
 	"github.com/blend/go-sdk/email"
 	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/ex"
@@ -175,12 +173,6 @@ func run(cmd *cobra.Command, args []string) error {
 		log.Infof("adding datadog metrics")
 	}
 
-	var errorClient diagnostics.Notifier
-	if !cfg.Airbrake.IsZero() {
-		errorClient = airbrake.MustNew(cfg.Airbrake)
-		log.Infof("adding airbrake notifications")
-	}
-
 	jobs := cron.New(cron.OptConfig(cfg.Config.Cron), cron.OptLog(log))
 
 	for _, jobCfg := range cfg.Jobs {
@@ -188,7 +180,7 @@ func run(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		job.WithLogger(log).WithEmailClient(emailClient).WithSlackClient(slackClient).WithStatsClient(statsClient).WithErrorClient(errorClient)
+		job.WithLogger(log).WithEmailClient(emailClient).WithSlackClient(slackClient).WithStatsClient(statsClient)
 		log.Infof("loading job `%s` with schedule `%s`", jobCfg.Name, jobCfg.ScheduleOrDefault())
 		jobs.LoadJobs(job)
 	}
@@ -197,7 +189,7 @@ func run(cmd *cobra.Command, args []string) error {
 
 	if !*flagDisableServer {
 		ws := jobkit.NewManagementServer(jobs, cfg.Config)
-		ws.Log = log.SubScope("management server")
+		ws.Log = log.WithPath("management server")
 		hosted = append(hosted, ws)
 	} else {
 		log.Infof("management server disabled")

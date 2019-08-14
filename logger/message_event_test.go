@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/blend/go-sdk/ansi"
 	"github.com/blend/go-sdk/assert"
 )
 
@@ -14,13 +13,11 @@ func TestMessageEvent(t *testing.T) {
 	assert := assert.New(t)
 
 	me := NewMessageEvent("flag", "an-message",
-		OptMessageMeta(OptEventMetaFlagColor(ansi.ColorBlue)),
-		OptMessage("event-message"),
+		OptMessageText("event-message"),
 		OptMessageElapsed(time.Second),
 	)
 	assert.Equal("flag", me.Flag)
-	assert.Equal(ansi.ColorBlue, me.GetFlagColor())
-	assert.Equal("event-message", me.Message)
+	assert.Equal("event-message", me.Text)
 	assert.Equal(time.Second, me.Elapsed)
 
 	buf := new(bytes.Buffer)

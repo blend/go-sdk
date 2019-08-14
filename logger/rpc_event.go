@@ -2,7 +2,6 @@ package logger
 
 import (
 	"context"
-	"encoding/json"
 	"io"
 	"time"
 
@@ -12,26 +11,27 @@ import (
 
 // these are compile time assertions
 var (
-	_ Event = (*RPCEvent)(nil)
+	_ Event        = (*RPCEvent)(nil)
+	_ TextWritable = (*RPCEvent)(nil)
+	_ JSONWritable = (*RPCEvent)(nil)
 )
 
 // NewRPCEvent creates a new rpc event.
-func NewRPCEvent(method string, elapsed time.Duration, options ...RPCEventOption) *RPCEvent {
+func NewRPCEvent(method string, elapsed time.Duration, options ...RPCEventOption) RPCEvent {
 	rpe := RPCEvent{
-		EventMeta: NewEventMeta(RPC),
-		Method:    method,
-		Elapsed:   elapsed,
+		Method:  method,
+		Elapsed: elapsed,
 	}
 	for _, opt := range options {
 		opt(&rpe)
 	}
-	return &rpe
+	return rpe
 }
 
 // NewRPCEventListener returns a new web request event listener.
-func NewRPCEventListener(listener func(context.Context, *RPCEvent)) Listener {
+func NewRPCEventListener(listener func(context.Context, RPCEvent)) Listener {
 	return func(ctx context.Context, e Event) {
-		if typed, isTyped := e.(*RPCEvent); isTyped {
+		if typed, isTyped := e.(RPCEvent); isTyped {
 			listener(ctx, typed)
 		}
 	}
@@ -82,7 +82,6 @@ func OptRPCErr(value error) RPCEventOption {
 
 // RPCEvent is an event type for rpc
 type RPCEvent struct {
-	*EventMeta
 	Engine      string
 	Peer        string
 	Method      string
@@ -93,9 +92,11 @@ type RPCEvent struct {
 	Err         error
 }
 
+// GetFlag implements Event.
+func (e RPCEvent) GetFlag() string { return RPC }
+
 // WriteText implements TextWritable.
 func (e RPCEvent) WriteText(tf TextFormatter, wr io.Writer) {
-
 	if e.Engine != "" {
 		io.WriteString(wr, "[")
 		io.WriteString(wr, tf.Colorize(e.Engine, ansi.ColorLightWhite))
@@ -133,9 +134,9 @@ func (e RPCEvent) WriteText(tf TextFormatter, wr io.Writer) {
 	}
 }
 
-// MarshalJSON implements json.Marshaler.
-func (e RPCEvent) MarshalJSON() ([]byte, error) {
-	return json.Marshal(MergeDecomposed(e.EventMeta.Decompose(), map[string]interface{}{
+// Decompose implements JSONWritable.
+func (e RPCEvent) Decompose() map[string]interface{} {
+	return map[string]interface{}{
 		"engine":      e.Engine,
 		"peer":        e.Peer,
 		"method":      e.Method,
@@ -144,5 +145,5 @@ func (e RPCEvent) MarshalJSON() ([]byte, error) {
 		"contentType": e.ContentType,
 		"elapsed":     timeutil.Milliseconds(e.Elapsed),
 		"err":         e.Err,
-	}))
+	}
 }

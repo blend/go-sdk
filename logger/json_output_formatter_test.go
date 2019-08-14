@@ -22,5 +22,5 @@ func TestJSONOutputFormatter(t *testing.T) {
 	buf := new(bytes.Buffer)
 	assert.Nil(jf.WriteFormat(context.Background(), buf, me))
 
-	assert.Contains(buf.String(), "\"message\":\"this is a test\"")
+	assert.Contains(buf.String(), "\"text\":\"this is a test\"")
 }

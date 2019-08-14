@@ -9,8 +9,12 @@ import (
 )
 
 func main() {
-	app := web.MustNew(web.OptBindAddr(":8080"), web.OptLog(logger.All()))
+	app := web.MustNew(
+		web.OptBindAddr(":8080"),
+		web.OptLog(logger.Prod()),
+	)
 	app.GET("/", func(r *web.Ctx) web.Result {
+		r.WithContext(logger.WithLabels(r.Context(), logger.Labels{"foo": "bar"}))
 		return web.Text.Result("ok!")
 	})
 

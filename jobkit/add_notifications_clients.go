@@ -1,11 +1,9 @@
 package jobkit
 
 import (
-	"github.com/blend/go-sdk/airbrake"
 	"github.com/blend/go-sdk/aws"
 	"github.com/blend/go-sdk/aws/ses"
 	"github.com/blend/go-sdk/datadog"
-	"github.com/blend/go-sdk/diagnostics"
 	"github.com/blend/go-sdk/email"
 	"github.com/blend/go-sdk/slack"
 	"github.com/blend/go-sdk/stats"
@@ -26,13 +24,8 @@ func AddNotificationClients(job *Job, cfg Config) {
 	if !cfg.Datadog.IsZero() {
 		statsClient = datadog.MustNew(cfg.Datadog)
 	}
-	var errorClient diagnostics.Notifier
-	if !cfg.Airbrake.IsZero() {
-		errorClient = airbrake.MustNew(cfg.Airbrake)
-	}
 
 	job.WithEmailClient(emailClient).
 		WithStatsClient(statsClient).
-		WithSlackClient(slackClient).
-		WithErrorClient(errorClient)
+		WithSlackClient(slackClient)
 }

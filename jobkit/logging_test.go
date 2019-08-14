@@ -26,9 +26,9 @@ func TestLoggingDebugf(t *testing.T) {
 	defer log.Close()
 
 	var message string
-	log.Listen(logger.Debug, "check-listener", logger.NewMessageEventListener(func(_ context.Context, me *logger.MessageEvent) {
+	log.Listen(logger.Debug, "check-listener", logger.NewMessageEventListener(func(_ context.Context, me logger.MessageEvent) {
 		defer close(triggered)
-		message = me.Message
+		message = me.Text
 	}))
 
 	Debugf(ctx, log, "foo %s", "bar")
@@ -52,9 +52,9 @@ func TestLoggingInfof(t *testing.T) {
 	defer log.Close()
 
 	var message string
-	log.Listen(logger.Info, "check-listener", logger.NewMessageEventListener(func(_ context.Context, me *logger.MessageEvent) {
+	log.Listen(logger.Info, "check-listener", logger.NewMessageEventListener(func(_ context.Context, me logger.MessageEvent) {
 		defer func() { close(triggered) }()
-		message = me.Message
+		message = me.Text
 	}))
 
 	Infof(ctx, log, "foo %s", "bar")
@@ -79,7 +79,7 @@ func TestLoggingWarningf(t *testing.T) {
 	defer log.Close()
 
 	var message string
-	log.Listen(logger.Warning, "check-listener", logger.NewErrorEventListener(func(_ context.Context, ee *logger.ErrorEvent) {
+	log.Listen(logger.Warning, "check-listener", logger.NewErrorEventListener(func(_ context.Context, ee logger.ErrorEvent) {
 		defer func() { close(triggered) }()
 		message = ee.Err.Error()
 	}))
@@ -106,7 +106,7 @@ func TestLoggingWarning(t *testing.T) {
 	defer log.Close()
 
 	var message string
-	log.Listen(logger.Warning, "check-listener", logger.NewErrorEventListener(func(_ context.Context, ee *logger.ErrorEvent) {
+	log.Listen(logger.Warning, "check-listener", logger.NewErrorEventListener(func(_ context.Context, ee logger.ErrorEvent) {
 		defer func() { close(triggered) }()
 		message = ee.Err.Error()
 	}))
@@ -133,7 +133,7 @@ func TestLoggingErrorf(t *testing.T) {
 	defer log.Close()
 
 	var message string
-	log.Listen(logger.Error, "check-listener", logger.NewErrorEventListener(func(_ context.Context, ee *logger.ErrorEvent) {
+	log.Listen(logger.Error, "check-listener", logger.NewErrorEventListener(func(_ context.Context, ee logger.ErrorEvent) {
 		defer func() { close(triggered) }()
 		message = ee.Err.Error()
 	}))
@@ -160,7 +160,7 @@ func TestLoggingError(t *testing.T) {
 	defer log.Close()
 
 	var message string
-	log.Listen(logger.Error, "check-listener", logger.NewErrorEventListener(func(_ context.Context, ee *logger.ErrorEvent) {
+	log.Listen(logger.Error, "check-listener", logger.NewErrorEventListener(func(_ context.Context, ee logger.ErrorEvent) {
 		defer func() { close(triggered) }()
 		message = ee.Err.Error()
 	}))
@@ -187,7 +187,7 @@ func TestLoggingFatalf(t *testing.T) {
 	defer log.Close()
 
 	var message string
-	log.Listen(logger.Fatal, "check-listener", logger.NewErrorEventListener(func(_ context.Context, ee *logger.ErrorEvent) {
+	log.Listen(logger.Fatal, "check-listener", logger.NewErrorEventListener(func(_ context.Context, ee logger.ErrorEvent) {
 		defer func() { close(triggered) }()
 		message = ee.Err.Error()
 	}))
@@ -214,7 +214,7 @@ func TestLoggingFatal(t *testing.T) {
 	defer log.Close()
 
 	var message string
-	log.Listen(logger.Fatal, "check-listener", logger.NewErrorEventListener(func(_ context.Context, ee *logger.ErrorEvent) {
+	log.Listen(logger.Fatal, "check-listener", logger.NewErrorEventListener(func(_ context.Context, ee logger.ErrorEvent) {
 		defer func() { close(triggered) }()
 		message = ee.Err.Error()
 	}))

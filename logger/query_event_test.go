@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/blend/go-sdk/ansi"
 	"github.com/blend/go-sdk/assert"
 )
 
@@ -16,7 +15,6 @@ func TestQueryEvent(t *testing.T) {
 	assert := assert.New(t)
 
 	qe := NewQueryEvent("query-body", time.Second,
-		OptQueryMeta(OptEventMetaFlagColor(ansi.ColorBlue)),
 		OptQueryBody("event-body"),
 		OptQueryDatabase("event-database"),
 		OptQueryEngine("event-engine"),
@@ -26,7 +24,6 @@ func TestQueryEvent(t *testing.T) {
 		OptQueryErr(fmt.Errorf("test error")),
 	)
 
-	assert.Equal(ansi.ColorBlue, qe.GetFlagColor())
 	assert.Equal("event-body", qe.Body)
 	assert.Equal("event-database", qe.Database)
 	assert.Equal("event-engine", qe.Engine)
@@ -54,7 +51,7 @@ func TestQueryEventListener(t *testing.T) {
 	qe := NewQueryEvent("select 1", time.Second)
 
 	var didCall bool
-	ml := NewQueryEventListener(func(ctx context.Context, ae *QueryEvent) {
+	ml := NewQueryEventListener(func(ctx context.Context, ae QueryEvent) {
 		didCall = true
 	})
 	ml(context.Background(), qe)

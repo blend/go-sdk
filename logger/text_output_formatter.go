@@ -126,13 +126,13 @@ func (tf TextOutputFormatter) WriteFormat(ctx context.Context, output io.Writer,
 	defer tf.BufferPool.Put(buffer)
 
 	if !tf.HideTimestamp {
-		buffer.WriteString(tf.FormatTimestamp(e.GetTimestamp()))
+		buffer.WriteString(tf.FormatTimestamp(GetTimestamp(ctx)))
 		buffer.WriteString(Space)
 	}
 
-	subScopePath, subScopeLabels, _ := GetSubScopeMeta(ctx)
-	if subScopePath != nil {
-		buffer.WriteString(tf.FormatPath(subScopePath...))
+	scopePath := GetScopePath(ctx)
+	if scopePath != nil {
+		buffer.WriteString(tf.FormatPath(scopePath...))
 		buffer.WriteString(Space)
 	}
 
@@ -145,9 +145,10 @@ func (tf TextOutputFormatter) WriteFormat(ctx context.Context, output io.Writer,
 		buffer.WriteString(stringer.String())
 	}
 
-	if len(subScopeLabels) > 0 {
+	labels := GetLabels(ctx)
+	if len(labels) > 0 {
 		buffer.WriteString("\t")
-		buffer.WriteString(tf.FormatLabels(subScopeLabels))
+		buffer.WriteString(tf.FormatLabels(labels))
 	}
 
 	buffer.WriteString(Newline)

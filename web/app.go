@@ -516,7 +516,7 @@ func (a *App) allowed(path, reqMethod string) (allow string) {
 	return
 }
 
-func (a *App) httpRequestEvent(ctx *Ctx) *logger.HTTPRequestEvent {
+func (a *App) httpRequestEvent(ctx *Ctx) logger.HTTPRequestEvent {
 	event := logger.NewHTTPRequestEvent(ctx.Request)
 	if ctx.Route != nil {
 		event.Route = ctx.Route.String()
@@ -524,7 +524,7 @@ func (a *App) httpRequestEvent(ctx *Ctx) *logger.HTTPRequestEvent {
 	return event
 }
 
-func (a *App) httpResponseEvent(ctx *Ctx) *logger.HTTPResponseEvent {
+func (a *App) httpResponseEvent(ctx *Ctx) logger.HTTPResponseEvent {
 	event := logger.NewHTTPResponseEvent(ctx.Request,
 		logger.OptHTTPResponseStatusCode(ctx.Response.StatusCode()),
 		logger.OptHTTPResponseContentLength(ctx.Response.ContentLength()),
@@ -560,7 +560,7 @@ func (a *App) maybeLogFatal(err error, req *http.Request) {
 	if err == nil {
 		return
 	}
-	a.maybeLogTrigger(req.Context(), logger.NewErrorEvent(logger.Fatal, err, logger.OptErrorEventState(req)))
+	a.maybeLogTrigger(req.Context(), logger.NewErrorEvent(logger.Fatal, err, logger.OptErrorEventRequest(req)))
 }
 
 func (a *App) maybeLogTrigger(ctx context.Context, e logger.Event) {

@@ -2,7 +2,6 @@ package logger
 
 import (
 	"context"
-	"encoding/json"
 	"io"
 	"time"
 )
@@ -13,21 +12,21 @@ var (
 )
 
 // NewMessageEvent returns a new message event.
-func NewMessageEvent(flag, message string, options ...MessageEventOption) *MessageEvent {
+func NewMessageEvent(flag, text string, options ...MessageEventOption) MessageEvent {
 	me := MessageEvent{
-		EventMeta: NewEventMeta(flag),
-		Message:   message,
+		Flag: flag,
+		Text: text,
 	}
 	for _, opt := range options {
 		opt(&me)
 	}
-	return &me
+	return me
 }
 
 // NewMessageEventListener returns a new message event listener.
-func NewMessageEventListener(listener func(context.Context, *MessageEvent)) Listener {
+func NewMessageEventListener(listener func(context.Context, MessageEvent)) Listener {
 	return func(ctx context.Context, e Event) {
-		if typed, isTyped := e.(*MessageEvent); isTyped {
+		if typed, isTyped := e.(MessageEvent); isTyped {
 			listener(ctx, typed)
 		}
 	}
@@ -36,19 +35,14 @@ func NewMessageEventListener(listener func(context.Context, *MessageEvent)) List
 // MessageEventOption mutates a message event.
 type MessageEventOption func(*MessageEvent)
 
-// OptMessageMeta sets meta options.
-func OptMessageMeta(options ...EventMetaOption) MessageEventOption {
-	return func(me *MessageEvent) {
-		for _, opt := range options {
-			opt(me.EventMeta)
-		}
-	}
+// OptMessageFlag sets a field on a message event.
+func OptMessageFlag(flag string) MessageEventOption {
+	return func(me *MessageEvent) { me.Flag = flag }
 }
 
-// OptMessage sets a field on a message event.
-// Code style note; `OptMessageMessage` stutters, so it's been shortened.
-func OptMessage(message string) MessageEventOption {
-	return func(me *MessageEvent) { me.Message = message }
+// OptMessageText sets a field on a message event.
+func OptMessageText(text string) MessageEventOption {
+	return func(me *MessageEvent) { me.Text = text }
 }
 
 // OptMessageElapsed sets a field on a message event.
@@ -58,23 +52,32 @@ func OptMessageElapsed(elapsed time.Duration) MessageEventOption {
 
 // MessageEvent is a common type of message.
 type MessageEvent struct {
-	*EventMeta `json:",inline"`
-	Message    string        `json:"message"`
-	Elapsed    time.Duration `json:"elapsed"`
+	Flag    string
+	Text    string
+	Elapsed time.Duration
 }
 
+// GetFlag implements Event.
+func (e MessageEvent) GetFlag() string { return e.Flag }
+
 // WriteText implements TextWritable.
-func (e *MessageEvent) WriteText(formatter TextFormatter, output io.Writer) {
-	io.WriteString(output, e.Message)
+func (e MessageEvent) WriteText(formatter TextFormatter, output io.Writer) {
+	io.WriteString(output, e.Text)
 	if e.Elapsed > 0 {
 		io.WriteString(output, Space)
 		io.WriteString(output, "("+e.Elapsed.String()+")")
 	}
 }
 
-// MarshalJSON implements json.Marshaler.
-func (e MessageEvent) MarshalJSON() ([]byte, error) {
-	return json.Marshal(MergeDecomposed(e.EventMeta.Decompose(), map[string]interface{}{
-		"message": e.Message,
-	}))
+// Decompose implements json.Marshaler.
+func (e MessageEvent) Decompose() map[string]interface{} {
+	if e.Elapsed > 0 {
+		return map[string]interface{}{
+			FieldText:    e.Text,
+			FieldElapsed: e.Elapsed,
+		}
+	}
+	return map[string]interface{}{
+		FieldText: e.Text,
+	}
 }

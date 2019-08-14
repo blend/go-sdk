@@ -19,9 +19,9 @@ func TestWorker(t *testing.T) {
 		defer wg.Done()
 		didFire = true
 
-		typed, isTyped := e.(*MessageEvent)
+		typed, isTyped := e.(MessageEvent)
 		assert.True(isTyped)
-		assert.Equal("test", typed.Message)
+		assert.Equal("test", typed.Text)
 	})
 
 	go w.Start()

@@ -53,7 +53,7 @@ func TestRPCEventListener(t *testing.T) {
 	re := NewRPCEvent("/v1.foo", time.Second)
 
 	var didCall bool
-	ml := NewRPCEventListener(func(ctx context.Context, e *RPCEvent) {
+	ml := NewRPCEventListener(func(ctx context.Context, e RPCEvent) {
 		didCall = true
 	})
 	ml(context.Background(), re)

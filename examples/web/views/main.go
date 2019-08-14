@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	app := web.MustNew(web.OptLog(logger.All(logger.OptHeading("views-test"))))
+	app := web.MustNew(web.OptLog(logger.All()))
 	app.Views.AddPaths(
 		"_views/header.html",
 		"_views/footer.html",

@@ -1,55 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	_ "net/http/pprof"
 
-	"github.com/blend/go-sdk/bufferutil"
 	"github.com/blend/go-sdk/logger"
-	"github.com/blend/go-sdk/webutil"
 )
-
-var pool = bufferutil.NewPool(16)
-
-func logged(log logger.Log, handler http.HandlerFunc) http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {
-		start := time.Now()
-
-		log.Trigger(req.Context(), logger.NewHTTPRequestEvent(req))
-
-		rw := webutil.NewResponseWriter(res)
-		handler(rw, req)
-
-		resEvent := logger.NewHTTPResponseEvent(req,
-			logger.OptHTTPResponseStatusCode(rw.StatusCode()),
-			logger.OptHTTPResponseContentLength(rw.ContentLength()),
-			logger.OptHTTPResponseElapsed(time.Now().Sub(start)),
-		)
-
-		log.Trigger(req.Context(), resEvent)
-	}
-}
-
-func stdoutLogged(handler http.HandlerFunc) http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {
-		start := time.Now()
-		handler(res, req)
-		fmt.Printf("%s %s %s %s %s %s %s\n",
-			time.Now().UTC().Format(time.RFC3339),
-			"web.request",
-			req.Method,
-			req.URL.Path,
-			"200",
-			time.Since(start).String(),
-			"??",
-		)
-	}
-}
 
 func indexHandler(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusOK)
@@ -71,9 +30,15 @@ func warningHandler(res http.ResponseWriter, req *http.Request) {
 	res.Write([]byte(`{"status":"not ok."}`))
 }
 
-func subContextHandler(res http.ResponseWriter, req *http.Request) {
+func subScopeHandler(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusOK)
 	res.Write([]byte(`{"status":"did sub-context things"}`))
+}
+
+func scopeMetaHandler(res http.ResponseWriter, req *http.Request) {
+	logger.WithRequestLabels(req, logger.Labels{"route": "/scopemeta"})
+	res.WriteHeader(http.StatusOK)
+	res.Write([]byte(`{"status":"ok!"}`))
 }
 
 func auditHandler(res http.ResponseWriter, req *http.Request) {
@@ -94,18 +59,19 @@ func main() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
 
-	log := logger.Prod(logger.OptJSON())
+	log := logger.Prod()
 
-	http.HandleFunc("/", logged(log, indexHandler))
+	http.HandleFunc("/", logger.HTTPLogged(log)(indexHandler))
 
-	http.HandleFunc("/sub-context", logged(log.SubScope("a sub scope"), subContextHandler))
-	http.HandleFunc("/fatalerror", logged(log, fatalErrorHandler))
-	http.HandleFunc("/error", logged(log, errorHandler))
-	http.HandleFunc("/warning", logged(log, warningHandler))
-	http.HandleFunc("/audit", logged(log, auditHandler))
+	http.HandleFunc("/fatalerror", logger.HTTPLogged(log)(fatalErrorHandler))
+	http.HandleFunc("/error", logger.HTTPLogged(log)(errorHandler))
+	http.HandleFunc("/warning", logger.HTTPLogged(log)(warningHandler))
+	http.HandleFunc("/audit", logger.HTTPLogged(log)(auditHandler))
 
-	http.HandleFunc("/bench/logged", logged(log, indexHandler))
-	http.HandleFunc("/bench/stdout", stdoutLogged(indexHandler))
+	http.HandleFunc("/subscope", logger.HTTPLogged(log.WithPath("a sub scope"))(subScopeHandler))
+	http.HandleFunc("/scopemeta", logger.HTTPLogged(log)(scopeMetaHandler))
+
+	http.HandleFunc("/bench/logged", logger.HTTPLogged(log)(indexHandler))
 
 	log.Infof("Listening on :%s", port())
 	log.Infof("Events %s", log.Flags.String())

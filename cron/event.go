@@ -2,7 +2,6 @@ package cron
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"time"
@@ -17,42 +16,33 @@ import (
 var (
 	_ logger.Event        = (*Event)(nil)
 	_ logger.TextWritable = (*Event)(nil)
-	_ json.Marshaler      = (*Event)(nil)
+	_ logger.JSONWritable = (*Event)(nil)
 )
 
 // NewEventListener returns a new event listener.
-func NewEventListener(listener func(context.Context, *Event)) logger.Listener {
+func NewEventListener(listener func(context.Context, Event)) logger.Listener {
 	return func(ctx context.Context, e logger.Event) {
-		if typed, isTyped := e.(*Event); isTyped {
+		if typed, isTyped := e.(Event); isTyped {
 			listener(ctx, typed)
 		}
 	}
 }
 
 // NewEvent creates a new event with a given set of optional options.
-func NewEvent(flag, jobName string, options ...EventOption) *Event {
-	e := &Event{
-		EventMeta: logger.NewEventMeta(flag),
-		JobName:   jobName,
+func NewEvent(flag, jobName string, options ...EventOption) Event {
+	e := Event{
+		Flag:    flag,
+		JobName: jobName,
 	}
 
 	for _, option := range options {
-		option(e)
+		option(&e)
 	}
 	return e
 }
 
 // EventOption is an option for an Event.
 type EventOption func(*Event)
-
-// OptEventMetaOptions sets the event meta options for the event.
-func OptEventMetaOptions(options ...logger.EventMetaOption) EventOption {
-	return func(e *Event) {
-		for _, option := range options {
-			option(e.EventMeta)
-		}
-	}
-}
 
 // OptEventEnabled sets an enabled provider.
 func OptEventEnabled(enabled bool) EventOption {
@@ -85,7 +75,7 @@ func OptEventElapsed(elapsed time.Duration) EventOption {
 
 // Event is an event.
 type Event struct {
-	*logger.EventMeta
+	Flag string
 
 	EnabledProvider  func() bool
 	WritableProvider func() bool
@@ -96,9 +86,12 @@ type Event struct {
 	Elapsed       time.Duration
 }
 
+// GetFlag implements logger.Event.
+func (e Event) GetFlag() string { return e.Flag }
+
 // Complete returns if the event completed.
 func (e Event) Complete() bool {
-	return e.GetFlag() == FlagComplete
+	return e.Flag == FlagComplete
 }
 
 // IsEnabled is a
@@ -131,11 +124,11 @@ func (e Event) WriteText(tf logger.TextFormatter, wr io.Writer) {
 	}
 }
 
-// MarshalJSON implements json.Marshaler
-func (e Event) MarshalJSON() ([]byte, error) {
-	return json.Marshal(logger.MergeDecomposed(e.EventMeta.Decompose(), map[string]interface{}{
+// Decompose implements json.Marshaler
+func (e Event) Decompose() map[string]interface{} {
+	return map[string]interface{}{
 		"jobName": e.JobName,
 		"err":     e.Err,
 		"elapsed": timeutil.Milliseconds(e.Elapsed),
-	}))
+	}
 }

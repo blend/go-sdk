@@ -17,9 +17,10 @@ func OptLogResponse(log logger.Log) Option {
 			return err
 		}
 		event := NewEvent(FlagResponse,
-			OptEventStarted(started),
 			OptEventRequest(req),
-			OptEventResponse(res))
+			OptEventResponse(res),
+			OptEventElapsed(time.Now().UTC().Sub(started)),
+		)
 
 		log.Trigger(req.Context(), event)
 		return nil
@@ -45,10 +46,11 @@ func OptLogResponseWithBody(log logger.Log) Option {
 		res.Body = ioutil.NopCloser(bytes.NewReader(buffer.Bytes()))
 
 		event := NewEvent(FlagResponse,
-			OptEventStarted(started),
 			OptEventRequest(req),
 			OptEventResponse(res),
-			OptEventBody(buffer.Bytes()))
+			OptEventBody(buffer.Bytes()),
+			OptEventElapsed(time.Now().UTC().Sub(started)),
+		)
 
 		log.Trigger(req.Context(), event)
 		return nil

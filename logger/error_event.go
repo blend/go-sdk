@@ -4,90 +4,78 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"net/http"
 
 	"github.com/blend/go-sdk/ex"
 )
 
 // these are compile time assertions
 var (
-	_ Event          = (*ErrorEvent)(nil)
-	_ TextWritable   = (*ErrorEvent)(nil)
-	_ json.Marshaler = (*ErrorEvent)(nil)
+	_ Event        = (*ErrorEvent)(nil)
+	_ TextWritable = (*ErrorEvent)(nil)
+	_ JSONWritable = (*ErrorEvent)(nil)
 )
 
 // NewErrorEvent returns a new error event.
-func NewErrorEvent(flag string, err error, options ...ErrorEventOption) *ErrorEvent {
-	ee := &ErrorEvent{
-		EventMeta: NewEventMeta(
-			flag,
-		),
-		Err: err,
+func NewErrorEvent(flag string, err error, options ...ErrorEventOption) ErrorEvent {
+	return ErrorEvent{
+		Flag: flag,
+		Err:  err,
 	}
-	for _, option := range options {
-		option(ee)
-	}
-	return ee
 }
 
 // NewErrorEventListener returns a new error event listener.
-func NewErrorEventListener(listener func(context.Context, *ErrorEvent)) Listener {
+func NewErrorEventListener(listener func(context.Context, ErrorEvent)) Listener {
 	return func(ctx context.Context, e Event) {
-		if typed, isTyped := e.(*ErrorEvent); isTyped {
+		if typed, isTyped := e.(ErrorEvent); isTyped {
 			listener(ctx, typed)
 		}
 	}
 }
 
-// ErrorEventOption is an option for ErrorEvents.
-type ErrorEventOption func(*ErrorEvent)
+// ErrorEventOption is an option for error events.
+type ErrorEventOption = func(*ErrorEvent)
 
-// OptErrorEventMetaOptions sets the event meta options.
-func OptErrorEventMetaOptions(options ...EventMetaOption) ErrorEventOption {
-	return func(e *ErrorEvent) {
-		for _, option := range options {
-			option(e.EventMeta)
-		}
+// OptErrorEventRequest sets the request on an error event.
+func OptErrorEventRequest(req *http.Request) ErrorEventOption {
+	return func(ee *ErrorEvent) {
+		ee.Request = req
 	}
-}
-
-// OptErrorEventErr sets the error on the error event.
-func OptErrorEventErr(err error) ErrorEventOption {
-	return func(e *ErrorEvent) { e.Err = err }
-}
-
-// OptErrorEventState sets the state on the error event.
-func OptErrorEventState(state interface{}) ErrorEventOption {
-	return func(e *ErrorEvent) { e.State = state }
 }
 
 // ErrorEvent is an event that wraps an error.
 type ErrorEvent struct {
-	*EventMeta
-	Err   error
-	State interface{}
+	Flag    string
+	Err     error
+	Request *http.Request
 }
 
+// GetFlag implements Event.
+func (ee ErrorEvent) GetFlag() string { return ee.Flag }
+
 // WriteText writes the text version of an error.
-func (e ErrorEvent) WriteText(formatter TextFormatter, output io.Writer) {
-	if e.Err != nil {
-		if typed, ok := e.Err.(*ex.Ex); ok {
+func (ee ErrorEvent) WriteText(formatter TextFormatter, output io.Writer) {
+	if ee.Err != nil {
+		if typed, ok := ee.Err.(*ex.Ex); ok {
 			io.WriteString(output, typed.String())
 		} else {
-			io.WriteString(output, e.Err.Error())
+			io.WriteString(output, ee.Err.Error())
 		}
 	}
 }
 
-// MarshalJSON implements json.Marshaler.
-func (e ErrorEvent) MarshalJSON() ([]byte, error) {
-	if _, ok := e.Err.(json.Marshaler); ok {
-		return json.Marshal(MergeDecomposed(e.EventMeta.Decompose(), map[string]interface{}{
-			"err":   e.Err,
-			"state": e.State,
-		}))
+// Decompose implements JSONWritable.
+func (ee ErrorEvent) Decompose() map[string]interface{} {
+	if ee.Err == nil {
+		return nil
 	}
-	return json.Marshal(MergeDecomposed(e.EventMeta.Decompose(), map[string]interface{}{
-		"err":   e.Err.Error(),
-		"state": e.State,
-	}))
+
+	if _, ok := ee.Err.(json.Marshaler); ok {
+		return map[string]interface{}{
+			"err": ee.Err,
+		}
+	}
+	return map[string]interface{}{
+		"err": ee.Err.Error(),
+	}
 }

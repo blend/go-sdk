@@ -1,7 +1,7 @@
 package migration
 
 import (
-	"encoding/json"
+	"fmt"
 	"io"
 	"strings"
 
@@ -12,7 +12,7 @@ import (
 var (
 	_ logger.Event        = (*Event)(nil)
 	_ logger.TextWritable = (*Event)(nil)
-	_ json.Marshaler      = (*Event)(nil)
+	_ logger.JSONWritable = (*Event)(nil)
 )
 
 const (
@@ -25,21 +25,21 @@ const (
 // NewEvent returns a new event.
 func NewEvent(result, body string, labels ...string) *Event {
 	return &Event{
-		EventMeta: logger.NewEventMeta(Flag),
-		Result:    result,
-		Body:      body,
-		Labels:    labels,
+		Result: result,
+		Body:   body,
+		Labels: labels,
 	}
 }
 
 // Event is a migration logger event.
 type Event struct {
-	*logger.EventMeta
-
 	Result string
 	Body   string
 	Labels []string
 }
+
+// GetFlag implements logger.Event.
+func (e Event) GetFlag() string { return Flag }
 
 // WriteText writes the migration event as text.
 func (e Event) WriteText(tf logger.TextFormatter, wr io.Writer) {
@@ -70,11 +70,58 @@ func (e Event) WriteText(tf logger.TextFormatter, wr io.Writer) {
 	}
 }
 
-// MarshalJSON implements json.Marshaler.
-func (e Event) MarshalJSON() ([]byte, error) {
-	return json.Marshal(logger.MergeDecomposed(e.EventMeta.Decompose(), map[string]interface{}{
+// Decompose implements logger.JSONWritable.
+func (e Event) Decompose() map[string]interface{} {
+	return map[string]interface{}{
 		"result": e.Result,
 		"labels": e.Labels,
 		"body":   e.Body,
-	}))
+	}
+}
+
+var (
+	_ logger.Event        = (*StatsEvent)(nil)
+	_ logger.TextWritable = (*StatsEvent)(nil)
+	_ logger.JSONWritable = (*StatsEvent)(nil)
+)
+
+// NewStatsEvent returns a new stats event.
+func NewStatsEvent(applied, skipped, failed, total int) *StatsEvent {
+	return &StatsEvent{
+		applied: applied,
+		skipped: skipped,
+		failed:  failed,
+		total:   total,
+	}
+}
+
+// StatsEvent is a migration logger event.
+type StatsEvent struct {
+	applied int
+	skipped int
+	failed  int
+	total   int
+}
+
+// GetFlag implements logger.Event.
+func (se StatsEvent) GetFlag() string { return FlagStats }
+
+// WriteText writes the event to a text writer.
+func (se StatsEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
+	io.WriteString(wr, fmt.Sprintf("%s applied %s skipped %s failed %s total",
+		tf.Colorize(fmt.Sprintf("%d", se.applied), ansi.ColorGreen),
+		tf.Colorize(fmt.Sprintf("%d", se.skipped), ansi.ColorLightGreen),
+		tf.Colorize(fmt.Sprintf("%d", se.failed), ansi.ColorRed),
+		tf.Colorize(fmt.Sprintf("%d", se.total), ansi.ColorLightWhite),
+	))
+}
+
+// Decompose implements logger.JSONWritable.
+func (se StatsEvent) Decompose() map[string]interface{} {
+	return map[string]interface{}{
+		StatApplied: se.applied,
+		StatSkipped: se.skipped,
+		StatFailed:  se.failed,
+		StatTotal:   se.total,
+	}
 }

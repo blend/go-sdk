@@ -1,24 +1,27 @@
 package logger
 
 import (
-	"context"
+	"io"
 	"time"
 )
 
 // Event is an interface representing methods necessary to trigger listeners.
 type Event interface {
 	GetFlag() string
-	GetTimestamp() time.Time
 }
 
-// EventWithContext is an event with a context.
-type EventWithContext struct {
-	context.Context
-	Event
+// TimestampProvider is a type that provides a timestamp.
+type TimestampProvider interface {
+	Timestamp() time.Time
 }
 
-// MarshalEvent marshals an object as a logger event.
-func MarshalEvent(obj interface{}) (Event, bool) {
-	typed, isTyped := obj.(Event)
-	return typed, isTyped
+// TextWritable is an event that can be written.
+type TextWritable interface {
+	WriteText(TextFormatter, io.Writer)
+}
+
+// JSONWritable is a type that implements a decompose method.
+// This is used by the json serializer.
+type JSONWritable interface {
+	Decompose() map[string]interface{}
 }

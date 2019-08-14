@@ -70,7 +70,9 @@ const (
 const (
 	FieldFlag        = "flag"
 	FieldTimestamp   = "_timestamp"
-	FieldMessage     = "message"
+	FieldScopePath   = "scope_path"
+	FieldText        = "text"
+	FieldElapsed     = "elapsed"
 	FieldFields      = "fields"
 	FieldLabels      = "labels"
 	FieldAnnotations = "annotations"

@@ -2,7 +2,6 @@ package logger
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"time"
@@ -15,28 +14,27 @@ import (
 
 // these are compile time assertions
 var (
-	_ Event          = (*QueryEvent)(nil)
-	_ TextWritable   = (*QueryEvent)(nil)
-	_ json.Marshaler = (*QueryEvent)(nil)
+	_ Event        = (*QueryEvent)(nil)
+	_ TextWritable = (*QueryEvent)(nil)
+	_ JSONWritable = (*QueryEvent)(nil)
 )
 
 // NewQueryEvent creates a new query event.
-func NewQueryEvent(body string, elapsed time.Duration, options ...QueryEventOption) *QueryEvent {
+func NewQueryEvent(body string, elapsed time.Duration, options ...QueryEventOption) QueryEvent {
 	qe := QueryEvent{
-		EventMeta: NewEventMeta(Query),
-		Body:      body,
-		Elapsed:   elapsed,
+		Body:    body,
+		Elapsed: elapsed,
 	}
 	for _, opt := range options {
 		opt(&qe)
 	}
-	return &qe
+	return qe
 }
 
 // NewQueryEventListener returns a new listener for spiffy events.
-func NewQueryEventListener(listener func(context.Context, *QueryEvent)) Listener {
+func NewQueryEventListener(listener func(context.Context, QueryEvent)) Listener {
 	return func(ctx context.Context, e Event) {
-		if typed, isTyped := e.(*QueryEvent); isTyped {
+		if typed, isTyped := e.(QueryEvent); isTyped {
 			listener(ctx, typed)
 		}
 	}
@@ -44,15 +42,6 @@ func NewQueryEventListener(listener func(context.Context, *QueryEvent)) Listener
 
 // QueryEventOption mutates a query event.
 type QueryEventOption func(*QueryEvent)
-
-// OptQueryMeta sets options on the event metadata.
-func OptQueryMeta(options ...EventMetaOption) QueryEventOption {
-	return func(ae *QueryEvent) {
-		for _, option := range options {
-			option(ae.EventMeta)
-		}
-	}
-}
 
 // OptQueryBody sets a field on the query event.
 func OptQueryBody(value string) QueryEventOption {
@@ -91,8 +80,6 @@ func OptQueryErr(value error) QueryEventOption {
 
 // QueryEvent represents a database query.
 type QueryEvent struct {
-	*EventMeta
-
 	Database   string
 	Engine     string
 	Username   string
@@ -101,6 +88,9 @@ type QueryEvent struct {
 	Elapsed    time.Duration
 	Err        error
 }
+
+// GetFlag implements Event.
+func (e QueryEvent) GetFlag() string { return Query }
 
 // WriteText writes the event text to the output.
 func (e QueryEvent) WriteText(tf TextFormatter, wr io.Writer) {
@@ -135,9 +125,9 @@ func (e QueryEvent) WriteText(tf TextFormatter, wr io.Writer) {
 	}
 }
 
-// MarshalJSON implements json.Marshaler.
-func (e QueryEvent) MarshalJSON() ([]byte, error) {
-	return json.Marshal(MergeDecomposed(e.EventMeta.Decompose(), map[string]interface{}{
+// Decompose implements JSONWritable.
+func (e QueryEvent) Decompose() map[string]interface{} {
+	return map[string]interface{}{
 		"engine":     e.Engine,
 		"database":   e.Database,
 		"username":   e.Username,
@@ -145,5 +135,5 @@ func (e QueryEvent) MarshalJSON() ([]byte, error) {
 		"body":       e.Body,
 		"err":        e.Err,
 		"elapsed":    timeutil.Milliseconds(e.Elapsed),
-	}))
+	}
 }

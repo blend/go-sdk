@@ -1,7 +1,6 @@
 package jobkit
 
 import (
-	"github.com/blend/go-sdk/airbrake"
 	"github.com/blend/go-sdk/aws"
 	"github.com/blend/go-sdk/configutil"
 	"github.com/blend/go-sdk/cron"
@@ -14,15 +13,14 @@ import (
 
 // Config is the jobkit config.
 type Config struct {
-	MaxLogBytes int             `yaml:"maxLogBytes"`
-	Cron        cron.Config     `yaml:"cron"`
-	Logger      logger.Config   `yaml:"logger"`
-	Web         web.Config      `yaml:"web"`
-	Airbrake    airbrake.Config `yaml:"airbrake"`
-	AWS         aws.Config      `yaml:"aws"`
-	Email       email.Message   `yaml:"email"`
-	Datadog     datadog.Config  `yaml:"datadog"`
-	Slack       slack.Config    `yaml:"slack"`
+	MaxLogBytes int            `yaml:"maxLogBytes"`
+	Cron        cron.Config    `yaml:"cron"`
+	Logger      logger.Config  `yaml:"logger"`
+	Web         web.Config     `yaml:"web"`
+	AWS         aws.Config     `yaml:"aws"`
+	Email       email.Message  `yaml:"email"`
+	Datadog     datadog.Config `yaml:"datadog"`
+	Slack       slack.Config   `yaml:"slack"`
 }
 
 // Resolve applies resolution steps to the config.
@@ -31,7 +29,6 @@ func (c *Config) Resolve() error {
 		c.Cron.Resolve(),
 		c.Logger.Resolve(),
 		c.Web.Resolve(),
-		c.Airbrake.Resolve(),
 		c.AWS.Resolve(),
 		c.Email.Resolve(),
 		c.Datadog.Resolve(),

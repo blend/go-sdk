@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 
@@ -11,9 +10,8 @@ import (
 
 // NewCustomEvent returns a new custom event.
 // It is helpful to use a constructor syou can initialize the event meta.
-func NewCustomEvent(userID, sessionID, context string) *CustomEvent {
-	return &CustomEvent{
-		EventMeta: logger.NewEventMeta("custom_event"),
+func NewCustomEvent(userID, sessionID, context string) CustomEvent {
+	return CustomEvent{
 		UserID:    userID,
 		SessionID: sessionID,
 		Context:   context,
@@ -22,12 +20,13 @@ func NewCustomEvent(userID, sessionID, context string) *CustomEvent {
 
 // CustomEvent is a custom logger event.
 type CustomEvent struct {
-	*logger.EventMeta // this embeds a bunch of common fields into our event.
-
 	UserID    string // something domain specific
 	SessionID string // something domain specific
 	Context   string // something domain specific
 }
+
+// GetFlag implements logger.Event.
+func (ce CustomEvent) GetFlag() string { return "custom_event" }
 
 // WriteText implements logger.TextWritable.
 // It is optional, but very much encouraged.
@@ -41,21 +40,21 @@ func (ce CustomEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
 	io.WriteString(wr, ce.Context)
 }
 
-// MarshalJSON implements json.Marshaler.
+// Decompose implements logger.JSONWritable.
 // It is a function that returns just the custom fields on our object as a map,
 // to be serialized with the rest of the fields.
-func (ce CustomEvent) MarshalJSON() ([]byte, error) {
-	return json.Marshal(logger.MergeDecomposed(ce.EventMeta.Decompose(), map[string]interface{}{
+func (ce CustomEvent) Decompose() map[string]interface{} {
+	return map[string]interface{}{
 		"userID":    ce.UserID,
 		"sessionID": ce.SessionID,
 		"context":   ce.Context,
-	}))
+	}
 }
 
 // NewCustomEventListener returns a type shim for the logger.
-func NewCustomEventListener(listener func(context.Context, *CustomEvent)) logger.Listener {
+func NewCustomEventListener(listener func(context.Context, CustomEvent)) logger.Listener {
 	return func(ctx context.Context, e logger.Event) {
-		listener(ctx, e.(*CustomEvent))
+		listener(ctx, e.(CustomEvent))
 	}
 }
 
@@ -75,9 +74,12 @@ func main() {
 	js.Trigger(ctx, event)
 	js.Write(ctx, event)
 
+	done := make(chan struct{})
 	listener := logger.All()
-	listener.Listen("custom_event", "demo", NewCustomEventListener(func(_ context.Context, ce *CustomEvent) {
+	listener.Listen("custom_event", "demo", NewCustomEventListener(func(_ context.Context, ce CustomEvent) {
 		fmt.Println("listener got event")
+		close(done)
 	}))
-	listener.SyncTrigger(ctx, event)
+	listener.Trigger(ctx, event)
+	<-done
 }

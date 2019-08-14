@@ -120,7 +120,7 @@ func TestFiresErrorOnTaskError(t *testing.T) {
 	agent.Listen(logger.Error, "foo", func(_ context.Context, e logger.Event) {
 		defer wg.Done()
 		errorDidFire = true
-		if typed, isTyped := e.(*logger.ErrorEvent); isTyped {
+		if typed, isTyped := e.(logger.ErrorEvent); isTyped {
 			if typed.Err != nil {
 				errorMatched = typed.Err.Error() == "this is only a test"
 			}

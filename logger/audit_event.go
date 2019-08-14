@@ -2,7 +2,6 @@ package logger
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -12,28 +11,27 @@ import (
 
 // these are compile time assertions
 var (
-	_ Event          = (*AuditEvent)(nil)
-	_ TextWritable   = (*AuditEvent)(nil)
-	_ json.Marshaler = (*AuditEvent)(nil)
+	_ Event        = (*AuditEvent)(nil)
+	_ TextWritable = (*AuditEvent)(nil)
+	_ JSONWritable = (*AuditEvent)(nil)
 )
 
 // NewAuditEvent returns a new audit event.
-func NewAuditEvent(principal, verb string, options ...AuditEventOption) *AuditEvent {
-	ae := &AuditEvent{
-		EventMeta: NewEventMeta(Audit),
+func NewAuditEvent(principal, verb string, options ...AuditEventOption) AuditEvent {
+	ae := AuditEvent{
 		Principal: principal,
 		Verb:      verb,
 	}
 	for _, option := range options {
-		option(ae)
+		option(&ae)
 	}
 	return ae
 }
 
 // NewAuditEventListener returns a new audit event listener.
-func NewAuditEventListener(listener func(context.Context, *AuditEvent)) Listener {
+func NewAuditEventListener(listener func(context.Context, AuditEvent)) Listener {
 	return func(ctx context.Context, e Event) {
-		if typed, isTyped := e.(*AuditEvent); isTyped {
+		if typed, isTyped := e.(AuditEvent); isTyped {
 			listener(ctx, typed)
 		}
 	}
@@ -41,15 +39,6 @@ func NewAuditEventListener(listener func(context.Context, *AuditEvent)) Listener
 
 // AuditEventOption is an option for AuditEvents.
 type AuditEventOption func(*AuditEvent)
-
-// OptAuditMetaOptions sets options on the event metadata.
-func OptAuditMetaOptions(options ...EventMetaOption) AuditEventOption {
-	return func(ae *AuditEvent) {
-		for _, option := range options {
-			option(ae.EventMeta)
-		}
-	}
-}
 
 // OptAuditContext sets a field on an AuditEvent.
 func OptAuditContext(value string) AuditEventOption {
@@ -98,8 +87,6 @@ func OptAuditExtra(values map[string]string) AuditEventOption {
 
 // AuditEvent is a common type of event detailing a business action by a subject.
 type AuditEvent struct {
-	*EventMeta
-
 	Context       string
 	Principal     string
 	Verb          string
@@ -110,6 +97,9 @@ type AuditEvent struct {
 	UserAgent     string
 	Extra         map[string]string
 }
+
+// GetFlag implements Event.
+func (e AuditEvent) GetFlag() string { return Audit }
 
 // WriteText implements TextWritable.
 func (e AuditEvent) WriteText(formatter TextFormatter, wr io.Writer) {
@@ -162,9 +152,9 @@ func (e AuditEvent) WriteText(formatter TextFormatter, wr io.Writer) {
 	}
 }
 
-// MarshalJSON implements json.Marshaler.
-func (e AuditEvent) MarshalJSON() ([]byte, error) {
-	return json.Marshal(MergeDecomposed(e.EventMeta.Decompose(), map[string]interface{}{
+// Decompose implements Decomposer.
+func (e AuditEvent) Decompose() map[string]interface{} {
+	return map[string]interface{}{
 		"context":    e.Context,
 		"principal":  e.Principal,
 		"verb":       e.Verb,
@@ -174,5 +164,5 @@ func (e AuditEvent) MarshalJSON() ([]byte, error) {
 		"remoteAddr": e.RemoteAddress,
 		"ua":         e.UserAgent,
 		"extra":      e.Extra,
-	}))
+	}
 }

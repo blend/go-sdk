@@ -74,9 +74,45 @@ func (jw JSONOutputFormatter) WriteFormat(ctx context.Context, output io.Writer,
 	if jw.Pretty {
 		encoder.SetIndent(jw.PrettyPrefixOrDefault(), jw.PrettyIndentOrDefault())
 	}
-	if err := encoder.Encode(e); err != nil {
-		return err
+	if decomposer, ok := e.(JSONWritable); ok {
+		fields := CombineFields(GetScopeFields(ctx, e.GetFlag()), decomposer.Decompose())
+		if err := encoder.Encode(fields); err != nil {
+			return err
+		}
+	} else {
+		if err := encoder.Encode(e); err != nil {
+			return err
+		}
 	}
 	_, err := io.Copy(output, buffer)
 	return err
+}
+
+// GetScopeFields gets scope fields from a context.
+func GetScopeFields(ctx context.Context, flag string) map[string]interface{} {
+	output := map[string]interface{}{
+		FieldFlag:      flag,
+		FieldTimestamp: GetTimestamp(ctx),
+	}
+	if path := GetScopePath(ctx); len(path) > 0 {
+		output[FieldScopePath] = path
+	}
+	if labels := GetLabels(ctx); len(labels) > 0 {
+		output[FieldLabels] = labels
+	}
+	return output
+}
+
+// CombineFields combines fields.
+func CombineFields(sets ...map[string]interface{}) map[string]interface{} {
+	output := make(map[string]interface{})
+	for _, set := range sets {
+		if set == nil {
+			continue
+		}
+		for key, value := range set {
+			output[key] = value
+		}
+	}
+	return output
 }

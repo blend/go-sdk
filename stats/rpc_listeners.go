@@ -12,7 +12,7 @@ func AddRPCListeners(log logger.Listenable, stats Collector) {
 		return
 	}
 
-	log.Listen(logger.RPC, ListenerNameStats, logger.NewRPCEventListener(func(_ context.Context, re *logger.RPCEvent) {
+	log.Listen(logger.RPC, ListenerNameStats, logger.NewRPCEventListener(func(_ context.Context, re logger.RPCEvent) {
 		var method string
 		if len(re.Method) > 0 {
 			method = Tag(TagRPCMethod, re.Method)

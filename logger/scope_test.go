@@ -14,78 +14,34 @@ func TestContext(t *testing.T) {
 	assert := assert.New(t)
 
 	log := None()
-	ctx := NewScope(log, []string{"foo", "bar"}, Labels{"zoo": "who"}, Annotations{"annotation0": "one"}, OptScopeSetPath("bar", "bazz"), OptScopeLabels(Labels{"moo": "loo"}))
+	ctx := NewScope(
+		WithLabels(WithScopePath(context.Background(), "foo", "bar"), Labels{"moo": "loo"}),
+		log,
+	)
 	assert.NotNil(ctx.Logger)
-	assert.Equal([]string{"bar", "bazz"}, ctx.Path)
-	assert.Equal("loo", ctx.Labels["moo"])
+	assert.Equal([]string{"foo", "bar"}, GetScopePath(ctx.Context()))
+	assert.Equal("loo", GetLabels(ctx.Context())["moo"])
 
-	subCtx := ctx.SubScope("bailey").WithLabels(Labels{"what": "where"})
-	assert.Equal([]string{"bar", "bazz", "bailey"}, subCtx.Path)
-	assert.Equal("where", subCtx.Labels["what"])
-	assert.Equal("loo", subCtx.Labels["moo"])
+	subCtx := ctx.WithPath("bailey").WithLabels(Labels{"what": "where"})
+	assert.Equal([]string{"foo", "bar", "bailey"}, GetScopePath(subCtx.Context()))
+	assert.Equal("where", GetLabels(subCtx.Context())["what"])
+	assert.Equal("loo", GetLabels(subCtx.Context())["moo"])
 }
 
-func TestContextTrigger(t *testing.T) {
-	assert := assert.New(t)
-
-	log := MustNew(OptEnabled("test"))
-	log.Output = nil
-	fired := make(chan struct{})
-	var scopePath []string
-	var scopeLabels Labels
-	var scopeAnnotations Annotations
-	log.Listen("test", DefaultListenerName, func(ctx context.Context, e Event) {
-		defer close(fired)
-		scopePath, scopeLabels, scopeAnnotations = GetSubScopeMeta(ctx)
-	})
-	ctx := NewScope(log, []string{"path"}, Labels{"one": "two"}, Annotations{"three": "four"})
-
-	ctx.Trigger(context.Background(), NewMessageEvent("test", "this is only a test"))
-	<-fired
-
-	assert.Equal([]string{"path"}, scopePath)
-	assert.Equal(Labels{"one": "two"}, scopeLabels)
-	assert.Equal(Annotations{"three": "four"}, scopeAnnotations)
-}
-
-func TestContextSyncTrigger(t *testing.T) {
-	assert := assert.New(t)
-
-	log := MustNew(OptEnabled("test"))
-	log.Output = nil
-	fired := make(chan struct{})
-	var scopePath []string
-	var scopeLabels Labels
-	var scopeAnnotations Annotations
-	log.Listen("test", DefaultListenerName, func(ctx context.Context, e Event) {
-		defer close(fired)
-		scopePath, scopeLabels, scopeAnnotations = GetSubScopeMeta(ctx)
-	})
-	ctx := NewScope(log, []string{"path"}, Labels{"one": "two"}, Annotations{"three": "four"})
-
-	go ctx.SyncTrigger(context.Background(), NewMessageEvent("test", "this is only a test"))
-	<-fired
-
-	assert.Equal([]string{"path"}, scopePath)
-	assert.Equal(Labels{"one": "two"}, scopeLabels)
-	assert.Equal(Annotations{"three": "four"}, scopeAnnotations)
-}
-
-func TestOptContextPath(t *testing.T) {
+func TestWithPath(t *testing.T) {
 	assert := assert.New(t)
 
 	log := None()
-	sc := log.SubScope("foo", OptScopePath("bar"))
-	assert.Equal([]string{"foo", "bar"}, sc.Path)
+	sc := log.WithPath("foo", "bar")
+	assert.Equal([]string{"foo", "bar"}, GetScopePath(sc.Context()))
 }
 
-func TestOptContextSetFields(t *testing.T) {
+func TestWithLabels(t *testing.T) {
 	assert := assert.New(t)
 
 	log := None()
-	log.Labels = Labels{"foo": "far"}
-	sc := log.SubScope("path", OptScopeSetLabels(Labels{"foo": "bar"}))
-	assert.Equal("bar", sc.Labels["foo"])
+	sc := log.WithLabels(Labels{"foo": "bar"})
+	assert.Equal("bar", GetLabels(sc.Context())["foo"])
 }
 
 func TestContextMethods(t *testing.T) {

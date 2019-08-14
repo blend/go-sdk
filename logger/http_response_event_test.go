@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/blend/go-sdk/ansi"
 	"github.com/blend/go-sdk/assert"
 )
 
@@ -17,7 +16,6 @@ func TestNewHTTPResponseEvent(t *testing.T) {
 	assert := assert.New(t)
 
 	hre := NewHTTPResponseEvent(nil,
-		OptHTTPResponseMeta(OptEventMetaFlagColor(ansi.ColorBlue)),
 		OptHTTPResponseRequest(&http.Request{Method: "foo", URL: &url.URL{Scheme: "https", Host: "localhost", Path: "/foo/bailey"}}),
 		OptHTTPResponseContentEncoding("utf-8"),
 		OptHTTPResponseContentLength(1337),
@@ -26,10 +24,8 @@ func TestNewHTTPResponseEvent(t *testing.T) {
 		OptHTTPResponseRoute("/foo/:bar"),
 		OptHTTPResponseStatusCode(http.StatusOK),
 		OptHTTPResponseHeader(http.Header{"X-Bad": []string{"nope", "definitely nope"}}),
-		OptHTTPResponseState("this is the state"),
 	)
 
-	assert.Equal(ansi.ColorBlue, hre.GetFlagColor())
 	assert.Equal("foo", hre.Request.Method)
 	assert.Equal("utf-8", hre.ContentEncoding)
 	assert.Equal(1337, hre.ContentLength)
@@ -38,7 +34,6 @@ func TestNewHTTPResponseEvent(t *testing.T) {
 	assert.Equal("/foo/:bar", hre.Route)
 	assert.Equal(http.StatusOK, hre.StatusCode)
 	assert.Equal("nope", hre.Header.Get("X-Bad"))
-	assert.Equal("this is the state", hre.State)
 
 	noColor := NewTextOutputFormatter(OptTextNoColor())
 	buf := new(bytes.Buffer)
@@ -48,7 +43,7 @@ func TestNewHTTPResponseEvent(t *testing.T) {
 	assert.NotContains(buf.String(), "X-Bad", "response headers should not be written to text output")
 	assert.NotContains(buf.String(), "definitely nope", "response headers should not be written to text output")
 
-	contents, err := json.Marshal(hre)
+	contents, err := json.Marshal(hre.Decompose())
 	assert.Nil(err)
 	assert.Contains(string(contents), "/foo/:bar")
 
@@ -60,7 +55,7 @@ func TestHTTPResponseEventListener(t *testing.T) {
 	assert := assert.New(t)
 
 	var didCall bool
-	listener := NewHTTPResponseEventListener(func(_ context.Context, hre *HTTPResponseEvent) {
+	listener := NewHTTPResponseEventListener(func(_ context.Context, hre HTTPResponseEvent) {
 		didCall = true
 	})
 	listener(context.Background(), NewMessageEvent(Info, "test"))

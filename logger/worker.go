@@ -127,7 +127,6 @@ func (w *Worker) DrainContext(ctx context.Context) error {
 		defer close(done)
 		for index := 0; index < workLeft; index++ {
 			work = <-w.Work
-			work.Context = ctx
 			if err = w.Process(work); err != nil && w.Errors != nil {
 				w.Errors <- err
 			}

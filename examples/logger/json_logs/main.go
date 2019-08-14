@@ -16,7 +16,7 @@ import (
 
 var pool = bufferutil.NewPool(16)
 
-func createResponseEvent(req *http.Request, rw *webutil.ResponseWriter, start time.Time) *logger.HTTPResponseEvent {
+func createResponseEvent(req *http.Request, rw *webutil.ResponseWriter, start time.Time) logger.HTTPResponseEvent {
 	return logger.NewHTTPResponseEvent(req,
 		logger.OptHTTPResponseStatusCode(rw.StatusCode()),
 		logger.OptHTTPResponseContentLength(rw.ContentLength()),
@@ -93,10 +93,7 @@ func main() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
 
-	log, err := logger.New(logger.OptJSON(), logger.OptAll())
-	if err != nil {
-		logger.FatalExit(err)
-	}
+	log := logger.Prod(logger.OptJSON())
 
 	http.HandleFunc("/", logged(log, indexHandler))
 

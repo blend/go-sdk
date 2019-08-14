@@ -13,7 +13,7 @@ func AddQueryListeners(log logger.Listenable, stats Collector) {
 		return
 	}
 
-	log.Listen(logger.Query, ListenerNameStats, logger.NewQueryEventListener(func(_ context.Context, qe *logger.QueryEvent) {
+	log.Listen(logger.Query, ListenerNameStats, logger.NewQueryEventListener(func(_ context.Context, qe logger.QueryEvent) {
 		engine := Tag(TagEngine, qe.Engine)
 		database := Tag(TagDatabase, qe.Database)
 

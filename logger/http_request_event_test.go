@@ -23,17 +23,13 @@ func TestNewHTTPRequestEvent(t *testing.T) {
 				Path:   "/foo",
 			},
 		}),
-		OptHTTPRequestMeta(OptEventMetaFlag("test")),
 		OptHTTPRequestRoute("/foo/:bar"),
-		OptHTTPRequestState("this is the state"),
 	)
 
 	assert.NotNil(hre.Request)
 	assert.Equal("GET", hre.Request.Method)
 	assert.Equal("/foo", hre.Request.URL.Path)
-	assert.Equal("test", hre.GetFlag())
 	assert.Equal("/foo/:bar", hre.Route)
-	assert.Equal("this is the state", hre.State)
 
 	noColor := TextOutputFormatter{
 		NoColor: true,
@@ -43,7 +39,7 @@ func TestNewHTTPRequestEvent(t *testing.T) {
 	hre.WriteText(noColor, buf)
 	assert.NotEmpty(buf.String())
 
-	contents, err := json.Marshal(hre)
+	contents, err := json.Marshal(hre.Decompose())
 	assert.Nil(err)
 	assert.NotEmpty(contents)
 }
@@ -52,7 +48,7 @@ func TestHTTPRequestEventListener(t *testing.T) {
 	assert := assert.New(t)
 
 	var didCall bool
-	listener := NewHTTPRequestEventListener(func(_ context.Context, hre *HTTPRequestEvent) {
+	listener := NewHTTPRequestEventListener(func(_ context.Context, hre HTTPRequestEvent) {
 		didCall = true
 	})
 	listener(context.Background(), NewMessageEvent(Info, "test"))
