@@ -67,22 +67,22 @@ func TestBreaker(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		assert.Nil(fail(ctx, b))
 	}
-	assert.Equal(StateClosed, b.State(ctx))
+	assert.Equal(StateClosed, b.EvaluateState(ctx))
 	assert.Equal(Counts{5, 0, 5, 0, 5}, b.Counts)
 
 	assert.Nil(succeed(ctx, b))
-	assert.Equal(StateClosed, b.State(ctx))
+	assert.Equal(StateClosed, b.EvaluateState(ctx))
 	assert.Equal(Counts{6, 1, 5, 1, 0}, b.Counts)
 
 	assert.Nil(fail(ctx, b))
-	assert.Equal(StateClosed, b.State(ctx))
+	assert.Equal(StateClosed, b.EvaluateState(ctx))
 	assert.Equal(Counts{7, 1, 6, 0, 1}, b.Counts)
 
 	// StateClosed to StateOpen
 	for i := 0; i < 5; i++ {
 		assert.Nil(fail(ctx, b)) // 6 consecutive failures
 	}
-	assert.Equal(StateOpen, b.State(ctx))
+	assert.Equal(StateOpen, b.EvaluateState(ctx))
 	assert.Equal(Counts{0, 0, 0, 0, 0}, b.Counts)
 	assert.False(b.stateExpiresAt.IsZero())
 
@@ -91,27 +91,27 @@ func TestBreaker(t *testing.T) {
 	assert.Equal(Counts{0, 0, 0, 0, 0}, b.Counts)
 
 	pseudoSleep(b, time.Duration(59)*time.Second)
-	assert.Equal(StateOpen, b.State(ctx))
+	assert.Equal(StateOpen, b.EvaluateState(ctx))
 
 	// StateOpen to StateHalfOpen
 	pseudoSleep(b, time.Duration(1)*time.Second) // over Timeout
-	assert.Equal(StateHalfOpen, b.State(ctx))
+	assert.Equal(StateHalfOpen, b.EvaluateState(ctx))
 	assert.True(b.stateExpiresAt.IsZero())
 
 	// StateHalfOpen to StateOpen
 	assert.Nil(fail(ctx, b))
-	assert.Equal(StateOpen, b.State(ctx))
+	assert.Equal(StateOpen, b.EvaluateState(ctx))
 	assert.Equal(Counts{0, 0, 0, 0, 0}, b.Counts)
 	assert.False(b.stateExpiresAt.IsZero())
 
 	// StateOpen to StateHalfOpen
 	pseudoSleep(b, time.Duration(60)*time.Second)
-	assert.Equal(StateHalfOpen, b.State(ctx))
+	assert.Equal(StateHalfOpen, b.EvaluateState(ctx))
 	assert.True(b.stateExpiresAt.IsZero())
 
 	// StateHalfOpen to StateClosed
 	assert.Nil(succeed(ctx, b))
-	assert.Equal(StateClosed, b.State(ctx))
+	assert.Equal(StateClosed, b.EvaluateState(ctx))
 	assert.Equal(Counts{0, 0, 0, 0, 0}, b.Counts)
 	assert.True(b.stateExpiresAt.IsZero())
 }

@@ -70,13 +70,13 @@ func TestOptOnStateChange(t *testing.T) {
 	assert.NotNil(b.OnStateChange)
 }
 
-func TestOptShouldCloseProvider(t *testing.T) {
+func TestOptShouldOpenProvider(t *testing.T) {
 	assert := assert.New(t)
 
 	b := new(Breaker)
-	assert.Nil(b.ShouldCloseProvider)
-	OptShouldCloseProvider(func(ctx context.Context, counts Counts) bool { return false })(b)
-	assert.NotNil(b.ShouldCloseProvider)
+	assert.Nil(b.ShouldOpenProvider)
+	OptShouldOpenProvider(func(ctx context.Context, counts Counts) bool { return false })(b)
+	assert.NotNil(b.ShouldOpenProvider)
 }
 
 func TestOptNowProvider(t *testing.T) {

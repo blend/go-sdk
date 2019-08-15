@@ -14,8 +14,8 @@ type (
 	Action func(context.Context) (interface{}, error)
 	// OnStateChangeHandler is called when the state changes.
 	OnStateChangeHandler func(ctx context.Context, from, to State, generation int64)
-	// ShouldCloseProvider returns if the breaker should close.
-	ShouldCloseProvider func(ctx context.Context, counts Counts) bool
+	// ShouldOpenProvider returns if the breaker should open.
+	ShouldOpenProvider func(ctx context.Context, counts Counts) bool
 	// NowProvider returns the current time.
 	NowProvider func() time.Time
 )
@@ -54,10 +54,10 @@ type Breaker struct {
 
 	// OnStateChange is an optional handler called when the breaker transitions state.
 	OnStateChange OnStateChangeHandler
-	// ShouldCloseProvider is called optionally to determine if we should close the breaker.
-	ShouldCloseProvider ShouldCloseProvider
+	// ShouldOpenProvider is called optionally to determine if we should open the breaker.
+	ShouldOpenProvider ShouldOpenProvider
 	// NowProvider lets you optionally inject the current time for testing.
-	NowProvider
+	NowProvider NowProvider
 
 	// HalfOpenMaxActions is the maximum number of requests
 	// we can make when the state is HalfOpen.
@@ -69,7 +69,6 @@ type Breaker struct {
 	// after which the state of the CircuitBreaker becomes half-open.
 	// If Timeout is 0, the timeout value of the CircuitBreaker is set to 60 seconds.
 	OpenExpiryInterval time.Duration
-	// State is the current breaker state (Open, HalfOpen, Closed).
 	// Counts are stats for the breaker.
 	Counts Counts
 
@@ -106,13 +105,13 @@ func (b *Breaker) Do(ctx context.Context, action Action) (interface{}, error) {
 	return res, err
 }
 
-// State returns the current state of the CircuitBreaker.
-func (b *Breaker) State(ctx context.Context) State {
+// EvaluateState returns the current state of the CircuitBreaker.
+func (b *Breaker) EvaluateState(ctx context.Context) State {
 	b.Lock()
 	defer b.Unlock()
 
 	now := time.Now()
-	state, _ := b.getState(ctx, now)
+	state, _ := b.evaluateState(ctx, now)
 	return state
 }
 
@@ -121,7 +120,7 @@ func (b *Breaker) beforeAction(ctx context.Context) (int64, error) {
 	defer b.Unlock()
 
 	now := b.now()
-	state, generation := b.getState(ctx, now)
+	state, generation := b.evaluateState(ctx, now)
 
 	if state == StateOpen {
 		return generation, ex.New(ErrOpenState)
@@ -138,7 +137,7 @@ func (b *Breaker) afterAction(ctx context.Context, generation int64, success boo
 	defer b.Unlock()
 
 	now := b.now()
-	state, generation := b.getState(ctx, now)
+	state, generation := b.evaluateState(ctx, now)
 	if generation != generation {
 		return
 	}
@@ -172,7 +171,7 @@ func (b *Breaker) failure(ctx context.Context, state State, now time.Time) {
 		atomic.AddInt64(&b.Counts.TotalFailures, 1)
 		atomic.AddInt64(&b.Counts.ConsecutiveFailures, 1)
 		atomic.StoreInt64(&b.Counts.ConsecutiveSuccesses, 0)
-		if b.shouldClose(ctx) {
+		if b.shouldOpen(ctx) {
 			b.setState(ctx, StateOpen, now)
 		}
 	case StateHalfOpen:
@@ -180,7 +179,7 @@ func (b *Breaker) failure(ctx context.Context, state State, now time.Time) {
 	}
 }
 
-func (b *Breaker) getState(ctx context.Context, t time.Time) (state State, generation int64) {
+func (b *Breaker) evaluateState(ctx context.Context, t time.Time) (state State, generation int64) {
 	switch b.state {
 	case StateClosed:
 		if !b.stateExpiresAt.IsZero() && b.stateExpiresAt.Before(t) {
@@ -226,9 +225,9 @@ func (b *Breaker) incrementGeneration(now time.Time) {
 	}
 }
 
-func (b *Breaker) shouldClose(ctx context.Context) bool {
-	if b.ShouldCloseProvider != nil {
-		return b.ShouldCloseProvider(ctx, b.Counts)
+func (b *Breaker) shouldOpen(ctx context.Context) bool {
+	if b.ShouldOpenProvider != nil {
+		return b.ShouldOpenProvider(ctx, b.Counts)
 	}
 	return b.Counts.ConsecutiveFailures > DefaultConsecutiveFailures
 }

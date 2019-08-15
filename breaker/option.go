@@ -57,10 +57,10 @@ func OptOnStateChange(handler OnStateChangeHandler) Option {
 	}
 }
 
-// OptShouldCloseProvider sets the ShouldCloseProvider provider on the breaker.
-func OptShouldCloseProvider(provider ShouldCloseProvider) Option {
+// OptShouldOpenProvider sets the ShouldCloseProvider provider on the breaker.
+func OptShouldOpenProvider(provider ShouldOpenProvider) Option {
 	return func(b *Breaker) error {
-		b.ShouldCloseProvider = provider
+		b.ShouldOpenProvider = provider
 		return nil
 	}
 }
