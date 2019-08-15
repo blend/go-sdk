@@ -96,8 +96,8 @@ func TestTextOutputFormatterFormatFields(t *testing.T) {
 	assert := assert.New(t)
 
 	tf := NewTextOutputFormatter()
-	actual := tf.FormatLabels(Labels{"foo": "bar", "buzz": "fuzz"})
+	actual := tf.FormatFields(Fields{"foo": "bar", "buzz": 1})
 
-	expected := fmt.Sprintf("%s=%s %s=%s", ansi.ColorBlue.Apply("buzz"), "fuzz", ansi.ColorBlue.Apply("foo"), "bar")
+	expected := fmt.Sprintf("%s=%v %s=%v", ansi.ColorBlue.Apply("buzz"), 1, ansi.ColorBlue.Apply("foo"), "bar")
 	assert.Equal(expected, actual)
 }

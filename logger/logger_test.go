@@ -74,7 +74,7 @@ func TestLoggerE2ESubContextFields(t *testing.T) {
 
 	fieldKey := uuid.V4().String()
 	fieldValue := uuid.V4().String()
-	sc := log.WithLabels(Labels{fieldKey: fieldValue})
+	sc := log.WithFields(Fields{fieldKey: fieldValue})
 
 	sc.Infof("this is infof")
 	sc.Errorf("this is errorf")

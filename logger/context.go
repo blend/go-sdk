@@ -39,17 +39,17 @@ func GetScopePath(ctx context.Context) []string {
 	return nil
 }
 
-type labelsKey struct{}
+type fieldsKey struct{}
 
-// WithLabels returns a new context with a given additional path segments.
-func WithLabels(ctx context.Context, labels Labels) context.Context {
-	return context.WithValue(ctx, labelsKey{}, CombineLabels(GetLabels(ctx), labels))
+// WithFields returns a new context with a given additional path segments.
+func WithFields(ctx context.Context, fields Fields) context.Context {
+	return context.WithValue(ctx, fieldsKey{}, CombineFields(GetFields(ctx), fields))
 }
 
-// GetLabels gets labels off a context.
-func GetLabels(ctx context.Context) Labels {
-	if raw := ctx.Value(labelsKey{}); raw != nil {
-		if typed, ok := raw.(Labels); ok {
+// GetFields gets fields off a context.
+func GetFields(ctx context.Context) Fields {
+	if raw := ctx.Value(fieldsKey{}); raw != nil {
+		if typed, ok := raw.(Fields); ok {
 			return typed
 		}
 	}

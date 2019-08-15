@@ -42,9 +42,9 @@ func (sc Scope) WithPath(paths ...string) Scope {
 	return NewScope(WithScopePath(sc.ctx, paths...), sc.Logger)
 }
 
-// WithLabels returns a new scope with a given additional set of labels.
-func (sc Scope) WithLabels(values Labels) Scope {
-	return NewScope(WithLabels(sc.ctx, values), sc.Logger)
+// WithFields returns a new scope with a given additional set of fields.
+func (sc Scope) WithFields(values Fields) Scope {
+	return NewScope(WithFields(sc.ctx, values), sc.Logger)
 }
 
 // --------------------------------------------------------------------------------
@@ -140,6 +140,6 @@ func (sc Scope) FatalWithReq(err error, req *http.Request) error {
 // ApplyContext applies the scope context to a given context.
 func (sc Scope) ApplyContext(ctx context.Context) context.Context {
 	ctx = WithScopePath(ctx, GetScopePath(sc.ctx)...)
-	ctx = WithLabels(ctx, GetLabels(sc.ctx))
+	ctx = WithFields(ctx, GetFields(sc.ctx))
 	return ctx
 }

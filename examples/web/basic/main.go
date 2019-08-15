@@ -14,7 +14,7 @@ func main() {
 		web.OptLog(logger.Prod()),
 	)
 	app.GET("/", func(r *web.Ctx) web.Result {
-		r.WithContext(logger.WithLabels(r.Context(), logger.Labels{"foo": "bar"}))
+		logger.WithRequestFields(r.Request, logger.Fields{"foo": "bar"})
 		return web.Text.Result("ok!")
 	})
 

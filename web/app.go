@@ -408,14 +408,14 @@ func (a *App) RenderAction(action Action) Handler {
 			if typed, ok := result.(ResultPreRender); ok {
 				if preRenderErr := typed.PreRender(ctx); preRenderErr != nil {
 					err = ex.Nest(err, preRenderErr)
-					a.maybeLogFatal(preRenderErr, r)
+					a.maybeLogFatalContext(preRenderErr, ctx)
 				}
 			}
 
 			// do the render, log any errors emitted
 			if resultErr := result.Render(ctx); resultErr != nil {
 				err = ex.Nest(err, resultErr)
-				a.maybeLogFatal(resultErr, r)
+				a.maybeLogFatalContext(resultErr, ctx)
 			}
 
 			// check for a render complete step
@@ -425,7 +425,7 @@ func (a *App) RenderAction(action Action) Handler {
 			if typed, ok := result.(ResultPostRender); ok {
 				if postRenderErr := typed.PostRender(ctx); postRenderErr != nil {
 					err = ex.Nest(err, postRenderErr)
-					a.maybeLogFatal(postRenderErr, r)
+					a.maybeLogFatalContext(postRenderErr, ctx)
 				}
 			}
 		}
@@ -554,6 +554,21 @@ func (a *App) recover(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "an internal server error occurred", http.StatusInternalServerError)
 		return
 	}
+}
+
+func (a *App) maybeLogFatalContext(err error, ctx *Ctx) {
+	if err == nil {
+		return
+	}
+
+	ctx.WithContext(logger.WithFields(ctx.Context(), logger.Fields{
+		"route":        ctx.Route.String(),
+		"route_params": ctx.RouteParams,
+	}))
+	a.maybeLogTrigger(
+		ctx.Context(),
+		logger.NewErrorEvent(logger.Fatal, err, logger.OptErrorEventRequest(ctx.Request)),
+	)
 }
 
 func (a *App) maybeLogFatal(err error, req *http.Request) {

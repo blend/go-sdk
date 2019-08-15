@@ -63,18 +63,18 @@ func FormatHeaders(tf TextFormatter, keyColor ansi.Color, header http.Header) st
 	return "{ " + strings.Join(values, " ") + " }"
 }
 
-// FormatLabels formats the output of fields.
+// FormatFields formats the output of fields.
 // Field keys will be printed in alphabetic order.
-func FormatLabels(tf TextFormatter, keyColor ansi.Color, labels Labels) string {
+func FormatFields(tf TextFormatter, keyColor ansi.Color, fields Fields) string {
 	var keys []string
-	for key := range labels {
+	for key := range fields {
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)
 
 	var values []string
 	for _, key := range keys {
-		values = append(values, fmt.Sprintf("%s=%s", tf.Colorize(key, keyColor), labels[key]))
+		values = append(values, fmt.Sprintf("%s=%v", tf.Colorize(key, keyColor), fields[key]))
 	}
 	return strings.Join(values, " ")
 }

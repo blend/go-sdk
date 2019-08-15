@@ -97,22 +97,8 @@ func GetScopeFields(ctx context.Context, flag string) map[string]interface{} {
 	if path := GetScopePath(ctx); len(path) > 0 {
 		output[FieldScopePath] = path
 	}
-	if labels := GetLabels(ctx); len(labels) > 0 {
-		output[FieldLabels] = labels
-	}
-	return output
-}
-
-// CombineFields combines fields.
-func CombineFields(sets ...map[string]interface{}) map[string]interface{} {
-	output := make(map[string]interface{})
-	for _, set := range sets {
-		if set == nil {
-			continue
-		}
-		for key, value := range set {
-			output[key] = value
-		}
+	if fields := GetFields(ctx); len(fields) > 0 {
+		output[FieldFields] = fields
 	}
 	return output
 }

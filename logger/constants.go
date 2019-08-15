@@ -74,7 +74,6 @@ const (
 	FieldText        = "text"
 	FieldElapsed     = "elapsed"
 	FieldFields      = "fields"
-	FieldLabels      = "labels"
 	FieldAnnotations = "annotations"
 )
 

@@ -16,7 +16,7 @@ type Triggerable interface {
 type Scoper interface {
 	WithContext(context.Context) Scope
 	WithPath(...string) Scope
-	WithLabels(Labels) Scope
+	WithFields(Fields) Scope
 }
 
 // Writable is an type that can write events.

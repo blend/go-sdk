@@ -115,9 +115,9 @@ func (tf TextOutputFormatter) FormatPath(path ...string) string {
 	return fmt.Sprintf("[%s]", strings.Join(path, " > "))
 }
 
-// FormatLabels returns the subscope labels section of the message as a string.
-func (tf TextOutputFormatter) FormatLabels(labels Labels) string {
-	return FormatLabels(tf, ansi.ColorBlue, labels)
+// FormatFields returns the scope fields section of the message as a string.
+func (tf TextOutputFormatter) FormatFields(fields Fields) string {
+	return FormatFields(tf, ansi.ColorBlue, fields)
 }
 
 // WriteFormat implements write formatter.
@@ -145,10 +145,10 @@ func (tf TextOutputFormatter) WriteFormat(ctx context.Context, output io.Writer,
 		buffer.WriteString(stringer.String())
 	}
 
-	labels := GetLabels(ctx)
-	if len(labels) > 0 {
+	fields := GetFields(ctx)
+	if len(fields) > 0 {
 		buffer.WriteString("\t")
-		buffer.WriteString(tf.FormatLabels(labels))
+		buffer.WriteString(tf.FormatFields(fields))
 	}
 
 	buffer.WriteString(Newline)

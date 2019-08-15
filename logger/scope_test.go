@@ -15,17 +15,17 @@ func TestContext(t *testing.T) {
 
 	log := None()
 	ctx := NewScope(
-		WithLabels(WithScopePath(context.Background(), "foo", "bar"), Labels{"moo": "loo"}),
+		WithFields(WithScopePath(context.Background(), "foo", "bar"), Fields{"moo": "loo"}),
 		log,
 	)
 	assert.NotNil(ctx.Logger)
 	assert.Equal([]string{"foo", "bar"}, GetScopePath(ctx.Context()))
-	assert.Equal("loo", GetLabels(ctx.Context())["moo"])
+	assert.Equal("loo", GetFields(ctx.Context())["moo"])
 
-	subCtx := ctx.WithPath("bailey").WithLabels(Labels{"what": "where"})
+	subCtx := ctx.WithPath("bailey").WithFields(Fields{"what": "where"})
 	assert.Equal([]string{"foo", "bar", "bailey"}, GetScopePath(subCtx.Context()))
-	assert.Equal("where", GetLabels(subCtx.Context())["what"])
-	assert.Equal("loo", GetLabels(subCtx.Context())["moo"])
+	assert.Equal("where", GetFields(subCtx.Context())["what"])
+	assert.Equal("loo", GetFields(subCtx.Context())["moo"])
 }
 
 func TestWithPath(t *testing.T) {
@@ -40,8 +40,8 @@ func TestWithLabels(t *testing.T) {
 	assert := assert.New(t)
 
 	log := None()
-	sc := log.WithLabels(Labels{"foo": "bar"})
-	assert.Equal("bar", GetLabels(sc.Context())["foo"])
+	sc := log.WithFields(Fields{"foo": "bar"})
+	assert.Equal("bar", GetFields(sc.Context())["foo"])
 }
 
 func TestContextMethods(t *testing.T) {
