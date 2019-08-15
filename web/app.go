@@ -561,10 +561,15 @@ func (a *App) maybeLogFatalContext(err error, ctx *Ctx) {
 		return
 	}
 
-	ctx.WithContext(logger.WithFields(ctx.Context(), logger.Fields{
-		"route":        ctx.Route.String(),
-		"route_params": ctx.RouteParams,
-	}))
+	fields := make(logger.Fields)
+	if ctx.Route != nil {
+		fields["route"] = ctx.Route.String()
+	}
+	if ctx.RouteParams != nil {
+		fields["route_params"] = ctx.RouteParams
+	}
+
+	ctx.WithContext(logger.WithFields(ctx.Context(), fields))
 
 	a.maybeLogTrigger(
 		ctx.Context(),
