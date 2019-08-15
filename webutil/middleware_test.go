@@ -24,8 +24,8 @@ func TestMiddelware(t *testing.T) {
 	one := func(action http.HandlerFunc) http.HandlerFunc {
 		return func(rw http.ResponseWriter, req *http.Request) {
 			close(oneDone)
-			io.WriteString(rw, "One\n")
 			action(rw, req)
+			io.WriteString(rw, "One\n")
 		}
 	}
 
@@ -33,8 +33,8 @@ func TestMiddelware(t *testing.T) {
 	two := func(action http.HandlerFunc) http.HandlerFunc {
 		return func(rw http.ResponseWriter, req *http.Request) {
 			close(twoDone)
-			io.WriteString(rw, "Two\n")
 			action(rw, req)
+			io.WriteString(rw, "Two\n")
 		}
 	}
 
@@ -50,5 +50,5 @@ func TestMiddelware(t *testing.T) {
 
 	contents, err := ioutil.ReadAll(res.Body)
 	assert.Nil(err)
-	assert.Equal("One\nTwo\nOK!\n", string(contents))
+	assert.Equal("OK!\nTwo\nOne\n", string(contents))
 }

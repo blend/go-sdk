@@ -78,14 +78,3 @@ func FormatFields(tf TextFormatter, keyColor ansi.Color, fields Fields) string {
 	}
 	return strings.Join(values, " ")
 }
-
-// MergeDecomposed merges sets of decomposed data.
-func MergeDecomposed(sets ...map[string]interface{}) map[string]interface{} {
-	output := make(map[string]interface{})
-	for _, set := range sets {
-		for key, value := range set {
-			output[key] = value
-		}
-	}
-	return output
-}
