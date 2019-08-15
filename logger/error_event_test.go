@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/ex"
 )
 
 func TestNewErrorEvent(t *testing.T) {
@@ -36,6 +37,11 @@ func TestNewErrorEvent(t *testing.T) {
 	contents, err := json.Marshal(ee.Decompose())
 	assert.Nil(err)
 	assert.Contains(string(contents), "not a test")
+
+	ee = NewErrorEvent(Fatal, ex.New("this is only a test"))
+	contents, err = json.Marshal(ee.Decompose())
+	assert.Nil(err)
+	assert.Contains(string(contents), "this is only a test")
 }
 
 func TestErrorEventListener(t *testing.T) {

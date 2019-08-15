@@ -10,7 +10,7 @@ import (
 	"github.com/blend/go-sdk/assert"
 )
 
-func TestContext(t *testing.T) {
+func TestNewScope(t *testing.T) {
 	assert := assert.New(t)
 
 	log := None()
@@ -36,7 +36,7 @@ func TestWithPath(t *testing.T) {
 	assert.Equal([]string{"foo", "bar"}, GetScopePath(sc.Context()))
 }
 
-func TestWithLabels(t *testing.T) {
+func TestWithFields(t *testing.T) {
 	assert := assert.New(t)
 
 	log := None()
@@ -44,7 +44,7 @@ func TestWithLabels(t *testing.T) {
 	assert.Equal("bar", GetFields(sc.Context())["foo"])
 }
 
-func TestContextMethods(t *testing.T) {
+func TestScopeMethods(t *testing.T) {
 	assert := assert.New(t)
 
 	log := All()

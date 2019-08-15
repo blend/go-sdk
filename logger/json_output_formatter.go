@@ -41,6 +41,16 @@ func OptJSONPretty() JSONOutputFormatterOption {
 	return func(jso *JSONOutputFormatter) { jso.Pretty = true }
 }
 
+// OptJSONPrettyPrefix sets the json output formatter to indent output.
+func OptJSONPrettyPrefix(prettyPrefix string) JSONOutputFormatterOption {
+	return func(jso *JSONOutputFormatter) { jso.PrettyPrefix = prettyPrefix }
+}
+
+// OptJSONPrettyIndent sets the json output formatter to indent output.
+func OptJSONPrettyIndent(prettyIndent string) JSONOutputFormatterOption {
+	return func(jso *JSONOutputFormatter) { jso.PrettyIndent = prettyIndent }
+}
+
 // JSONOutputFormatter is a json output formatter.
 type JSONOutputFormatter struct {
 	BufferPool   *bufferutil.Pool
