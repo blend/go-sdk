@@ -582,7 +582,11 @@ func (a *App) maybeLogFatal(err error, req *http.Request) {
 	}
 	a.maybeLogTrigger(
 		req.Context(),
-		logger.NewErrorEvent(logger.Fatal, err, logger.OptErrorEventRequest(req)),
+		logger.NewErrorEvent(
+			logger.Fatal,
+			err,
+			logger.OptErrorEventRequest(req),
+		),
 	)
 }
 

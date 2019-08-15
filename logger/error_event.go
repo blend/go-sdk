@@ -18,10 +18,14 @@ var (
 
 // NewErrorEvent returns a new error event.
 func NewErrorEvent(flag string, err error, options ...ErrorEventOption) ErrorEvent {
-	return ErrorEvent{
+	ee := ErrorEvent{
 		Flag: flag,
 		Err:  err,
 	}
+	for _, opt := range options {
+		opt(&ee)
+	}
+	return ee
 }
 
 // NewErrorEventListener returns a new error event listener.
