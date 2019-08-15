@@ -565,9 +565,14 @@ func (a *App) maybeLogFatalContext(err error, ctx *Ctx) {
 		"route":        ctx.Route.String(),
 		"route_params": ctx.RouteParams,
 	}))
+
 	a.maybeLogTrigger(
 		ctx.Context(),
-		logger.NewErrorEvent(logger.Fatal, err, logger.OptErrorEventRequest(ctx.Request)),
+		logger.NewErrorEvent(
+			logger.Fatal,
+			err,
+			logger.OptErrorEventRequest(ctx.Request),
+		),
 	)
 }
 
@@ -575,7 +580,10 @@ func (a *App) maybeLogFatal(err error, req *http.Request) {
 	if err == nil {
 		return
 	}
-	a.maybeLogTrigger(req.Context(), logger.NewErrorEvent(logger.Fatal, err, logger.OptErrorEventRequest(req)))
+	a.maybeLogTrigger(
+		req.Context(),
+		logger.NewErrorEvent(logger.Fatal, err, logger.OptErrorEventRequest(req)),
+	)
 }
 
 func (a *App) maybeLogTrigger(ctx context.Context, e logger.Event) {
