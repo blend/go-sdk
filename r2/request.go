@@ -185,20 +185,8 @@ func (r Request) BytesWithResponse() ([]byte, *http.Response, error) {
 	return contents, res, nil
 }
 
-// JSON reads the response as json into a given object.
-func (r Request) JSON(dst interface{}) error {
-	defer r.Close()
-
-	res, err := r.Do()
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-	return ex.New(json.NewDecoder(res.Body).Decode(dst))
-}
-
-// JSONWithResponse reads the response as json into a given object and returns the response metadata.
-func (r Request) JSONWithResponse(dst interface{}) (*http.Response, error) {
+// JSON reads the response as json into a given object and returns the response metadata.
+func (r Request) JSON(dst interface{}) (*http.Response, error) {
 	defer r.Close()
 
 	res, err := r.Do()
@@ -206,23 +194,14 @@ func (r Request) JSONWithResponse(dst interface{}) (*http.Response, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
+	if res.StatusCode == http.StatusNoContent {
+		return res, ex.New(ErrNoContentJSON)
+	}
 	return res, ex.New(json.NewDecoder(res.Body).Decode(dst))
 }
 
-// XML reads the response as json into a given object.
-func (r Request) XML(dst interface{}) error {
-	defer r.Close()
-
-	res, err := r.Do()
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-	return ex.New(xml.NewDecoder(res.Body).Decode(dst))
-}
-
-// XMLWithResponse reads the response as json into a given object.
-func (r Request) XMLWithResponse(dst interface{}) (*http.Response, error) {
+// XML reads the response as xml into a given object and returns the response metadata.
+func (r Request) XML(dst interface{}) (*http.Response, error) {
 	defer r.Close()
 
 	res, err := r.Do()
@@ -230,5 +209,8 @@ func (r Request) XMLWithResponse(dst interface{}) (*http.Response, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
+	if res.StatusCode == http.StatusNoContent {
+		return res, ex.New(ErrNoContentXML)
+	}
 	return res, ex.New(xml.NewDecoder(res.Body).Decode(dst))
 }

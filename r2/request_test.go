@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/ex"
 )
 
 func TestRequestNew(t *testing.T) {
@@ -177,24 +178,23 @@ func TestRequestJSON(t *testing.T) {
 	defer server.Close()
 
 	var deserialized map[string]interface{}
-	err := New(server.URL).JSON(&deserialized)
+	res, err := New(server.URL).JSON(&deserialized)
 	assert.Nil(err)
+	assert.Equal(http.StatusOK, res.StatusCode)
 	assert.Equal("ok!", deserialized["status"])
 }
 
-func TestRequestJSONWithResponse(t *testing.T) {
+func TestRequestNoContentJSON(t *testing.T) {
 	assert := assert.New(t)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, "{\"status\":\"ok!\"}\n")
+		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer server.Close()
 
 	var deserialized map[string]interface{}
-	res, err := New(server.URL).JSONWithResponse(&deserialized)
-	assert.Nil(err)
-	assert.Equal(http.StatusOK, res.StatusCode)
-	assert.Equal("ok!", deserialized["status"])
+	res, err := New(server.URL).JSON(&deserialized)
+	assert.True(ex.Is(err, ErrNoContentJSON))
+	assert.Equal(http.StatusNoContent, res.StatusCode)
 }
 
 type xmlTestCase struct {
@@ -212,26 +212,23 @@ func TestRequestXML(t *testing.T) {
 	defer server.Close()
 
 	var deserialized xmlTestCase
-	err := New(server.URL).XML(&deserialized)
+	res, err := New(server.URL).XML(&deserialized)
 	assert.Nil(err)
 	assert.Equal("ok!", deserialized.Status)
+	assert.Equal(http.StatusOK, res.StatusCode)
 }
 
-func TestRequestXMLWithResponse(t *testing.T) {
+func TestRequestNoContentXML(t *testing.T) {
 	assert := assert.New(t)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		xml.NewEncoder(w).Encode(xmlTestCase{
-			Status: "ok!",
-		})
+		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer server.Close()
 
 	var deserialized xmlTestCase
-	res, err := New(server.URL).XMLWithResponse(&deserialized)
-	assert.Nil(err)
-	assert.Equal("ok!", deserialized.Status)
-	assert.Equal(http.StatusOK, res.StatusCode)
+	res, err := New(server.URL).XML(&deserialized)
+	assert.True(ex.Is(err, ErrNoContentXML))
+	assert.Equal(http.StatusNoContent, res.StatusCode)
 }
 
 func TestRequestTracer(t *testing.T) {
