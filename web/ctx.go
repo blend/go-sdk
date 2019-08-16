@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/ex"
+	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -80,7 +81,7 @@ func (rc *Ctx) WithContext(context context.Context) *Ctx {
 
 // Context returns the context.
 func (rc *Ctx) Context() context.Context {
-	return rc.Request.Context()
+	return logger.WithFields(rc.Request.Context(), rc.loggerFields())
 }
 
 // WithStateValue sets the state for a key to an object.
@@ -200,14 +201,25 @@ func (rc *Ctx) HeaderValue(key string) (value string, err error) {
 // If you're expecting a large post body, or a large post body is even possible
 // use a stream reader on `.Request.Body` instead of this method.
 func (rc *Ctx) PostBody() ([]byte, error) {
-	var err error
 	if len(rc.Body) == 0 {
+		if rc.Request != nil && rc.Request.GetBody != nil {
+			reader, err := rc.Request.GetBody()
+			if err != nil {
+				return nil, ex.New(err)
+			}
+			defer reader.Close()
+			rc.Body, err = ioutil.ReadAll(reader)
+			if err != nil {
+				return nil, ex.New(err)
+			}
+		}
 		if rc.Request != nil && rc.Request.Body != nil {
 			defer rc.Request.Body.Close()
+			var err error
 			rc.Body, err = ioutil.ReadAll(rc.Request.Body)
-		}
-		if err != nil {
-			return nil, ex.New(err)
+			if err != nil {
+				return nil, ex.New(err)
+			}
 		}
 	}
 	return rc.Body, nil
@@ -361,4 +373,15 @@ func (rc *Ctx) onRequestStart() {
 
 func (rc *Ctx) onRequestFinish() {
 	rc.RequestEnd = time.Now().UTC()
+}
+
+func (rc *Ctx) loggerFields() logger.Fields {
+	fields := make(logger.Fields)
+	if rc.Route != nil {
+		fields["web.route"] = rc.Route.String()
+	}
+	if rc.Session != nil {
+		fields["web.user"] = rc.Session.UserID
+	}
+	return fields
 }

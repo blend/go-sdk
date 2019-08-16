@@ -392,7 +392,8 @@ func (a *App) RenderAction(action Action) Handler {
 		var tf TraceFinisher
 		ctx := a.createCtx(NewRawResponseWriter(w), r, route, p)
 		ctx.onRequestStart()
-		a.maybeLogTriggerCtx(ctx, a.httpRequestEvent(ctx))
+		a.maybeLogTrigger(ctx.Context(), a.httpRequestEvent(ctx))
+
 		if a.Tracer != nil {
 			tf = a.Tracer.Start(ctx)
 		}
@@ -408,14 +409,14 @@ func (a *App) RenderAction(action Action) Handler {
 			if typed, ok := result.(ResultPreRender); ok {
 				if preRenderErr := typed.PreRender(ctx); preRenderErr != nil {
 					err = ex.Nest(err, preRenderErr)
-					a.maybeLogFatalCtx(ctx, preRenderErr)
+					a.maybeLogFatal(ctx.Context(), preRenderErr, ctx.Request)
 				}
 			}
 
 			// do the render, log any errors emitted
 			if resultErr := result.Render(ctx); resultErr != nil {
 				err = ex.Nest(err, resultErr)
-				a.maybeLogFatalCtx(ctx, resultErr)
+				a.maybeLogFatal(ctx.Context(), resultErr, ctx.Request)
 			}
 
 			// check for a render complete step
@@ -425,14 +426,14 @@ func (a *App) RenderAction(action Action) Handler {
 			if typed, ok := result.(ResultPostRender); ok {
 				if postRenderErr := typed.PostRender(ctx); postRenderErr != nil {
 					err = ex.Nest(err, postRenderErr)
-					a.maybeLogFatalCtx(ctx, postRenderErr)
+					a.maybeLogFatal(ctx.Context(), postRenderErr, ctx.Request)
 				}
 			}
 		}
 
 		ctx.onRequestFinish()
 		ctx.Response.Close()
-		a.maybeLogTriggerCtx(ctx, a.httpResponseEvent(ctx))
+		a.maybeLogTrigger(ctx.Context(), a.httpResponseEvent(ctx))
 		if tf != nil {
 			tf.Finish(ctx, err)
 		}
@@ -544,7 +545,7 @@ func (a *App) httpResponseEvent(ctx *Ctx) logger.HTTPResponseEvent {
 func (a *App) recover(w http.ResponseWriter, req *http.Request) {
 	if rcv := recover(); rcv != nil {
 		err := ex.New(rcv)
-		a.maybeLogFatal(err, req)
+		a.maybeLogFatal(req.Context(), err, req)
 		if a.PanicAction != nil {
 			a.RenderAction(func(ctx *Ctx) Result {
 				return a.PanicAction(ctx, err)
@@ -556,27 +557,12 @@ func (a *App) recover(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (a *App) maybeLogFatalCtx(ctx *Ctx, err error) {
-	if a.Log == nil || err == nil {
-		return
-	}
-
-	a.maybeLogTriggerCtx(
-		ctx,
-		logger.NewErrorEvent(
-			logger.Fatal,
-			err,
-			logger.OptErrorEventRequest(ctx.Request),
-		),
-	)
-}
-
-func (a *App) maybeLogFatal(err error, req *http.Request) {
+func (a *App) maybeLogFatal(ctx context.Context, err error, req *http.Request) {
 	if a.Log == nil || err == nil {
 		return
 	}
 	a.Log.Trigger(
-		req.Context(),
+		ctx,
 		logger.NewErrorEvent(
 			logger.Fatal,
 			err,
@@ -585,16 +571,9 @@ func (a *App) maybeLogFatal(err error, req *http.Request) {
 	)
 }
 
-func (a *App) maybeLogTriggerCtx(ctx *Ctx, e logger.Event) {
+func (a *App) maybeLogTrigger(ctx context.Context, e logger.Event) {
 	if a.Log == nil || e == nil {
 		return
 	}
-	fields := make(logger.Fields)
-	if ctx.Route != nil {
-		fields["route"] = ctx.Route.String()
-	}
-	if ctx.Session != nil {
-		fields["user"] = ctx.Session.UserID
-	}
-	a.Log.WithFields(fields).Trigger(ctx.Context(), e)
+	a.Log.Trigger(ctx, e)
 }
