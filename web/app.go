@@ -408,14 +408,14 @@ func (a *App) RenderAction(action Action) Handler {
 			if typed, ok := result.(ResultPreRender); ok {
 				if preRenderErr := typed.PreRender(ctx); preRenderErr != nil {
 					err = ex.Nest(err, preRenderErr)
-					a.maybeLogFatalContext(preRenderErr, ctx)
+					a.maybeLogFatalCtx(preRenderErr, ctx)
 				}
 			}
 
 			// do the render, log any errors emitted
 			if resultErr := result.Render(ctx); resultErr != nil {
 				err = ex.Nest(err, resultErr)
-				a.maybeLogFatalContext(resultErr, ctx)
+				a.maybeLogFatalCtx(resultErr, ctx)
 			}
 
 			// check for a render complete step
@@ -425,7 +425,7 @@ func (a *App) RenderAction(action Action) Handler {
 			if typed, ok := result.(ResultPostRender); ok {
 				if postRenderErr := typed.PostRender(ctx); postRenderErr != nil {
 					err = ex.Nest(err, postRenderErr)
-					a.maybeLogFatalContext(postRenderErr, ctx)
+					a.maybeLogFatalCtx(postRenderErr, ctx)
 				}
 			}
 		}
@@ -556,8 +556,8 @@ func (a *App) recover(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (a *App) maybeLogFatalContext(err error, ctx *Ctx) {
-	if err == nil {
+func (a *App) maybeLogFatalCtx(err error, ctx *Ctx) {
+	if a.Log == nil || err == nil {
 		return
 	}
 
@@ -565,13 +565,10 @@ func (a *App) maybeLogFatalContext(err error, ctx *Ctx) {
 	if ctx.Route != nil {
 		fields["route"] = ctx.Route.String()
 	}
-	if ctx.RouteParams != nil {
-		fields["route_params"] = ctx.RouteParams
+	if ctx.Session != nil {
+		fields["user"] = ctx.Session.UserID
 	}
-
-	ctx.WithContext(logger.WithFields(ctx.Context(), fields))
-
-	a.maybeLogTrigger(
+	a.Log.WithFields(fields).Trigger(
 		ctx.Context(),
 		logger.NewErrorEvent(
 			logger.Fatal,
