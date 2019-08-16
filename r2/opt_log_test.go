@@ -24,6 +24,7 @@ func TestOptLog(t *testing.T) {
 	}))
 	defer server.Close()
 
-	assert.Nil(New(server.URL, OptLog(log)).Discard())
+	_, err = New(server.URL, OptLog(log)).Discard()
+	assert.Nil(err)
 	assert.NotEmpty(buf.String())
 }

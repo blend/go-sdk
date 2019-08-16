@@ -19,7 +19,7 @@ func main() {
 	var res *http.Response
 	var err error
 	for x := 0; x < 10; x++ {
-		res, err = req.DiscardWithResponse()
+		res, err = req.Discard()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%v\n", err)
 		} else {

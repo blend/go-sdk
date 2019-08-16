@@ -111,21 +111,8 @@ func (r *Request) Close() error {
 	return nil
 }
 
-// Discard reads the response fully and discards all data it reads.
-func (r *Request) Discard() error {
-	defer r.Close()
-
-	res, err := r.Do()
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-	_, err = io.Copy(ioutil.Discard, res.Body)
-	return ex.New(err)
-}
-
-// DiscardWithResponse reads the response fully and discards all data it reads, and returns the response metadata.
-func (r Request) DiscardWithResponse() (*http.Response, error) {
+// Discard reads the response fully and discards all data it reads, and returns the response metadata.
+func (r Request) Discard() (*http.Response, error) {
 	defer r.Close()
 
 	res, err := r.Do()
@@ -153,24 +140,8 @@ func (r Request) CopyTo(dst io.Writer) (int64, error) {
 	return count, nil
 }
 
-// Bytes reads the response and returns it as a byte array.
-func (r Request) Bytes() ([]byte, error) {
-	defer r.Close()
-
-	res, err := r.Do()
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-	contents, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, ex.New(err)
-	}
-	return contents, nil
-}
-
-// BytesWithResponse reads the response and returns it as a byte array, along with the response metadata..
-func (r Request) BytesWithResponse() ([]byte, *http.Response, error) {
+// Bytes reads the response and returns it as a byte array, along with the response metadata..
+func (r Request) Bytes() ([]byte, *http.Response, error) {
 	defer r.Close()
 
 	res, err := r.Do()

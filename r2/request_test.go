@@ -128,14 +128,7 @@ func TestRequestDiscard(t *testing.T) {
 	assert := assert.New(t)
 	server := mockServerOK()
 	defer server.Close()
-	assert.Nil(New(server.URL).Discard())
-}
-
-func TestRequestDiscardWithResponse(t *testing.T) {
-	assert := assert.New(t)
-	server := mockServerOK()
-	defer server.Close()
-	res, err := New(server.URL).DiscardWithResponse()
+	res, err := New(server.URL).Discard()
 	assert.Nil(err)
 	assert.NotNil(res)
 }
@@ -154,16 +147,7 @@ func TestRequestBytes(t *testing.T) {
 	assert := assert.New(t)
 	server := mockServerOK()
 	defer server.Close()
-	contents, err := New(server.URL).Bytes()
-	assert.Nil(err)
-	assert.Equal("OK!\n", contents)
-}
-
-func TestRequestBytesWithResponse(t *testing.T) {
-	assert := assert.New(t)
-	server := mockServerOK()
-	defer server.Close()
-	contents, meta, err := New(server.URL).BytesWithResponse()
+	contents, meta, err := New(server.URL).Bytes()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.Equal("OK!\n", contents)
@@ -246,7 +230,9 @@ func TestRequestTracer(t *testing.T) {
 			didCallFinish = true
 		},
 	}
-	assert.Nil(New(server.URL, OptTracer(tracer)).Discard())
+
+	_, err := New(server.URL, OptTracer(tracer)).Discard()
+	assert.Nil(err)
 	assert.True(didCallStart)
 	assert.True(didCallFinish)
 }
@@ -258,7 +244,7 @@ func TestRequestListeners(t *testing.T) {
 	defer server.Close()
 
 	var didCallRequest1, didCallRequest2, didCallResponse1, didCallResponse2 bool
-	assert.Nil(New(server.URL,
+	_, err := New(server.URL,
 		OptOnRequest(func(_ *http.Request) error {
 			didCallRequest1 = true
 			return nil
@@ -275,7 +261,8 @@ func TestRequestListeners(t *testing.T) {
 			didCallResponse2 = true
 			return nil
 		}),
-	).Discard())
+	).Discard()
+	assert.Nil(err)
 	assert.True(didCallRequest1)
 	assert.True(didCallRequest2)
 	assert.True(didCallResponse1)
