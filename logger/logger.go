@@ -16,7 +16,7 @@ func New(options ...Option) (*Logger, error) {
 		RecoverPanics: DefaultRecoverPanics,
 		Flags:         NewFlags(DefaultFlags...),
 	}
-	l.Scope = NewScope(context.Background(), l)
+	l.Scope = NewScope(l)
 	var err error
 	for _, option := range options {
 		if err = option(l); err != nil {

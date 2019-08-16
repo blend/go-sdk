@@ -2,7 +2,6 @@ package logger
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -14,18 +13,19 @@ func TestNewScope(t *testing.T) {
 	assert := assert.New(t)
 
 	log := None()
-	ctx := NewScope(
-		WithFields(WithScopePath(context.Background(), "foo", "bar"), Fields{"moo": "loo"}),
+	sc := NewScope(
 		log,
+		OptScopePath("foo", "bar"),
+		OptScopeFields(Fields{"moo": "loo"}),
 	)
-	assert.NotNil(ctx.Logger)
-	assert.Equal([]string{"foo", "bar"}, GetScopePath(ctx.Context()))
-	assert.Equal("loo", GetFields(ctx.Context())["moo"])
+	assert.NotNil(sc.Logger)
+	assert.Equal([]string{"foo", "bar"}, sc.Path)
+	assert.Equal("loo", sc.Fields["moo"])
 
-	subCtx := ctx.WithPath("bailey").WithFields(Fields{"what": "where"})
-	assert.Equal([]string{"foo", "bar", "bailey"}, GetScopePath(subCtx.Context()))
-	assert.Equal("where", GetFields(subCtx.Context())["what"])
-	assert.Equal("loo", GetFields(subCtx.Context())["moo"])
+	sub := sc.WithPath("bailey").WithFields(Fields{"what": "where"})
+	assert.Equal([]string{"foo", "bar", "bailey"}, sub.Path)
+	assert.Equal("where", sub.Fields["what"])
+	assert.Equal("loo", sub.Fields["moo"])
 }
 
 func TestWithPath(t *testing.T) {
@@ -33,7 +33,7 @@ func TestWithPath(t *testing.T) {
 
 	log := None()
 	sc := log.WithPath("foo", "bar")
-	assert.Equal([]string{"foo", "bar"}, GetScopePath(sc.Context()))
+	assert.Equal([]string{"foo", "bar"}, sc.Path)
 }
 
 func TestWithFields(t *testing.T) {
@@ -41,7 +41,7 @@ func TestWithFields(t *testing.T) {
 
 	log := None()
 	sc := log.WithFields(Fields{"foo": "bar"})
-	assert.Equal("bar", GetFields(sc.Context())["foo"])
+	assert.Equal("bar", sc.Fields["foo"])
 }
 
 func TestScopeMethods(t *testing.T) {

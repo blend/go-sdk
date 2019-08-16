@@ -58,7 +58,13 @@ func OptOutput(output io.Writer) Option {
 // OptPath sets an initial logger context path.
 // This is useful if you want to label a logger to differentiate multiple loggers.
 func OptPath(path ...string) Option {
-	return func(l *Logger) error { l.Scope.ctx = WithScopePath(l.Scope.ctx, path...); return nil }
+	return func(l *Logger) error { l.Scope.Path = path; return nil }
+}
+
+// OptFields sets an initial logger context fields.
+// This is useful if you want to add extra information for events by default (like environment).
+func OptFields(fields ...Fields) Option {
+	return func(l *Logger) error { l.Scope.Fields = CombineFields(fields...); return nil }
 }
 
 // OptJSON sets the output formatter for the logger as json.
