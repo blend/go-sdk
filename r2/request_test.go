@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/ex"
 )
 
 func TestRequestNew(t *testing.T) {
@@ -127,14 +128,7 @@ func TestRequestDiscard(t *testing.T) {
 	assert := assert.New(t)
 	server := mockServerOK()
 	defer server.Close()
-	assert.Nil(New(server.URL).Discard())
-}
-
-func TestRequestDiscardWithResponse(t *testing.T) {
-	assert := assert.New(t)
-	server := mockServerOK()
-	defer server.Close()
-	res, err := New(server.URL).DiscardWithResponse()
+	res, err := New(server.URL).Discard()
 	assert.Nil(err)
 	assert.NotNil(res)
 }
@@ -153,16 +147,7 @@ func TestRequestBytes(t *testing.T) {
 	assert := assert.New(t)
 	server := mockServerOK()
 	defer server.Close()
-	contents, err := New(server.URL).Bytes()
-	assert.Nil(err)
-	assert.Equal("OK!\n", contents)
-}
-
-func TestRequestBytesWithResponse(t *testing.T) {
-	assert := assert.New(t)
-	server := mockServerOK()
-	defer server.Close()
-	contents, meta, err := New(server.URL).BytesWithResponse()
+	contents, meta, err := New(server.URL).Bytes()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.Equal("OK!\n", contents)
@@ -177,24 +162,23 @@ func TestRequestJSON(t *testing.T) {
 	defer server.Close()
 
 	var deserialized map[string]interface{}
-	err := New(server.URL).JSON(&deserialized)
+	res, err := New(server.URL).JSON(&deserialized)
 	assert.Nil(err)
+	assert.Equal(http.StatusOK, res.StatusCode)
 	assert.Equal("ok!", deserialized["status"])
 }
 
-func TestRequestJSONWithResponse(t *testing.T) {
+func TestRequestNoContentJSON(t *testing.T) {
 	assert := assert.New(t)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, "{\"status\":\"ok!\"}\n")
+		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer server.Close()
 
 	var deserialized map[string]interface{}
-	res, err := New(server.URL).JSONWithResponse(&deserialized)
-	assert.Nil(err)
-	assert.Equal(http.StatusOK, res.StatusCode)
-	assert.Equal("ok!", deserialized["status"])
+	res, err := New(server.URL).JSON(&deserialized)
+	assert.True(ex.Is(err, ErrNoContentJSON))
+	assert.Equal(http.StatusNoContent, res.StatusCode)
 }
 
 type xmlTestCase struct {
@@ -212,26 +196,23 @@ func TestRequestXML(t *testing.T) {
 	defer server.Close()
 
 	var deserialized xmlTestCase
-	err := New(server.URL).XML(&deserialized)
+	res, err := New(server.URL).XML(&deserialized)
 	assert.Nil(err)
 	assert.Equal("ok!", deserialized.Status)
+	assert.Equal(http.StatusOK, res.StatusCode)
 }
 
-func TestRequestXMLWithResponse(t *testing.T) {
+func TestRequestNoContentXML(t *testing.T) {
 	assert := assert.New(t)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		xml.NewEncoder(w).Encode(xmlTestCase{
-			Status: "ok!",
-		})
+		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer server.Close()
 
 	var deserialized xmlTestCase
-	res, err := New(server.URL).XMLWithResponse(&deserialized)
-	assert.Nil(err)
-	assert.Equal("ok!", deserialized.Status)
-	assert.Equal(http.StatusOK, res.StatusCode)
+	res, err := New(server.URL).XML(&deserialized)
+	assert.True(ex.Is(err, ErrNoContentXML))
+	assert.Equal(http.StatusNoContent, res.StatusCode)
 }
 
 func TestRequestTracer(t *testing.T) {
@@ -249,7 +230,9 @@ func TestRequestTracer(t *testing.T) {
 			didCallFinish = true
 		},
 	}
-	assert.Nil(New(server.URL, OptTracer(tracer)).Discard())
+
+	_, err := New(server.URL, OptTracer(tracer)).Discard()
+	assert.Nil(err)
 	assert.True(didCallStart)
 	assert.True(didCallFinish)
 }
@@ -261,7 +244,7 @@ func TestRequestListeners(t *testing.T) {
 	defer server.Close()
 
 	var didCallRequest1, didCallRequest2, didCallResponse1, didCallResponse2 bool
-	assert.Nil(New(server.URL,
+	_, err := New(server.URL,
 		OptOnRequest(func(_ *http.Request) error {
 			didCallRequest1 = true
 			return nil
@@ -278,7 +261,8 @@ func TestRequestListeners(t *testing.T) {
 			didCallResponse2 = true
 			return nil
 		}),
-	).Discard())
+	).Discard()
+	assert.Nil(err)
 	assert.True(didCallRequest1)
 	assert.True(didCallRequest2)
 	assert.True(didCallResponse1)

@@ -113,7 +113,7 @@ func TestAppPathParams(t *testing.T) {
 	assert.Equal("foo", params.Get("uuid"))
 	assert.False(skipSlashRedirect)
 
-	meta, err := MockGet(app, "/foo").DiscardWithResponse()
+	meta, err := MockGet(app, "/foo").Discard()
 	assert.Nil(err, fmt.Sprintf("%+v", err))
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.NotNil(route)
@@ -144,7 +144,7 @@ func TestAppPathParamsForked(t *testing.T) {
 		return Raw([]byte("ok!"))
 	})
 
-	meta, err := MockGet(app, "/foos/bar/foo").DiscardWithResponse()
+	meta, err := MockGet(app, "/foos/bar/foo").Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.NotNil(route)
@@ -244,7 +244,7 @@ func TestAppMiddleWarePipeline(t *testing.T) {
 		},
 	)
 
-	result, err := MockGet(app, "/").Bytes()
+	result, _, err := MockGet(app, "/").Bytes()
 	assert.Nil(err)
 	assert.True(didRun)
 	assert.Equal("foo", string(result))
@@ -258,7 +258,7 @@ func TestAppStatic(t *testing.T) {
 
 	app.ServeStatic("/static/*filepath", []string{"testdata"})
 
-	index, err := MockGet(app, "/static/test_file.html").Bytes()
+	index, _, err := MockGet(app, "/static/test_file.html").Bytes()
 	assert.Nil(err)
 	assert.True(strings.Contains(string(index), "Test!"), string(index))
 }
@@ -272,7 +272,7 @@ func TestAppStaticSingleFile(t *testing.T) {
 		return Static("testdata/test_file.html")
 	})
 
-	index, err := MockGet(app, "/").Bytes()
+	index, _, err := MockGet(app, "/").Bytes()
 	assert.Nil(err)
 	assert.True(strings.Contains(string(index), "Test!"), string(index))
 }
@@ -290,7 +290,7 @@ func TestAppProviderMiddleware(t *testing.T) {
 
 	app.GET("/", okAction, JSONProviderAsDefault)
 
-	err = MockGet(app, "/").Discard()
+	_, err = MockGet(app, "/").Discard()
 	assert.Nil(err)
 }
 
@@ -313,7 +313,8 @@ func TestAppProviderMiddlewareOrder(t *testing.T) {
 	}
 
 	app.GET("/", okAction, dependsOnProvider, JSONProviderAsDefault)
-	assert.Nil(MockGet(app, "/").Discard())
+	_, err = MockGet(app, "/").Discard()
+	assert.Nil(err)
 }
 
 func TestAppDefaultResultProvider(t *testing.T) {
@@ -346,7 +347,8 @@ func TestAppDefaultResultProviderWithDefault(t *testing.T) {
 		assert.True(isTyped)
 		return nil
 	})
-	assert.Nil(MockGet(app, "/").Discard())
+	_, err = MockGet(app, "/").Discard()
+	assert.Nil(err)
 }
 
 func TestAppDefaultResultProviderWithDefaultFromRoute(t *testing.T) {
@@ -359,7 +361,7 @@ func TestAppDefaultResultProviderWithDefaultFromRoute(t *testing.T) {
 	app.GET("/", controllerNoOp, SessionRequired, ViewProviderAsDefault)
 
 	//somehow assert that the content type is html
-	meta, err := MockGet(app, "/").DiscardWithResponse()
+	meta, err := MockGet(app, "/").Discard()
 	assert.Nil(err)
 	defer meta.Body.Close()
 
@@ -377,7 +379,7 @@ func TestAppViewResult(t *testing.T) {
 		return r.Views.View("test", "foobarbaz")
 	})
 
-	contents, meta, err := MockGet(app, "/").BytesWithResponse()
+	contents, meta, err := MockGet(app, "/").Bytes()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode, string(contents))
 	assert.Equal(ContentTypeHTML, meta.Header.Get(HeaderContentType))
@@ -396,7 +398,7 @@ func TestAppWritesLogs(t *testing.T) {
 	app.GET("/", func(r *Ctx) Result {
 		return Raw([]byte("ok!"))
 	})
-	err = MockGet(app, "/").Discard()
+	_, err = MockGet(app, "/").Discard()
 	assert.Nil(err)
 	assert.Nil(agent.Drain())
 
@@ -432,7 +434,7 @@ func TestAppNotFound(t *testing.T) {
 		defer wg.Done()
 		return JSON.NotFound()
 	})
-	err = MockGet(app, "/doesntexist").Discard()
+	_, err = MockGet(app, "/doesntexist").Discard()
 	assert.Nil(err)
 	wg.Wait()
 }
@@ -447,7 +449,7 @@ func TestAppDefaultHeaders(t *testing.T) {
 		return Text.Result("ok")
 	})
 
-	meta, err := MockGet(app, "/").DiscardWithResponse()
+	meta, err := MockGet(app, "/").Discard()
 	assert.Nil(err)
 	assert.NotEmpty(meta.Header)
 	assert.Equal("bar", meta.Header.Get("foo"))
@@ -465,7 +467,8 @@ func TestAppViewErrorsRenderErrorView(t *testing.T) {
 	app.GET("/", func(r *Ctx) Result {
 		return r.Views.View("malformed", nil)
 	})
-	assert.NotNil(MockGet(app, "/").Discard())
+	_, err = MockGet(app, "/").Discard()
+	assert.NotNil(err)
 }
 
 func TestAppAddsDefaultHeaders(t *testing.T) {
@@ -586,7 +589,8 @@ func TestAppTracer(t *testing.T) {
 		},
 	}
 
-	assert.Nil(MockGet(app, "/").Discard())
+	_, err = MockGet(app, "/").Discard()
+	assert.Nil(err)
 	wg.Wait()
 
 	assert.True(hasValue)
@@ -612,7 +616,8 @@ func TestAppTracerError(t *testing.T) {
 		},
 	}
 
-	assert.Nil(MockGet(app, "/error").Discard())
+	_, err = MockGet(app, "/error").Discard()
+	assert.Nil(err)
 	wg.Wait()
 	assert.True(hasError)
 }
@@ -645,7 +650,8 @@ func TestAppViewTracer(t *testing.T) {
 		},
 	}
 
-	assert.Nil(MockGet(app, "/view").Discard())
+	_, err = MockGet(app, "/view").Discard()
+	assert.Nil(err)
 	wg.Wait()
 
 	assert.True(hasValue)
@@ -679,8 +685,8 @@ func TestAppViewTracerError(t *testing.T) {
 			hasViewError = err != nil
 		},
 	}
-
-	assert.Nil(MockGet(app, "/view").Discard())
+	_, err = MockGet(app, "/view").Discard()
+	assert.Nil(err)
 	wg.Wait()
 
 	assert.True(hasValue)

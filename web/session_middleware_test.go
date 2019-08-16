@@ -27,14 +27,14 @@ func TestSessionAware(t *testing.T) {
 		return Text.Result("COOL")
 	}, SessionAware)
 
-	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieDefaults.Name, sessionID)).DiscardWithResponse()
+	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieDefaults.Name, sessionID)).Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.Equal(ContentTypeText, meta.Header.Get(HeaderContentType))
 	assert.True(didExecuteHandler, "we should have triggered the hander")
 	assert.True(sessionWasSet, "the session should have been set by the middleware")
 
-	unsetMeta, err := MockGet(app, "/").DiscardWithResponse()
+	unsetMeta, err := MockGet(app, "/").Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, unsetMeta.StatusCode)
 	assert.False(sessionWasSet)
@@ -54,12 +54,12 @@ func TestSessionRequired(t *testing.T) {
 		return Text.Result("COOL")
 	}, SessionRequired)
 
-	unsetMeta, err := MockGet(app, "/").DiscardWithResponse()
+	unsetMeta, err := MockGet(app, "/").Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusUnauthorized, unsetMeta.StatusCode)
 	assert.False(sessionWasSet)
 
-	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieDefaults.Name, sessionID)).DiscardWithResponse()
+	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieDefaults.Name, sessionID)).Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.True(sessionWasSet)
@@ -80,17 +80,17 @@ func TestSessionRequiredCustomParamName(t *testing.T) {
 		return Text.Result("COOL")
 	}, SessionRequired)
 
-	unsetMeta, err := MockGet(app, "/").DiscardWithResponse()
+	unsetMeta, err := MockGet(app, "/").Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusUnauthorized, unsetMeta.StatusCode)
 	assert.False(sessionWasSet)
 
-	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieDefaults.Name, sessionID)).DiscardWithResponse()
+	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieDefaults.Name, sessionID)).Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.True(sessionWasSet)
 
-	meta, err = MockGet(app, "/", r2.OptCookieValue(DefaultCookieName, sessionID)).DiscardWithResponse()
+	meta, err = MockGet(app, "/", r2.OptCookieValue(DefaultCookieName, sessionID)).Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusUnauthorized, meta.StatusCode)
 	assert.True(sessionWasSet)
@@ -118,12 +118,12 @@ func TestSessionMiddleware(t *testing.T) {
 		return NoContent
 	}))
 
-	unsetMeta, err := MockGet(app, "/").DiscardWithResponse()
+	unsetMeta, err := MockGet(app, "/").Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusNoContent, unsetMeta.StatusCode)
 	assert.False(sessionWasSet)
 
-	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieDefaults.Name, sessionID)).DiscardWithResponse()
+	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieDefaults.Name, sessionID)).Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.True(sessionWasSet)
