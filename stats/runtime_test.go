@@ -1,6 +1,7 @@
 package stats
 
 import (
+	"fmt"
 	"runtime"
 	"testing"
 
@@ -36,6 +37,9 @@ func TestRuntimeCollect(t *testing.T) {
 	runtime.ReadMemStats(&previous)
 
 	collector := NewMockCollector()
+	for i := range runtimeMetrics {
+		go func() { collector.Errors <- fmt.Errorf("error %d", i) }()
+	}
 	go runtimeCollect(collector, &previous, &current)
 
 	for _, metricName := range runtimeMetrics {
