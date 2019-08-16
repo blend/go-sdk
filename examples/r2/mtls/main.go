@@ -75,7 +75,7 @@ func main() {
 
 	log.Info("making a secure request")
 
-	if err := r2.New("https://localhost:5000",
+	if _, err := r2.New("https://localhost:5000",
 		r2.OptTLSRootCAs(caPool),
 		r2.OptTLSClientCert([]byte(clientKeyPair.Cert), []byte(clientKeyPair.Key))).Discard(); err != nil {
 		fatal(log, err)
@@ -84,7 +84,7 @@ func main() {
 	}
 
 	log.Info("making an insecure request")
-	if err := r2.New("https://localhost:5000", r2.OptTLSRootCAs(caPool)).Discard(); err != nil {
+	if _, err := r2.New("https://localhost:5000", r2.OptTLSRootCAs(caPool)).Discard(); err != nil {
 		fatal(log, err)
 	}
 }

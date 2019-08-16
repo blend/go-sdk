@@ -19,7 +19,7 @@ func TestGZipMiddlewarePlaintext(t *testing.T) {
 
 	req := MockGet(app, "/")
 	assert.Nil(req.Err)
-	resBody, err := req.Bytes()
+	resBody, _, err := req.Bytes()
 	assert.Nil(err)
 	assert.Equal("\"OK!\"\n", string(resBody))
 }
@@ -34,7 +34,7 @@ func TestGZipMiddlewareCompressed(t *testing.T) {
 
 	req := MockGet(app, "/", r2.OptHeaderValue(HeaderAcceptEncoding, "gzip"))
 	assert.Nil(req.Err)
-	body, meta, err := req.BytesWithResponse()
+	body, meta, err := req.Bytes()
 
 	assert.Equal("gzip", meta.Header.Get(HeaderContentEncoding))
 	assert.Equal("Accept-Encoding", meta.Header.Get(HeaderVary))
