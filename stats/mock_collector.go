@@ -16,7 +16,7 @@ var (
 func NewMockCollector() *MockCollector {
 	return &MockCollector{
 		Events: make(chan MockMetric),
-		Errors: make(chan error, 30),
+		Errors: make(chan error),
 	}
 }
 
