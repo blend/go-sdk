@@ -763,7 +763,7 @@ func TestAppNilLoggerPanic(t *testing.T) {
 	assert.Nil(err)
 	app.GET("/", doPanic, ViewProviderAsDefault)
 
-	res, err := MockGet(app, "/").DiscardWithResponse()
+	res, err := MockGet(app, "/").Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusInternalServerError, res.StatusCode)
 }
