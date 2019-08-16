@@ -26,7 +26,7 @@ type scopePathKey struct{}
 
 // WithScopePath returns a new context with a given additional path segment(s).
 func WithScopePath(ctx context.Context, path ...string) context.Context {
-	return context.WithValue(ctx, scopePathKey{}, append(GetScopePath(ctx), path...))
+	return context.WithValue(ctx, scopePathKey{}, path)
 }
 
 // GetScopePath gets a scope path off a context.
@@ -43,7 +43,7 @@ type fieldsKey struct{}
 
 // WithFields returns a new context with a given additional path segments.
 func WithFields(ctx context.Context, fields Fields) context.Context {
-	return context.WithValue(ctx, fieldsKey{}, CombineFields(GetFields(ctx), fields))
+	return context.WithValue(ctx, fieldsKey{}, fields)
 }
 
 // GetFields gets fields off a context.

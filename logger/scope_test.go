@@ -2,6 +2,7 @@ package logger
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -74,4 +75,28 @@ func TestScopeMethods(t *testing.T) {
 	log.Output = buf
 	log.FatalWithReq(fmt.Errorf("only a test"), &http.Request{Method: "foo"})
 	assert.Equal("[fatal] only a test\n", buf.String())
+
+	buf = new(bytes.Buffer)
+	log.Output = buf
+	log.Path = []string{"outer", "inner"}
+	log.Fields = Fields{"foo": "bar"}
+	log.Info("format test")
+	assert.Equal("[outer > inner] [info] format test\tfoo=bar\n", buf.String())
+
+}
+
+func TestScopeApplyContext(t *testing.T) {
+	assert := assert.New(t)
+
+	sc := NewScope(None())
+	sc.Path = []string{"one", "two"}
+	sc.Fields = Fields{"foo": "bar"}
+
+	ctx := WithFields(context.Background(), Fields{"moo": "loo"})
+	ctx = WithScopePath(ctx, "three", "four")
+
+	final := sc.ApplyContext(ctx)
+	assert.Equal([]string{"one", "two", "three", "four"}, GetScopePath(final))
+	assert.Equal("bar", GetFields(final)["foo"])
+	assert.Equal("loo", GetFields(final)["moo"])
 }

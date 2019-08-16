@@ -184,7 +184,7 @@ func (sc Scope) FatalWithReq(err error, req *http.Request) error {
 
 // ApplyContext applies the scope context to a given context.
 func (sc Scope) ApplyContext(ctx context.Context) context.Context {
-	ctx = WithScopePath(ctx, sc.Path...)
+	ctx = WithScopePath(ctx, append(sc.Path, GetScopePath(ctx)...)...)
 	ctx = WithFields(ctx, CombineFields(sc.Fields, GetFields(ctx)))
 	return ctx
 }
