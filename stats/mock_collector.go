@@ -16,6 +16,7 @@ var (
 func NewMockCollector() *MockCollector {
 	return &MockCollector{
 		Events: make(chan MockMetric),
+		Errors: make(chan error, 30),
 	}
 }
 
@@ -25,6 +26,7 @@ type MockCollector struct {
 	defaultTags []string
 
 	Events chan MockMetric
+	Errors chan error
 }
 
 // AddDefaultTag adds a default tag.
@@ -40,31 +42,36 @@ func (mc MockCollector) DefaultTags() []string {
 // Count adds a mock count event to the event stream.
 func (mc MockCollector) Count(name string, value int64, tags ...string) error {
 	mc.Events <- MockMetric{Name: name, Count: value, Tags: append(mc.defaultTags, tags...)}
-	return nil
+	err := <-mc.Errors
+	return err
 }
 
 // Increment adds a mock count event to the event stream with value (1).
 func (mc MockCollector) Increment(name string, tags ...string) error {
 	mc.Events <- MockMetric{Name: name, Count: 1, Tags: append(mc.defaultTags, tags...)}
-	return nil
+	err := <-mc.Errors
+	return err
 }
 
 // Gauge adds a mock count event to the event stream with value (1).
 func (mc MockCollector) Gauge(name string, value float64, tags ...string) error {
 	mc.Events <- MockMetric{Name: name, Gauge: value, Tags: append(mc.defaultTags, tags...)}
-	return nil
+	err := <-mc.Errors
+	return err
 }
 
 // Histogram adds a mock count event to the event stream with value (1).
 func (mc MockCollector) Histogram(name string, value float64, tags ...string) error {
 	mc.Events <- MockMetric{Name: name, Histogram: value, Tags: append(mc.defaultTags, tags...)}
-	return nil
+	err := <-mc.Errors
+	return err
 }
 
 // TimeInMilliseconds adds a mock time in millis event to the event stream with a value.
 func (mc MockCollector) TimeInMilliseconds(name string, value time.Duration, tags ...string) error {
 	mc.Events <- MockMetric{Name: name, TimeInMilliseconds: timeutil.Milliseconds(value), Tags: append(mc.defaultTags, tags...)}
-	return nil
+	err := <-mc.Errors
+	return err
 }
 
 // MockMetric is a mock metric.

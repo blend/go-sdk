@@ -9,14 +9,6 @@ import (
 // MultiCollector is a class that wraps a set of statsd collectors
 type MultiCollector []Collector
 
-// NewMultiCollector returns a new multi-collector from a set of collectors
-func NewMultiCollector(collectors ...Collector) (MultiCollector, error) {
-	if len(collectors) == 0 {
-		return nil, ex.New("Collectors cannot be empty")
-	}
-	return collectors, nil
-}
-
 // Count increments a counter by a value and writes to the different hosts
 func (collectors MultiCollector) Count(name string, value int64, tags ...string) error {
 	for _, collector := range collectors {

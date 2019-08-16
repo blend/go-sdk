@@ -1,24 +1,12 @@
 package stats
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/blend/go-sdk/assert"
 )
-
-func TestNewMultiCollector(t *testing.T) {
-	assert := assert.New(t)
-
-	c1 := NewMockCollector()
-	c2 := NewMockCollector()
-
-	_, err := NewMultiCollector(c1, c2)
-	assert.Nil(err)
-
-	_, err = NewMultiCollector()
-	assert.NotNil(err)
-}
 
 func TestCount(t *testing.T) {
 	assert := assert.New(t)
@@ -31,10 +19,15 @@ func TestCount(t *testing.T) {
 	c1 := NewMockCollector()
 	c2 := NewMockCollector()
 
-	mc, err := NewMultiCollector(c1, c2)
-	go mc.Count("event", 1, "k1:v1")
+	mc := MultiCollector{c1, c2}
+	go func() { c1.Errors <- nil }()
+	go func() { c2.Errors <- nil }()
 
-	assert.Nil(err)
+	var err error
+	go func() {
+		err = mc.Count("event", 1, "k1:v1")
+		assert.Nil(err)
+	}()
 	metric1 := <-c1.Events
 	metric2 := <-c2.Events
 	assert.Equal("event", metric1.Name)
@@ -44,6 +37,18 @@ func TestCount(t *testing.T) {
 	assert.Zero(metric1.Histogram)
 	assert.Zero(metric1.TimeInMilliseconds)
 	assert.Equal(metric1, metric2)
+
+	mc = MultiCollector{c1}
+	go func() { c1.Errors <- fmt.Errorf("error") }()
+	go func() {
+		err = mc.Count("event", 1, "k1:v1")
+		assert.NotNil(err)
+		assert.Equal("error", err.Error())
+	}()
+	metric1 = <-c1.Events
+	assert.Zero(metric1.Gauge)
+	assert.Zero(metric1.Histogram)
+	assert.Zero(metric1.TimeInMilliseconds)
 }
 
 func TestIncrement(t *testing.T) {
@@ -52,10 +57,15 @@ func TestIncrement(t *testing.T) {
 	c1 := NewMockCollector()
 	c2 := NewMockCollector()
 
-	mc, err := NewMultiCollector(c1, c2)
-	go mc.Increment("event", "k1:v1")
+	var err error
+	mc := MultiCollector{c1, c2}
+	go func() { c1.Errors <- nil }()
+	go func() { c2.Errors <- nil }()
+	go func() {
+		err = mc.Increment("event", "k1:v1")
+		assert.Nil(err)
+	}()
 
-	assert.Nil(err)
 	metric1 := <-c1.Events
 	metric2 := <-c2.Events
 	assert.Equal("event", metric1.Name)
@@ -64,6 +74,19 @@ func TestIncrement(t *testing.T) {
 	assert.Zero(metric1.Histogram)
 	assert.Zero(metric1.TimeInMilliseconds)
 	assert.Equal(metric1, metric2)
+
+	mc = MultiCollector{c1}
+
+	go func() { c1.Errors <- fmt.Errorf("error") }()
+	go func() {
+		err = mc.Increment("event", "k1:v1")
+		assert.NotNil(err)
+		assert.Equal("error", err.Error())
+	}()
+	metric1 = <-c1.Events
+	assert.Zero(metric1.Gauge)
+	assert.Zero(metric1.Histogram)
+	assert.Zero(metric1.TimeInMilliseconds)
 }
 
 func TestGauge(t *testing.T) {
@@ -71,10 +94,15 @@ func TestGauge(t *testing.T) {
 	c1 := NewMockCollector()
 	c2 := NewMockCollector()
 
-	mc, err := NewMultiCollector(c1, c2)
-	go mc.Gauge("event", .01)
+	var err error
+	mc := MultiCollector{c1, c2}
+	go func() { c1.Errors <- nil }()
+	go func() { c2.Errors <- nil }()
+	go func() {
+		err = mc.Gauge("event", .01)
+		assert.Nil(err)
+	}()
 
-	assert.Nil(err)
 	metric1 := <-c1.Events
 	metric2 := <-c2.Events
 	assert.Equal("event", metric1.Name)
@@ -83,6 +111,19 @@ func TestGauge(t *testing.T) {
 	assert.Zero(metric1.Histogram)
 	assert.Zero(metric1.TimeInMilliseconds)
 	assert.Equal(metric1, metric2)
+
+	mc = MultiCollector{c1}
+
+	go func() { c1.Errors <- fmt.Errorf("error") }()
+	go func() {
+		err = mc.Gauge("event", .01)
+		assert.NotNil(err)
+		assert.Equal("error", err.Error())
+	}()
+	metric1 = <-c1.Events
+	assert.Zero(metric1.Count)
+	assert.Zero(metric1.Histogram)
+	assert.Zero(metric1.TimeInMilliseconds)
 }
 
 func TestHistogram(t *testing.T) {
@@ -90,10 +131,14 @@ func TestHistogram(t *testing.T) {
 	c1 := NewMockCollector()
 	c2 := NewMockCollector()
 
-	mc, err := NewMultiCollector(c1, c2)
-	go mc.Histogram("event", .01)
-
-	assert.Nil(err)
+	var err error
+	mc := MultiCollector{c1, c2}
+	go func() { c1.Errors <- nil }()
+	go func() { c2.Errors <- nil }()
+	go func() {
+		err = mc.Histogram("event", .01)
+		assert.Nil(err)
+	}()
 	metric1 := <-c1.Events
 	metric2 := <-c2.Events
 	assert.Equal("event", metric1.Name)
@@ -102,6 +147,19 @@ func TestHistogram(t *testing.T) {
 	assert.Zero(metric1.Gauge)
 	assert.Zero(metric1.TimeInMilliseconds)
 	assert.Equal(metric1, metric2)
+
+	mc = MultiCollector{c1, c2}
+
+	go func() { c1.Errors <- fmt.Errorf("error") }()
+	go func() {
+		err = mc.Histogram("event", .01)
+		assert.NotNil(err)
+		assert.Equal("error", err.Error())
+	}()
+	metric1 = <-c1.Events
+	assert.Zero(metric1.Count)
+	assert.Zero(metric1.Gauge)
+	assert.Zero(metric1.TimeInMilliseconds)
 }
 
 func TestTimeInMilliseconds(t *testing.T) {
@@ -115,17 +173,30 @@ func TestTimeInMilliseconds(t *testing.T) {
 	c1 := NewMockCollector()
 	c2 := NewMockCollector()
 
-	mc, err := NewMultiCollector(c1, c2)
-	go mc.TimeInMilliseconds("event", time.Second, "k1:v1")
-
-	assert.Nil(err)
+	var err error
+	mc := MultiCollector{c1, c2}
+	go func() { c1.Errors <- nil }()
+	go func() { c2.Errors <- nil }()
+	go func() {
+		err = mc.TimeInMilliseconds("event", time.Second, "k1:v1")
+		assert.Nil(err)
+	}()
 	metric1 := <-c1.Events
 	metric2 := <-c2.Events
 	assert.Equal("event", metric1.Name)
 	assert.Equal(1000, metric1.TimeInMilliseconds)
 	assertTags(metric1.Tags)
+	assert.Equal(metric1, metric2)
+
+	mc = MultiCollector{c1, c2}
+	go func() { c1.Errors <- fmt.Errorf("error") }()
+	go func() {
+		err = mc.TimeInMilliseconds("event", time.Second, "k1:v1")
+		assert.NotNil(err)
+		assert.Equal("error", err.Error())
+	}()
+	metric1 = <-c1.Events
 	assert.Zero(metric1.Gauge)
 	assert.Zero(metric1.Histogram)
 	assert.Zero(metric1.Count)
-	assert.Equal(metric1, metric2)
 }
