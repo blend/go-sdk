@@ -234,7 +234,7 @@ type CreateTransitKeyConfig struct {
 	//   ecdsa-p256 – ECDSA using the P-256 elliptic curve (asymmetric)
 	//   rsa-2048 - RSA with bit size of 2048 (asymmetric)
 	//   rsa-4096 - RSA with bit size of 4096 (asymmetric)
-	Type string `json:"type"`
+	Type string `json:"type,omitempty"`
 }
 
 // UpdateTransitKeyConfig is the configuration data for modifying a TransitKey

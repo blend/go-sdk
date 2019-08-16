@@ -23,7 +23,7 @@ func (rf RequestFactory) Google() (*http.Response, error) {
 	return rf.New("https://google.com/robots.txt",
 		r2.OptUserAgent("blend go-sdk"),
 		r2.OptTimeout(5*time.Second),
-	).DiscardWithResponse()
+	).Discard()
 }
 
 func TestMockedRequest(t *testing.T) {

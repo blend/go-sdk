@@ -14,7 +14,7 @@ func TestMock(t *testing.T) {
 	app := MustNew()
 	app.GET("/", func(_ *Ctx) Result { return NoContent })
 
-	res, err := Mock(app, &http.Request{Method: "GET", URL: &url.URL{Scheme: SchemeHTTP, Path: "/"}}).DiscardWithResponse()
+	res, err := Mock(app, &http.Request{Method: "GET", URL: &url.URL{Scheme: SchemeHTTP, Path: "/"}}).Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusNoContent, res.StatusCode)
 
@@ -27,7 +27,7 @@ func TestMockGet(t *testing.T) {
 	app := MustNew()
 	app.GET("/", func(_ *Ctx) Result { return NoContent })
 
-	res, err := MockGet(app, "/").DiscardWithResponse()
+	res, err := MockGet(app, "/").Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusNoContent, res.StatusCode)
 
