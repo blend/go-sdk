@@ -33,6 +33,7 @@ type Scope struct {
 	// Fields are descriptive fields for the scope.
 	Fields Fields
 	// Context is a relevant context for the scope, it is passed to listeners for events.
+	// Before triggering events, it is loaded with the Path and Fields from the Scope as Values.
 	Context context.Context
 	// Logger is a parent reference to the root logger; this holds
 	// information around what flags are enabled and listeners for events.
