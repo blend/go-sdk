@@ -36,11 +36,27 @@ Non-Blend employees feel free to fork the repo and open PRs with changes. Forked
 
 # Code Style Notes
 
+## The "Options" Pattern
+
+- The "Options" pattern is a variadic set of arguments as functions that mutate the returned object, typically in the constructor.
+	- This lets callers add their own mutators to be used in constructors.
+	- It also lets callers establish a set of "default" options that can be combined / overridden later.
+	- It also reduces the amount of code required in the `go-sdk` repo itself.
+
+## Other General Notes
+
 - Where possible, follow the [golang proverbs](https://go-proverbs.github.io/).
-- Where possible, make the zero value useful. If you do need to internalize a field, make sure it's accessible with an accessor in the form of the uppercase name of the field, i.e. field `foo` would have an accessor `Foo()`.
+- Make the zero value useful. Some situations require pointers, and are noted exceptions.
+- Export all fields unless strictly internal state and would *never* be set by calling code.
 - Where possible, packages should export configuration objects that can be used to create the core types of that package. Those configuration objects should be readable from both JSON and YAML.
 - Anything that can return an error, should. Anything that needs to return a single value (but would return an error) should panic on that error and should be prefixed by `Must...`.
 - Minimize dependencies between packages as much as possible; add external dependencies with *extreme* care.
+	- Notable exceptions include:
+		- airbrake
+		- sentry
+		- lib/pq
+		- aws sdk
+		- datadog
 
 # Version Management
 
