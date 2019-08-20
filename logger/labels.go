@@ -1,6 +1,6 @@
 package logger
 
-// CombineFields combines one or many set of fields.
+// CombineLabels combines one or many set of fields.
 func CombineLabels(labels ...Labels) Labels {
 	output := make(Labels)
 	for _, set := range labels {
