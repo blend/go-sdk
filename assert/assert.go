@@ -172,6 +172,14 @@ func (a *Assertions) ReferenceEqual(expected interface{}, actual interface{}, us
 	}
 }
 
+// IndirectEqual asserts that two pointers reference the same values.
+func (a *Assertions) IndirectEqual(expected interface{}, actual interface{}, userMessageComponents ...interface{}) {
+	a.assertion()
+	if didFail, message := shouldBeIndirectEqual(expected, actual); didFail {
+		failNow(a.output, a.t, message, userMessageComponents...)
+	}
+}
+
 // NotEqual asserts that two objects are not deeply equal.
 func (a *Assertions) NotEqual(expected interface{}, actual interface{}, userMessageComponents ...interface{}) {
 	a.assertion()
@@ -472,6 +480,16 @@ func (o *Optional) Equal(expected interface{}, actual interface{}, userMessageCo
 func (o *Optional) ReferenceEqual(expected interface{}, actual interface{}, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldBeReferenceEqual(expected, actual); didFail {
+		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		return false
+	}
+	return true
+}
+
+// IndirectEqual asserts that two pointers reference the same values.
+func (o *Optional) IndirectEqual(expected interface{}, actual interface{}, userMessageComponents ...interface{}) bool {
+	o.assertion()
+	if didFail, message := shouldBeIndirectEqual(expected, actual); didFail {
 		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
 		return false
 	}
@@ -821,6 +839,13 @@ func shouldBeReferenceEqual(expected, actual interface{}) (bool, string) {
 	return false, EMPTY
 }
 
+func shouldBeIndirectEqual(expected, actual interface{}) (bool, string) {
+	if !areIndirectEqual(expected, actual) {
+		return true, indirectEqualMessage(expected, actual)
+	}
+	return false, EMPTY
+}
+
 func shouldBePanicEqual(expected interface{}, action func()) (bool, string) {
 	var actual interface{}
 	var didPanic bool
@@ -1155,6 +1180,10 @@ func referenceEqualMessage(expected, actual interface{}) string {
 	return shouldBeMultipleMessage(expected, actual, "References should be equal")
 }
 
+func indirectEqualMessage(expected, actual interface{}) string {
+	return shouldBeMultipleMessage(expected, actual, "Pointer values should be equal")
+}
+
 func panicEqualMessage(didPanic bool, expected, actual interface{}) string {
 	if !didPanic {
 		return "Should have produced a panic"
@@ -1199,6 +1228,10 @@ func isZero(value interface{}) bool {
 	return areEqual(0, value)
 }
 
+func getIndirect(object interface{}) interface{} {
+	return reflect.Indirect(reflect.ValueOf(object)).Interface()
+}
+
 func areReferenceEqual(expected, actual interface{}) bool {
 	if expected == nil && actual == nil {
 		return true
@@ -1208,6 +1241,17 @@ func areReferenceEqual(expected, actual interface{}) bool {
 	}
 
 	return expected == actual
+}
+
+func areIndirectEqual(expected, actual interface{}) bool {
+	if expected == nil && actual == nil {
+		return true
+	}
+	if (expected == nil && actual != nil) || (expected != nil && actual == nil) {
+		return false
+	}
+
+	return getIndirect(expected) == getIndirect(actual)
 }
 
 func areEqual(expected, actual interface{}) bool {

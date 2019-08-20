@@ -615,6 +615,66 @@ func TestAssertReferenceEqual(t *testing.T) {
 	}
 }
 
+func TestAssertIndirectEqual(t *testing.T) {
+	obj1 := "foo"
+	obj2 := "foo"
+	obj3 := "bar"
+	ref1 := &obj1
+	ref2 := &obj1
+	ref3 := &obj2
+	ref4 := &obj3
+
+	passCases := [][]interface{}{
+		[]interface{}{ref1, ref2},
+		[]interface{}{ref1, ref3},
+		[]interface{}{nil, nil},
+	}
+
+	failCases := [][]interface{}{
+		[]interface{}{ref1, ref4},
+		[]interface{}{ref1, nil},
+	}
+
+	for i, passCase := range passCases {
+		err := safeExec(func() {
+			New(nil).IndirectEqual(passCase[0], passCase[1])
+			New(nil).IndirectEqual(passCase[1], passCase[0])
+		})
+		if err != nil {
+			t.Errorf("should not have produced a panic on pass case index %d", i)
+			t.FailNow()
+		}
+	}
+
+	for i, failCase := range failCases {
+		output := bytes.NewBuffer(nil)
+		err := safeExec(func() {
+			New(nil).WithOutput(output).IndirectEqual(failCase[0], failCase[1])
+		})
+		if err == nil {
+			t.Errorf("should have produced a panic on fail case idnex %d", i)
+			t.FailNow()
+		}
+		if len(output.String()) == 0 {
+			t.Errorf("Should have written output on failure on fail case index %d", i)
+			t.FailNow()
+		}
+
+		output = bytes.NewBuffer(nil)
+		err = safeExec(func() {
+			New(nil).WithOutput(output).IndirectEqual(failCase[1], failCase[0])
+		})
+		if err == nil {
+			t.Errorf("should have produced a panic on fail case idnex %d", i)
+			t.FailNow()
+		}
+		if len(output.String()) == 0 {
+			t.Errorf("Should have written output on failure on fail case index %d", i)
+			t.FailNow()
+		}
+	}
+}
+
 func TestAssertNotEqual(t *testing.T) {
 	err := safeExec(func() {
 		New(nil).NotEqual("foo", "bar") // should be ok
