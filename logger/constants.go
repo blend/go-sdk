@@ -73,7 +73,7 @@ const (
 	FieldScopePath   = "scope_path"
 	FieldText        = "text"
 	FieldElapsed     = "elapsed"
-	FieldFields      = "fields"
+	FieldLabels      = "labels"
 	FieldAnnotations = "annotations"
 )
 

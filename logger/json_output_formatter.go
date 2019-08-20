@@ -98,6 +98,23 @@ func (jw JSONOutputFormatter) WriteFormat(ctx context.Context, output io.Writer,
 	return err
 }
 
+// CombineFields combines a variadic set of fields.
+func CombineFields(fields ...map[string]interface{}) map[string]interface{} {
+	if len(fields) == 0 {
+		return nil
+	}
+	output := make(map[string]interface{})
+	for _, set := range fields {
+		if set == nil {
+			continue
+		}
+		for key, value := range set {
+			output[key] = value
+		}
+	}
+	return output
+}
+
 // GetScopeFields gets scope fields from a context.
 func GetScopeFields(ctx context.Context, flag string) map[string]interface{} {
 	output := map[string]interface{}{
@@ -107,8 +124,11 @@ func GetScopeFields(ctx context.Context, flag string) map[string]interface{} {
 	if path := GetScopePath(ctx); len(path) > 0 {
 		output[FieldScopePath] = path
 	}
-	if fields := GetFields(ctx); len(fields) > 0 {
-		output[FieldFields] = fields
+	if labels := GetLabels(ctx); len(labels) > 0 {
+		output[FieldLabels] = labels
+	}
+	if annotations := GetAnnotations(ctx); len(annotations) > 0 {
+		output[FieldAnnotations] = annotations
 	}
 	return output
 }

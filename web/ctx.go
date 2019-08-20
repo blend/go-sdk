@@ -81,7 +81,7 @@ func (rc *Ctx) WithContext(context context.Context) *Ctx {
 
 // Context returns the context.
 func (rc *Ctx) Context() context.Context {
-	return logger.WithFields(rc.Request.Context(), rc.loggerFields())
+	return logger.WithLabels(rc.Request.Context(), rc.loggerLabels())
 }
 
 // WithStateValue sets the state for a key to an object.
@@ -375,8 +375,8 @@ func (rc *Ctx) onRequestFinish() {
 	rc.RequestEnd = time.Now().UTC()
 }
 
-func (rc *Ctx) loggerFields() logger.Fields {
-	fields := make(logger.Fields)
+func (rc *Ctx) loggerLabels() logger.Labels {
+	fields := make(logger.Labels)
 	if rc.Route != nil {
 		fields["web.route"] = rc.Route.String()
 	}

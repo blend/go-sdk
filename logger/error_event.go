@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"net/http"
 
 	"github.com/blend/go-sdk/ex"
 )
@@ -40,18 +39,18 @@ func NewErrorEventListener(listener func(context.Context, ErrorEvent)) Listener 
 // ErrorEventOption is an option for error events.
 type ErrorEventOption = func(*ErrorEvent)
 
-// OptErrorEventRequest sets the request on an error event.
-func OptErrorEventRequest(req *http.Request) ErrorEventOption {
+// OptErrorEventState sets the state on an error event.
+func OptErrorEventState(state interface{}) ErrorEventOption {
 	return func(ee *ErrorEvent) {
-		ee.Request = req
+		ee.State = state
 	}
 }
 
 // ErrorEvent is an event that wraps an error.
 type ErrorEvent struct {
-	Flag    string
-	Err     error
-	Request *http.Request
+	Flag  string
+	Err   error
+	State interface{}
 }
 
 // GetFlag implements Event.

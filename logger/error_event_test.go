@@ -19,12 +19,12 @@ func TestNewErrorEvent(t *testing.T) {
 	ee := NewErrorEvent(
 		Fatal,
 		fmt.Errorf("not a test"),
-		OptErrorEventRequest(&http.Request{Method: "POST"}),
+		OptErrorEventState(&http.Request{Method: "POST"}),
 	)
 	assert.Equal(Fatal, ee.GetFlag())
 	assert.Equal("not a test", ee.Err.Error())
-	assert.NotNil(ee.Request)
-	assert.Equal("POST", ee.Request.Method)
+	assert.NotNil(ee.State)
+	assert.Equal("POST", ee.State.(*http.Request).Method)
 
 	buf := new(bytes.Buffer)
 	tf := TextOutputFormatter{

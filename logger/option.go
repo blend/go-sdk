@@ -61,10 +61,10 @@ func OptPath(path ...string) Option {
 	return func(l *Logger) error { l.Scope.Path = path; return nil }
 }
 
-// OptFields sets an initial logger context fields.
+// OptLabels sets an initial logger scope labels.
 // This is useful if you want to add extra information for events by default (like environment).
-func OptFields(fields ...Fields) Option {
-	return func(l *Logger) error { l.Scope.Fields = CombineFields(fields...); return nil }
+func OptLabels(labels ...Labels) Option {
+	return func(l *Logger) error { l.Scope.Labels = CombineLabels(labels...); return nil }
 }
 
 // OptJSON sets the output formatter for the logger as json.

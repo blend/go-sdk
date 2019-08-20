@@ -26,12 +26,12 @@ func TestContextWithScopePath(t *testing.T) {
 	assert.Nil(GetScopePath(context.Background()))
 }
 
-func TestContextWithFields(t *testing.T) {
+func TestContextWithLabels(t *testing.T) {
 	assert := assert.New(t)
 
-	fields := Fields{"one": "two"}
-	fields2 := Fields{"two": "three"}
-	assert.Equal(fields, GetFields(WithFields(context.Background(), fields)))
-	assert.Equal(fields, GetFields(WithFields(WithFields(context.Background(), fields2), fields)))
-	assert.Nil(GetFields(context.Background()))
+	labels := Labels{"one": "two"}
+	labels2 := Labels{"two": "three"}
+	assert.Equal(labels, GetLabels(WithLabels(context.Background(), labels)))
+	assert.Equal(labels, GetLabels(WithLabels(WithLabels(context.Background(), labels2), labels)))
+	assert.Nil(GetLabels(context.Background()))
 }

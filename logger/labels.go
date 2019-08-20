@@ -1,9 +1,9 @@
 package logger
 
 // CombineFields combines one or many set of fields.
-func CombineFields(fields ...Fields) Fields {
-	output := make(Fields)
-	for _, set := range fields {
+func CombineLabels(labels ...Labels) Labels {
+	output := make(Labels)
+	for _, set := range labels {
 		if set == nil || len(set) == 0 {
 			continue
 		}
@@ -14,5 +14,5 @@ func CombineFields(fields ...Fields) Fields {
 	return output
 }
 
-// Fields are a collection of extra context fields for an event.
-type Fields map[string]interface{}
+// Labels are a collection of string name value pairs.
+type Labels map[string]string

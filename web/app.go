@@ -566,7 +566,7 @@ func (a *App) maybeLogFatal(ctx context.Context, err error, req *http.Request) {
 		logger.NewErrorEvent(
 			logger.Fatal,
 			err,
-			logger.OptErrorEventRequest(req),
+			logger.OptErrorEventState(req),
 		),
 	)
 }

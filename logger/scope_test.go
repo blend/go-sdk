@@ -17,16 +17,19 @@ func TestNewScope(t *testing.T) {
 	sc := NewScope(
 		log,
 		OptScopePath("foo", "bar"),
-		OptScopeFields(Fields{"moo": "loo"}),
+		OptScopeLabels(Labels{"moo": "loo"}),
+		OptScopeAnnotations(Annotations{"alpha": "bravo"}),
 	)
 	assert.NotNil(sc.Logger)
 	assert.Equal([]string{"foo", "bar"}, sc.Path)
-	assert.Equal("loo", sc.Fields["moo"])
+	assert.Equal("loo", sc.Labels["moo"])
 
-	sub := sc.WithPath("bailey").WithFields(Fields{"what": "where"})
+	sub := sc.WithPath("bailey").WithLabels(Labels{"what": "where"}).WithAnnotations(Annotations{"zoo": 47})
 	assert.Equal([]string{"foo", "bar", "bailey"}, sub.Path)
-	assert.Equal("where", sub.Fields["what"])
-	assert.Equal("loo", sub.Fields["moo"])
+	assert.Equal("where", sub.Labels["what"])
+	assert.Equal("loo", sub.Labels["moo"])
+	assert.Equal(47, sub.Annotations["zoo"])
+	assert.Equal("bravo", sub.Annotations["alpha"])
 }
 
 func TestWithPath(t *testing.T) {
@@ -37,12 +40,20 @@ func TestWithPath(t *testing.T) {
 	assert.Equal([]string{"foo", "bar"}, sc.Path)
 }
 
-func TestWithFields(t *testing.T) {
+func TestWithLabels(t *testing.T) {
 	assert := assert.New(t)
 
 	log := None()
-	sc := log.WithFields(Fields{"foo": "bar"})
-	assert.Equal("bar", sc.Fields["foo"])
+	sc := log.WithLabels(Labels{"foo": "bar"})
+	assert.Equal("bar", sc.Labels["foo"])
+}
+
+func TestWithAnnotations(t *testing.T) {
+	assert := assert.New(t)
+
+	log := None()
+	sc := log.WithAnnotations(Annotations{"foo": "bar"})
+	assert.Equal("bar", sc.Annotations["foo"])
 }
 
 func TestScopeMethods(t *testing.T) {
@@ -63,26 +74,25 @@ func TestScopeMethods(t *testing.T) {
 
 	buf = new(bytes.Buffer)
 	log.Output = buf
-	log.WarningWithReq(fmt.Errorf("only a test"), &http.Request{Method: "foo"})
+	log.Warning(fmt.Errorf("only a test"), OptErrorEventState(&http.Request{Method: "foo"}))
 	assert.Equal("[warning] only a test\n", buf.String())
 
 	buf = new(bytes.Buffer)
 	log.Output = buf
-	log.ErrorWithReq(fmt.Errorf("only a test"), &http.Request{Method: "foo"})
+	log.Error(fmt.Errorf("only a test"), OptErrorEventState(&http.Request{Method: "foo"}))
 	assert.Equal("[error] only a test\n", buf.String())
 
 	buf = new(bytes.Buffer)
 	log.Output = buf
-	log.FatalWithReq(fmt.Errorf("only a test"), &http.Request{Method: "foo"})
+	log.Fatal(fmt.Errorf("only a test"), OptErrorEventState(&http.Request{Method: "foo"}))
 	assert.Equal("[fatal] only a test\n", buf.String())
 
 	buf = new(bytes.Buffer)
 	log.Output = buf
 	log.Path = []string{"outer", "inner"}
-	log.Fields = Fields{"foo": "bar"}
+	log.Labels = Labels{"foo": "bar"}
 	log.Info("format test")
 	assert.Equal("[outer > inner] [info] format test\tfoo=bar\n", buf.String())
-
 }
 
 func TestScopeApplyContext(t *testing.T) {
@@ -90,13 +100,13 @@ func TestScopeApplyContext(t *testing.T) {
 
 	sc := NewScope(None())
 	sc.Path = []string{"one", "two"}
-	sc.Fields = Fields{"foo": "bar"}
+	sc.Labels = Labels{"foo": "bar"}
 
-	ctx := WithFields(context.Background(), Fields{"moo": "loo"})
+	ctx := WithLabels(context.Background(), Labels{"moo": "loo"})
 	ctx = WithScopePath(ctx, "three", "four")
 
 	final := sc.ApplyContext(ctx)
 	assert.Equal([]string{"one", "two", "three", "four"}, GetScopePath(final))
-	assert.Equal("bar", GetFields(final)["foo"])
-	assert.Equal("loo", GetFields(final)["moo"])
+	assert.Equal("bar", GetLabels(final)["foo"])
+	assert.Equal("loo", GetLabels(final)["moo"])
 }

@@ -3,7 +3,6 @@ package logger
 import (
 	"context"
 	"fmt"
-	"net/http"
 )
 
 var (
@@ -13,9 +12,10 @@ var (
 // NewScope returns a new scope for a logger with a given set of optional options.
 func NewScope(log *Logger, options ...ScopeOption) Scope {
 	s := Scope{
-		Logger:  log,
-		Context: context.Background(),
-		Fields:  Fields{},
+		Logger:      log,
+		Context:     context.Background(),
+		Labels:      Labels{},
+		Annotations: Annotations{},
 	}
 	for _, option := range options {
 		option(&s)
@@ -30,8 +30,12 @@ func NewScope(log *Logger, options ...ScopeOption) Scope {
 type Scope struct {
 	// Path is a series of descriptive labels that shows the origin of the scope.
 	Path []string
-	// Fields are descriptive fields for the scope.
-	Fields Fields
+
+	// Labels are descriptive string fields for the scope.
+	Labels
+	// Annotations are extra fields for the scope.
+	Annotations
+
 	// Context is a relevant context for the scope, it is passed to listeners for events.
 	// Before triggering events, it is loaded with the Path and Fields from the Scope as Values.
 	Context context.Context
@@ -50,10 +54,17 @@ func OptScopePath(path ...string) ScopeOption {
 	}
 }
 
-// OptScopeFields sets the fields on a scope.
-func OptScopeFields(fields ...Fields) ScopeOption {
+// OptScopeLabels sets the labels on a scope.
+func OptScopeLabels(labels ...Labels) ScopeOption {
 	return func(s *Scope) {
-		s.Fields = CombineFields(fields...)
+		s.Labels = CombineLabels(labels...)
+	}
+}
+
+// OptScopeAnnotations sets the annotations on a scope.
+func OptScopeAnnotations(annotations ...Annotations) ScopeOption {
+	return func(s *Scope) {
+		s.Annotations = CombineAnnotations(annotations...)
 	}
 }
 
@@ -69,7 +80,8 @@ func OptScopeContext(ctx context.Context) ScopeOption {
 func (sc Scope) WithContext(ctx context.Context) Scope {
 	return NewScope(sc.Logger,
 		OptScopePath(sc.Path...),
-		OptScopeFields(sc.Fields),
+		OptScopeLabels(sc.Labels),
+		OptScopeAnnotations(sc.Annotations),
 		OptScopeContext(ctx),
 	)
 }
@@ -77,17 +89,29 @@ func (sc Scope) WithContext(ctx context.Context) Scope {
 // WithPath returns a new scope with a given additional path segment.
 func (sc Scope) WithPath(paths ...string) Scope {
 	return NewScope(sc.Logger,
-		OptScopeContext(sc.Context),
 		OptScopePath(append(sc.Path, paths...)...),
-		OptScopeFields(sc.Fields),
+		OptScopeLabels(sc.Labels),
+		OptScopeAnnotations(sc.Annotations),
+		OptScopeContext(sc.Context),
 	)
 }
 
-// WithFields returns a new scope with a given additional set of fields.
-func (sc Scope) WithFields(fields Fields) Scope {
+// WithLabels returns a new scope with a given additional set of labels.
+func (sc Scope) WithLabels(labels Labels) Scope {
 	return NewScope(sc.Logger,
 		OptScopePath(sc.Path...),
-		OptScopeFields(sc.Fields, fields),
+		OptScopeLabels(sc.Labels, labels),
+		OptScopeAnnotations(sc.Annotations),
+		OptScopeContext(sc.Context),
+	)
+}
+
+// WithAnnotations returns a new scope with a given additional set of annotations.
+func (sc Scope) WithAnnotations(annotations Annotations) Scope {
+	return NewScope(sc.Logger,
+		OptScopePath(sc.Path...),
+		OptScopeLabels(sc.Labels),
+		OptScopeAnnotations(sc.Annotations, annotations),
 		OptScopeContext(sc.Context),
 	)
 }
@@ -141,50 +165,27 @@ func (sc Scope) Fatalf(format string, args ...interface{}) {
 }
 
 // Warning logs a warning error to std err.
-func (sc Scope) Warning(err error) error {
-	sc.Trigger(sc.Context, NewErrorEvent(Warning, err))
-	return err
-}
-
-// WarningWithReq logs a warning error to std err with a request.
-func (sc Scope) WarningWithReq(err error, req *http.Request) error {
-	ee := NewErrorEvent(Warning, err)
-	ee.Request = req
-	sc.Trigger(sc.Context, ee)
+func (sc Scope) Warning(err error, opts ...ErrorEventOption) error {
+	sc.Trigger(sc.Context, NewErrorEvent(Warning, err, opts...))
 	return err
 }
 
 // Error logs an error to std err.
-func (sc Scope) Error(err error) error {
-	sc.Trigger(sc.Context, NewErrorEvent(Error, err))
-	return err
-}
-
-// ErrorWithReq logs an error to std err with a request.
-func (sc Scope) ErrorWithReq(err error, req *http.Request) error {
-	ee := NewErrorEvent(Error, err)
-	ee.Request = req
-	sc.Trigger(sc.Context, ee)
+func (sc Scope) Error(err error, opts ...ErrorEventOption) error {
+	sc.Trigger(sc.Context, NewErrorEvent(Error, err, opts...))
 	return err
 }
 
 // Fatal logs an error as fatal.
-func (sc Scope) Fatal(err error) error {
-	sc.Trigger(sc.Context, NewErrorEvent(Fatal, err))
-	return err
-}
-
-// FatalWithReq logs an error as fatal with a request as state.
-func (sc Scope) FatalWithReq(err error, req *http.Request) error {
-	ee := NewErrorEvent(Fatal, err)
-	ee.Request = req
-	sc.Trigger(sc.Context, ee)
+func (sc Scope) Fatal(err error, opts ...ErrorEventOption) error {
+	sc.Trigger(sc.Context, NewErrorEvent(Fatal, err, opts...))
 	return err
 }
 
 // ApplyContext applies the scope context to a given context.
 func (sc Scope) ApplyContext(ctx context.Context) context.Context {
 	ctx = WithScopePath(ctx, append(sc.Path, GetScopePath(ctx)...)...)
-	ctx = WithFields(ctx, CombineFields(sc.Fields, GetFields(ctx)))
+	ctx = WithLabels(ctx, CombineLabels(sc.Labels, GetLabels(ctx)))
+	ctx = WithAnnotations(ctx, CombineAnnotations(sc.Annotations, GetAnnotations(ctx)))
 	return ctx
 }

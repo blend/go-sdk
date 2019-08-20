@@ -2,6 +2,7 @@ package airbrake
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/blend/go-sdk/logger"
 )
@@ -18,8 +19,8 @@ func AddListeners(log logger.Listenable, cfg Config) {
 	}
 	client := MustNew(cfg)
 	listener := logger.NewErrorEventListener(func(_ context.Context, ee logger.ErrorEvent) {
-		if ee.Request != nil {
-			client.NotifyWithRequest(ee.Err, ee.Request)
+		if ee.State != nil {
+			client.NotifyWithRequest(ee.Err, ee.State.(*http.Request))
 		} else {
 			client.Notify(ee.Err)
 		}

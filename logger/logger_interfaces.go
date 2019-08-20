@@ -16,7 +16,8 @@ type Triggerable interface {
 type Scoper interface {
 	WithContext(context.Context) Scope
 	WithPath(...string) Scope
-	WithFields(Fields) Scope
+	WithLabels(Labels) Scope
+	WithAnnotations(Annotations) Scope
 }
 
 // Writable is an type that can write events.
@@ -82,17 +83,17 @@ type ErrorOutputReceiver interface {
 
 // WarningReceiver is a type that defines Warning.
 type WarningReceiver interface {
-	Warning(error) error
+	Warning(error, ...ErrorEventOption) error
 }
 
 // ErrorReceiver is a type that defines Error.
 type ErrorReceiver interface {
-	Error(error) error
+	Error(error, ...ErrorEventOption) error
 }
 
 // FatalReceiver is a type that defines Fatal.
 type FatalReceiver interface {
-	Fatal(error) error
+	Fatal(error, ...ErrorEventOption) error
 }
 
 // Errorable is an interface

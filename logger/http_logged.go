@@ -1,22 +1,11 @@
 package logger
 
 import (
-	"context"
 	"net/http"
 	"time"
 
 	"github.com/blend/go-sdk/webutil"
 )
-
-// WithRequestContext sets the request context correctly.
-func WithRequestContext(ctx context.Context, req *http.Request) {
-	*req = *req.WithContext(ctx)
-}
-
-// WithRequestFields sets the request context correctly.
-func WithRequestFields(req *http.Request, fields Fields) {
-	WithRequestContext(WithFields(req.Context(), fields), req)
-}
 
 // HTTPLogged returns a middleware that logs a request.
 func HTTPLogged(log Triggerable) webutil.Middleware {

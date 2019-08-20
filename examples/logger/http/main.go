@@ -36,7 +36,7 @@ func subScopeHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func scopeMetaHandler(res http.ResponseWriter, req *http.Request) {
-	logger.WithRequestFields(req, logger.Fields{"route": "/scopemeta"})
+	*req = *req.WithContext(logger.WithLabels(req.Context(), logger.Labels{"foo": "bar"}))
 	res.WriteHeader(http.StatusOK)
 	res.Write([]byte(`{"status":"ok!"}`))
 }
