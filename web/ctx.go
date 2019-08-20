@@ -81,7 +81,7 @@ func (rc *Ctx) WithContext(context context.Context) *Ctx {
 
 // Context returns the context.
 func (rc *Ctx) Context() context.Context {
-	return logger.WithLabels(rc.Request.Context(), rc.loggerLabels())
+	return logger.WithAnnotations(logger.WithLabels(rc.Request.Context(), rc.loggerLabels()), rc.loggerAnnotations())
 }
 
 // WithStateValue sets the state for a key to an object.
@@ -383,5 +383,13 @@ func (rc *Ctx) loggerLabels() logger.Labels {
 	if rc.Session != nil {
 		fields["web.user"] = rc.Session.UserID
 	}
-	return fields
+	return logger.CombineLabels(logger.GetLabels(rc.Request.Context()), fields)
+}
+
+func (rc *Ctx) loggerAnnotations() logger.Annotations {
+	fields := make(logger.Annotations)
+	if len(rc.RouteParams) > 0 {
+		fields["web.route_parameters"] = rc.RouteParams
+	}
+	return logger.CombineAnnotations(logger.GetAnnotations(rc.Request.Context()), fields)
 }
