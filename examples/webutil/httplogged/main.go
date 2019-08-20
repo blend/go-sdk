@@ -8,6 +8,7 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/webutil"
 )
 
 func indexHandler(res http.ResponseWriter, req *http.Request) {
@@ -61,17 +62,17 @@ func main() {
 
 	log := logger.Prod()
 
-	http.HandleFunc("/", logger.HTTPLogged(log)(indexHandler))
+	http.HandleFunc("/", webutil.HTTPLogged(log)(indexHandler))
 
-	http.HandleFunc("/fatalerror", logger.HTTPLogged(log)(fatalErrorHandler))
-	http.HandleFunc("/error", logger.HTTPLogged(log)(errorHandler))
-	http.HandleFunc("/warning", logger.HTTPLogged(log)(warningHandler))
-	http.HandleFunc("/audit", logger.HTTPLogged(log)(auditHandler))
+	http.HandleFunc("/fatalerror", webutil.HTTPLogged(log)(fatalErrorHandler))
+	http.HandleFunc("/error", webutil.HTTPLogged(log)(errorHandler))
+	http.HandleFunc("/warning", webutil.HTTPLogged(log)(warningHandler))
+	http.HandleFunc("/audit", webutil.HTTPLogged(log)(auditHandler))
 
-	http.HandleFunc("/subscope", logger.HTTPLogged(log.WithPath("a sub scope"))(subScopeHandler))
-	http.HandleFunc("/scopemeta", logger.HTTPLogged(log)(scopeMetaHandler))
+	http.HandleFunc("/subscope", webutil.HTTPLogged(log.WithPath("a sub scope"))(subScopeHandler))
+	http.HandleFunc("/scopemeta", webutil.HTTPLogged(log)(scopeMetaHandler))
 
-	http.HandleFunc("/bench/logged", logger.HTTPLogged(log)(indexHandler))
+	http.HandleFunc("/bench/logged", webutil.HTTPLogged(log)(indexHandler))
 
 	log.Infof("Listening on :%s", port())
 	log.Infof("Events %s", log.Flags.String())

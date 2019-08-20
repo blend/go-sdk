@@ -1,4 +1,4 @@
-package logger
+package db
 
 import (
 	"context"
@@ -6,17 +6,22 @@ import (
 	"io"
 	"time"
 
+	"github.com/blend/go-sdk/ansi"
+	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/stringutil"
 	"github.com/blend/go-sdk/timeutil"
+)
 
-	"github.com/blend/go-sdk/ansi"
+// Logger flags
+const (
+	QueryFlag = "db.query"
 )
 
 // these are compile time assertions
 var (
-	_ Event        = (*QueryEvent)(nil)
-	_ TextWritable = (*QueryEvent)(nil)
-	_ JSONWritable = (*QueryEvent)(nil)
+	_ logger.Event        = (*QueryEvent)(nil)
+	_ logger.TextWritable = (*QueryEvent)(nil)
+	_ logger.JSONWritable = (*QueryEvent)(nil)
 )
 
 // NewQueryEvent creates a new query event.
@@ -32,8 +37,8 @@ func NewQueryEvent(body string, elapsed time.Duration, options ...QueryEventOpti
 }
 
 // NewQueryEventListener returns a new listener for spiffy events.
-func NewQueryEventListener(listener func(context.Context, QueryEvent)) Listener {
-	return func(ctx context.Context, e Event) {
+func NewQueryEventListener(listener func(context.Context, QueryEvent)) logger.Listener {
+	return func(ctx context.Context, e logger.Event) {
 		if typed, isTyped := e.(QueryEvent); isTyped {
 			listener(ctx, typed)
 		}
@@ -90,14 +95,14 @@ type QueryEvent struct {
 }
 
 // GetFlag implements Event.
-func (e QueryEvent) GetFlag() string { return Query }
+func (e QueryEvent) GetFlag() string { return QueryFlag }
 
 // WriteText writes the event text to the output.
-func (e QueryEvent) WriteText(tf TextFormatter, wr io.Writer) {
+func (e QueryEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
 	io.WriteString(wr, "[")
 	if len(e.Engine) > 0 {
 		io.WriteString(wr, tf.Colorize(e.Engine, ansi.ColorLightWhite))
-		io.WriteString(wr, Space)
+		io.WriteString(wr, logger.Space)
 	}
 	if len(e.Username) > 0 {
 		io.WriteString(wr, tf.Colorize(e.Username, ansi.ColorLightWhite))
@@ -107,20 +112,20 @@ func (e QueryEvent) WriteText(tf TextFormatter, wr io.Writer) {
 	io.WriteString(wr, "]")
 
 	if len(e.QueryLabel) > 0 {
-		io.WriteString(wr, Space)
+		io.WriteString(wr, logger.Space)
 		io.WriteString(wr, fmt.Sprintf("[%s]", tf.Colorize(e.QueryLabel, ansi.ColorLightWhite)))
 	}
 
-	io.WriteString(wr, Space)
+	io.WriteString(wr, logger.Space)
 	io.WriteString(wr, e.Elapsed.String())
 
 	if e.Err != nil {
-		io.WriteString(wr, Space)
+		io.WriteString(wr, logger.Space)
 		io.WriteString(wr, tf.Colorize("failed", ansi.ColorRed))
 	}
 
 	if len(e.Body) > 0 {
-		io.WriteString(wr, Space)
+		io.WriteString(wr, logger.Space)
 		io.WriteString(wr, stringutil.CompressSpace(e.Body))
 	}
 }

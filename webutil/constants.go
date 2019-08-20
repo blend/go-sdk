@@ -5,6 +5,12 @@ import (
 	"regexp"
 )
 
+// Logger flags
+const (
+	HTTPRequest  = "http.request"
+	HTTPResponse = "http.response"
+)
+
 // canonical header names.
 var (
 	// RFC7239 defines a new "Forwarded: " header designed to replace the

@@ -1,4 +1,4 @@
-package logger
+package grpcutil
 
 import (
 	"context"
@@ -6,14 +6,20 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/ansi"
+	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/timeutil"
+)
+
+// Logger flags
+const (
+	RPC = "rpc"
 )
 
 // these are compile time assertions
 var (
-	_ Event        = (*RPCEvent)(nil)
-	_ TextWritable = (*RPCEvent)(nil)
-	_ JSONWritable = (*RPCEvent)(nil)
+	_ logger.Event        = (*RPCEvent)(nil)
+	_ logger.TextWritable = (*RPCEvent)(nil)
+	_ logger.JSONWritable = (*RPCEvent)(nil)
 )
 
 // NewRPCEvent creates a new rpc event.
@@ -29,8 +35,8 @@ func NewRPCEvent(method string, elapsed time.Duration, options ...RPCEventOption
 }
 
 // NewRPCEventListener returns a new web request event listener.
-func NewRPCEventListener(listener func(context.Context, RPCEvent)) Listener {
-	return func(ctx context.Context, e Event) {
+func NewRPCEventListener(listener func(context.Context, RPCEvent)) logger.Listener {
+	return func(ctx context.Context, e logger.Event) {
 		if typed, isTyped := e.(RPCEvent); isTyped {
 			listener(ctx, typed)
 		}
@@ -82,21 +88,25 @@ func OptRPCErr(value error) RPCEventOption {
 
 // RPCEvent is an event type for rpc
 type RPCEvent struct {
-	Engine      string
-	Peer        string
-	Method      string
-	UserAgent   string
-	Authority   string
-	ContentType string
-	Elapsed     time.Duration
-	Err         error
+	TimestampUTC time.Time
+	Engine       string
+	Peer         string
+	Method       string
+	UserAgent    string
+	Authority    string
+	ContentType  string
+	Elapsed      time.Duration
+	Err          error
 }
 
 // GetFlag implements Event.
 func (e RPCEvent) GetFlag() string { return RPC }
 
+// GetTimestamp implements EventTimestamp.
+func (e RPCEvent) GetTimestamp() time.Time { return e.TimestampUTC }
+
 // WriteText implements TextWritable.
-func (e RPCEvent) WriteText(tf TextFormatter, wr io.Writer) {
+func (e RPCEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
 	if e.Engine != "" {
 		io.WriteString(wr, "[")
 		io.WriteString(wr, tf.Colorize(e.Engine, ansi.ColorLightWhite))
@@ -104,32 +114,32 @@ func (e RPCEvent) WriteText(tf TextFormatter, wr io.Writer) {
 	}
 	if e.Method != "" {
 		if e.Engine != "" {
-			io.WriteString(wr, Space)
+			io.WriteString(wr, logger.Space)
 		}
 		io.WriteString(wr, tf.Colorize(e.Method, ansi.ColorBlue))
 	}
 	if e.Peer != "" {
-		io.WriteString(wr, Space)
+		io.WriteString(wr, logger.Space)
 		io.WriteString(wr, e.Peer)
 	}
 	if e.Authority != "" {
-		io.WriteString(wr, Space)
+		io.WriteString(wr, logger.Space)
 		io.WriteString(wr, e.Authority)
 	}
 	if e.UserAgent != "" {
-		io.WriteString(wr, Space)
+		io.WriteString(wr, logger.Space)
 		io.WriteString(wr, e.UserAgent)
 	}
 	if e.ContentType != "" {
-		io.WriteString(wr, Space)
+		io.WriteString(wr, logger.Space)
 		io.WriteString(wr, e.ContentType)
 	}
 
-	io.WriteString(wr, Space)
+	io.WriteString(wr, logger.Space)
 	io.WriteString(wr, e.Elapsed.String())
 
 	if e.Err != nil {
-		io.WriteString(wr, Space)
+		io.WriteString(wr, logger.Space)
 		io.WriteString(wr, tf.Colorize("failed", ansi.ColorRed))
 	}
 }

@@ -3,6 +3,7 @@ package stats
 import (
 	"context"
 
+	"github.com/blend/go-sdk/grpcutil"
 	"github.com/blend/go-sdk/logger"
 )
 
@@ -12,7 +13,7 @@ func AddRPCListeners(log logger.Listenable, stats Collector) {
 		return
 	}
 
-	log.Listen(logger.RPC, ListenerNameStats, logger.NewRPCEventListener(func(_ context.Context, re logger.RPCEvent) {
+	log.Listen(logger.RPC, ListenerNameStats, grpcutil.NewRPCEventListener(func(_ context.Context, re grpcutil.RPCEvent) {
 		var method string
 		if len(re.Method) > 0 {
 			method = Tag(TagRPCMethod, re.Method)

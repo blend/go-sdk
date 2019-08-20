@@ -16,7 +16,7 @@ func LoggedUnary(log logger.Triggerable) grpc.UnaryServerInterceptor {
 		startTime := time.Now().UTC()
 		result, err := handler(ctx, args)
 		if log != nil {
-			event := logger.NewRPCEvent(info.FullMethod, time.Now().UTC().Sub(startTime))
+			event := NewRPCEvent(info.FullMethod, time.Now().UTC().Sub(startTime))
 			event.Err = err
 			if md, ok := metadata.FromIncomingContext(ctx); ok {
 				event.Authority = MetaValue(md, MetaTagAuthority)
@@ -35,7 +35,7 @@ func LoggedStreaming(log logger.Triggerable) grpc.StreamServerInterceptor {
 		startTime := time.Now().UTC()
 		err = handler(srv, stream)
 		if log != nil {
-			event := logger.NewRPCEvent(info.FullMethod, time.Now().UTC().Sub(startTime))
+			event := NewRPCEvent(info.FullMethod, time.Now().UTC().Sub(startTime))
 			event.Err = err
 			if md, ok := metadata.FromIncomingContext(stream.Context()); ok {
 				event.Authority = MetaValue(md, MetaTagAuthority)

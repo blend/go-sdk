@@ -10,6 +10,7 @@ import (
 	"github.com/blend/go-sdk/async"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/webutil"
 )
 
 // MustNew creates a new app and panics if there is an error.
@@ -517,20 +518,20 @@ func (a *App) allowed(path, reqMethod string) (allow string) {
 	return
 }
 
-func (a *App) httpRequestEvent(ctx *Ctx) logger.HTTPRequestEvent {
-	event := logger.NewHTTPRequestEvent(ctx.Request)
+func (a *App) httpRequestEvent(ctx *Ctx) webutil.HTTPRequestEvent {
+	event := webutil.NewHTTPRequestEvent(ctx.Request)
 	if ctx.Route != nil {
 		event.Route = ctx.Route.String()
 	}
 	return event
 }
 
-func (a *App) httpResponseEvent(ctx *Ctx) logger.HTTPResponseEvent {
-	event := logger.NewHTTPResponseEvent(ctx.Request,
-		logger.OptHTTPResponseStatusCode(ctx.Response.StatusCode()),
-		logger.OptHTTPResponseContentLength(ctx.Response.ContentLength()),
-		logger.OptHTTPResponseHeader(ctx.Response.Header()), // caveat: these do not get written out in text or json ever.
-		logger.OptHTTPResponseElapsed(ctx.Elapsed()),
+func (a *App) httpResponseEvent(ctx *Ctx) webutil.HTTPResponseEvent {
+	event := webutil.NewHTTPResponseEvent(ctx.Request,
+		webutil.OptHTTPResponseStatusCode(ctx.Response.StatusCode()),
+		webutil.OptHTTPResponseContentLength(ctx.Response.ContentLength()),
+		webutil.OptHTTPResponseHeader(ctx.Response.Header()), // caveat: these do not get written out in text or json ever.
+		webutil.OptHTTPResponseElapsed(ctx.Elapsed()),
 	)
 	if ctx.Route != nil {
 		event.Route = ctx.Route.String()

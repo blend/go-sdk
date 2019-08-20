@@ -1,4 +1,4 @@
-package logger
+package db
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/logger"
 )
 
 func TestQueryEvent(t *testing.T) {
@@ -33,7 +34,7 @@ func TestQueryEvent(t *testing.T) {
 	assert.Equal("test error", qe.Err.Error())
 
 	buf := new(bytes.Buffer)
-	noColor := TextOutputFormatter{
+	noColor := logger.TextOutputFormatter{
 		NoColor: true,
 	}
 

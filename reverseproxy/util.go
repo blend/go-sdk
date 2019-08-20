@@ -27,6 +27,8 @@ func RequestCopy(req *http.Request) *http.Request {
 	return outreq
 }
 
+// UpgradeType returns the connection upgrade type.
+// This is used by websockt support.
 func UpgradeType(h http.Header) string {
 	if !httpguts.HeaderValuesContainsToken(h["Connection"], "Upgrade") {
 		return ""

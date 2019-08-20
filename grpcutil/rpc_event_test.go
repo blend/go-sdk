@@ -1,4 +1,4 @@
-package logger
+package grpcutil
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/logger"
 )
 
 func TestRPCEvent(t *testing.T) {
@@ -35,7 +36,7 @@ func TestRPCEvent(t *testing.T) {
 	assert.Equal("event-user-agent", re.UserAgent)
 
 	buf := new(bytes.Buffer)
-	noColor := TextOutputFormatter{
+	noColor := logger.TextOutputFormatter{
 		NoColor: true,
 	}
 

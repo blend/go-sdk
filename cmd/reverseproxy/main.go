@@ -134,7 +134,7 @@ func main() {
 	}
 
 	proxyServer := &http.Server{
-		Handler: webutil.NestMiddleware(proxy.ServeHTTP, logger.HTTPLogged(log)),
+		Handler: webutil.NestMiddleware(proxy.ServeHTTP, webutil.HTTPLogged(log)),
 	}
 	servers = append(servers,
 		webutil.NewGracefulHTTPServer(proxyServer, webutil.OptGracefulHTTPServerListener(proxyServerListener)),
@@ -145,7 +145,7 @@ func main() {
 		upgrader := reverseproxy.HTTPRedirect{}
 		servers = append(servers, webutil.NewGracefulHTTPServer(&http.Server{
 			Addr:    upgradeAddr,
-			Handler: webutil.NestMiddleware(upgrader.ServeHTTP, logger.HTTPLogged(log)),
+			Handler: webutil.NestMiddleware(upgrader.ServeHTTP, webutil.HTTPLogged(log)),
 		}))
 	}
 

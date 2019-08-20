@@ -3,6 +3,7 @@ package stats
 import (
 	"context"
 
+	"github.com/blend/go-sdk/db"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 )
@@ -13,7 +14,7 @@ func AddQueryListeners(log logger.Listenable, stats Collector) {
 		return
 	}
 
-	log.Listen(logger.Query, ListenerNameStats, logger.NewQueryEventListener(func(_ context.Context, qe logger.QueryEvent) {
+	log.Listen(logger.Query, ListenerNameStats, db.NewQueryEventListener(func(_ context.Context, qe db.QueryEvent) {
 		engine := Tag(TagEngine, qe.Engine)
 		database := Tag(TagDatabase, qe.Database)
 

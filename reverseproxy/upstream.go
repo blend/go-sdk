@@ -50,14 +50,14 @@ func (u *Upstream) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	w := webutil.NewResponseWriter(rw)
 
 	if u.Log != nil {
-		u.Log.Trigger(req.Context(), logger.NewHTTPRequestEvent(req))
+		u.Log.Trigger(req.Context(), webutil.NewHTTPRequestEvent(req))
 
 		start := time.Now()
 		defer func() {
-			wre := logger.NewHTTPResponseEvent(req,
-				logger.OptHTTPResponseStatusCode(w.StatusCode()),
-				logger.OptHTTPResponseContentLength(w.ContentLength()),
-				logger.OptHTTPResponseElapsed(time.Since(start)),
+			wre := webutil.NewHTTPResponseEvent(req,
+				webutil.OptHTTPResponseStatusCode(w.StatusCode()),
+				webutil.OptHTTPResponseContentLength(w.ContentLength()),
+				webutil.OptHTTPResponseElapsed(time.Since(start)),
 			)
 
 			if value := w.Header().Get("Content-Type"); len(value) > 0 {

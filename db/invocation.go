@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/ex"
-	"github.com/blend/go-sdk/logger"
 )
 
 // Invocation is a specific operation against a context.
@@ -801,14 +800,12 @@ func (i *Invocation) Finish(statement string, r interface{}, err error) error {
 	}
 	if i.Conn.Log != nil && !IsSkipQueryLogging(i.Context) {
 
-		qe := logger.NewQueryEvent(statement, time.Now().UTC().Sub(i.StartTime))
-
+		qe := NewQueryEvent(statement, time.Now().UTC().Sub(i.StartTime))
 		qe.Username = i.Conn.Config.Username
 		qe.Database = i.Conn.Config.DatabaseOrDefault()
 		qe.QueryLabel = i.CachedPlanKey
 		qe.Engine = i.Conn.Config.EngineOrDefault()
 		qe.Err = err
-
 		i.Conn.Log.Trigger(i.Context, qe)
 	}
 	if i.TraceFinisher != nil && !IsSkipQueryLogging(i.Context) {
