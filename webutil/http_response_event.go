@@ -1,4 +1,4 @@
-package logger
+package webutil
 
 import (
 	"context"
@@ -6,14 +6,16 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/blend/go-sdk/ansi"
+	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/stringutil"
 	"github.com/blend/go-sdk/timeutil"
-	"github.com/blend/go-sdk/webutil"
 )
 
 var (
-	_ Event        = (*HTTPResponseEvent)(nil)
-	_ TextWritable = (*HTTPResponseEvent)(nil)
-	_ JSONWritable = (*HTTPResponseEvent)(nil)
+	_ logger.Event        = (*HTTPResponseEvent)(nil)
+	_ logger.TextWritable = (*HTTPResponseEvent)(nil)
+	_ logger.JSONWritable = (*HTTPResponseEvent)(nil)
 )
 
 // NewHTTPResponseEvent is an event representing a response to an http request.
@@ -28,8 +30,8 @@ func NewHTTPResponseEvent(req *http.Request, options ...HTTPResponseEventOption)
 }
 
 // NewHTTPResponseEventListener returns a new web request event listener.
-func NewHTTPResponseEventListener(listener func(context.Context, HTTPResponseEvent)) Listener {
-	return func(ctx context.Context, e Event) {
+func NewHTTPResponseEventListener(listener func(context.Context, HTTPResponseEvent)) logger.Listener {
+	return func(ctx context.Context, e logger.Event) {
 		if typed, isTyped := e.(HTTPResponseEvent); isTyped {
 			listener(ctx, typed)
 		}
@@ -92,18 +94,34 @@ type HTTPResponseEvent struct {
 }
 
 // GetFlag implements event.
-func (e HTTPResponseEvent) GetFlag() string { return HTTPResponse }
+func (e HTTPResponseEvent) GetFlag() string { return logger.HTTPResponse }
 
 // WriteText implements TextWritable.
-func (e HTTPResponseEvent) WriteText(formatter TextFormatter, wr io.Writer) {
-	WriteHTTPResponse(formatter, wr, e.Request, e.StatusCode, e.ContentLength, e.ContentType, e.Elapsed)
+func (e HTTPResponseEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
+	if ip := GetRemoteAddr(e.Request); len(ip) > 0 {
+		io.WriteString(wr, ip)
+		io.WriteString(wr, logger.Space)
+	}
+	io.WriteString(wr, tf.Colorize(e.Request.Method, ansi.ColorBlue))
+	io.WriteString(wr, logger.Space)
+	io.WriteString(wr, e.Request.URL.String())
+	io.WriteString(wr, logger.Space)
+	io.WriteString(wr, ColorizeStatusCodeWithFormatter(tf, e.StatusCode))
+	io.WriteString(wr, logger.Space)
+	io.WriteString(wr, e.Elapsed.String())
+	if len(e.ContentType) > 0 {
+		io.WriteString(wr, logger.Space)
+		io.WriteString(wr, e.ContentType)
+	}
+	io.WriteString(wr, logger.Space)
+	io.WriteString(wr, stringutil.FileSize(e.ContentLength))
 }
 
 // Decompose implements JSONWritable.
 func (e HTTPResponseEvent) Decompose() map[string]interface{} {
 	return map[string]interface{}{
-		"ip":              webutil.GetRemoteAddr(e.Request),
-		"userAgent":       webutil.GetUserAgent(e.Request),
+		"ip":              GetRemoteAddr(e.Request),
+		"userAgent":       GetUserAgent(e.Request),
 		"verb":            e.Request.Method,
 		"path":            e.Request.URL.Path,
 		"route":           e.Route,

@@ -1,4 +1,4 @@
-package logger
+package webutil
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/logger"
 )
 
 func TestNewHTTPRequestEvent(t *testing.T) {
@@ -31,7 +32,7 @@ func TestNewHTTPRequestEvent(t *testing.T) {
 	assert.Equal("/foo", hre.Request.URL.Path)
 	assert.Equal("/foo/:bar", hre.Route)
 
-	noColor := TextOutputFormatter{
+	noColor := logger.TextOutputFormatter{
 		NoColor: true,
 	}
 
@@ -51,7 +52,7 @@ func TestHTTPRequestEventListener(t *testing.T) {
 	listener := NewHTTPRequestEventListener(func(_ context.Context, hre HTTPRequestEvent) {
 		didCall = true
 	})
-	listener(context.Background(), NewMessageEvent(Info, "test"))
+	listener(context.Background(), logger.NewMessageEvent(logger.Info, "test"))
 	assert.False(didCall)
 	listener(context.Background(), NewHTTPRequestEvent(nil))
 	assert.True(didCall)

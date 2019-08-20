@@ -1,18 +1,19 @@
-package logger
+package webutil
 
 import (
 	"context"
 	"io"
 	"net/http"
 
-	"github.com/blend/go-sdk/webutil"
+	"github.com/blend/go-sdk/ansi"
+	"github.com/blend/go-sdk/logger"
 )
 
 // these are compile time assertions
 var (
-	_ Event        = (*HTTPRequestEvent)(nil)
-	_ TextWritable = (*HTTPRequestEvent)(nil)
-	_ JSONWritable = (*HTTPRequestEvent)(nil)
+	_ logger.Event        = (*HTTPRequestEvent)(nil)
+	_ logger.TextWritable = (*HTTPRequestEvent)(nil)
+	_ logger.JSONWritable = (*HTTPRequestEvent)(nil)
 )
 
 // NewHTTPRequestEvent creates a new web request event.
@@ -27,8 +28,8 @@ func NewHTTPRequestEvent(req *http.Request, options ...HTTPRequestEventOption) H
 }
 
 // NewHTTPRequestEventListener returns a new web request event listener.
-func NewHTTPRequestEventListener(listener func(context.Context, HTTPRequestEvent)) Listener {
-	return func(ctx context.Context, e Event) {
+func NewHTTPRequestEventListener(listener func(context.Context, HTTPRequestEvent)) logger.Listener {
+	return func(ctx context.Context, e logger.Event) {
 		if typed, isTyped := e.(HTTPRequestEvent); isTyped {
 			listener(ctx, typed)
 		}
@@ -59,11 +60,19 @@ type HTTPRequestEvent struct {
 }
 
 // GetFlag implements Event.
-func (e HTTPRequestEvent) GetFlag() string { return HTTPRequest }
+func (e HTTPRequestEvent) GetFlag() string { return logger.HTTPRequest }
 
 // WriteText implements TextWritable.
-func (e HTTPRequestEvent) WriteText(formatter TextFormatter, wr io.Writer) {
-	WriteHTTPRequest(formatter, wr, e.Request)
+func (e HTTPRequestEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
+	if ip := GetRemoteAddr(e.Request); len(ip) > 0 {
+		io.WriteString(wr, ip)
+		io.WriteString(wr, logger.Space)
+	}
+	io.WriteString(wr, tf.Colorize(e.Request.Method, ansi.ColorBlue))
+	if e.Request.URL != nil {
+		io.WriteString(wr, logger.Space)
+		io.WriteString(wr, e.Request.URL.String())
+	}
 }
 
 // Decompose implements JSONWritable.
@@ -74,7 +83,7 @@ func (e HTTPRequestEvent) Decompose() map[string]interface{} {
 		"query":     e.Request.URL.RawQuery,
 		"host":      e.Request.Host,
 		"route":     e.Route,
-		"ip":        webutil.GetRemoteAddr(e.Request),
-		"userAgent": webutil.GetUserAgent(e.Request),
+		"ip":        GetRemoteAddr(e.Request),
+		"userAgent": GetUserAgent(e.Request),
 	}
 }

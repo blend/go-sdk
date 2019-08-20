@@ -1,4 +1,4 @@
-package logger
+package webutil
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/logger"
 )
 
 func TestNewHTTPResponseEvent(t *testing.T) {
@@ -35,7 +36,7 @@ func TestNewHTTPResponseEvent(t *testing.T) {
 	assert.Equal(http.StatusOK, hre.StatusCode)
 	assert.Equal("nope", hre.Header.Get("X-Bad"))
 
-	noColor := NewTextOutputFormatter(OptTextNoColor())
+	noColor := logger.NewTextOutputFormatter(logger.OptTextNoColor())
 	buf := new(bytes.Buffer)
 	hre.WriteText(noColor, buf)
 	assert.NotContains(buf.String(), "/foo/:bar")
@@ -58,7 +59,7 @@ func TestHTTPResponseEventListener(t *testing.T) {
 	listener := NewHTTPResponseEventListener(func(_ context.Context, hre HTTPResponseEvent) {
 		didCall = true
 	})
-	listener(context.Background(), NewMessageEvent(Info, "test"))
+	listener(context.Background(), logger.NewMessageEvent(logger.Info, "test"))
 	assert.False(didCall)
 	listener(context.Background(), NewHTTPResponseEvent(nil))
 	assert.True(didCall)
