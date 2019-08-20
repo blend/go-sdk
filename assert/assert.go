@@ -1244,10 +1244,10 @@ func areReferenceEqual(expected, actual interface{}) bool {
 }
 
 func areIndirectEqual(expected, actual interface{}) bool {
-	if expected == nil && actual == nil {
+	if isNil(expected) && isNil(actual) {
 		return true
 	}
-	if (expected == nil && actual != nil) || (expected != nil && actual == nil) {
+	if (isNil(expected) && !isNil(actual)) || (!isNil(expected) && isNil(actual)) {
 		return false
 	}
 

@@ -627,12 +627,12 @@ func TestAssertIndirectEqual(t *testing.T) {
 	passCases := [][]interface{}{
 		[]interface{}{ref1, ref2},
 		[]interface{}{ref1, ref3},
-		[]interface{}{nil, nil},
+		[]interface{}{(*string)(nil), (*string)(nil)},
 	}
 
 	failCases := [][]interface{}{
 		[]interface{}{ref1, ref4},
-		[]interface{}{ref1, nil},
+		[]interface{}{ref1, (*string)(nil)},
 	}
 
 	for i, passCase := range passCases {
