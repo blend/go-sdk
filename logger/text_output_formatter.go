@@ -126,7 +126,7 @@ func (tf TextOutputFormatter) WriteFormat(ctx context.Context, output io.Writer,
 	defer tf.BufferPool.Put(buffer)
 
 	if !tf.HideTimestamp {
-		buffer.WriteString(tf.FormatTimestamp(GetTimestamp(ctx)))
+		buffer.WriteString(tf.FormatTimestamp(GetEventTimestamp(ctx, e)))
 		buffer.WriteString(Space)
 	}
 
