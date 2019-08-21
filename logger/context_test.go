@@ -13,7 +13,7 @@ func TestContextWithTimestamp(t *testing.T) {
 
 	ts := time.Date(2019, 8, 16, 12, 11, 10, 9, time.UTC)
 	assert.Equal(ts, GetTimestamp(WithTimestamp(context.Background(), ts)))
-	assert.False(GetTimestamp(context.Background()).IsZero())
+	assert.True(GetTimestamp(context.Background()).IsZero())
 }
 
 func TestContextWithScopePath(t *testing.T) {
