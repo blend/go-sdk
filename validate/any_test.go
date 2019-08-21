@@ -169,6 +169,69 @@ func TestEmpty(t *testing.T) {
 	}
 }
 
+func TestNotEmpty(t *testing.T) {
+	assert := assert.New(t)
+
+	testCases := [...]struct {
+		Input    interface{}
+		Expected error
+	}{
+		{
+			Input:    nil,
+			Expected: ErrNonLengthType,
+		},
+		{
+			Input:    0,
+			Expected: ErrNonLengthType,
+		},
+		{
+			Input:    []string{},
+			Expected: ErrNotEmpty,
+		},
+		{
+			Input:    ([]string)(nil),
+			Expected: ErrNotEmpty,
+		},
+		{
+			Input:    map[string]interface{}{},
+			Expected: ErrNotEmpty,
+		},
+		{
+			Input:    (map[string]interface{})(nil),
+			Expected: ErrNotEmpty,
+		},
+		{
+			Input:    "",
+			Expected: ErrNotEmpty,
+		},
+		{
+			Input:    make(chan struct{}),
+			Expected: ErrNotEmpty,
+		},
+		{
+			Input:    (chan struct{})(nil),
+			Expected: ErrNotEmpty,
+		},
+		{
+			Input:    []string{"a", "b"},
+			Expected: nil,
+		},
+		{
+			Input:    map[string]int{"hi": 1},
+			Expected: nil,
+		},
+		{
+			Input:    "foo",
+			Expected: nil,
+		},
+	}
+
+	for index, tc := range testCases {
+		verr := Any(tc.Input).NotEmpty()()
+		assert.Equal(tc.Expected, Cause(verr), index)
+	}
+}
+
 func TestLen(t *testing.T) {
 	assert := assert.New(t)
 
