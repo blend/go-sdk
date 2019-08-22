@@ -13,6 +13,7 @@ const (
 	ErrRequired   ex.Class = "field is required"
 	ErrForbidden  ex.Class = "field is forbidden"
 	ErrEmpty      ex.Class = "object should be empty"
+	ErrNotEmpty   ex.Class = "object should not be empty"
 	ErrLen        ex.Class = "object should have a given length"
 	ErrNil        ex.Class = "object should be nil"
 	ErrNotNil     ex.Class = "object should not be nil"
@@ -94,6 +95,21 @@ func (a AnyValidators) Empty() Validator {
 			return nil
 		}
 		return Error(ErrEmpty, a.Obj)
+	}
+}
+
+// NotEmpty returns if a slice, map or channel is not empty.
+// It will error if the object is not a slice, map or channel.
+func (a AnyValidators) NotEmpty() Validator {
+	return func() error {
+		objLen, err := GetLength(a.Obj)
+		if err != nil {
+			return err
+		}
+		if objLen > 0 {
+			return nil
+		}
+		return Error(ErrNotEmpty, a.Obj)
 	}
 }
 
