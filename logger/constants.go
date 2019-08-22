@@ -4,18 +4,15 @@ import "time"
 
 // Flags
 const (
-	FlagAll      = "all"
-	FlagNone     = "none"
-	Fatal        = "fatal"
-	Error        = "error"
-	Warning      = "warning"
-	Debug        = "debug"
-	Info         = "info"
-	HTTPRequest  = "http.request"
-	HTTPResponse = "http.response"
-	Audit        = "audit"
-	Query        = "db.query"
-	RPC          = "rpc"
+	FlagAll  = "all"
+	FlagNone = "none"
+	Fatal    = "fatal"
+	Error    = "error"
+	Warning  = "warning"
+	Debug    = "debug"
+	Info     = "info"
+
+	Audit = "audit"
 )
 
 // Output Formats

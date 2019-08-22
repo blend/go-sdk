@@ -29,8 +29,8 @@ var (
 func main() {
 	log, err := logger.New(
 		logger.OptConfigFromEnv(),
-		logger.OptEnabled(logger.HTTPRequest),
-		logger.OptEnabled(logger.HTTPResponse),
+		logger.OptEnabled(webutil.HTTPRequest),
+		logger.OptEnabled(webutil.HTTPResponse),
 		logger.OptPath("reverse-proxy"),
 	)
 	if err != nil {

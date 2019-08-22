@@ -9,8 +9,6 @@ import (
 	"sync"
 	"time"
 
-	_ "github.com/lib/pq"
-
 	"github.com/blend/go-sdk/db"
 	"github.com/blend/go-sdk/db/migration"
 	"github.com/blend/go-sdk/logger"
@@ -68,7 +66,7 @@ func reportStats(log logger.Log, conn *db.Connection) {
 }
 
 func main() {
-	log := logger.All(logger.OptDisabled(logger.Query))
+	log := logger.All(logger.OptDisabled(db.QueryFlag))
 	conn, err := db.New(db.OptConfigFromEnv())
 	if err != nil {
 		log.Fatal(err)

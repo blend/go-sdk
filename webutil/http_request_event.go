@@ -60,7 +60,7 @@ type HTTPRequestEvent struct {
 }
 
 // GetFlag implements Event.
-func (e HTTPRequestEvent) GetFlag() string { return logger.HTTPRequest }
+func (e HTTPRequestEvent) GetFlag() string { return HTTPRequest }
 
 // WriteText implements TextWritable.
 func (e HTTPRequestEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {

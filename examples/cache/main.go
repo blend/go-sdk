@@ -10,6 +10,7 @@ import (
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/web"
+	"github.com/blend/go-sdk/webutil"
 )
 
 type dataCacheKey struct{}
@@ -25,7 +26,7 @@ func getData() (interface{}, error) {
 
 func main() {
 	log := logger.Prod()
-	log.Disable(logger.HTTPRequest, logger.HTTPResponse) // disable noisey events.
+	log.Disable(webutil.HTTPRequest, webutil.HTTPResponse) // disable noisey events.
 	app, err := web.New(
 		web.OptConfigFromEnv(),
 		web.OptLog(log),

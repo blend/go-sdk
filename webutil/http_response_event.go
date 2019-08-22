@@ -94,7 +94,7 @@ type HTTPResponseEvent struct {
 }
 
 // GetFlag implements event.
-func (e HTTPResponseEvent) GetFlag() string { return logger.HTTPResponse }
+func (e HTTPResponseEvent) GetFlag() string { return HTTPResponse }
 
 // WriteText implements TextWritable.
 func (e HTTPResponseEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {

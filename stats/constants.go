@@ -1,14 +1,19 @@
 package stats
 
-import "github.com/blend/go-sdk/logger"
+import (
+	"github.com/blend/go-sdk/db"
+	"github.com/blend/go-sdk/grpcutil"
+	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/webutil"
+)
 
 // MetricNames are names we use when sending data to the collectors.
 const (
-	MetricNameHTTPRequest        string = string(logger.HTTPRequest)
+	MetricNameHTTPRequest        string = string(webutil.HTTPRequest)
 	MetricNameHTTPRequestElapsed string = MetricNameHTTPRequest + ".elapsed"
-	MetricNameDBQuery            string = string(logger.Query)
+	MetricNameDBQuery            string = string(db.QueryFlag)
 	MetricNameDBQueryElapsed     string = MetricNameDBQuery + ".elapsed"
-	MetricNameRPC                string = string(logger.RPC)
+	MetricNameRPC                string = string(grpcutil.RPC)
 	MetricNameRPCElapsed         string = MetricNameRPC + ".elapsed"
 	MetricNameError              string = string(logger.Error)
 )
