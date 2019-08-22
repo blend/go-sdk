@@ -5,6 +5,24 @@ import (
 	"time"
 )
 
+type triggerTimestampKey struct{}
+
+// WithTriggerTimestamp returns a new context with a given timestamp value.
+// It is used by the scope to connote when an event was triggered.
+func WithTriggerTimestamp(ctx context.Context, ts time.Time) context.Context {
+	return context.WithValue(ctx, triggerTimestampKey{}, ts)
+}
+
+// GetTriggerTimestamp gets when an event was triggered off a context.
+func GetTriggerTimestamp(ctx context.Context) time.Time {
+	if raw := ctx.Value(triggerTimestampKey{}); raw != nil {
+		if typed, ok := raw.(time.Time); ok {
+			return typed
+		}
+	}
+	return time.Time{}
+}
+
 type timestampKey struct{}
 
 // WithTimestamp returns a new context with a given timestamp value.

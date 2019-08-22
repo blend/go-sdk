@@ -88,22 +88,18 @@ func OptRPCErr(value error) RPCEventOption {
 
 // RPCEvent is an event type for rpc
 type RPCEvent struct {
-	TimestampUTC time.Time
-	Engine       string
-	Peer         string
-	Method       string
-	UserAgent    string
-	Authority    string
-	ContentType  string
-	Elapsed      time.Duration
-	Err          error
+	Engine      string
+	Peer        string
+	Method      string
+	UserAgent   string
+	Authority   string
+	ContentType string
+	Elapsed     time.Duration
+	Err         error
 }
 
 // GetFlag implements Event.
 func (e RPCEvent) GetFlag() string { return RPC }
-
-// GetTimestamp implements EventTimestamp.
-func (e RPCEvent) GetTimestamp() time.Time { return e.TimestampUTC }
 
 // WriteText implements TextWritable.
 func (e RPCEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
