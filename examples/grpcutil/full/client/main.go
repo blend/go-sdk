@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 
-	full "github.com/blend/go-sdk/examples/grpcutil/full/protos"
+	full "github.com/blend/go-sdk/examples/grpcutil/full/protos/v1"
 	"github.com/blend/go-sdk/grpcutil"
 	"github.com/blend/go-sdk/logger"
 	"google.golang.org/grpc"
@@ -25,7 +25,9 @@ func main() {
 
 	client := full.NewStatusClient(conn)
 
-	res, err := client.Status(context.Background(), &full.StatusArgs{})
+	res, err := client.Status(context.Background(), &full.StatusArgs{
+		MinVersion: 1,
+	})
 	if err != nil {
 		logger.FatalExit(err)
 	}

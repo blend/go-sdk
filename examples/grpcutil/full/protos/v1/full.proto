@@ -5,7 +5,9 @@ service Status {
 	rpc Status(StatusArgs) returns (StatusResponse) {}
 }
 
-message StatusArgs {}
+message StatusArgs {
+	int32 MinVersion = 10;
+}
 
 message StatusResponse {
 	string version = 10;

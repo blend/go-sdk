@@ -1,0 +1,17 @@
+syntax = "proto3";
+package full;
+
+service Status {
+	rpc Status(VersionedStatusArgs) returns (StatusResponse) {}
+}
+
+message VersionedStatusArgs {
+	int32 MinVersion = 10;
+}
+
+message StatusArgs {}
+
+message StatusResponse {
+	int64 version = 10;
+	string gitRef = 11;
+}

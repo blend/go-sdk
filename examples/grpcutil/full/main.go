@@ -1,4 +1,5 @@
-//go:generate protoc -I ./protos --go_out=plugins=grpc:./protos ./protos/full.proto
+//go:generate protoc -I ./protos/v1 --go_out=plugins=grpc:./protos/v1 ./protos/v1/full.proto
+//go:generate protoc -I ./protos/v2 --go_out=plugins=grpc:./protos/v2 ./protos/v2/full.proto
 
 // Package main implements a server for the Status service and implements a number of extra features like logging and recovery.
 package main
@@ -8,10 +9,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/ref"
 
 	"github.com/blend/go-sdk/configutil"
-	full "github.com/blend/go-sdk/examples/grpcutil/full/protos"
+	full "github.com/blend/go-sdk/examples/grpcutil/full/protos/v2"
 	"github.com/blend/go-sdk/graceful"
 	"github.com/blend/go-sdk/grpcutil"
 	"github.com/blend/go-sdk/logger"
@@ -68,22 +70,35 @@ func main() {
 	}
 
 	server := grpc.NewServer(opts...)
-	full.RegisterStatusServer(server, statusServer{})
+	full.RegisterStatusServer(server, statusServer{
+		Log: log.WithPath("status"),
+	})
 	if err := graceful.Shutdown(grpcutil.NewGraceful(listener, server).WithLogger(log)); err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
 }
 
+// Set by LDFLAGS
+var (
+	Version = 1
+)
+
 var (
 	_ (full.StatusServer) = (*statusServer)(nil)
 )
 
-type statusServer struct{}
+type statusServer struct {
+	Log logger.Log
+}
 
-func (ss statusServer) Status(context.Context, *full.StatusArgs) (*full.StatusResponse, error) {
+func (ss statusServer) Status(ctx context.Context, args *full.VersionedStatusArgs) (*full.StatusResponse, error) {
+	if args.MinVersion > 1 {
+		return nil, grpc.Errorf(400, "bad version: %d", args.MinVersion)
+	}
+	logger.MaybeInfof(ss.Log, "responding with version: %d", Version)
 	return &full.StatusResponse{
-		Version: os.Getenv("VERSION"),
-		GitRef:  os.Getenv("CURRENT_REF"),
+		Version: int64(Version),
+		GitRef:  env.Env().String("CURRENT_REF", "123456"),
 	}, nil
 }
