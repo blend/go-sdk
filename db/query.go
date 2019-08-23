@@ -22,8 +22,8 @@ type Query struct {
 	Tx         *sql.Tx
 }
 
-// Execute runs a given query, yielding the raw results.
-func (q *Query) Execute() (rows *sql.Rows, err error) {
+// Do runs a given query, yielding the raw results.
+func (q *Query) Do() (rows *sql.Rows, err error) {
 	defer func() { err = q.finish(recover(), err) }()
 	rows, err = q.query()
 	return

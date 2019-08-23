@@ -19,7 +19,7 @@ func TestQueryExecute(t *testing.T) {
 	seedErr := seedObjects(10, tx)
 	a.Nil(seedErr)
 
-	rows, err := defaultDB().Invoke(OptTx(tx)).Query("select * from bench_object").Execute()
+	rows, err := defaultDB().Invoke(OptTx(tx)).Query("select * from bench_object").Do()
 	a.Nil(err)
 	defer rows.Close()
 	a.True(rows.Next())
@@ -208,6 +208,23 @@ func TestMultipleQueriesPerTransactionWithFailure(t *testing.T) {
 }
 
 func TestQueryFirst(t *testing.T) {
+	a := assert.New(t)
+	tx, err := defaultDB().Begin()
+	a.Nil(err)
+	defer tx.Rollback()
+
+	seedErr := seedObjects(10, tx)
+	a.Nil(seedErr)
+
+	var first benchObj
+	err = defaultDB().Invoke(OptTx(tx)).Query("select * from bench_object").First(func(r Rows) error {
+		return first.Populate(r)
+	})
+	a.Nil(err)
+	a.Equal(1, first.ID)
+}
+
+func TestQueryScan(t *testing.T) {
 	a := assert.New(t)
 	tx, err := defaultDB().Begin()
 	a.Nil(err)

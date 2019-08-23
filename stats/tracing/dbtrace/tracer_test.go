@@ -6,52 +6,20 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/blend/go-sdk/db"
+
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/stats/tracing"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/mocktracer"
 )
 
-func TestPing(t *testing.T) {
-	assert := assert.New(t)
-	mockTracer := mocktracer.New()
-	dbTracer := Tracer(mockTracer)
-
-	dbtf := dbTracer.Ping(context.Background(), defaultDB())
-	span := dbtf.(dbTraceFinisher).span
-	mockSpan := span.(*mocktracer.MockSpan)
-	assert.Equal(tracing.OperationSQLPing, mockSpan.OperationName)
-
-	assert.Len(mockSpan.Tags(), 3)
-	assert.Equal(tracing.SpanTypeSQL, mockSpan.Tags()[tracing.TagKeySpanType])
-	assert.Equal("postgres", mockSpan.Tags()[tracing.TagKeyDBName])
-	assert.Equal("", mockSpan.Tags()[tracing.TagKeyDBUser])
-	assert.True(mockSpan.FinishTime.IsZero())
-}
-
-func TestPingWithParentSpan(t *testing.T) {
-	assert := assert.New(t)
-	mockTracer := mocktracer.New()
-	dbTracer := Tracer(mockTracer)
-
-	parentSpan := mockTracer.StartSpan("test_op")
-	ctx := opentracing.ContextWithSpan(context.Background(), parentSpan)
-
-	dbtf := dbTracer.Ping(ctx, defaultDB())
-	span := dbtf.(dbTraceFinisher).span
-	mockSpan := span.(*mocktracer.MockSpan)
-	assert.Equal(tracing.OperationSQLPing, mockSpan.OperationName)
-
-	mockParentSpan := parentSpan.(*mocktracer.MockSpan)
-	assert.Equal(mockSpan.ParentID, mockParentSpan.SpanContext.SpanID)
-}
-
 func TestPrepare(t *testing.T) {
 	assert := assert.New(t)
 	mockTracer := mocktracer.New()
 	dbTracer := Tracer(mockTracer)
 
-	dbtf := dbTracer.Prepare(context.Background(), defaultDB(), "select * from test_table limit 1")
+	dbtf := dbTracer.Prepare(context.Background(), defaultDB().Config, "select * from test_table limit 1")
 	span := dbtf.(dbTraceFinisher).span
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal(tracing.OperationSQLPrepare, mockSpan.OperationName)
@@ -72,7 +40,7 @@ func TestPrepareWithParentSpan(t *testing.T) {
 	parentSpan := mockTracer.StartSpan("test_op")
 	ctx := opentracing.ContextWithSpan(context.Background(), parentSpan)
 
-	dbtf := dbTracer.Prepare(ctx, defaultDB(), "select * from test_table limit 1")
+	dbtf := dbTracer.Prepare(ctx, defaultDB().Config, "select * from test_table limit 1")
 	span := dbtf.(dbTraceFinisher).span
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal(tracing.OperationSQLPrepare, mockSpan.OperationName)
@@ -88,9 +56,9 @@ func TestQuery(t *testing.T) {
 
 	statement := "SELECT 1 FROM test_table WHERE id = $1"
 	invocation := defaultDB().Invoke()
-	invocation.CachedPlanKey = "test_table_exists"
+	invocation.Label = "test_table_exists"
 
-	dbtf := dbTracer.Query(context.Background(), defaultDB(), invocation, statement)
+	dbtf := dbTracer.Query(context.Background(), defaultDB().Config, invocation, statement)
 	span := dbtf.(dbTraceFinisher).span
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal(tracing.OperationSQLQuery, mockSpan.OperationName)
@@ -114,9 +82,9 @@ func TestQueryWithParentSpan(t *testing.T) {
 
 	statement := "SELECT 1 FROM test_table WHERE id = $1"
 	invocation := defaultDB().Invoke()
-	invocation.CachedPlanKey = "test_table_exists"
+	invocation.Label = "test_table_exists"
 
-	dbtf := dbTracer.Query(ctx, defaultDB(), invocation, statement)
+	dbtf := dbTracer.Query(ctx, defaultDB().Config, invocation, statement)
 	span := dbtf.(dbTraceFinisher).span
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal(tracing.OperationSQLQuery, mockSpan.OperationName)
@@ -130,7 +98,7 @@ func TestFinish(t *testing.T) {
 	mockTracer := mocktracer.New()
 	dbTracer := Tracer(mockTracer)
 
-	dbtf := dbTracer.Ping(context.Background(), defaultDB())
+	dbtf := dbTracer.Query(context.Background(), defaultDB().Config, &db.Invocation{}, "select 'ok1'")
 	dbtf.Finish(nil)
 
 	span := dbtf.(dbTraceFinisher).span
@@ -144,7 +112,7 @@ func TestFinishError(t *testing.T) {
 	mockTracer := mocktracer.New()
 	dbTracer := Tracer(mockTracer)
 
-	dbtf := dbTracer.Ping(context.Background(), defaultDB())
+	dbtf := dbTracer.Query(context.Background(), defaultDB().Config, &db.Invocation{}, "select 'ok1'")
 	dbtf.Finish(fmt.Errorf("error"))
 
 	span := dbtf.(dbTraceFinisher).span
@@ -158,7 +126,7 @@ func TestFinishErrorSkip(t *testing.T) {
 	mockTracer := mocktracer.New()
 	dbTracer := Tracer(mockTracer)
 
-	dbtf := dbTracer.Ping(context.Background(), defaultDB())
+	dbtf := dbTracer.Query(context.Background(), defaultDB().Config, &db.Invocation{}, "select 'ok1'")
 	dbtf.Finish(driver.ErrSkip)
 
 	span := dbtf.(dbTraceFinisher).span

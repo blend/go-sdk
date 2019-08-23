@@ -154,31 +154,34 @@ func main() {
 		return
 	}
 
-	query := conn.Query("select * from book; select * from person; select * from ledger")
-
-	var b []book
-	if err = query.OutMany(&b); err != nil {
+	results, err := conn.Query("select * from book; select * from person; select * from ledger").Do()
+	if err != nil {
 		log.Fatal(err)
 		return
 	}
-	if !query.NextResultSet() {
+
+	var b []book
+	if err = db.OutMany(results, &b); err != nil {
+		log.Fatal(err)
+		return
+	}
+	if !results.NextResultSet() {
 		log.Fatalf("no person result set, cannot continue")
 		return
 	}
 
 	var p []person
-	if err = query.OutMany(&p); err != nil {
+	if err = db.OutMany(results, &p); err != nil {
 		log.Fatal(err)
 		return
 	}
-
-	if !query.NextResultSet() {
+	if !results.NextResultSet() {
 		log.Fatalf("no ledger result set, cannot continue")
 		return
 	}
 
 	var l []ledger
-	if err = query.OutMany(&l); err != nil {
+	if err = db.OutMany(results, &l); err != nil {
 		log.Fatal(err)
 		return
 	}

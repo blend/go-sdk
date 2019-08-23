@@ -21,8 +21,8 @@ func AddQueryListeners(log logger.Listenable, stats Collector) {
 		tags := []string{
 			engine, database,
 		}
-		if len(qe.QueryLabel) > 0 {
-			tags = append(tags, Tag(TagQuery, qe.QueryLabel))
+		if len(qe.Label) > 0 {
+			tags = append(tags, Tag(TagQuery, qe.Label))
 		}
 		if qe.Err != nil {
 			if ex := ex.As(qe.Err); ex != nil && ex.Class != nil {
