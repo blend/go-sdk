@@ -29,7 +29,7 @@ func TestQueryEvent(t *testing.T) {
 	assert.Equal("event-database", qe.Database)
 	assert.Equal("event-engine", qe.Engine)
 	assert.Equal("event-username", qe.Username)
-	assert.Equal("event-query-label", qe.QueryLabel)
+	assert.Equal("event-query-label", qe.Label)
 	assert.Equal(time.Millisecond, qe.Elapsed)
 	assert.Equal("test error", qe.Err.Error())
 

@@ -14,15 +14,14 @@ import (
 
 // Query is the intermediate result of a query.
 type Query struct {
-	Context       context.Context
-	Statement     string
-	CachedPlanKey string
-	Args          []interface{}
+	Context   context.Context
+	Label     string
+	Statement string
+	Args      []interface{}
 
 	Rows *sql.Rows
 	Err  error
 
-	Conn       *Connection
 	Invocation *Invocation
 	Tx         *sql.Tx
 }
@@ -233,14 +232,7 @@ func (q *Query) query() (rows *sql.Rows, err error) {
 		return
 	}
 
-	stmt, stmtErr := q.Invocation.Prepare(q.Statement)
-	if stmtErr != nil {
-		err = Error(stmtErr)
-		return
-	}
-	defer func() { err = q.Invocation.CloseStatement(stmt, err) }()
-
-	rows, err = stmt.QueryContext(q.Context, q.Args...)
+	rows, err = q.Invocation.DB().QueryContext(q.Context, q.Statement, q.Args...)
 	if err != nil && !ex.Is(err, sql.ErrNoRows) {
 		err = Error(err)
 	}

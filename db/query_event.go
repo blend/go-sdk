@@ -69,8 +69,8 @@ func OptQueryUsername(value string) QueryEventOption {
 }
 
 // OptQueryLabel sets a field on the query event.
-func OptQueryLabel(value string) QueryEventOption {
-	return func(e *QueryEvent) { e.QueryLabel = value }
+func OptQueryLabel(label string) QueryEventOption {
+	return func(e *QueryEvent) { e.Label = label }
 }
 
 // OptQueryElapsed sets a field on the query event.
@@ -85,13 +85,13 @@ func OptQueryErr(value error) QueryEventOption {
 
 // QueryEvent represents a database query.
 type QueryEvent struct {
-	Database   string
-	Engine     string
-	Username   string
-	QueryLabel string
-	Body       string
-	Elapsed    time.Duration
-	Err        error
+	Database string
+	Engine   string
+	Username string
+	Label    string
+	Body     string
+	Elapsed  time.Duration
+	Err      error
 }
 
 // GetFlag implements Event.
@@ -111,9 +111,9 @@ func (e QueryEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
 	io.WriteString(wr, tf.Colorize(e.Database, ansi.ColorLightWhite))
 	io.WriteString(wr, "]")
 
-	if len(e.QueryLabel) > 0 {
+	if len(e.Label) > 0 {
 		io.WriteString(wr, logger.Space)
-		io.WriteString(wr, fmt.Sprintf("[%s]", tf.Colorize(e.QueryLabel, ansi.ColorLightWhite)))
+		io.WriteString(wr, fmt.Sprintf("[%s]", tf.Colorize(e.Label, ansi.ColorLightWhite)))
 	}
 
 	io.WriteString(wr, logger.Space)
@@ -133,12 +133,12 @@ func (e QueryEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
 // Decompose implements JSONWritable.
 func (e QueryEvent) Decompose() map[string]interface{} {
 	return map[string]interface{}{
-		"engine":     e.Engine,
-		"database":   e.Database,
-		"username":   e.Username,
-		"queryLabel": e.QueryLabel,
-		"body":       e.Body,
-		"err":        e.Err,
-		"elapsed":    timeutil.Milliseconds(e.Elapsed),
+		"engine":   e.Engine,
+		"database": e.Database,
+		"username": e.Username,
+		"label":    e.Label,
+		"body":     e.Body,
+		"err":      e.Err,
+		"elapsed":  timeutil.Milliseconds(e.Elapsed),
 	}
 }

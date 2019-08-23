@@ -9,10 +9,10 @@ import (
 // InvocationOption is an option for invocations.
 type InvocationOption func(*Invocation)
 
-// OptCachedPlanKey sets the CachedPlanKey on the invocation.
-func OptCachedPlanKey(cacheKey string) InvocationOption {
+// OptLabel sets the Label on the invocation.
+func OptLabel(label string) InvocationOption {
 	return func(i *Invocation) {
-		i.CachedPlanKey = cacheKey
+		i.Label = label
 	}
 }
 

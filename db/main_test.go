@@ -228,7 +228,7 @@ func readOrm(tx *sql.Tx) ([]benchObj, error) {
 
 func readCachedOrm(tx *sql.Tx) ([]benchObj, error) {
 	var objs []benchObj
-	allErr := defaultDB().Invoke(OptTx(tx), OptCachedPlanKey("get_all_bench_object")).Query(fmt.Sprintf("select %s from bench_object", ColumnNamesCSV(benchObj{}))).OutMany(&objs)
+	allErr := defaultDB().Invoke(OptTx(tx), OptLabel("get_all_bench_object")).Query(fmt.Sprintf("select %s from bench_object", ColumnNamesCSV(benchObj{}))).OutMany(&objs)
 	return objs, allErr
 }
 

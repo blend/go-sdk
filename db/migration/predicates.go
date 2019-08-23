@@ -9,7 +9,7 @@ import (
 
 // PredicateTableExists returns if a table exists in the default schema of the given connection.
 func PredicateTableExists(c *db.Connection, tx *sql.Tx, tableName string) (bool, error) {
-	return PredicateTableExistsInSchema(c, tx, c.DefaultSchema(), tableName)
+	return PredicateTableExistsInSchema(c, tx, c.Config.SchemaOrDefault(), tableName)
 }
 
 // PredicateTableExistsInSchema returns if a table exists in a specific schema on the given connection.
@@ -20,7 +20,7 @@ func PredicateTableExistsInSchema(c *db.Connection, tx *sql.Tx, schemaName, tabl
 
 // PredicateColumnExists returns if a column exists on a table in the default schema of the given connection.
 func PredicateColumnExists(c *db.Connection, tx *sql.Tx, tableName, columnName string) (bool, error) {
-	return PredicateColumnExistsInSchema(c, tx, c.DefaultSchema(), tableName, columnName)
+	return PredicateColumnExistsInSchema(c, tx, c.Config.SchemaOrDefault(), tableName, columnName)
 }
 
 // PredicateColumnExistsInSchema returns if a column exists on a table in a specific schema on the given connection.
@@ -32,7 +32,7 @@ func PredicateColumnExistsInSchema(c *db.Connection, tx *sql.Tx, schemaName, tab
 
 // PredicateConstraintExists returns if a constraint exists on a table in the default schema of the given connection.
 func PredicateConstraintExists(c *db.Connection, tx *sql.Tx, tableName, constraintName string) (bool, error) {
-	return PredicateConstraintExistsInSchema(c, tx, c.DefaultSchema(), tableName, constraintName)
+	return PredicateConstraintExistsInSchema(c, tx, c.Config.SchemaOrDefault(), tableName, constraintName)
 }
 
 // PredicateConstraintExistsInSchema returns if a constraint exists on a table in a specific schema on the given connection.
@@ -44,7 +44,7 @@ func PredicateConstraintExistsInSchema(c *db.Connection, tx *sql.Tx, schemaName,
 
 // PredicateIndexExists returns if a index exists on a table in the default schema of the given connection.
 func PredicateIndexExists(c *db.Connection, tx *sql.Tx, tableName, indexName string) (bool, error) {
-	return PredicateIndexExistsInSchema(c, tx, c.DefaultSchema(), tableName, indexName)
+	return PredicateIndexExistsInSchema(c, tx, c.Config.SchemaOrDefault(), tableName, indexName)
 }
 
 // PredicateIndexExistsInSchema returns if a index exists on a table in a specific schema on the given connection.
