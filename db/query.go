@@ -27,9 +27,9 @@ type Query struct {
 	Tx         *sql.Tx
 }
 
-// NextResult advances to the next result if there is one.
-func (q *Query) NextResult() bool {
-	return q.Rows.NextResult()
+// NextResultSet advances to the next result if there is one.
+func (q *Query) NextResultSet() bool {
+	return q.Rows.NextResultSet()
 }
 
 // Execute runs a given query, yielding the raw results.
