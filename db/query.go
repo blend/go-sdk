@@ -232,9 +232,10 @@ func (q *Query) query() (rows *sql.Rows, err error) {
 		return
 	}
 
-	rows, err = q.Invocation.DB().QueryContext(q.Context, q.Statement, q.Args...)
-	if err != nil && !ex.Is(err, sql.ErrNoRows) {
-		err = Error(err)
+	var queryError error
+	rows, queryError = q.Invocation.DB().QueryContext(q.Context, q.Statement, q.Args...)
+	if queryError != nil && !ex.Is(queryError, sql.ErrNoRows) {
+		err = Error(queryError)
 	}
 	return
 }
