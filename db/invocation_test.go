@@ -217,14 +217,13 @@ func TestInvocationStatementInterceptor(t *testing.T) {
 	assert.Nil(err)
 	defer tx.Rollback()
 
-	invocation := defaultDB().Invoke(OptInvocationStatementInterceptor(func(statementID, statement string) (string, error) {
-		return "", fmt.Errorf("only a test")
+	invocation := defaultDB().Invoke(OptInvocationStatementInterceptor(func(statementID, statement string) string {
+		return statement + "; -- foo"
 	}))
 	assert.NotNil(invocation.StatementInterceptor)
 
 	err = IgnoreExecResult(invocation.Exec("select 'ok!'"))
-	assert.NotNil(err)
-	assert.Equal("only a test", err.Error())
+	assert.Nil(err)
 }
 
 func TestConnectionCreate(t *testing.T) {
@@ -525,18 +524,4 @@ func TestConnectionCreateIfNotExists(t *testing.T) {
 	_, err = defaultDB().Invoke(OptTx(tx)).Get(&verify, obj.UUID)
 	assert.Nil(err)
 	assert.Equal(oldCategory, verify.Category)
-}
-
-func TestInvocationEarlyExitOnError(t *testing.T) {
-	assert := assert.New(t)
-	tx, err := defaultDB().Begin()
-	assert.Nil(err)
-	defer tx.Rollback()
-
-	i := defaultDB().Invoke(OptTx(tx))
-	assert.Nil(IgnoreExecResult(i.Exec("select 1")))
-
-	i.Err = fmt.Errorf("this is a test")
-	err = IgnoreExecResult(i.Exec("select 1"))
-	assert.Equal("this is a test", err.Error())
 }

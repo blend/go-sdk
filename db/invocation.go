@@ -55,10 +55,7 @@ func (i *Invocation) DB() DB {
 // Prepare returns a cached or newly prepared statment plan for a given sql statement.
 func (i *Invocation) Prepare(statement string) (stmt *sql.Stmt, err error) {
 	if i.StatementInterceptor != nil {
-		statement, err = i.StatementInterceptor(i.Label, statement)
-		if err != nil {
-			return
-		}
+		statement = i.StatementInterceptor(i.Label, statement)
 	}
 	stmt, err = i.DB().PrepareContext(i.Context, statement)
 	return
@@ -66,11 +63,8 @@ func (i *Invocation) Prepare(statement string) (stmt *sql.Stmt, err error) {
 
 // Exec executes a sql statement with a given set of arguments and returns the rows affected.
 func (i *Invocation) Exec(statement string, args ...interface{}) (res sql.Result, err error) {
-	statement, err = i.Start(statement)
+	statement = i.Start(statement)
 	defer func() { err = i.Finish(statement, recover(), err) }()
-	if err != nil {
-		return
-	}
 
 	res, err = i.DB().ExecContext(i.Context, statement, args...)
 	if err != nil {
@@ -82,16 +76,13 @@ func (i *Invocation) Exec(statement string, args ...interface{}) (res sql.Result
 
 // Query returns a new query object for a given sql query and arguments.
 func (i *Invocation) Query(statement string, args ...interface{}) *Query {
-	var err error
-	statement, err = i.Start(statement)
 	return &Query{
-		Context:    i.Context,
-		Statement:  statement,
 		Label:      i.Label,
-		Args:       args,
+		Context:    i.Context,
 		Invocation: i,
 		Tx:         i.Tx,
-		Err:        err,
+		Statement:  i.Start(statement),
+		Args:       args,
 	}
 }
 
@@ -126,10 +117,7 @@ func (i *Invocation) Create(object DatabaseMapped) (err error) {
 
 	i.Label, queryBody, writeCols, autos = i.generateCreate(object)
 
-	queryBody, err = i.Start(queryBody)
-	if err != nil {
-		return
-	}
+	queryBody = i.Start(queryBody)
 	if autos.Len() == 0 {
 		if _, err = i.DB().ExecContext(i.Context, queryBody, writeCols.ColumnValues(object)...); err != nil {
 			err = Error(err)
@@ -159,10 +147,7 @@ func (i *Invocation) CreateIfNotExists(object DatabaseMapped) (err error) {
 
 	i.Label, queryBody, autos, writeCols = i.generateCreateIfNotExists(object)
 
-	queryBody, err = i.Start(queryBody)
-	if err != nil {
-		return
-	}
+	queryBody = i.Start(queryBody)
 	if autos.Len() == 0 {
 		if _, err = i.DB().ExecContext(i.Context, queryBody, writeCols.ColumnValues(object)...); err != nil {
 			err = Error(err)
@@ -196,11 +181,7 @@ func (i *Invocation) CreateMany(objects interface{}) (err error) {
 		return
 	}
 
-	queryBody, err = i.Start(queryBody)
-	if err != nil {
-		return
-	}
-
+	queryBody = i.Start(queryBody)
 	var colValues []interface{}
 	for row := 0; row < sliceValue.Len(); row++ {
 		colValues = append(colValues, writeCols.ColumnValues(sliceValue.Index(row).Interface())...)
@@ -225,11 +206,7 @@ func (i *Invocation) Update(object DatabaseMapped) (updated bool, err error) {
 
 	i.Label, queryBody, pks, writeCols = i.generateUpdate(object)
 
-	queryBody, err = i.Start(queryBody)
-	if err != nil {
-		return
-	}
-
+	queryBody = i.Start(queryBody)
 	res, err := i.DB().ExecContext(
 		i.Context,
 		queryBody,
@@ -260,10 +237,7 @@ func (i *Invocation) Upsert(object DatabaseMapped) (err error) {
 
 	i.Label, queryBody, autos, writeCols = i.generateUpsert(object)
 
-	queryBody, err = i.Start(queryBody)
-	if err != nil {
-		return
-	}
+	queryBody = i.Start(queryBody)
 	if autos.Len() == 0 {
 		if _, err = i.Exec(queryBody, writeCols.ColumnValues(object)...); err != nil {
 			return
@@ -294,10 +268,7 @@ func (i *Invocation) Exists(object DatabaseMapped) (exists bool, err error) {
 		err = Error(err)
 		return
 	}
-	queryBody, err = i.Start(queryBody)
-	if err != nil {
-		return
-	}
+	queryBody = i.Start(queryBody)
 	var value int
 	if queryErr := i.DB().QueryRowContext(i.Context, queryBody, pks.ColumnValues(object)...).Scan(&value); queryErr != nil && !ex.Is(queryErr, sql.ErrNoRows) {
 		err = Error(queryErr)
@@ -320,10 +291,7 @@ func (i *Invocation) Delete(object DatabaseMapped) (deleted bool, err error) {
 		return
 	}
 
-	queryBody, err = i.Start(queryBody)
-	if err != nil {
-		return
-	}
+	queryBody = i.Start(queryBody)
 	res, err := i.DB().ExecContext(i.Context, queryBody, pks.ColumnValues(object)...)
 	if err != nil {
 		err = Error(err)
@@ -733,21 +701,14 @@ func (i *Invocation) SetAutos(object DatabaseMapped, autos *ColumnCollection, au
 }
 
 // Start runs on start steps.
-func (i *Invocation) Start(statement string) (string, error) {
-	if i.Err != nil {
-		return "", i.Err
-	}
+func (i *Invocation) Start(statement string) string {
 	if i.StatementInterceptor != nil {
-		var err error
-		statement, err = i.StatementInterceptor(i.Label, statement)
-		if err != nil {
-			return "", err
-		}
+		statement = i.StatementInterceptor(i.Label, statement)
 	}
 	if i.Tracer != nil && !IsSkipQueryLogging(i.Context) {
 		i.TraceFinisher = i.Tracer.Query(i.Context, i.Config, i, statement)
 	}
-	return statement, nil
+	return statement
 }
 
 // Finish runs on complete steps.

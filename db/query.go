@@ -14,21 +14,12 @@ import (
 
 // Query is the intermediate result of a query.
 type Query struct {
-	Context   context.Context
-	Label     string
-	Statement string
-	Args      []interface{}
-
-	Rows *sql.Rows
-	Err  error
-
+	Context    context.Context
+	Label      string
+	Statement  string
+	Args       []interface{}
 	Invocation *Invocation
 	Tx         *sql.Tx
-}
-
-// NextResultSet advances to the next result if there is one.
-func (q *Query) NextResultSet() bool {
-	return q.Rows.NextResultSet()
 }
 
 // Execute runs a given query, yielding the raw results.
@@ -40,30 +31,31 @@ func (q *Query) Execute() (rows *sql.Rows, err error) {
 
 // Any returns if there are any results for the query.
 func (q *Query) Any() (found bool, err error) {
-	defer func() { err = q.finish(recover(), err) }()
-
-	q.Rows, q.Err = q.query()
-	if q.Err != nil {
-		err = q.Err
+	var rows *sql.Rows
+	defer func() {
+		err = q.finish(recover(), err)
+		err = q.rowsClose(rows, err)
+	}()
+	rows, err = q.query()
+	if err != nil {
 		return
 	}
-	defer func() { err = ex.Nest(err, q.Rows.Close()) }()
-
-	found = q.Rows.Next()
+	found = rows.Next()
 	return
 }
 
 // None returns if there are no results for the query.
 func (q *Query) None() (notFound bool, err error) {
-	defer func() { err = q.finish(recover(), err) }()
-
-	q.Rows, q.Err = q.query()
-	if q.Err != nil {
-		err = q.Err
+	var rows *sql.Rows
+	defer func() {
+		err = q.finish(recover(), err)
+		err = q.rowsClose(rows, err)
+	}()
+	rows, err = q.query()
+	if err != nil {
 		return
 	}
-	defer func() { err = ex.Nest(err, Error(q.Rows.Close())) }()
-	notFound = !q.Rows.Next()
+	notFound = !rows.Next()
 	return
 }
 
@@ -71,26 +63,17 @@ func (q *Query) None() (notFound bool, err error) {
 // It returns if the query produced a row, and returns `ErrTooManyRows` if there
 // are multiple row results.
 func (q *Query) Scan(args ...interface{}) (found bool, err error) {
-	defer func() { err = q.finish(recover(), err) }()
+	var rows *sql.Rows
+	defer func() {
+		err = q.finish(recover(), err)
+		err = q.rowsClose(rows, err)
+	}()
 
-	q.Rows, q.Err = q.query()
-	if q.Err != nil {
-		err = q.Err
+	rows, err = q.query()
+	if err != nil {
 		return
 	}
-	defer func() { err = ex.Nest(err, Error(q.Rows.Close())) }()
-
-	if q.Rows.Next() {
-		found = true
-		if err = q.Rows.Scan(args...); err != nil {
-			err = Error(err)
-			return
-		}
-	}
-	if q.Rows.Next() {
-		err = Error(ErrTooManyRows)
-	}
-
+	found, err = Scan(rows, args...)
 	return
 }
 
@@ -98,28 +81,107 @@ func (q *Query) Scan(args ...interface{}) (found bool, err error) {
 // result is mapped to to object, and ErrTooManyRows is returned. Out() will apply column values for any colums
 // in the row result to the object, potentially zeroing existing values out.
 func (q *Query) Out(object interface{}) (found bool, err error) {
-	defer func() { err = q.finish(recover(), err) }()
+	var rows *sql.Rows
+	defer func() {
+		err = q.finish(recover(), err)
+		err = q.rowsClose(rows, err)
+	}()
 
-	q.Rows, q.Err = q.query()
-	if q.Err != nil {
-		err = q.Err
+	rows, err = q.query()
+	if err != nil {
 		return
 	}
-	defer func() { err = ex.Nest(err, Error(q.Rows.Close())) }()
+	found, err = Out(rows, object)
+	return
+}
 
+// OutMany writes the query results to a slice of objects.
+func (q *Query) OutMany(collection interface{}) (err error) {
+	var rows *sql.Rows
+	defer func() {
+		err = q.finish(recover(), err)
+		err = q.rowsClose(rows, err)
+	}()
+
+	rows, err = q.query()
+	if err != nil {
+		return
+	}
+	err = OutMany(rows, collection)
+	return
+}
+
+// Each executes the consumer for each result of the query (one to many).
+func (q *Query) Each(consumer RowsConsumer) (err error) {
+	var rows *sql.Rows
+	defer func() {
+		err = q.finish(recover(), err)
+		err = q.rowsClose(rows, err)
+	}()
+
+	rows, err = q.query()
+	if err != nil {
+		return
+	}
+
+	err = Each(rows, consumer)
+	return
+}
+
+// First executes the consumer for the first result of a query.
+// It returns `ErrTooManyRows` if more than one result is returned.
+func (q *Query) First(consumer RowsConsumer) (err error) {
+	var rows *sql.Rows
+	defer func() {
+		err = q.finish(recover(), err)
+		err = q.rowsClose(rows, err)
+	}()
+	rows, err = q.query()
+	if err != nil {
+		return
+	}
+	err = First(rows, consumer)
+	return
+}
+
+// --------------------------------------------------------------------------------
+// helpers
+// --------------------------------------------------------------------------------
+
+func (q *Query) rowsClose(rows *sql.Rows, err error) error {
+	if rows == nil {
+		return err
+	}
+	return ex.Nest(err, rows.Close())
+}
+
+func (q *Query) query() (rows *sql.Rows, err error) {
+	var queryError error
+	rows, queryError = q.Invocation.DB().QueryContext(q.Context, q.Statement, q.Args...)
+	if queryError != nil && !ex.Is(queryError, sql.ErrNoRows) {
+		err = Error(queryError)
+	}
+	return
+}
+
+func (q *Query) finish(r interface{}, err error) error {
+	return q.Invocation.Finish(q.Statement, r, err)
+}
+
+// Out reads a given rows set out into an object reference.
+func Out(rows *sql.Rows, object interface{}) (found bool, err error) {
 	sliceType := ReflectType(object)
 	if sliceType.Kind() != reflect.Struct {
 		err = Error(ErrDestinationNotStruct)
 		return
 	}
-
 	columnMeta := CachedColumnCollectionFromInstance(object)
-	if q.Rows.Next() {
+	if rows.Next() {
 		found = true
 		if populatable, ok := object.(Populatable); ok {
-			err = populatable.Populate(q.Rows)
+			err = populatable.Populate(rows)
 		} else {
-			err = PopulateByName(object, q.Rows, columnMeta)
+			err = PopulateByName(object, rows, columnMeta)
 		}
 		if err != nil {
 			return
@@ -127,24 +189,14 @@ func (q *Query) Out(object interface{}) (found bool, err error) {
 	} else if err = Zero(object); err != nil {
 		return
 	}
-
-	if q.Rows.Next() {
+	if rows.Next() {
 		err = Error(ErrTooManyRows)
 	}
 	return
 }
 
-// OutMany writes the query results to a slice of objects.
-func (q *Query) OutMany(collection interface{}) (err error) {
-	defer func() { err = q.finish(recover(), err) }()
-
-	q.Rows, q.Err = q.query()
-	if q.Err != nil {
-		err = q.Err
-		return
-	}
-	defer func() { err = ex.Nest(err, q.Rows.Close()) }()
-
+// OutMany reads a given result set into a given collection.
+func OutMany(rows *sql.Rows, collection interface{}) (err error) {
 	sliceType := ReflectType(collection)
 	if sliceType.Kind() != reflect.Slice {
 		err = Error(ErrCollectionNotSlice)
@@ -159,12 +211,12 @@ func (q *Query) OutMany(collection interface{}) (err error) {
 	isPopulatable := IsPopulatable(v)
 
 	var didSetRows bool
-	for q.Rows.Next() {
+	for rows.Next() {
 		newObj := makeNew(sliceInnerType)
 		if isPopulatable {
-			err = AsPopulatable(newObj).Populate(q.Rows)
+			err = AsPopulatable(newObj).Populate(rows)
 		} else {
-			err = PopulateByName(newObj, q.Rows, meta)
+			err = PopulateByName(newObj, rows, meta)
 		}
 		if err != nil {
 			return
@@ -182,19 +234,10 @@ func (q *Query) OutMany(collection interface{}) (err error) {
 	return
 }
 
-// Each executes the consumer for each result of the query (one to many).
-func (q *Query) Each(consumer RowsConsumer) (err error) {
-	defer func() { err = q.finish(recover(), err) }()
-
-	q.Rows, q.Err = q.query()
-	if q.Err != nil {
-		err = q.Err
-		return
-	}
-	defer func() { err = ex.Nest(err, Error(q.Rows.Close())) }()
-
-	for q.Rows.Next() {
-		if err = consumer(q.Rows); err != nil {
+// Each iterates over a given result set, calling the rows consumer.
+func Each(rows *sql.Rows, consumer RowsConsumer) (err error) {
+	for rows.Next() {
+		if err = consumer(rows); err != nil {
 			err = Error(err)
 			return
 		}
@@ -202,44 +245,29 @@ func (q *Query) Each(consumer RowsConsumer) (err error) {
 	return
 }
 
-// First executes the consumer for the first result of a query.
-// It returns `ErrTooManyRows` if more than one result is returned.
-func (q *Query) First(consumer RowsConsumer) (err error) {
-	defer func() { err = q.finish(recover(), err) }()
-
-	q.Rows, q.Err = q.query()
-	if q.Err != nil {
-		err = q.Err
-		return
-	}
-	defer func() { err = ex.Nest(err, Error(q.Rows.Close())) }()
-
-	if q.Rows.Next() {
-		if err = consumer(q.Rows); err != nil {
+// First returns the first result of a result set to a consumer.
+// If there are more than one row in the result, they are ignored.
+func First(rows *sql.Rows, consumer RowsConsumer) (err error) {
+	if rows.Next() {
+		if err = consumer(rows); err != nil {
 			return
 		}
 	}
 	return
 }
 
-// --------------------------------------------------------------------------------
-// helpers
-// --------------------------------------------------------------------------------
-
-func (q *Query) query() (rows *sql.Rows, err error) {
-	if q.Err != nil {
-		err = q.Err
-		return
+// Scan reads the first row from a resultset and scans it to a given set of args.
+// If more than one row is returned it will return ErrTooManyRows.
+func Scan(rows *sql.Rows, args ...interface{}) (found bool, err error) {
+	if rows.Next() {
+		found = true
+		if err = rows.Scan(args...); err != nil {
+			err = Error(err)
+			return
+		}
 	}
-
-	var queryError error
-	rows, queryError = q.Invocation.DB().QueryContext(q.Context, q.Statement, q.Args...)
-	if queryError != nil && !ex.Is(queryError, sql.ErrNoRows) {
-		err = Error(queryError)
+	if rows.Next() {
+		err = Error(ErrTooManyRows)
 	}
 	return
-}
-
-func (q *Query) finish(r interface{}, err error) error {
-	return q.Invocation.Finish(q.Statement, r, err)
 }

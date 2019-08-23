@@ -173,7 +173,7 @@ func TestDataFileReaderAction(t *testing.T) {
 
 	var count int
 	var found bool
-	found, err = conn.Query("Select count(1) from test_table_one").Scan(&count)
+	found, err = conn.Query("select count(1) from test_table_one").Scan(&count)
 	a.Nil(err)
 	a.True(found)
 	a.Equal(3, count)
