@@ -27,6 +27,11 @@ type Query struct {
 	Tx         *sql.Tx
 }
 
+// NextResultSet advances to the next result if there is one.
+func (q *Query) NextResultSet() bool {
+	return q.Rows.NextResultSet()
+}
+
 // Execute runs a given query, yielding the raw results.
 func (q *Query) Execute() (rows *sql.Rows, err error) {
 	defer func() { err = q.finish(recover(), err) }()
