@@ -28,6 +28,15 @@ func ErrMessage(err interface{}) string {
 	return ""
 }
 
+// ErrStackTrace returns a stack trace from an `Error` type if it is an
+// `Exception`. If it is not an `Exception`, this will return `nil`.
+func ErrStackTrace(err interface{}) StackTrace {
+	if ex := As(err); ex != nil && ex.Stack() != nil {
+		return ex.Stack()
+	}
+	return nil
+}
+
 // Is is a helper function that returns if an error is an exception.
 func Is(err interface{}, cause error) bool {
 	if err == nil || cause == nil {

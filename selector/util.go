@@ -48,6 +48,8 @@ const (
 	CarriageReturn = rune('\r')
 	// NewLine is a common rune.
 	NewLine = rune('\n')
+	// Star is a common rune.
+	Star = rune('*')
 )
 
 const (
@@ -274,4 +276,13 @@ func isLowerAlpha(ch rune) bool {
 
 func isAlpha(ch rune) bool {
 	return !isWhitespace(ch) && !unicode.IsControl(ch) && !isSymbol(ch)
+}
+
+// isPermitted returns true if ch is within the provided set of permitted runes
+func isPermitted(ch rune, permitted map[rune]bool) bool {
+	if permitted != nil {
+		p, ok := permitted[ch]
+		return ok && p
+	}
+	return false
 }

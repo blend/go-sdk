@@ -1,0 +1,32 @@
+version: "3.7"
+
+services:
+  postgres:
+    container_name: "gosdk_test_postgres_${BUILD_NUMBER}"
+    image: "postgres:11-alpine"
+    ports:
+      - "5432:5432"
+    networks:
+      - gosdk_net
+    environment:
+      POSTGRES_PASSWORD: unittests
+
+  test:
+    container_name: "gosdk-test_${BUILD_NUMBER}"
+    image: "gosdk-test:${BUILD_NUMBER}"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - gosdk_net
+    depends_on:
+      - "postgres"
+    environment:
+      DB_HOST: "gosdk_test_postgres_${BUILD_NUMBER}"
+      DB_PORT: "5432"
+      DB_USER: "postgres"
+      DB_PASSWORD: "unittests"
+
+networks:
+  gosdk_net:
+    name: "gosdk_net_${BUILD_NUMBER}"

@@ -14,11 +14,11 @@ func TestMustParse(t *testing.T) {
 
 	var err error
 	func() {
-	defer func() {
-		if r := recover(); r != nil {
-			err = exception.New(r)
-		}
-	}()
+		defer func() {
+			if r := recover(); r != nil {
+				err = exception.New(r)
+			}
+		}()
 		MustParse("x!!")
 	}()
 	assert.NotNil(err)
