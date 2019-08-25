@@ -15,20 +15,25 @@ import (
 
 // Invocation is a specific operation against a context.
 type Invocation struct {
-	Label      string
+	/* invocation state */
+	Label     string
+	StartTime time.Time
+	Tx        *sql.Tx
+
+	/* context */
+	Context context.Context
+	Cancel  func()
+
+	/* dependencies */
 	Config     Config
 	Log        logger.Triggerable
 	BufferPool *bufferutil.Pool
 	Connection *sql.DB
-	Context    context.Context
-	Cancel     func()
 
+	/* logging hooks */
 	StatementInterceptor StatementInterceptor
 	Tracer               Tracer
 	TraceFinisher        TraceFinisher
-	StartTime            time.Time
-	Tx                   *sql.Tx
-	Err                  error
 }
 
 // Ping checks the db connection.
@@ -36,15 +41,10 @@ func (i *Invocation) Ping() error {
 	return Error(i.Connection.Ping())
 }
 
-// DB is a handler for queries.
-type DB interface {
-	PrepareContext(context.Context, string) (*sql.Stmt, error)
-	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
-	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
-	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
-}
-
-// DB returns the db handler
+// DB returns the db handler.
+// This is the transaction if one has been set
+// or the underlying connection if it has not.
+/* WCTODO: `DB` is kind of a bad name, is there a better name? Handler? */
 func (i *Invocation) DB() DB {
 	if i.Tx != nil {
 		return i.Tx
