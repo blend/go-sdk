@@ -45,6 +45,8 @@ func OptTimeout(d time.Duration) InvocationOption {
 // OptTx is an invocation option that sets the invocation transaction.
 func OptTx(tx *sql.Tx) InvocationOption {
 	return func(i *Invocation) {
-		i.DB = tx
+		if tx != nil {
+			i.DB = tx
+		}
 	}
 }

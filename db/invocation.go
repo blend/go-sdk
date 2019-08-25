@@ -61,10 +61,7 @@ func (i *Invocation) Exec(statement string, args ...interface{}) (res sql.Result
 // Query returns a new query object for a given sql query and arguments.
 func (i *Invocation) Query(statement string, args ...interface{}) *Query {
 	return &Query{
-		Label:      i.Label,
-		Context:    i.Context,
 		Invocation: i,
-		DB:         i.DB,
 		Statement:  i.Start(statement),
 		Args:       args,
 	}
@@ -111,7 +108,7 @@ func (i *Invocation) Create(object DatabaseMapped) (err error) {
 	}
 
 	autoValues := i.AutoValues(autos)
-	if err = i.DB().QueryRowContext(i.Context, queryBody, writeCols.ColumnValues(object)...).Scan(autoValues...); err != nil {
+	if err = i.DB.QueryRowContext(i.Context, queryBody, writeCols.ColumnValues(object)...).Scan(autoValues...); err != nil {
 		err = Error(err)
 		return
 	}
