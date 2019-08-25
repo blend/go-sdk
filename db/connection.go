@@ -150,7 +150,7 @@ func (dbc *Connection) PrepareContext(context context.Context, cachedPlanKey, st
 // Invoke returns a new invocation.
 func (dbc *Connection) Invoke(options ...InvocationOption) *Invocation {
 	i := Invocation{
-		Connection:           dbc.Connection,
+		DB:                   dbc.Connection,
 		Log:                  dbc.Log,
 		BufferPool:           dbc.BufferPool,
 		Context:              context.Background(),
