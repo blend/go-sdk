@@ -1,7 +1,6 @@
 package db
 
 import (
-	"context"
 	"database/sql"
 	"reflect"
 
@@ -14,17 +13,16 @@ import (
 
 // Query is the intermediate result of a query.
 type Query struct {
-	Context    context.Context
-	Label      string
+	Invocation *Invocation
 	Statement  string
 	Args       []interface{}
-	Invocation *Invocation
-	Tx         *sql.Tx
 }
 
 // Do runs a given query, yielding the raw results.
 func (q *Query) Do() (rows *sql.Rows, err error) {
-	defer func() { err = q.finish(recover(), err) }()
+	defer func() {
+		err = q.finish(recover(), err)
+	}()
 	rows, err = q.query()
 	return
 }
@@ -157,7 +155,9 @@ func (q *Query) rowsClose(rows *sql.Rows, err error) error {
 
 func (q *Query) query() (rows *sql.Rows, err error) {
 	var queryError error
-	rows, queryError = q.Invocation.DB().QueryContext(q.Context, q.Statement, q.Args...)
+	db := q.Invocation.DB
+	ctx := q.Invocation.Context
+	rows, queryError = db.QueryContext(ctx, q.Statement, q.Args...)
 	if queryError != nil && !ex.Is(queryError, sql.ErrNoRows) {
 		err = Error(queryError)
 	}
