@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	// DBNilError is a common error
-	DBNilError = "connection is nil"
+	// ConnectionNilError is a common error
+	ConnectionNilError = "connection is nil"
 )
 
 const (
@@ -63,9 +63,8 @@ func Open(conn *Connection, err error) (*Connection, error) {
 
 // Connection is the basic wrapper for connection parameters and saves a reference to the created sql.Connection.
 type Connection struct {
-	Connection *sql.DB
-	BufferPool *bufferutil.Pool
-
+	Connection           *sql.DB
+	BufferPool           *bufferutil.Pool
 	Config               Config
 	Log                  logger.Log
 	Tracer               Tracer
