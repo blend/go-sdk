@@ -28,6 +28,7 @@ func AddListeners(log logger.Listenable, collector stats.Collector) {
 			route, method,
 		}
 		collector.Increment(MetricNameHTTPRequest, tags...)
+		collector.Gauge(MetricNameHTTPRequestSize, float64(wre.Request.ContentLength), tags...)
 	}))
 
 	log.Listen(webutil.HTTPResponse, stats.ListenerNameStats, webutil.NewHTTPResponseEventListener(func(_ context.Context, wre webutil.HTTPResponseEvent) {
@@ -45,6 +46,7 @@ func AddListeners(log logger.Listenable, collector stats.Collector) {
 		}
 
 		collector.Increment(MetricNameHTTPResponse, tags...)
+		collector.Gauge(MetricNameHTTPResponseSize, float64(wre.ContentLength), tags...)
 		collector.TimeInMilliseconds(MetricNameHTTPResponseElapsed, wre.Elapsed, tags...)
 	}))
 }
