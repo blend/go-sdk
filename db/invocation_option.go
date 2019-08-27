@@ -50,3 +50,10 @@ func OptTx(tx *sql.Tx) InvocationOption {
 		}
 	}
 }
+
+// OptDB is an invocation option to set the underlying db reference.
+func OptDB(db DB) InvocationOption {
+	return func(i *Invocation) {
+		i.DB = db
+	}
+}
