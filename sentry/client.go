@@ -49,7 +49,7 @@ type Client struct {
 
 // Notify sends a notification.
 func (c Client) Notify(ctx context.Context, ee logger.ErrorEvent) {
-	c.Client.CaptureEvent(errEvent(ctx, ee), nil, nil)
+	c.Client.CaptureEvent(errEvent(ctx, ee), nil, raven.NewScope())
 	c.Client.Flush(time.Second)
 }
 
