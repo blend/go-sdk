@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/cron"
-	"github.com/blend/go-sdk/diagnostics"
 	"github.com/blend/go-sdk/email"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/slack"
@@ -41,7 +40,6 @@ type Job struct {
 	statsClient stats.Collector
 	slackClient slack.Sender
 	emailClient email.Sender
-	errorClient diagnostics.Notifier
 }
 
 // Name returns the job name.
@@ -126,12 +124,6 @@ func (job *Job) WithEmailClient(client email.Sender) *Job {
 	return job
 }
 
-// WithErrorClient sets the job error client.
-func (job *Job) WithErrorClient(client diagnostics.Notifier) *Job {
-	job.errorClient = client
-	return job
-}
-
 // OnStart is a lifecycle event handler.
 func (job Job) OnStart(ctx context.Context) {
 	if job.config.NotifyOnStartOrDefault() {
@@ -207,11 +199,6 @@ func (job Job) notify(ctx context.Context, flag string) {
 				logger.MaybeError(job.log, err)
 			}
 			logger.MaybeError(job.log, job.emailClient.Send(context.Background(), message))
-		}
-	}
-	if job.errorClient != nil {
-		if ji := cron.GetJobInvocation(ctx); ji != nil && ji.Err != nil {
-			job.errorClient.Notify(ji.Err)
 		}
 	}
 }
