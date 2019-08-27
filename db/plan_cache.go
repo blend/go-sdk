@@ -60,7 +60,7 @@ func (pc *PlanCache) PrepareContext(ctx context.Context, key, statement string) 
 
 	stmt, err := pc.Connection.PrepareContext(ctx, statement)
 	if err != nil {
-		return nil, err
+		return nil, ex.New(err)
 	}
 
 	pc.Cache.Store(key, stmt)
