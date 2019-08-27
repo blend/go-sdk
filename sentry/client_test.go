@@ -12,6 +12,29 @@ import (
 	"github.com/blend/go-sdk/webutil"
 )
 
+func TestNew(t *testing.T) {
+	assert := assert.New(t)
+
+	c, err := New(Config{
+		DSN: "https://example.org",
+	})
+	assert.NotNil(err)
+	assert.Nil(c)
+
+	c, err = New(Config{
+		DSN:         "https://foo@example.org/1",
+		Environment: "test",
+		ServerName:  "go-sdk-server",
+		Release:     "v1.0.0",
+		Dist:        "deadbeef",
+	})
+	assert.Nil(err)
+	assert.Equal("test", c.Client.Options().Environment)
+	assert.Equal("go-sdk-server", c.Client.Options().ServerName)
+	assert.Equal("v1.0.0", c.Client.Options().Release)
+	assert.Equal("deadbeef", c.Client.Options().Dist)
+}
+
 func TestErrEvent(t *testing.T) {
 	assert := assert.New(t)
 
