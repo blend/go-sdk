@@ -17,7 +17,7 @@ func TestErrEvent(t *testing.T) {
 
 	event := errEvent(context.Background(), logger.ErrorEvent{
 		Flag: logger.Fatal,
-		Err:  ex.New("this ia a test", ex.OptMessage("a message")),
+		Err:  ex.New("this is a test", ex.OptMessage("a message")),
 		State: &http.Request{
 			Method: "POST",
 			Host:   "example.org",
