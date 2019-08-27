@@ -17,7 +17,7 @@ func TestErrEvent(t *testing.T) {
 
 	event := errEvent(context.Background(), logger.ErrorEvent{
 		Flag: logger.Fatal,
-		Err:  ex.New("this ia a test"),
+		Err:  ex.New("this ia a test", ex.OptMessage("a message")),
 		State: &http.Request{
 			Method: "POST",
 			Host:   "example.org",
@@ -27,6 +27,12 @@ func TestErrEvent(t *testing.T) {
 	})
 
 	assert.NotNil(event)
+	assert.NotZero(event.Timestamp)
+	assert.Equal(logger.Fatal, event.Level)
+	assert.Equal("go", event.Platform)
+	assert.Equal(SDK, event.Sdk.Name)
+	assert.Equal("this is a test", event.Message)
+	assert.NotEmpty(event.Exception)
 }
 
 func TestErrRequest(t *testing.T) {
