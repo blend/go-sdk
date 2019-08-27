@@ -8,13 +8,8 @@ import (
 	"sync"
 
 	"github.com/airbrake/gobrake"
-	"github.com/blend/go-sdk/diagnostics"
 	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/ex"
-)
-
-var (
-	_ diagnostics.Notifier = (*Notifier)(nil)
 )
 
 var (
