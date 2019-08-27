@@ -1,15 +1,11 @@
 package stats
 
 import (
-	"github.com/blend/go-sdk/db"
 	"github.com/blend/go-sdk/logger"
 )
 
 // MetricNames are names we use when sending data to the collectors.
 const (
-	MetricNameDBQuery        string = string(db.QueryFlag)
-	MetricNameDBQueryElapsed string = MetricNameDBQuery + ".elapsed"
-
 	MetricNameError string = string(logger.Error)
 )
 
@@ -20,10 +16,6 @@ const (
 	TagEnv       string = "env"
 	TagHostname  string = "hostname"
 	TagContainer string = "container"
-
-	TagQuery    string = "query"
-	TagEngine   string = "engine"
-	TagDatabase string = "database"
 
 	TagSeverity string = "severity"
 	TagError    string = "error"
