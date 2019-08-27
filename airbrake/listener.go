@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	// ListenerAirbrake is the airbrake listener name.
-	ListenerAirbrake = "airbrake"
+	// ListenerName is the airbrake listener name.
+	ListenerName = "airbrake"
 )
 
 // AddListeners adds airbrake listeners.
@@ -28,6 +28,6 @@ func AddListeners(log logger.Listenable, cfg Config) {
 		}
 		client.Notify(ee.Err)
 	})
-	log.Listen(logger.Error, ListenerAirbrake, listener)
-	log.Listen(logger.Fatal, ListenerAirbrake, listener)
+	log.Listen(logger.Error, ListenerName, listener)
+	log.Listen(logger.Fatal, ListenerName, listener)
 }
