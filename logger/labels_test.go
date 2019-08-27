@@ -9,7 +9,8 @@ import (
 func TestCombineLabels(t *testing.T) {
 	assert := assert.New(t)
 
-	combined := CombineLabels(Labels{"foo": "bar"}, Labels{"moo": "loo"})
+	assert.Empty(CombineLabels(nil, nil, nil))
+	combined := CombineLabels(Labels{"foo": "bar"}, nil, Labels{"moo": "loo"})
 	assert.Equal("bar", combined["foo"])
 	assert.Equal("loo", combined["moo"])
 }
