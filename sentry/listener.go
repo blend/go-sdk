@@ -2,6 +2,7 @@ package sentry
 
 import (
 	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/webutil"
 )
 
 const (
@@ -13,6 +14,9 @@ const (
 func AddListeners(log logger.Listenable, cfg Config) {
 	if log == nil || cfg.IsZero() {
 		return
+	}
+	if typed, ok := log.(logger.InfofReceiver); ok {
+		typed.Infof("using sentry host: %s", webutil.MustParseURL(cfg.DSN).Hostname())
 	}
 	client := MustNew(cfg)
 	listener := logger.NewErrorEventListener(client.Notify)
