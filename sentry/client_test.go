@@ -56,6 +56,8 @@ func TestErrEvent(t *testing.T) {
 	assert.Equal(SDK, event.Sdk.Name)
 	assert.Equal("this is a test", event.Message)
 	assert.NotEmpty(event.Exception)
+	assert.NotNil(event.Exception[0].Stacktrace)
+	assert.NotEmpty(event.Exception[0].Stacktrace.Frames)
 }
 
 func TestErrRequest(t *testing.T) {
