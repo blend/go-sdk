@@ -9,82 +9,60 @@ import (
 )
 
 // NewPlanCache returns a new `PlanCache`.
-func NewPlanCache() *PlanCache {
+func NewPlanCache(conn *sql.DB) *PlanCache {
 	return &PlanCache{
-		enabled: true,
-		cache:   sync.Map{},
+		Connection: conn,
+		Cache:      sync.Map{},
 	}
 }
 
 // PlanCache is a cache of prepared statements.
 type PlanCache struct {
-	conn    *sql.DB
-	enabled bool
-	cache   sync.Map
-}
-
-// WithConnection sets the statement cache connection.
-func (pc *PlanCache) WithConnection(conn *sql.DB) *PlanCache {
-	pc.conn = conn
-	return pc
-}
-
-// Connection returns the underlying connection.
-func (pc *PlanCache) Connection() *sql.DB {
-	return pc.conn
-}
-
-// WithEnabled sets if the cache is enabled.
-func (pc *PlanCache) WithEnabled(enabled bool) *PlanCache {
-	pc.enabled = enabled
-	return pc
-}
-
-// Enabled returns if the statement cache is enabled.
-func (pc *PlanCache) Enabled() bool {
-	return pc.enabled
+	Connection *sql.DB
+	Cache      sync.Map
 }
 
 // Close implements io.Closer.
+// It ranges over the cached statements and closes them.
 func (pc *PlanCache) Close() (err error) {
-	pc.cache.Range(func(k, v interface{}) bool {
+	pc.Cache.Range(func(k, v interface{}) bool {
 		err = v.(*sql.Stmt).Close()
 		return err == nil
 	})
 	return
 }
 
-// HasStatement returns if the cache contains a statement.
-func (pc *PlanCache) HasStatement(planCacheKey string) bool {
-	_, hasStmt := pc.cache.Load(planCacheKey)
+// Has returns if the cache contains a statement.
+func (pc *PlanCache) Has(key string) bool {
+	_, hasStmt := pc.Cache.Load(key)
 	return hasStmt
 }
 
-// InvalidateStatement removes a statement from the cache.
-func (pc *PlanCache) InvalidateStatement(planCacheKey string) (err error) {
-	stmt, ok := pc.cache.Load(planCacheKey)
+// Invalidate removes a statement from the cache.
+func (pc *PlanCache) Invalidate(key string) (err error) {
+	stmt, ok := pc.Cache.Load(key)
 	if !ok {
 		return
 	}
-	pc.cache.Delete(planCacheKey)
+	pc.Cache.Delete(key)
 	return stmt.(*sql.Stmt).Close()
 }
 
 // PrepareContext returns a cached expression for a statement, or creates and caches a new one.
-func (pc *PlanCache) PrepareContext(context context.Context, planCacheKey, statement string) (*sql.Stmt, error) {
-	if len(planCacheKey) == 0 {
+func (pc *PlanCache) PrepareContext(ctx context.Context, key, statement string) (*sql.Stmt, error) {
+	if key == "" {
 		return nil, ex.New(ErrPlanCacheKeyUnset)
 	}
 
-	if stmt, hasStmt := pc.cache.Load(planCacheKey); hasStmt {
+	if stmt, hasStmt := pc.Cache.Load(key); hasStmt {
 		return stmt.(*sql.Stmt), nil
 	}
 
-	stmt, err := pc.conn.PrepareContext(context, statement)
+	stmt, err := pc.Connection.PrepareContext(ctx, statement)
 	if err != nil {
 		return nil, err
 	}
 
-	pc.cache.Store(planCacheKey, stmt)
+	pc.Cache.Store(key, stmt)
 	return stmt, nil
 }
