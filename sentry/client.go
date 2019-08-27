@@ -92,7 +92,11 @@ func errRequest(ee logger.ErrorEvent) (requestMeta raven.Request) {
 	if ee.State == nil {
 		return
 	}
-	requestMeta = requestMeta.FromHTTPRequest(ee.State.(*http.Request))
+	typed, ok := ee.State.(*http.Request)
+	if !ok {
+		return
+	}
+	requestMeta = requestMeta.FromHTTPRequest(typed)
 	return
 }
 
