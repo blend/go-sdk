@@ -105,6 +105,20 @@ func TestFinishQuery(t *testing.T) {
 	assert.False(mockSpan.FinishTime.IsZero())
 }
 
+func TestFinishPrepare(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	dbTracer := Tracer(mockTracer)
+
+	dbtf := dbTracer.Prepare(context.Background(), defaultDB().Config, "select 'ok1'")
+	dbtf.FinishPrepare(nil, nil)
+
+	span := dbtf.(dbTraceFinisher).span
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Nil(mockSpan.Tags()[tracing.TagKeyError])
+	assert.False(mockSpan.FinishTime.IsZero())
+}
+
 func TestFinishQueryError(t *testing.T) {
 	assert := assert.New(t)
 	mockTracer := mocktracer.New()
@@ -113,6 +127,21 @@ func TestFinishQueryError(t *testing.T) {
 	ctx := context.Background()
 	dbtf := dbTracer.Query(ctx, defaultDB().Config, "ok", "select 'ok1'")
 	dbtf.FinishQuery(ctx, nil, fmt.Errorf("error"))
+
+	span := dbtf.(dbTraceFinisher).span
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal("error", mockSpan.Tags()[tracing.TagKeyError])
+	assert.False(mockSpan.FinishTime.IsZero())
+}
+
+func TestFinishPrepareError(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	dbTracer := Tracer(mockTracer)
+
+	ctx := context.Background()
+	dbtf := dbTracer.Prepare(ctx, defaultDB().Config, "select 'ok1'")
+	dbtf.FinishPrepare(ctx, fmt.Errorf("error"))
 
 	span := dbtf.(dbTraceFinisher).span
 	mockSpan := span.(*mocktracer.MockSpan)
