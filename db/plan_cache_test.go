@@ -22,4 +22,7 @@ func TestPlanCache(t *testing.T) {
 	stmt, err = sc.PrepareContext(context.Background(), query, query)
 	assert.NotNil(stmt)
 	assert.True(sc.Has(query))
+
+	sc.Invalidate(query)
+	assert.False(sc.Has(query))
 }

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"testing"
 
@@ -32,14 +33,28 @@ func TestConnectionSanityCheck(t *testing.T) {
 	assert.Nil(err)
 }
 
-func TestPrepare(t *testing.T) {
+func TestPrepareContext(t *testing.T) {
 	a := assert.New(t)
-	tx, err := defaultDB().Begin()
-	a.Nil(err)
-	defer tx.Rollback()
 
-	err = createTable(tx)
+	conn, err := Open(New(OptConfigFromEnv()))
 	a.Nil(err)
+
+	var calledPrepare, calledFinish bool
+	conn.Tracer = mockTracer{
+		PrepareHandler: func(_ context.Context, _ Config, _ string) {
+			calledPrepare = true
+		},
+		FinishPrepareHandler: func(_ context.Context, _ error) {
+			calledFinish = true
+		},
+	}
+
+	stmt, err := conn.PrepareContext(context.TODO(), "select 'ok!'", nil)
+	a.Nil(err)
+	defer stmt.Close()
+	a.NotNil(stmt)
+	a.True(calledPrepare)
+	a.True(calledFinish)
 }
 
 func TestQuery(t *testing.T) {

@@ -18,8 +18,7 @@ type Invocation struct {
 	DB DB
 
 	/* invocation state */
-	Label     string
-	StartTime time.Time
+	Label string
 
 	/* context */
 	Context context.Context
@@ -33,13 +32,14 @@ type Invocation struct {
 	/* logging hooks */
 	StatementInterceptor StatementInterceptor
 	Tracer               Tracer
+	StartTime            time.Time
 	TraceFinisher        TraceFinisher
 }
 
 // Exec executes a sql statement with a given set of arguments and returns the rows affected.
 func (i *Invocation) Exec(statement string, args ...interface{}) (res sql.Result, err error) {
 	statement = i.Start(statement)
-	defer func() { err = i.Finish(statement, recover(), err) }()
+	defer func() { err = i.Finish(statement, recover(), res, err) }()
 
 	res, err = i.DB.ExecContext(i.Context, statement, args...)
 	if err != nil {
@@ -76,7 +76,6 @@ func (i *Invocation) Get(object DatabaseMapped, ids ...interface{}) (found bool,
 // All returns all rows of an object mapped table wrapped in a transaction.
 func (i *Invocation) All(collection interface{}) (err error) {
 	var queryBody string
-	defer func() { err = i.Finish(queryBody, recover(), err) }()
 	i.Label, queryBody = i.generateGetAll(collection)
 	return i.Query(queryBody).OutMany(collection)
 }
@@ -85,7 +84,7 @@ func (i *Invocation) All(collection interface{}) (err error) {
 func (i *Invocation) Create(object DatabaseMapped) (err error) {
 	var queryBody string
 	var writeCols, autos *ColumnCollection
-	defer func() { err = i.Finish(queryBody, recover(), err) }()
+	defer func() { err = i.Finish(queryBody, recover(), nil, err) }()
 
 	i.Label, queryBody, writeCols, autos = i.generateCreate(object)
 
@@ -115,7 +114,7 @@ func (i *Invocation) Create(object DatabaseMapped) (err error) {
 func (i *Invocation) CreateIfNotExists(object DatabaseMapped) (err error) {
 	var queryBody string
 	var autos, writeCols *ColumnCollection
-	defer func() { err = i.Finish(queryBody, recover(), err) }()
+	defer func() { err = i.Finish(queryBody, recover(), nil, err) }()
 
 	i.Label, queryBody, autos, writeCols = i.generateCreateIfNotExists(object)
 
@@ -145,7 +144,7 @@ func (i *Invocation) CreateMany(objects interface{}) (err error) {
 	var queryBody string
 	var writeCols *ColumnCollection
 	var sliceValue reflect.Value
-	defer func() { err = i.Finish(queryBody, recover(), err) }()
+	defer func() { err = i.Finish(queryBody, recover(), nil, err) }()
 
 	queryBody, writeCols, sliceValue = i.generateCreateMany(objects)
 	if sliceValue.Len() == 0 {
@@ -174,12 +173,13 @@ func (i *Invocation) CreateMany(objects interface{}) (err error) {
 func (i *Invocation) Update(object DatabaseMapped) (updated bool, err error) {
 	var queryBody string
 	var pks, writeCols *ColumnCollection
-	defer func() { err = i.Finish(queryBody, recover(), err) }()
+	var res sql.Result
+	defer func() { err = i.Finish(queryBody, recover(), res, err) }()
 
 	i.Label, queryBody, pks, writeCols = i.generateUpdate(object)
 
 	queryBody = i.Start(queryBody)
-	res, err := i.DB.ExecContext(
+	res, err = i.DB.ExecContext(
 		i.Context,
 		queryBody,
 		append(writeCols.ColumnValues(object), pks.ColumnValues(object)...)...,
@@ -205,7 +205,7 @@ func (i *Invocation) Update(object DatabaseMapped) (updated bool, err error) {
 func (i *Invocation) Upsert(object DatabaseMapped) (err error) {
 	var queryBody string
 	var autos, writeCols *ColumnCollection
-	defer func() { err = i.Finish(queryBody, recover(), err) }()
+	defer func() { err = i.Finish(queryBody, recover(), nil, err) }()
 
 	i.Label, queryBody, autos, writeCols = i.generateUpsert(object)
 
@@ -234,7 +234,7 @@ func (i *Invocation) Upsert(object DatabaseMapped) (err error) {
 func (i *Invocation) Exists(object DatabaseMapped) (exists bool, err error) {
 	var queryBody string
 	var pks *ColumnCollection
-	defer func() { err = i.Finish(queryBody, recover(), err) }()
+	defer func() { err = i.Finish(queryBody, recover(), nil, err) }()
 
 	if i.Label, queryBody, pks, err = i.generateExists(object); err != nil {
 		err = Error(err)
@@ -257,14 +257,15 @@ func (i *Invocation) Exists(object DatabaseMapped) (exists bool, err error) {
 func (i *Invocation) Delete(object DatabaseMapped) (deleted bool, err error) {
 	var queryBody string
 	var pks *ColumnCollection
-	defer func() { err = i.Finish(queryBody, recover(), err) }()
+	var res sql.Result
+	defer func() { err = i.Finish(queryBody, recover(), res, err) }()
 
 	if i.Label, queryBody, pks, err = i.generateDelete(object); err != nil {
 		return
 	}
 
 	queryBody = i.Start(queryBody)
-	res, err := i.DB.ExecContext(i.Context, queryBody, pks.ColumnValues(object)...)
+	res, err = i.DB.ExecContext(i.Context, queryBody, pks.ColumnValues(object)...)
 	if err != nil {
 		err = Error(err)
 		return
@@ -674,17 +675,18 @@ func (i *Invocation) SetAutos(object DatabaseMapped, autos *ColumnCollection, au
 
 // Start runs on start steps.
 func (i *Invocation) Start(statement string) string {
+	i.StartTime = time.Now()
 	if i.StatementInterceptor != nil {
 		statement = i.StatementInterceptor(i.Label, statement)
 	}
 	if i.Tracer != nil && !IsSkipQueryLogging(i.Context) {
-		i.TraceFinisher = i.Tracer.Query(i.Context, i.Config, i, statement)
+		i.TraceFinisher = i.Tracer.Query(i.Context, i.Config, i.Label, statement)
 	}
 	return statement
 }
 
 // Finish runs on complete steps.
-func (i *Invocation) Finish(statement string, r interface{}, err error) error {
+func (i *Invocation) Finish(statement string, r interface{}, res sql.Result, err error) error {
 	if i.Cancel != nil {
 		i.Cancel()
 	}
@@ -701,7 +703,7 @@ func (i *Invocation) Finish(statement string, r interface{}, err error) error {
 		i.Log.Trigger(i.Context, qe)
 	}
 	if i.TraceFinisher != nil && !IsSkipQueryLogging(i.Context) {
-		i.TraceFinisher.Finish(err)
+		i.TraceFinisher.FinishQuery(i.Context, res, err)
 	}
 	if err != nil {
 		err = Error(err)

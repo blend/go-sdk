@@ -165,7 +165,7 @@ func (q *Query) query() (rows *sql.Rows, err error) {
 }
 
 func (q *Query) finish(r interface{}, err error) error {
-	return q.Invocation.Finish(q.Statement, r, err)
+	return q.Invocation.Finish(q.Statement, r, nil, err)
 }
 
 // Out reads a given rows set out into an object reference.
