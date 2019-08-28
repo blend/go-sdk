@@ -36,15 +36,6 @@ type Invocation struct {
 	TraceFinisher        TraceFinisher
 }
 
-// Prepare returns a cached or newly prepared statment plan for a given sql statement.
-func (i *Invocation) Prepare(statement string) (stmt *sql.Stmt, err error) {
-	if i.StatementInterceptor != nil {
-		statement = i.StatementInterceptor(i.Label, statement)
-	}
-	stmt, err = i.DB.PrepareContext(i.Context, statement)
-	return
-}
-
 // Exec executes a sql statement with a given set of arguments and returns the rows affected.
 func (i *Invocation) Exec(statement string, args ...interface{}) (res sql.Result, err error) {
 	statement = i.Start(statement)
