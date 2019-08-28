@@ -25,4 +25,5 @@ func TestPlanCache(t *testing.T) {
 
 	sc.Invalidate(query)
 	assert.False(sc.Has(query))
+	assert.Nil(sc.Close())
 }

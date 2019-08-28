@@ -71,7 +71,6 @@ func (dbtf dbTraceFinisher) FinishQuery(ctx context.Context, res sql.Result, err
 	if err == driver.ErrSkip {
 		return
 	}
-
 	if res != nil {
 		affected, _ := res.RowsAffected()
 		dbtf.span.SetTag(tracing.TagKeyDBRowsAffected, affected)

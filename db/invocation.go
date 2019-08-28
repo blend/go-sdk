@@ -84,13 +84,14 @@ func (i *Invocation) All(collection interface{}) (err error) {
 func (i *Invocation) Create(object DatabaseMapped) (err error) {
 	var queryBody string
 	var writeCols, autos *ColumnCollection
-	defer func() { err = i.Finish(queryBody, recover(), nil, err) }()
+	var res sql.Result
+	defer func() { err = i.Finish(queryBody, recover(), res, err) }()
 
 	i.Label, queryBody, writeCols, autos = i.generateCreate(object)
 
 	queryBody = i.Start(queryBody)
 	if autos.Len() == 0 {
-		if _, err = i.DB.ExecContext(i.Context, queryBody, writeCols.ColumnValues(object)...); err != nil {
+		if res, err = i.DB.ExecContext(i.Context, queryBody, writeCols.ColumnValues(object)...); err != nil {
 			err = Error(err)
 			return
 		}
@@ -114,13 +115,14 @@ func (i *Invocation) Create(object DatabaseMapped) (err error) {
 func (i *Invocation) CreateIfNotExists(object DatabaseMapped) (err error) {
 	var queryBody string
 	var autos, writeCols *ColumnCollection
-	defer func() { err = i.Finish(queryBody, recover(), nil, err) }()
+	var res sql.Result
+	defer func() { err = i.Finish(queryBody, recover(), res, err) }()
 
 	i.Label, queryBody, autos, writeCols = i.generateCreateIfNotExists(object)
 
 	queryBody = i.Start(queryBody)
 	if autos.Len() == 0 {
-		if _, err = i.DB.ExecContext(i.Context, queryBody, writeCols.ColumnValues(object)...); err != nil {
+		if res, err = i.DB.ExecContext(i.Context, queryBody, writeCols.ColumnValues(object)...); err != nil {
 			err = Error(err)
 		}
 		return
@@ -144,7 +146,8 @@ func (i *Invocation) CreateMany(objects interface{}) (err error) {
 	var queryBody string
 	var writeCols *ColumnCollection
 	var sliceValue reflect.Value
-	defer func() { err = i.Finish(queryBody, recover(), nil, err) }()
+	var res sql.Result
+	defer func() { err = i.Finish(queryBody, recover(), res, err) }()
 
 	queryBody, writeCols, sliceValue = i.generateCreateMany(objects)
 	if sliceValue.Len() == 0 {
@@ -158,7 +161,7 @@ func (i *Invocation) CreateMany(objects interface{}) (err error) {
 		colValues = append(colValues, writeCols.ColumnValues(sliceValue.Index(row).Interface())...)
 	}
 
-	_, err = i.DB.ExecContext(i.Context, queryBody, colValues...)
+	res, err = i.DB.ExecContext(i.Context, queryBody, colValues...)
 	if err != nil {
 		err = Error(err)
 		return
