@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"bytes"
-	"github.com/blend/go-sdk/ex"
+	ex "github.com/blend/go-sdk/exception"
 )
 
 const (
