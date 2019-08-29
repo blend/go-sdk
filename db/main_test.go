@@ -122,7 +122,7 @@ func createUpserObjectTable(tx *sql.Tx) error {
 
 type benchObj struct {
 	ID        int       `db:"id,pk,auto"`
-	UUID      string    `db:"uuid,nullable,uk"`
+	UUID      string    `db:"uuid"`
 	Name      string    `db:"name"`
 	Timestamp time.Time `db:"timestamp_utc"`
 	Amount    float32   `db:"amount"`
@@ -196,7 +196,7 @@ func seedObjects(count int, tx *sql.Tx) error {
 func readManual(tx *sql.Tx) ([]benchObj, error) {
 	var objs []benchObj
 	readSQL := `select id,uuid,name,timestamp_utc,amount,pending,category from bench_object`
-	readStmt, err := defaultDB().PrepareContext(context.Background(), "", readSQL, tx)
+	readStmt, err := defaultDB().PrepareContext(context.Background(), readSQL, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -251,4 +251,48 @@ func openDefaultDB(conn *Connection) error {
 	}
 	setDefaultDB(conn)
 	return nil
+}
+
+type mockTracer struct {
+	PrepareHandler       func(context.Context, Config, string)
+	QueryHandler         func(context.Context, Config, string, string) TraceFinisher
+	FinishPrepareHandler func(context.Context, error)
+	FinishQueryHandler   func(context.Context, sql.Result, error)
+}
+
+func (mt mockTracer) Prepare(ctx context.Context, cfg Config, statement string) TraceFinisher {
+	if mt.PrepareHandler != nil {
+		mt.PrepareHandler(ctx, cfg, statement)
+	}
+	return mockTraceFinisher{
+		FinishPrepareHandler: mt.FinishPrepareHandler,
+		FinishQueryHandler:   mt.FinishQueryHandler,
+	}
+}
+
+func (mt mockTracer) Query(ctx context.Context, cfg Config, label, statement string) TraceFinisher {
+	if mt.PrepareHandler != nil {
+		mt.PrepareHandler(ctx, cfg, statement)
+	}
+	return mockTraceFinisher{
+		FinishPrepareHandler: mt.FinishPrepareHandler,
+		FinishQueryHandler:   mt.FinishQueryHandler,
+	}
+}
+
+type mockTraceFinisher struct {
+	FinishPrepareHandler func(context.Context, error)
+	FinishQueryHandler   func(context.Context, sql.Result, error)
+}
+
+func (mtf mockTraceFinisher) FinishPrepare(ctx context.Context, err error) {
+	if mtf.FinishPrepareHandler != nil {
+		mtf.FinishPrepareHandler(ctx, err)
+	}
+}
+
+func (mtf mockTraceFinisher) FinishQuery(ctx context.Context, res sql.Result, err error) {
+	if mtf.FinishQueryHandler != nil {
+		mtf.FinishQueryHandler(ctx, res, err)
+	}
 }

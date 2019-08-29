@@ -1,13 +1,16 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+	"io/ioutil"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/uuid"
 )
 
@@ -524,4 +527,23 @@ func TestConnectionCreateIfNotExists(t *testing.T) {
 	_, err = defaultDB().Invoke(OptTx(tx)).Get(&verify, obj.UUID)
 	assert.Nil(err)
 	assert.Equal(oldCategory, verify.Category)
+}
+
+func TestInvocationMetrics(t *testing.T) {
+	assert := assert.New(t)
+
+	log := logger.All(logger.OptOutput(ioutil.Discard))
+	defer log.Close()
+
+	done := make(chan struct{})
+	var elapsed time.Duration
+	log.Listen(QueryFlag, "test", NewQueryEventListener(func(ctx context.Context, qe QueryEvent) {
+		elapsed = qe.Elapsed
+		close(done)
+	}))
+
+	_, err := defaultDB().Invoke(OptInvocationLog(log)).Query("select 'ok!'").Any()
+	assert.Nil(err)
+	<-done
+	assert.NotZero(elapsed)
 }

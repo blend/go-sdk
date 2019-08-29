@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"github.com/blend/go-sdk/logger"
 )
 
 // InvocationOption is an option for invocations.
@@ -19,6 +21,11 @@ func OptLabel(label string) InvocationOption {
 // OptInvocationStatementInterceptor sets the invocation statement interceptor.
 func OptInvocationStatementInterceptor(interceptor StatementInterceptor) InvocationOption {
 	return func(i *Invocation) { i.StatementInterceptor = interceptor }
+}
+
+// OptInvocationLog sets the invocation logger.
+func OptInvocationLog(log logger.Log) InvocationOption {
+	return func(i *Invocation) { i.Log = log }
 }
 
 // OptContext sets a context on an invocation.
@@ -51,7 +58,7 @@ func OptTx(tx *sql.Tx) InvocationOption {
 	}
 }
 
-// OptDB is an invocation option to set the underlying db reference.
+// OptDB is an invocation option that sets the underlying invocation db.
 func OptDB(db DB) InvocationOption {
 	return func(i *Invocation) {
 		i.DB = db

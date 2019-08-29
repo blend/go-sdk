@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"time"
 
 	"github.com/blend/go-sdk/bufferutil"
 	"github.com/blend/go-sdk/ex"
@@ -126,12 +125,14 @@ func (dbc *Connection) BeginContext(context context.Context, opts ...*sql.TxOpti
 	return tx, Error(err)
 }
 
-// PrepareContext prepares a statement potentially returning a cached version of the statement.
-func (dbc *Connection) PrepareContext(context context.Context, cachedPlanKey, statement string, tx *sql.Tx) (stmt *sql.Stmt, err error) {
+// PrepareContext prepares a statement within a given context.
+// If a tx is provided, the tx is the target for the prepare.
+// This will trigger tracing on prepare.
+func (dbc *Connection) PrepareContext(context context.Context, statement string, tx *sql.Tx) (stmt *sql.Stmt, err error) {
 	if dbc.Tracer != nil {
 		tf := dbc.Tracer.Prepare(context, dbc.Config, statement)
 		if tf != nil {
-			defer func() { tf.Finish(err) }()
+			defer func() { tf.FinishPrepare(context, err) }()
 		}
 	}
 	if tx != nil {
@@ -152,7 +153,6 @@ func (dbc *Connection) Invoke(options ...InvocationOption) *Invocation {
 		DB:                   dbc.Connection,
 		Config:               dbc.Config,
 		BufferPool:           dbc.BufferPool,
-		StartTime:            time.Now().UTC(),
 		Context:              context.Background(),
 		Log:                  dbc.Log,
 		Tracer:               dbc.Tracer,

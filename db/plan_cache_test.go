@@ -7,7 +7,7 @@ import (
 	assert "github.com/blend/go-sdk/assert"
 )
 
-func TestStatementCachePrepare(t *testing.T) {
+func TestPlanCache(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := NewPlanCache(defaultDB().Connection)
@@ -22,4 +22,8 @@ func TestStatementCachePrepare(t *testing.T) {
 	stmt, err = sc.PrepareContext(context.Background(), query, query)
 	assert.NotNil(stmt)
 	assert.True(sc.Has(query))
+
+	sc.Invalidate(query)
+	assert.False(sc.Has(query))
+	assert.Nil(sc.Close())
 }

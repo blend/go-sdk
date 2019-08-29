@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/blend/go-sdk/db"
-
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/stats/tracing"
 	opentracing "github.com/opentracing/opentracing-go"
@@ -58,7 +56,7 @@ func TestQuery(t *testing.T) {
 	invocation := defaultDB().Invoke()
 	invocation.Label = "test_table_exists"
 
-	dbtf := dbTracer.Query(context.Background(), defaultDB().Config, invocation, statement)
+	dbtf := dbTracer.Query(context.Background(), defaultDB().Config, invocation.Label, statement)
 	span := dbtf.(dbTraceFinisher).span
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal(tracing.OperationSQLQuery, mockSpan.OperationName)
@@ -84,7 +82,7 @@ func TestQueryWithParentSpan(t *testing.T) {
 	invocation := defaultDB().Invoke()
 	invocation.Label = "test_table_exists"
 
-	dbtf := dbTracer.Query(ctx, defaultDB().Config, invocation, statement)
+	dbtf := dbTracer.Query(ctx, defaultDB().Config, invocation.Label, statement)
 	span := dbtf.(dbTraceFinisher).span
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal(tracing.OperationSQLQuery, mockSpan.OperationName)
@@ -93,13 +91,13 @@ func TestQueryWithParentSpan(t *testing.T) {
 	assert.Equal(mockSpan.ParentID, mockParentSpan.SpanContext.SpanID)
 }
 
-func TestFinish(t *testing.T) {
+func TestFinishQuery(t *testing.T) {
 	assert := assert.New(t)
 	mockTracer := mocktracer.New()
 	dbTracer := Tracer(mockTracer)
 
-	dbtf := dbTracer.Query(context.Background(), defaultDB().Config, &db.Invocation{}, "select 'ok1'")
-	dbtf.Finish(nil)
+	dbtf := dbTracer.Query(context.Background(), defaultDB().Config, "ok", "select 'ok1'")
+	dbtf.FinishQuery(nil, nil, nil)
 
 	span := dbtf.(dbTraceFinisher).span
 	mockSpan := span.(*mocktracer.MockSpan)
@@ -107,13 +105,28 @@ func TestFinish(t *testing.T) {
 	assert.False(mockSpan.FinishTime.IsZero())
 }
 
-func TestFinishError(t *testing.T) {
+func TestFinishPrepare(t *testing.T) {
 	assert := assert.New(t)
 	mockTracer := mocktracer.New()
 	dbTracer := Tracer(mockTracer)
 
-	dbtf := dbTracer.Query(context.Background(), defaultDB().Config, &db.Invocation{}, "select 'ok1'")
-	dbtf.Finish(fmt.Errorf("error"))
+	dbtf := dbTracer.Prepare(context.Background(), defaultDB().Config, "select 'ok1'")
+	dbtf.FinishPrepare(nil, nil)
+
+	span := dbtf.(dbTraceFinisher).span
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Nil(mockSpan.Tags()[tracing.TagKeyError])
+	assert.False(mockSpan.FinishTime.IsZero())
+}
+
+func TestFinishQueryError(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	dbTracer := Tracer(mockTracer)
+
+	ctx := context.Background()
+	dbtf := dbTracer.Query(ctx, defaultDB().Config, "ok", "select 'ok1'")
+	dbtf.FinishQuery(ctx, nil, fmt.Errorf("error"))
 
 	span := dbtf.(dbTraceFinisher).span
 	mockSpan := span.(*mocktracer.MockSpan)
@@ -121,23 +134,39 @@ func TestFinishError(t *testing.T) {
 	assert.False(mockSpan.FinishTime.IsZero())
 }
 
-func TestFinishErrorSkip(t *testing.T) {
+func TestFinishPrepareError(t *testing.T) {
 	assert := assert.New(t)
 	mockTracer := mocktracer.New()
 	dbTracer := Tracer(mockTracer)
 
-	dbtf := dbTracer.Query(context.Background(), defaultDB().Config, &db.Invocation{}, "select 'ok1'")
-	dbtf.Finish(driver.ErrSkip)
+	ctx := context.Background()
+	dbtf := dbTracer.Prepare(ctx, defaultDB().Config, "select 'ok1'")
+	dbtf.FinishPrepare(ctx, fmt.Errorf("error"))
+
+	span := dbtf.(dbTraceFinisher).span
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal("error", mockSpan.Tags()[tracing.TagKeyError])
+	assert.False(mockSpan.FinishTime.IsZero())
+}
+
+func TestFinishQueryErrorSkip(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	dbTracer := Tracer(mockTracer)
+
+	ctx := context.Background()
+	dbtf := dbTracer.Query(ctx, defaultDB().Config, "ok", "select 'ok1'")
+	dbtf.FinishQuery(ctx, nil, driver.ErrSkip)
 
 	span := dbtf.(dbTraceFinisher).span
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Nil(mockSpan.Tags()[tracing.TagKeyError])
 }
 
-func TestFinishNil(t *testing.T) {
+func TestFinishQueryNil(t *testing.T) {
 	assert := assert.New(t)
 
 	dbtf := dbTraceFinisher{}
-	dbtf.Finish(nil)
+	dbtf.FinishQuery(nil, nil, nil)
 	assert.Nil(dbtf.span)
 }

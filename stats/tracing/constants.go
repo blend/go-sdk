@@ -28,6 +28,8 @@ const (
 	TagKeyDBApplication = "db.application"
 	// TagKeyDBName is the database name.
 	TagKeyDBName = "db.name"
+	// TagKeyDBRowsAffected is the number of rows affected.
+	TagKeyDBRowsAffected = "db.rows_affected"
 	// TagKeyDBUser is the user on the database connection.
 	TagKeyDBUser = "db.user"
 	// TagKeyJobName is the job name.
