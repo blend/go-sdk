@@ -112,32 +112,20 @@ func (i *Invocation) Create(object DatabaseMapped) (err error) {
 }
 
 // CreateIfNotExists writes an object to the database if it does not already exist within a transaction.
+// This will _ignore_ auto columns, as they will always invalidate the assertion that there already exists
+// a row with a given primary key set.
 func (i *Invocation) CreateIfNotExists(object DatabaseMapped) (err error) {
 	var queryBody string
-	var autos, writeCols *ColumnCollection
+	var writeCols *ColumnCollection
 	var res sql.Result
 	defer func() { err = i.Finish(queryBody, recover(), res, err) }()
 
-	i.Label, queryBody, autos, writeCols = i.generateCreateIfNotExists(object)
+	i.Label, queryBody, writeCols = i.generateCreateIfNotExists(object)
 
 	queryBody = i.Start(queryBody)
-	if autos.Len() == 0 {
-		if res, err = i.DB.ExecContext(i.Context, queryBody, writeCols.ColumnValues(object)...); err != nil {
-			err = Error(err)
-		}
-		return
-	}
-
-	autoValues := i.AutoValues(autos)
-	if err = i.DB.QueryRowContext(i.Context, queryBody, writeCols.ColumnValues(object)...).Scan(autoValues...); err != nil {
+	if res, err = i.DB.ExecContext(i.Context, queryBody, writeCols.ColumnValues(object)...); err != nil {
 		err = Error(err)
-		return
 	}
-	if err = i.SetAutos(object, autos, autoValues); err != nil {
-		err = Error(err)
-		return
-	}
-
 	return
 }
 
@@ -391,11 +379,10 @@ func (i *Invocation) generateCreate(object DatabaseMapped) (statementLabel, quer
 	return
 }
 
-func (i *Invocation) generateCreateIfNotExists(object DatabaseMapped) (statementLabel, queryBody string, autos, writeCols *ColumnCollection) {
+func (i *Invocation) generateCreateIfNotExists(object DatabaseMapped) (statementLabel, queryBody string, writeCols *ColumnCollection) {
 	cols := CachedColumnCollectionFromInstance(object)
 
 	writeCols = cols.WriteColumns()
-	autos = cols.Autos()
 
 	pks := cols.PrimaryKeys()
 	tableName := TableName(object)
@@ -431,11 +418,6 @@ func (i *Invocation) generateCreateIfNotExists(object DatabaseMapped) (statement
 			}
 		}
 		queryBodyBuffer.WriteString(") DO NOTHING")
-	}
-
-	if autos.Len() > 0 {
-		queryBodyBuffer.WriteString(" RETURNING ")
-		queryBodyBuffer.WriteString(autos.ColumnNamesCSV())
 	}
 
 	queryBody = queryBodyBuffer.String()

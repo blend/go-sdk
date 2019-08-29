@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"io/ioutil"
 	"sync"
 	"testing"
 	"time"
@@ -532,7 +533,7 @@ func TestConnectionCreateIfNotExists(t *testing.T) {
 func TestInvocationMetrics(t *testing.T) {
 	assert := assert.New(t)
 
-	log := logger.All()
+	log := logger.All(logger.OptOutput(ioutil.Discard))
 	defer log.Close()
 
 	done := make(chan struct{})

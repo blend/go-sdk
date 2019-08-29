@@ -122,7 +122,7 @@ func createUpserObjectTable(tx *sql.Tx) error {
 
 type benchObj struct {
 	ID        int       `db:"id,pk,auto"`
-	UUID      string    `db:"uuid,nullable,uk"`
+	UUID      string    `db:"uuid"`
 	Name      string    `db:"name"`
 	Timestamp time.Time `db:"timestamp_utc"`
 	Amount    float32   `db:"amount"`
