@@ -13,14 +13,15 @@ import (
 
 // Config is the jobkit config.
 type Config struct {
-	MaxLogBytes int            `yaml:"maxLogBytes"`
-	Cron        cron.Config    `yaml:"cron"`
-	Logger      logger.Config  `yaml:"logger"`
-	Web         web.Config     `yaml:"web"`
-	AWS         aws.Config     `yaml:"aws"`
-	Email       email.Message  `yaml:"email"`
-	Datadog     datadog.Config `yaml:"datadog"`
-	Slack       slack.Config   `yaml:"slack"`
+	MaxLogBytes   int              `yaml:"maxLogBytes"`
+	Cron          cron.Config      `yaml:"cron"`
+	Logger        logger.Config    `yaml:"logger"`
+	Web           web.Config       `yaml:"web"`
+	AWS           aws.Config       `yaml:"aws"`
+	SMTP          email.SMTPSender `yaml:"smtp"`
+	EmailDefaults email.Message    `yaml:"emailDefaults"`
+	Datadog       datadog.Config   `yaml:"datadog"`
+	Slack         slack.Config     `yaml:"slack"`
 }
 
 // Resolve applies resolution steps to the config.
@@ -30,7 +31,7 @@ func (c *Config) Resolve() error {
 		c.Logger.Resolve(),
 		c.Web.Resolve(),
 		c.AWS.Resolve(),
-		c.Email.Resolve(),
+		c.EmailDefaults.Resolve(),
 		c.Datadog.Resolve(),
 		c.Slack.Resolve(),
 	)

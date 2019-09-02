@@ -165,7 +165,10 @@ func run(cmd *cobra.Command, args []string) error {
 	if !cfg.AWS.IsZero() {
 		emailClient = ses.New(aws.MustNewSession(cfg.AWS))
 		log.Infof("adding email notifications")
+	} else if !cfg.SMTP.IsZero() {
+		emailClient = cfg.SMTP
 	}
+
 	var slackClient slack.Sender
 	if !cfg.Slack.IsZero() {
 		slackClient = slack.New(cfg.Slack)
