@@ -175,35 +175,35 @@ func (job Job) stats(ctx context.Context, flag string) {
 	if job.StatsClient != nil {
 		job.StatsClient.Increment(string(flag), fmt.Sprintf("%s:%s", stats.TagJob, job.Name()))
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
-			logger.MaybeError(job.Log, job.StatsClient.TimeInMilliseconds(string(flag), ji.Elapsed, fmt.Sprintf("%s:%s", stats.TagJob, job.Name())))
+			Error(ctx, job.Log, job.StatsClient.TimeInMilliseconds(string(flag), ji.Elapsed, fmt.Sprintf("%s:%s", stats.TagJob, job.Name())))
 		}
 	} else {
-		logger.MaybeDebugf(job.Log, "job stats; client unset, skipping.")
+		Debugf(ctx, job.Log, "stats; client unset, skipping.")
 	}
 }
 
 func (job Job) notify(ctx context.Context, flag string) {
 	if job.SlackClient != nil {
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
-			logger.MaybeError(job.Log, job.SlackClient.Send(context.Background(), NewSlackMessage(ji)))
+			Error(ctx, job.Log, job.SlackClient.Send(context.Background(), NewSlackMessage(ji)))
 		}
 	} else {
-		logger.MaybeDebugf(job.Log, "slack notification; sender unset, skipping.")
+		Debugf(ctx, job.Log, "notify (slack); sender unset, skipping.")
 	}
 
 	if job.EmailClient != nil {
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
 			message, err := NewEmailMessage(ji)
 			if err != nil {
-				logger.MaybeError(job.Log, err)
+				Error(ctx, job.Log, err)
 			}
-			logger.MaybeError(job.Log, job.EmailClient.Send(context.Background(), message))
-			logger.MaybeDebugf(job.Log, "sent email to %s (%s)", stringutil.CSV(message.To), message.Subject)
+			Error(ctx, job.Log, job.EmailClient.Send(context.Background(), message))
+			Debugf(ctx, job.Log, "notify (email); sent email to %s (%s)", stringutil.CSV(message.To), message.Subject)
 		} else {
-			logger.MaybeDebugf(job.Log, "email notification; job invocation not found on context")
+			Debugf(ctx, job.Log, "notify (email); job invocation not found on context")
 		}
 	} else {
-		logger.MaybeDebugf(job.Log, "email notification; sender unset, skipping.")
+		Debugf(ctx, job.Log, "notify (email); sender unset, skipping.")
 	}
 }
 
