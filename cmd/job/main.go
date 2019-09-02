@@ -148,6 +148,9 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	log.Flags.Enable(cron.FlagStarted, cron.FlagComplete, cron.FlagFixed, cron.FlagBroken, cron.FlagFailed, cron.FlagCancelled)
+
+	log.Debugf("using logger flags: %s", log.Flags.String())
+
 	defaultJobCfg, err := createDefaultJobConfig(args...)
 	if err != nil {
 		return err
