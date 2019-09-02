@@ -13,15 +13,25 @@ import (
 
 // Config is the jobkit config.
 type Config struct {
-	MaxLogBytes   int              `yaml:"maxLogBytes"`
-	Cron          cron.Config      `yaml:"cron"`
-	Logger        logger.Config    `yaml:"logger"`
-	Web           web.Config       `yaml:"web"`
-	AWS           aws.Config       `yaml:"aws"`
-	SMTP          email.SMTPSender `yaml:"smtp"`
-	EmailDefaults email.Message    `yaml:"emailDefaults"`
-	Datadog       datadog.Config   `yaml:"datadog"`
-	Slack         slack.Config     `yaml:"slack"`
+	// MaxLogBytes is the maximum number of bytes to maintain for logs.
+	// This applies to all jobs.
+	MaxLogBytes int `yaml:"maxLogBytes"`
+	// Cron is the cron manager config.
+	Cron cron.Config `yaml:"cron"`
+	// Logger is the logger config.
+	Logger logger.Config `yaml:"logger"`
+	// Web is the web config used for the management server.
+	Web web.Config `yaml:"web"`
+	// EmailDefaults sets the base options for notification emails.
+	EmailDefaults email.Message `yaml:"emailDefaults"`
+	// AWS is used by aws options like SES.
+	AWS aws.Config `yaml:"aws"`
+	// SMTP is the smtp options.
+	SMTP email.SMTPSender `yaml:"smtp"`
+	// Datadog configures the datadog client.
+	Datadog datadog.Config `yaml:"datadog"`
+	// Slack configues the slack webhook sender.
+	Slack slack.Config `yaml:"slack"`
 }
 
 // Resolve applies resolution steps to the config.

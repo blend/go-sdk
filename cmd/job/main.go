@@ -39,10 +39,9 @@ var (
 )
 
 type config struct {
-	jobkit.Config `json:",inline" yaml:",inline"`
-	DisableServer *bool `json:"disableServer" yaml:"disableServer"`
-
-	Jobs []jobConfig `json:"jobs" yaml:"jobs"`
+	jobkit.Config `yaml:",inline"`
+	DisableServer *bool       `yaml:"disableServer"`
+	Jobs          []jobConfig `yaml:"jobs"`
 }
 
 func (c *config) Resolve() error {
@@ -56,12 +55,12 @@ func (c *config) Resolve() error {
 }
 
 type jobConfig struct {
+	// JobConfig is the default jobkit job options.
+	jobkit.JobConfig `yaml:",inline"`
 	// Exec is the command to execute.
-	Exec []string `json:"exec" yaml:"exec"`
+	Exec []string `yaml:"exec"`
 	// DiscardOutput indicates if we should discard output.
-	DiscardOutput *bool `json:"discardOutput" yaml:"discardOutput"`
-
-	jobkit.JobConfig `json:",inline" yaml:",inline"`
+	DiscardOutput *bool `yaml:"discardOutput"`
 }
 
 func (jc *jobConfig) Resolve() error {
@@ -195,7 +194,7 @@ func run(cmd *cobra.Command, args []string) error {
 	jobs := cron.New(cron.OptConfig(cfg.Config.Cron), cron.OptLog(log))
 
 	for _, jobCfg := range cfg.Jobs {
-		job, err := createJobFromConfig(jobCfg)
+		job, err := createJobFromConfig(cfg, jobCfg)
 		if err != nil {
 			return err
 		}
@@ -231,7 +230,7 @@ func createDefaultJobConfig(args ...string) (*jobConfig, error) {
 	return cfg, nil
 }
 
-func createJobFromConfig(cfg jobConfig) (*jobkit.Job, error) {
+func createJobFromConfig(base config, cfg jobConfig) (*jobkit.Job, error) {
 	if len(cfg.Exec) == 0 {
 		return nil, ex.New("job exec and command unset", ex.OptMessagef("job: %s", cfg.Name))
 	}
@@ -257,5 +256,6 @@ func createJobFromConfig(cfg jobConfig) (*jobkit.Job, error) {
 	if job.Config.Description == "" {
 		job.Config.Description = strings.Join(cfg.Exec, " ")
 	}
+	job.EmailDefaults = email.MergeMessages(base.EmailDefaults, cfg.EmailDefaults)
 	return job, nil
 }

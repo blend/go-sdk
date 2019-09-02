@@ -83,10 +83,11 @@ type Job struct {
 	CompiledSchedule cron.Schedule
 	Action           func(context.Context) error
 
-	Log         logger.Log
-	StatsClient stats.Collector
-	SlackClient slack.Sender
-	EmailClient email.Sender
+	Log           logger.Log
+	StatsClient   stats.Collector
+	SlackClient   slack.Sender
+	EmailDefaults email.Message
+	EmailClient   email.Sender
 }
 
 // Name returns the job name.
@@ -193,7 +194,7 @@ func (job Job) notify(ctx context.Context, flag string) {
 
 	if job.EmailClient != nil {
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
-			message, err := NewEmailMessage(ji)
+			message, err := NewEmailMessage(job.EmailDefaults, ji)
 			if err != nil {
 				Error(ctx, job.Log, err)
 			}

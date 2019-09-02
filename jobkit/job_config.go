@@ -2,6 +2,8 @@ package jobkit
 
 import (
 	"time"
+
+	"github.com/blend/go-sdk/email"
 )
 
 // JobConfig is something you can use to give your jobs some knobs to turn
@@ -31,6 +33,9 @@ type JobConfig struct {
 	NotifyOnEnabled *bool `json:"notifyOnEnabled" yaml:"notifyOnEnabled"`
 	// NotifyOnDisabled governs if we should send notifications when a job is disabled.
 	NotifyOnDisabled *bool `json:"notifyOnDisabled" yaml:"notifyOnDisabled"`
+
+	// EmailDefaults are the message defaults for email notifications.
+	EmailDefaults email.Message `json:"emailDefaults" yaml:"emailDefaults"`
 }
 
 // ScheduleOrDefault returns the schedule or a default (every 5 minutes).

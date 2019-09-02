@@ -12,50 +12,50 @@ func ApplyMessageOptions(m Message, options ...MessageOption) Message {
 // MessageOption is a mutator for messages.
 type MessageOption func(m *Message)
 
-// WithFrom sets the from address for a message.
-func WithFrom(from string) MessageOption {
+// OptFrom sets the from address for a message.
+func OptFrom(from string) MessageOption {
 	return func(m *Message) {
 		m.From = from
 	}
 }
 
-// WithTo sets the to address for a message.
-func WithTo(to ...string) MessageOption {
+// OptTo sets the to address for a message.
+func OptTo(to ...string) MessageOption {
 	return func(m *Message) {
 		m.To = to
 	}
 }
 
-// WithCC sets the cc addresses for a message.
-func WithCC(cc ...string) MessageOption {
+// OptCC sets the cc addresses for a message.
+func OptCC(cc ...string) MessageOption {
 	return func(m *Message) {
 		m.CC = cc
 	}
 }
 
-// WithBCC sets the bcc addresses for a message.
-func WithBCC(bcc ...string) MessageOption {
+// OptBCC sets the bcc addresses for a message.
+func OptBCC(bcc ...string) MessageOption {
 	return func(m *Message) {
 		m.BCC = bcc
 	}
 }
 
-// WithSubject sets the subject for a message.
-func WithSubject(subject string) MessageOption {
+// OptSubject sets the subject for a message.
+func OptSubject(subject string) MessageOption {
 	return func(m *Message) {
 		m.Subject = subject
 	}
 }
 
-// WithTextBody sets the text body for a message.
-func WithTextBody(textBody string) MessageOption {
+// OptTextBody sets the text body for a message.
+func OptTextBody(textBody string) MessageOption {
 	return func(m *Message) {
 		m.TextBody = textBody
 	}
 }
 
-// WithHTMLBody sets the html body for a message.
-func WithHTMLBody(htmlBody string) MessageOption {
+// OptHTMLBody sets the html body for a message.
+func OptHTMLBody(htmlBody string) MessageOption {
 	return func(m *Message) {
 		m.HTMLBody = htmlBody
 	}

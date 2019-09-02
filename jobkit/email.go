@@ -7,8 +7,11 @@ import (
 )
 
 // NewEmailMessage returns a new email message.
-func NewEmailMessage(ji *cron.JobInvocation, options ...email.MessageOption) (email.Message, error) {
-	message := email.Message{}
+func NewEmailMessage(emailDefaults email.Message, ji *cron.JobInvocation, options ...email.MessageOption) (email.Message, error) {
+	message := email.Message{
+		From: emailDefaults.From,
+		To:   emailDefaults.To,
+	}
 
 	vars := map[string]interface{}{
 		"jobName": ji.JobName,
