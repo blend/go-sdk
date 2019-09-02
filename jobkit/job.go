@@ -10,6 +10,7 @@ import (
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/slack"
 	"github.com/blend/go-sdk/stats"
+	"github.com/blend/go-sdk/stringutil"
 )
 
 var (
@@ -170,12 +171,18 @@ func (job Job) notify(ctx context.Context, flag string) {
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
 			logger.MaybeError(job.Log, job.StatsClient.TimeInMilliseconds(string(flag), ji.Elapsed, fmt.Sprintf("%s:%s", stats.TagJob, job.Name())))
 		}
+	} else {
+		logger.MaybeDebugf(job.Log, "job stats; client unset, skipping.")
 	}
+
 	if job.SlackClient != nil {
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
 			logger.MaybeError(job.Log, job.SlackClient.Send(context.Background(), NewSlackMessage(ji)))
 		}
+	} else {
+		logger.MaybeDebugf(job.Log, "slack notification; sender unset, skipping.")
 	}
+
 	if job.EmailClient != nil {
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
 			message, err := NewEmailMessage(ji)
@@ -183,7 +190,12 @@ func (job Job) notify(ctx context.Context, flag string) {
 				logger.MaybeError(job.Log, err)
 			}
 			logger.MaybeError(job.Log, job.EmailClient.Send(context.Background(), message))
+			logger.MaybeDebugf(job.Log, "sent email to %s (%s)", stringutil.CSV(message.To), message.Subject)
+		} else {
+			logger.MaybeDebugf(job.Log, "email notification; job invocation not found on context")
 		}
+	} else {
+		logger.MaybeDebugf(job.Log, "email notification; sender unset, skipping.")
 	}
 }
 
