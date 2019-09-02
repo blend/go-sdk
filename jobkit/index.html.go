@@ -118,7 +118,7 @@ var indexTemplate = `
 								<td>{{ if $job.Current.Finished.IsZero }}-{{ else }}{{ $job.Current.Finished | rfc3339 }}{{ end }}</td>
 								<td>{{ if $job.Current.Timeout.IsZero }}-{{ else }}{{ $job.Current.Timeout | rfc3339 }}{{ end }}</td>
 								<td>-</td>
-								<td>{{ $job.Current.Elapsed }}</td>
+								<td>{{ $job.Current.Started | since_utc }}</td>
 								<td>-</td>
 							<tr>
 							{{ end }}
