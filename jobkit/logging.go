@@ -84,7 +84,7 @@ func Warningf(ctx context.Context, log LogScoperWarningf, format string, args ..
 
 // Warning prints an warning if the logger is set.
 func Warning(ctx context.Context, log LogScoperWarning, err error) {
-	if log == nil {
+	if log == nil || err == nil {
 		return
 	}
 	ji := cron.GetJobInvocation(ctx)
@@ -102,7 +102,7 @@ func Errorf(ctx context.Context, log LogScoperErrorf, format string, args ...int
 
 // Error prints an error if the logger is set.
 func Error(ctx context.Context, log LogScoperError, err error) {
-	if log == nil {
+	if log == nil || err == nil {
 		return
 	}
 	ji := cron.GetJobInvocation(ctx)
@@ -120,7 +120,7 @@ func Fatalf(ctx context.Context, log LogScoperFatalf, format string, args ...int
 
 // Fatal prints a fatal error if the logger is set.
 func Fatal(ctx context.Context, log LogScoperFatal, err error) {
-	if log == nil {
+	if log == nil || err == nil {
 		return
 	}
 	ji := cron.GetJobInvocation(ctx)
