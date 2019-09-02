@@ -173,6 +173,11 @@ func run(cmd *cobra.Command, args []string) error {
 		log.Infof("adding smtp email notifications")
 	}
 
+	if !cfg.EmailDefaults.IsZero() {
+		log.Infof("using email defaults; from=%s", cfg.EmailDefaults.From)
+		log.Infof("using email defaults; to=%s", stringutil.CSV(cfg.EmailDefaults.To))
+	}
+
 	var slackClient slack.Sender
 	if !cfg.Slack.IsZero() {
 		slackClient = slack.New(cfg.Slack)
