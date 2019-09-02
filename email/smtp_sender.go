@@ -142,7 +142,7 @@ func (s SMTPSender) Send(ctx context.Context, message Message) error {
 	}
 
 	if message.HTMLBody != "" {
-		if _, err := bufWriter.WriteString("MIME-version: 1.0;\n\nContent-Type: text/html; charset=\"UTF-8\";\n\n"); err != nil {
+		if _, err := bufWriter.WriteString("MIME-version: 1.0;\r\nContent-Type: text/html; charset=\"UTF-8\";\r\n"); err != nil {
 			return ex.New(err)
 		}
 		if _, err := bufWriter.WriteString(message.HTMLBody); err != nil {
