@@ -27,7 +27,7 @@ var invocationTemplate = `
 				<td>{{ if .ViewModel.Finished.IsZero }}-{{ else }}{{ .ViewModel.Finished | rfc3339 }}{{ end }}</td>
 				<td>{{ if .ViewModel.Timeout.IsZero }}-{{ else }}{{ .ViewModel.Timeout | rfc3339 }}{{ end }}</td>
 				<td>{{ if .ViewModel.Cancelled.IsZero }}-{{ else }}{{ .ViewModel.Cancelled | rfc3339 }}{{ end }}</td>
-				<td>{{ .ViewModel.Elapsed }}</td>
+				<td>{{ if .ViewModel.Finished.IsZero }}{{ .ViewModel.Started | since_utc }}{{ else }}{{ .ViewModel.Elapsed }}</td>
 			</tr>
 		</tbody>
 	</table>
