@@ -40,6 +40,9 @@ install-ask:
 install-coverage:
 	@go install github.com/blend/go-sdk/cmd/coverage
 
+install-job:
+	@go install github.com/blend/go-sdk/cmd/job
+
 install-profanity:
 	@go install github.com/blend/go-sdk/cmd/profanity
 

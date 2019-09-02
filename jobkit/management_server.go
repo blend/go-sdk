@@ -20,6 +20,9 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 	app.GET("/", func(r *web.Ctx) web.Result {
 		return r.Views.View("index", jm.Status())
 	})
+	app.GET("/status.json", func(r *web.Ctx) web.Result {
+		return web.JSON.Result(jm.Status())
+	})
 	app.GET("/healthz", func(_ *web.Ctx) web.Result {
 		if jm.IsStarted() {
 			return web.JSON.OK()
@@ -125,7 +128,14 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 		if err != nil {
 			return r.Views.BadRequest(err)
 		}
-		invocation := job.GetInvocationByID(web.StringValue(r.RouteParam("invocation")))
+		invocationID, err := r.RouteParam("invocation")
+		if err != nil {
+			return r.Views.BadRequest(err)
+		}
+		if job.Current != nil && job.Current.ID == invocationID {
+			return r.Views.View("invocation", job.Current)
+		}
+		invocation := job.GetInvocationByID(invocationID)
 		if invocation == nil {
 			return r.Views.NotFound()
 		}

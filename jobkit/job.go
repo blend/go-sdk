@@ -26,184 +26,171 @@ var (
 	_ cron.OnEnabledReceiver      = (*Job)(nil)
 )
 
+// NewJob returns a new job.
+func NewJob(cfg JobConfig, action func(context.Context) error, options ...JobOption) (*Job, error) {
+	options = append([]JobOption{
+		OptConfig(cfg),
+		OptAction(action),
+		OptParsedSchedule(cfg.ScheduleOrDefault()),
+	}, options...)
+
+	var job Job
+	var err error
+	for _, opt := range options {
+		if err = opt(&job); err != nil {
+			return nil, err
+		}
+	}
+	return &job, nil
+}
+
+// OptAction sets the job action.
+func OptAction(action func(context.Context) error) JobOption {
+	return func(job *Job) error {
+		job.Action = action
+		return nil
+	}
+}
+
+// OptConfig sets the job config.
+func OptConfig(cfg JobConfig) JobOption {
+	return func(job *Job) error {
+		job.Config = cfg
+		return nil
+	}
+}
+
+// OptParsedSchedule sets the job's compiled schedule from a schedule string.
+func OptParsedSchedule(schedule string) JobOption {
+	return func(job *Job) error {
+		schedule, err := cron.ParseString(schedule)
+		if err != nil {
+			return err
+		}
+		job.CompiledSchedule = schedule
+		return nil
+	}
+}
+
+// JobOption is an option for jobs.
+type JobOption func(*Job) error
+
 // Job is the main job body.
 type Job struct {
-	name        string
-	description string
-	config      JobConfig
+	Config JobConfig
 
-	schedule cron.Schedule
-	timeout  time.Duration
-	action   func(context.Context) error
+	CompiledSchedule cron.Schedule
+	Action           func(context.Context) error
 
-	log         logger.Log
-	statsClient stats.Collector
-	slackClient slack.Sender
-	emailClient email.Sender
+	Log         logger.Log
+	StatsClient stats.Collector
+	SlackClient slack.Sender
+	EmailClient email.Sender
 }
 
 // Name returns the job name.
 func (job Job) Name() string {
-	if job.name != "" {
-		return job.name
-	}
-	return job.config.Name
+	return job.Config.Name
 }
 
-// WithName sets the name.
-func (job *Job) WithName(name string) *Job {
-	job.name = name
-	return job
-}
-
-// Description returns an optional description for the job.
-func (job *Job) Description() string {
-	return job.description
-}
-
-// WithDescription returns the job description.
-func (job *Job) WithDescription(description string) *Job {
-	job.description = description
-	return job
+// Description returns the job description.
+func (job Job) Description() string {
+	return job.Config.Description
 }
 
 // Schedule returns the job schedule.
 func (job Job) Schedule() cron.Schedule {
-	return job.schedule
+	return job.CompiledSchedule
 }
 
-// WithSchedule sets the schedule.
-func (job *Job) WithSchedule(schedule cron.Schedule) *Job {
-	job.schedule = schedule
-	return job
-}
-
-// Config returns the job config.
-func (job Job) Config() JobConfig {
-	return job.config
-}
-
-// WithConfig sets the config.
-func (job *Job) WithConfig(cfg JobConfig) *Job {
-	job.config = cfg
-	return job
-}
-
-// Timeout returns the timeout.
+// Timeout implements cron.TimeoutProvider.
 func (job Job) Timeout() time.Duration {
-	return job.timeout
-}
-
-// WithTimeout sets the job timeout.
-func (job *Job) WithTimeout(d time.Duration) *Job {
-	job.timeout = d
-	return job
-}
-
-// WithLogger sets the job logger.
-func (job *Job) WithLogger(log logger.Log) *Job {
-	job.log = log
-	return job
-}
-
-// WithStatsClient sets the job stats client.
-func (job *Job) WithStatsClient(client stats.Collector) *Job {
-	job.statsClient = client
-	return job
-}
-
-// WithSlackClient sets the job slack client.
-func (job *Job) WithSlackClient(client slack.Sender) *Job {
-	job.slackClient = client
-	return job
-}
-
-// WithEmailClient sets the job email client.
-func (job *Job) WithEmailClient(client email.Sender) *Job {
-	job.emailClient = client
-	return job
+	return job.Config.Timeout
 }
 
 // OnStart is a lifecycle event handler.
 func (job Job) OnStart(ctx context.Context) {
-	if job.config.NotifyOnStartOrDefault() {
+	if job.Config.NotifyOnStartOrDefault() {
 		job.notify(ctx, cron.FlagStarted)
 	}
 }
 
 // OnComplete is a lifecycle event handler.
 func (job Job) OnComplete(ctx context.Context) {
-	if job.config.NotifyOnSuccessOrDefault() {
+	if job.Config.NotifyOnSuccessOrDefault() {
 		job.notify(ctx, cron.FlagComplete)
 	}
 }
 
 // OnFailure is a lifecycle event handler.
 func (job Job) OnFailure(ctx context.Context) {
-	if job.config.NotifyOnFailureOrDefault() {
+	if job.Config.NotifyOnFailureOrDefault() {
 		job.notify(ctx, cron.FlagFailed)
 	}
 }
 
 // OnBroken is a lifecycle event handler.
 func (job Job) OnBroken(ctx context.Context) {
-	if job.config.NotifyOnBrokenOrDefault() {
+	if job.Config.NotifyOnBrokenOrDefault() {
 		job.notify(ctx, cron.FlagBroken)
 	}
 }
 
 // OnFixed is a lifecycle event handler.
 func (job Job) OnFixed(ctx context.Context) {
-	if job.config.NotifyOnFixedOrDefault() {
+	if job.Config.NotifyOnFixedOrDefault() {
 		job.notify(ctx, cron.FlagFixed)
 	}
 }
 
 // OnCancellation is a lifecycle event handler.
 func (job Job) OnCancellation(ctx context.Context) {
-	if job.config.NotifyOnFailureOrDefault() {
+	if job.Config.NotifyOnFailureOrDefault() {
 		job.notify(ctx, cron.FlagCancelled)
 	}
 }
 
 // OnEnabled is a lifecycle event handler.
 func (job Job) OnEnabled(ctx context.Context) {
-	if job.config.NotifyOnEnabledOrDefault() {
+	if job.Config.NotifyOnEnabledOrDefault() {
 		job.notify(ctx, cron.FlagEnabled)
 	}
 }
 
 // OnDisabled is a lifecycle event handler.
 func (job Job) OnDisabled(ctx context.Context) {
-	if job.config.NotifyOnDisabledOrDefault() {
+	if job.Config.NotifyOnDisabledOrDefault() {
 		job.notify(ctx, cron.FlagDisabled)
 	}
 }
 
 func (job Job) notify(ctx context.Context, flag string) {
-	if job.statsClient != nil {
-		job.statsClient.Increment(string(flag), fmt.Sprintf("%s:%s", stats.TagJob, job.Name()))
+	if job.StatsClient != nil {
+		job.StatsClient.Increment(string(flag), fmt.Sprintf("%s:%s", stats.TagJob, job.Name()))
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
-			logger.MaybeError(job.log, job.statsClient.TimeInMilliseconds(string(flag), ji.Elapsed, fmt.Sprintf("%s:%s", stats.TagJob, job.Name())))
+			logger.MaybeError(job.Log, job.StatsClient.TimeInMilliseconds(string(flag), ji.Elapsed, fmt.Sprintf("%s:%s", stats.TagJob, job.Name())))
 		}
 	}
-	if job.slackClient != nil {
+	if job.SlackClient != nil {
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
-			logger.MaybeError(job.log, job.slackClient.Send(context.Background(), NewSlackMessage(ji)))
+			logger.MaybeError(job.Log, job.SlackClient.Send(context.Background(), NewSlackMessage(ji)))
 		}
 	}
-	if job.emailClient != nil {
+	if job.EmailClient != nil {
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
 			message, err := NewEmailMessage(ji)
 			if err != nil {
-				logger.MaybeError(job.log, err)
+				logger.MaybeError(job.Log, err)
 			}
-			logger.MaybeError(job.log, job.emailClient.Send(context.Background(), message))
+			logger.MaybeError(job.Log, job.EmailClient.Send(context.Background(), message))
 		}
 	}
 }
 
 // Execute is the job body.
 func (job Job) Execute(ctx context.Context) error {
-	return job.action(WithJobInvocationState(ctx, NewJobInvocationState()))
+	if job.Action != nil {
+		return job.Action(WithJobInvocationState(ctx, NewJobInvocationState()))
+	}
+	return nil
 }

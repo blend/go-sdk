@@ -16,21 +16,21 @@ import (
 func TestJobProperties(t *testing.T) {
 	assert := assert.New(t)
 
-	job := (&Job{action: func(_ context.Context) error {
+	job := (&Job{Action: func(_ context.Context) error {
 		return nil
 	}})
-	assert.NotNil(job.action)
+	assert.NotNil(job.Action)
 
 	assert.Empty(job.Name())
-	job.WithName("foo")
+	job.Config.Name = "foo"
 	assert.Equal("foo", job.Name())
 
 	assert.Nil(job.Schedule())
-	job.WithSchedule(cron.EverySecond())
+	job.CompiledSchedule = cron.EverySecond()
 	assert.NotNil(job.Schedule())
 
 	assert.Zero(job.Timeout())
-	job.WithTimeout(time.Second)
+	job.Config.Timeout = time.Second
 	assert.Equal(time.Second, job.Timeout())
 }
 
@@ -45,7 +45,7 @@ func TestJobLifecycleHooksNotificationsUnset(t *testing.T) {
 	slackMessages := make(chan slack.Message, 1)
 
 	job := &Job{
-		slackClient: slack.MockWebhookSender(slackMessages),
+		SlackClient: slack.MockWebhookSender(slackMessages),
 	}
 
 	job.OnStart(ctx)
@@ -78,8 +78,8 @@ func TestJobLifecycleHooksNotificationsSetDisabled(t *testing.T) {
 	slackMessages := make(chan slack.Message, 1)
 
 	job := &Job{
-		slackClient: slack.MockWebhookSender(slackMessages),
-		config: JobConfig{
+		SlackClient: slack.MockWebhookSender(slackMessages),
+		Config: JobConfig{
 			NotifyOnStart:   ref.Bool(false),
 			NotifyOnSuccess: ref.Bool(false),
 			NotifyOnFailure: ref.Bool(false),
@@ -119,8 +119,8 @@ func TestJobLifecycleHooksNotificationsSetEnabled(t *testing.T) {
 	slackMessages := make(chan slack.Message, 6)
 
 	job := &Job{
-		slackClient: slack.MockWebhookSender(slackMessages),
-		config: JobConfig{
+		SlackClient: slack.MockWebhookSender(slackMessages),
+		Config: JobConfig{
 			NotifyOnStart:   ref.Bool(true),
 			NotifyOnSuccess: ref.Bool(true),
 			NotifyOnFailure: ref.Bool(true),

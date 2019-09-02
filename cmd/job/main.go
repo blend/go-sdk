@@ -92,7 +92,14 @@ job -n echo --schedule='*/30 * * * *' -- echo 'hello world'
 job -c config.yml'
 
 # where the config can specify multiple jobs.
+# it can also set general configuration options like the bind address (located in the web config).
 """
+logger:
+  flags: [all, -http.request]
+
+web:
+  bindAddr: :8080
+
 jobs:
 - name: echo
   schedule: '*/30 * * * *'
@@ -180,7 +187,10 @@ func run(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		job.WithLogger(log).WithEmailClient(emailClient).WithSlackClient(slackClient).WithStatsClient(statsClient)
+		job.Log = log
+		job.EmailClient = emailClient
+		job.SlackClient = slackClient
+		job.StatsClient = statsClient
 		log.Infof("loading job `%s` with schedule `%s`", jobCfg.Name, jobCfg.ScheduleOrDefault())
 		jobs.LoadJobs(job)
 	}
@@ -232,8 +242,8 @@ func createJobFromConfig(cfg jobConfig) (*jobkit.Job, error) {
 	if err != nil {
 		return nil, err
 	}
-	if job.Description() == "" {
-		job.WithDescription(strings.Join(cfg.Exec, " "))
+	if job.Config.Description == "" {
+		job.Config.Description = strings.Join(cfg.Exec, " ")
 	}
 	return job, nil
 }

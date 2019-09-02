@@ -110,6 +110,19 @@ var indexTemplate = `
 								</tr>
 							</thead>
 							<tbody>
+
+							{{ if $job.Current }}
+							<tr class="running">
+								<td><a href="/job.invocation/{{$job.Name}}/{{ $job.Current.ID }}">{{ $job.Current.ID }}</a></td>
+								<td>{{ $job.Current.Started | rfc3339 }}</td>
+								<td>{{ if $job.Current.Finished.IsZero }}-{{ else }}{{ $job.Current.Finished | rfc3339 }}{{ end }}</td>
+								<td>{{ if $job.Current.Timeout.IsZero }}-{{ else }}{{ $job.Current.Timeout | rfc3339 }}{{ end }}</td>
+								<td>-</td>
+								<td>{{ $job.Current.Elapsed }}</td>
+								<td>-</td>
+							<tr>
+							{{ end }}
+
 							{{ range $index, $ji := $job.History | reverse }}
 							<tr class="{{ if $ji.Status | eq "failed" }}failed{{ else if $ji.Status | eq "cancelled"}}cancelled{{else}}ok{{end}}">
 								<td><a href="/job.invocation/{{$ji.JobName}}/{{ $ji.ID }}">{{ $ji.ID }}</a></td>
@@ -119,10 +132,6 @@ var indexTemplate = `
 								<td>{{ if $ji.Cancelled.IsZero }}-{{ else }}{{ $ji.Cancelled | rfc3339 }}{{ end }}</td>
 								<td>{{ $ji.Elapsed }}</td>
 								<td>{{ if $ji.Err }}<code>{{ $ji.Err }}</code>{{ else }}-{{end}}</td>
-							</tr>
-							{{ else }}
-							<tr>
-								<td colspan=7>No History</td>
 							</tr>
 							{{ end }}
 							</tbody>
