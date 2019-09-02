@@ -111,6 +111,7 @@ func (job Job) Timeout() time.Duration {
 
 // OnStart is a lifecycle event handler.
 func (job Job) OnStart(ctx context.Context) {
+	job.stats(ctx, cron.FlagStarted)
 	if job.Config.NotifyOnStartOrDefault() {
 		job.notify(ctx, cron.FlagStarted)
 	}
@@ -118,6 +119,7 @@ func (job Job) OnStart(ctx context.Context) {
 
 // OnComplete is a lifecycle event handler.
 func (job Job) OnComplete(ctx context.Context) {
+	job.stats(ctx, cron.FlagComplete)
 	if job.Config.NotifyOnSuccessOrDefault() {
 		job.notify(ctx, cron.FlagComplete)
 	}
@@ -125,6 +127,7 @@ func (job Job) OnComplete(ctx context.Context) {
 
 // OnFailure is a lifecycle event handler.
 func (job Job) OnFailure(ctx context.Context) {
+	job.stats(ctx, cron.FlagFailed)
 	if job.Config.NotifyOnFailureOrDefault() {
 		job.notify(ctx, cron.FlagFailed)
 	}
@@ -132,6 +135,7 @@ func (job Job) OnFailure(ctx context.Context) {
 
 // OnBroken is a lifecycle event handler.
 func (job Job) OnBroken(ctx context.Context) {
+	job.stats(ctx, cron.FlagBroken)
 	if job.Config.NotifyOnBrokenOrDefault() {
 		job.notify(ctx, cron.FlagBroken)
 	}
@@ -139,6 +143,7 @@ func (job Job) OnBroken(ctx context.Context) {
 
 // OnFixed is a lifecycle event handler.
 func (job Job) OnFixed(ctx context.Context) {
+	job.stats(ctx, cron.FlagFixed)
 	if job.Config.NotifyOnFixedOrDefault() {
 		job.notify(ctx, cron.FlagFixed)
 	}
@@ -146,6 +151,7 @@ func (job Job) OnFixed(ctx context.Context) {
 
 // OnCancellation is a lifecycle event handler.
 func (job Job) OnCancellation(ctx context.Context) {
+	job.stats(ctx, cron.FlagCancelled)
 	if job.Config.NotifyOnFailureOrDefault() {
 		job.notify(ctx, cron.FlagCancelled)
 	}
@@ -165,7 +171,7 @@ func (job Job) OnDisabled(ctx context.Context) {
 	}
 }
 
-func (job Job) notify(ctx context.Context, flag string) {
+func (job Job) stats(ctx context.Context, flag string) {
 	if job.StatsClient != nil {
 		job.StatsClient.Increment(string(flag), fmt.Sprintf("%s:%s", stats.TagJob, job.Name()))
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
@@ -174,7 +180,9 @@ func (job Job) notify(ctx context.Context, flag string) {
 	} else {
 		logger.MaybeDebugf(job.Log, "job stats; client unset, skipping.")
 	}
+}
 
+func (job Job) notify(ctx context.Context, flag string) {
 	if job.SlackClient != nil {
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
 			logger.MaybeError(job.Log, job.SlackClient.Send(context.Background(), NewSlackMessage(ji)))

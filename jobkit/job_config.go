@@ -62,7 +62,7 @@ func (jc JobConfig) NotifyOnFailureOrDefault() bool {
 	if jc.NotifyOnFailure != nil {
 		return *jc.NotifyOnFailure
 	}
-	return false
+	return true
 }
 
 // NotifyOnBrokenOrDefault returns a value or a default.
@@ -70,7 +70,7 @@ func (jc JobConfig) NotifyOnBrokenOrDefault() bool {
 	if jc.NotifyOnBroken != nil {
 		return *jc.NotifyOnBroken
 	}
-	return false
+	return true
 }
 
 // NotifyOnFixedOrDefault returns a value or a default.
@@ -78,7 +78,7 @@ func (jc JobConfig) NotifyOnFixedOrDefault() bool {
 	if jc.NotifyOnFixed != nil {
 		return *jc.NotifyOnFixed
 	}
-	return false
+	return true
 }
 
 // NotifyOnEnabledOrDefault returns a value or a default.
