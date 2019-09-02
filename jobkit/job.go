@@ -210,8 +210,5 @@ func (job Job) notify(ctx context.Context, flag string) {
 
 // Execute is the job body.
 func (job Job) Execute(ctx context.Context) error {
-	if job.Action != nil {
-		return job.Action(WithJobInvocationState(ctx, NewJobInvocationState()))
-	}
-	return nil
+	return job.Action(WithJobInvocationState(ctx, NewJobInvocationState()))
 }
