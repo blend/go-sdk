@@ -159,7 +159,7 @@ func (job Job) OnFixed(ctx context.Context) {
 // OnCancellation is a lifecycle event handler.
 func (job Job) OnCancellation(ctx context.Context) {
 	job.stats(ctx, cron.FlagCancelled)
-	if job.Config.NotifyOnFailureOrDefault() {
+	if job.Config.NotifyOnCancellationOrDefault() {
 		job.notify(ctx, cron.FlagCancelled)
 	}
 }

@@ -27,6 +27,8 @@ type JobConfig struct {
 	NotifyOnSuccess *bool `json:"notifyOnSuccess" yaml:"notifyOnSuccess"`
 	// NotifyOnFailure governs if we should send notifications on any failure.
 	NotifyOnFailure *bool `json:"notifyOnFailure" yaml:"notifyOnFailure"`
+	// NotifyOnCancellation governs if we should send notifications on cancellation.
+	NotifyOnCancellation *bool `json:"notifyOnCancellation" yaml:"notifyOnCancellation"`
 	// NotifyOnBroken governs if we should send notifications on a success => failure transition.
 	NotifyOnBroken *bool `json:"notifyOnBroken" yaml:"notifyOnBroken"`
 	// NotifyOnFixed governs if we should send notifications on a failure => success transition.
@@ -76,6 +78,14 @@ func (jc JobConfig) NotifyOnSuccessOrDefault() bool {
 func (jc JobConfig) NotifyOnFailureOrDefault() bool {
 	if jc.NotifyOnFailure != nil {
 		return *jc.NotifyOnFailure
+	}
+	return true
+}
+
+// NotifyOnCancellationOrDefault returns a value or a default.
+func (jc JobConfig) NotifyOnCancellationOrDefault() bool {
+	if jc.NotifyOnCancellation != nil {
+		return *jc.NotifyOnCancellation
 	}
 	return true
 }
