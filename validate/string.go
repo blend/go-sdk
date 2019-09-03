@@ -15,9 +15,10 @@ import (
 
 // String errors
 const (
+	ErrStringRequired  ex.Class = "string should be set"
 	ErrStringLength    ex.Class = "string should be a given length"
 	ErrStringLengthMin ex.Class = "string should be a minimum length"
-	ErrStringLengthMax ex.Class = "string should be a minimum length"
+	ErrStringLengthMax ex.Class = "string should be a maximum length"
 	ErrStringMatches   ex.Class = "string should match regular expression"
 	ErrStringIsUpper   ex.Class = "string should be uppercase"
 	ErrStringIsLower   ex.Class = "string should be lowercase"
@@ -26,6 +27,7 @@ const (
 	ErrStringIsEmail   ex.Class = "string should be a valid email address"
 	ErrStringIsURI     ex.Class = "string should be a valid uri"
 	ErrStringIsIP      ex.Class = "string should be a valid ip address"
+	ErrStringIsSlug    ex.Class = "string should be a valid slug (i.e. matching [0-9,a-z,A-Z,_,-])"
 )
 
 // String contains helpers for string validation.
@@ -36,6 +38,19 @@ func String(value *string) StringValidators {
 // StringValidators returns string validators.
 type StringValidators struct {
 	Value *string
+}
+
+// Required returns a validator that a string is set and not zero length.
+func (s StringValidators) Required() Validator {
+	return func() error {
+		if s.Value == nil {
+			return Error(ErrStringRequired, nil)
+		}
+		if len(*s.Value) == 0 {
+			return Error(ErrStringRequired, nil)
+		}
+		return nil
+	}
 }
 
 // MinLen returns a validator that a string is a minimum length.
@@ -214,6 +229,29 @@ func (s StringValidators) IsIP() Validator {
 		}
 		if addr := net.ParseIP(string(*s.Value)); addr == nil {
 			return Error(ErrStringIsIP, *s.Value)
+		}
+		return nil
+	}
+}
+
+// IsSlug returns if a string is a valid slug as defined by the match rule [0-9,a-z,A-Z,_,-].
+// It will error if the string is unset (nil).
+func (s StringValidators) IsSlug() Validator {
+	return func() error {
+		if s.Value == nil {
+			return Error(ErrStringIsSlug, nil)
+		}
+		for _, c := range *s.Value {
+			if unicode.IsLetter(c) {
+				continue
+			}
+			if unicode.IsDigit(c) {
+				continue
+			}
+			if c == '-' || c == '_' {
+				continue
+			}
+			return Error(ErrStringIsSlug, *s.Value)
 		}
 		return nil
 	}

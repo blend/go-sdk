@@ -9,6 +9,24 @@ import (
 	"github.com/blend/go-sdk/uuid"
 )
 
+func TestStringRequired(t *testing.T) {
+	assert := assert.New(t)
+
+	var verr error
+	verr = String(nil).Required()()
+	assert.NotNil(verr)
+	assert.Equal(ErrStringRequired, Cause(ErrStringRequired))
+
+	bad := ""
+	verr = String(&bad).Required()()
+	assert.NotNil(verr)
+	assert.Equal(ErrStringRequired, Cause(ErrStringRequired))
+
+	good := "ok!"
+	verr = String(&good).Required()()
+	assert.Nil(verr)
+}
+
 func TestStringMin(t *testing.T) {
 	assert := assert.New(t)
 
@@ -262,4 +280,48 @@ func TestStringIsIP(t *testing.T) {
 	verr = String(&bad).IsIP()()
 	assert.NotNil(verr)
 	assert.Equal(ErrStringIsIP, Cause(verr))
+}
+
+func TestStringIsSlug(t *testing.T) {
+	assert := assert.New(t)
+
+	var verr error
+	verr = String(nil).IsSlug()()
+	assert.NotNil(verr)
+	assert.Nil(Value(verr))
+	assert.Equal(ErrStringIsSlug, Cause(verr))
+
+	bad := ""
+	verr = String(&bad).IsSlug()()
+	assert.NotNil(verr)
+	assert.Equal(ErrStringIsSlug, Cause(verr))
+
+	good := "abcdefghijklmnopqrstuvwxyz"
+	verr = String(&good).IsSlug()()
+	assert.Nil(verr)
+
+	good = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	verr = String(&good).IsSlug()()
+	assert.Nil(verr)
+
+	good = "0123456789"
+	verr = String(&good).IsSlug()()
+	assert.Nil(verr)
+
+	good = "_-"
+	verr = String(&good).IsSlug()()
+	assert.Nil(verr)
+
+	good = "shortcut_service"
+	verr = String(&good).IsSlug()()
+	assert.Nil(verr)
+
+	good = "Shortcut-Service"
+	verr = String(&good).IsSlug()()
+	assert.Nil(verr)
+
+	bad = "this/../is/../hacking?"
+	verr = String(&good).IsSlug()()
+	assert.NotNil(verr)
+	assert.Equal(ErrStringIsSlug, Cause(verr))
 }
