@@ -47,31 +47,27 @@ var invocationTemplate = `
 		</tbody>
 	</table>
 	{{ end }}
-	{{ if .ViewModel.State }}
 	<table class="u-full-width">
-		<thead>
-			<tr>
-				<th>Error Output</th>
-			</tr>
-		</thead>
 		<tbody>
 			<tr>
-				<td>
-					<pre>{{ .ViewModel.State.ErrorOutput }}</pre>
+				<td class="align-right">
+					<a href="/api/job.invocation.output/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}">JSON</a>
+					<a href="/job.invocation.output/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}">Raw</a>
 				</td>
 			</tr>
 		</tbody>
 	</table>
+	{{ if .ViewModel.State }}
 	<table class="u-full-width">
 		<thead>
 			<tr>
-				<th>Output</th>
+				<th>Output (Combined)</th>
 			</tr>
 		</thead>
 		<tbody>
 			<tr>
 				<td>
-					<pre>{{ .ViewModel.State.Output }}</pre>
+					<pre>{{ .ViewModel.State.CombinedOutput }}</pre>
 				</td>
 			</tr>
 		</tbody>

@@ -43,7 +43,7 @@ func (lw *LineWriter) commitLine() {
 	copy(lineBuffer, lw.Buffer)
 	lw.Lines = append(lw.Lines, Line{
 		Timestamp: time.Now().UTC(),
-		Line:      lineBuffer,
+		Line:      string(lineBuffer),
 	})
 	lw.Buffer = nil
 	return
@@ -51,6 +51,6 @@ func (lw *LineWriter) commitLine() {
 
 // Line is a line of output.
 type Line struct {
-	Timestamp time.Time
-	Line      []byte
+	Timestamp time.Time `json:"_ts"`
+	Line      string    `json:"line"`
 }
