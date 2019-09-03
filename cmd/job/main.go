@@ -60,6 +60,14 @@ type jobConfig struct {
 	DiscardOutput *bool `yaml:"discardOutput"`
 }
 
+// DiscardOutputOrDefault returns a value or a default.
+func (jc *jobConfig) DiscardOutputOrDefault() bool {
+	if jc.DiscardOutput != nil {
+		return *jc.DiscardOutput
+	}
+	return false
+}
+
 func (jc *jobConfig) Resolve() error {
 	return configutil.AnyError(
 		configutil.SetString(&jc.Name, configutil.String(*flagDefaultJobName), configutil.String(env.Env().ServiceName()), configutil.String(jc.Name), configutil.String(stringutil.Letters.Random(8))),
@@ -242,7 +250,7 @@ func createJobFromConfig(base config, cfg jobConfig) (*jobkit.Job, error) {
 	if len(cfg.Exec) == 0 {
 		return nil, ex.New("job exec and command unset", ex.OptMessagef("job: %s", cfg.Name))
 	}
-	action := jobkit.CreateShellAction(cfg.Exec, jobkit.OptShellActionDiscardOutput(*cfg.DiscardOutput))
+	action := jobkit.CreateShellAction(cfg.Exec, jobkit.OptShellActionDiscardOutput(cfg.DiscardOutputOrDefault()))
 	job, err := jobkit.NewJob(cfg.JobConfig, action)
 	if err != nil {
 		return nil, err
