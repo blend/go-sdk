@@ -449,6 +449,9 @@ var headerTemplate = `
 			padding: 10px;
 		}
 
+		tr.running {
+			background-color: #0F9960;
+		}
 		tr.failed {
 			background-color: #F55656
 		}
