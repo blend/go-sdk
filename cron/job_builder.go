@@ -10,6 +10,7 @@ var (
 	_ Job                            = (*JobBuilder)(nil)
 	_ ScheduleProvider               = (*JobBuilder)(nil)
 	_ TimeoutProvider                = (*JobBuilder)(nil)
+	_ ShutdownGracePeriodProvider    = (*JobBuilder)(nil)
 	_ EnabledProvider                = (*JobBuilder)(nil)
 	_ ShouldWriteOutputProvider      = (*JobBuilder)(nil)
 	_ ShouldTriggerListenersProvider = (*JobBuilder)(nil)
@@ -46,6 +47,11 @@ func OptJobBuilderSchedule(schedule Schedule) JobBuilderOption {
 // OptJobBuilderTimeout is a job builder sets the job builder timeout provder.
 func OptJobBuilderTimeout(d time.Duration) JobBuilderOption {
 	return func(jb *JobBuilder) { jb.TimeoutProvider = func() time.Duration { return d } }
+}
+
+// OptJobBuilderShutdownGracePeriod is a job builder sets the job builder shutdown grace period provder.
+func OptJobBuilderShutdownGracePeriod(d time.Duration) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.ShutdownGracePeriodProvider = func() time.Duration { return d } }
 }
 
 // OptJobBuilderEnabledProvider is a job builder sets the job builder timeout provder.
@@ -100,6 +106,7 @@ type JobBuilder struct {
 
 	ScheduleProvider               func() Schedule
 	TimeoutProvider                func() time.Duration
+	ShutdownGracePeriodProvider    func() time.Duration
 	EnabledProvider                func() bool
 	ShouldTriggerListenersProvider func() bool
 	ShouldWriteOutputProvider      func() bool
@@ -132,11 +139,19 @@ func (jb *JobBuilder) Schedule() Schedule {
 }
 
 // Timeout returns the job timeout.
-func (jb *JobBuilder) Timeout() (timeout time.Duration) {
+func (jb *JobBuilder) Timeout() time.Duration {
 	if jb.TimeoutProvider != nil {
 		return jb.TimeoutProvider()
 	}
-	return
+	return 0
+}
+
+// ShutdownGracePeriod returns the shutdown grace period.
+func (jb *JobBuilder) ShutdownGracePeriod() time.Duration {
+	if jb.ShutdownGracePeriodProvider != nil {
+		return jb.ShutdownGracePeriodProvider()
+	}
+	return 0
 }
 
 // Enabled returns if the job is enabled.

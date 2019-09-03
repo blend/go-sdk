@@ -32,6 +32,11 @@ type TimeoutProvider interface {
 	Timeout() time.Duration
 }
 
+// ShutdownGracePeriodProvider is an interface that allows a task to be given extra time to shut down.
+type ShutdownGracePeriodProvider interface {
+	ShutdownGracePeriod() time.Duration
+}
+
 // StatusProvider is an interface that allows a task to report its status.
 type StatusProvider interface {
 	Status() string

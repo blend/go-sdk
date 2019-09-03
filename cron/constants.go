@@ -18,6 +18,9 @@ const (
 const (
 	// DefaultHeartbeatInterval is the interval between schedule next run checks.
 	DefaultHeartbeatInterval = 50 * time.Millisecond
+	// DefaultShutdownGracePeriod is the grace period to allow jobs to finish by default.
+	// It defaults to unset, i.e. no grace period is given.
+	DefaultShutdownGracePeriod time.Duration = 0
 )
 
 const (

@@ -31,6 +31,7 @@ var (
 	flagDefaultJobSchedule      *string
 	flagDefaultJobTimeout       *time.Duration
 	flagDefaultJobDiscardOutput *bool
+	flagDefaultJobSerial        *bool
 	flagDisableServer           *bool
 )
 
@@ -63,6 +64,7 @@ func (jc *jobConfig) Resolve() error {
 	return configutil.AnyError(
 		configutil.SetString(&jc.Name, configutil.String(*flagDefaultJobName), configutil.String(env.Env().ServiceName()), configutil.String(jc.Name), configutil.String(stringutil.Letters.Random(8))),
 		configutil.SetBool(&jc.DiscardOutput, configutil.Bool(flagDefaultJobDiscardOutput), configutil.Bool(jc.DiscardOutput), configutil.Bool(ref.Bool(false))),
+		configutil.SetBool(&jc.Serial, configutil.Bool(flagDefaultJobSerial), configutil.Bool(jc.Serial), configutil.Bool(ref.Bool(true))),
 		configutil.SetString(&jc.Schedule, configutil.String(*flagDefaultJobSchedule), configutil.String(jc.Schedule)),
 		configutil.SetDuration(&jc.Timeout, configutil.Duration(*flagDefaultJobTimeout), configutil.Duration(jc.Timeout)),
 	)
@@ -117,6 +119,7 @@ func main() {
 	flagDefaultJobSchedule = cmd.Flags().StringP("schedule", "s", "", "The job schedule in cron format (ex: '*/5 * * * *')")
 	flagDefaultJobTimeout = cmd.Flags().Duration("timeout", 0, "The job execution timeout as a duration (ex: 5s)")
 	flagDefaultJobDiscardOutput = cmd.Flags().Bool("discard-output", false, "If jobs should discard console output from the action.")
+	flagDefaultJobSerial = cmd.Flags().Bool("serial", true, "The job should run serially (that is, only one can be active at a time)")
 	flagDisableServer = cmd.Flags().Bool("disable-server", false, "If the management server should be disabled.")
 
 	if err := cmd.Execute(); err != nil {
@@ -169,8 +172,8 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	if !cfg.EmailDefaults.IsZero() {
-		log.Infof("using email defaults; from=%s", cfg.EmailDefaults.From)
-		log.Infof("using email defaults; to=%s", stringutil.CSV(cfg.EmailDefaults.To))
+		log.Debugf("using email defaults; from=%s", cfg.EmailDefaults.From)
+		log.Debugf("using email defaults; to=%s", stringutil.CSV(cfg.EmailDefaults.To))
 	}
 
 	var slackClient slack.Sender
@@ -200,7 +203,14 @@ func run(cmd *cobra.Command, args []string) error {
 		job.SlackClient = slackClient
 		job.StatsClient = statsClient
 
-		log.Infof("loading job `%s` with schedule `%s`", jobCfg.Name, jobCfg.ScheduleOrDefault())
+		var serial string
+		if jobCfg.SerialOrDefault() {
+			serial = "serial execution"
+		} else {
+			serial = "parallel execution"
+		}
+
+		log.Infof("loading job `%s` with schedule `%s` with %v", jobCfg.Name, jobCfg.ScheduleOrDefault(), serial)
 		jobs.LoadJobs(job)
 	}
 

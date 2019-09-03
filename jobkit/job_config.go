@@ -18,6 +18,8 @@ type JobConfig struct {
 	Schedule string `json:"schedule" yaml:"schedule"`
 	// Timeout represents the abort threshold for the job.
 	Timeout time.Duration `json:"timeout" yaml:"timeout"`
+	// ShutdownGracePeriod represents the time a job is given to clean itself up.
+	ShutdownGracePeriod time.Duration `json:"shutdownGracePeriod" yaml:"shutdownGracePeriod"`
 	// Serial indicates if job executions cannot overlap.
 	Serial *bool `json:"serial" yaml:"serial"`
 
