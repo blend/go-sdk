@@ -16,6 +16,7 @@ import (
 var (
 	_ cron.Job                    = (*Job)(nil)
 	_ cron.TimeoutProvider        = (*Job)(nil)
+	_ cron.SerialProvider         = (*Job)(nil)
 	_ cron.ScheduleProvider       = (*Job)(nil)
 	_ cron.OnStartReceiver        = (*Job)(nil)
 	_ cron.OnCompleteReceiver     = (*Job)(nil)
@@ -108,6 +109,11 @@ func (job Job) Schedule() cron.Schedule {
 // Timeout implements cron.TimeoutProvider.
 func (job Job) Timeout() time.Duration {
 	return job.Config.Timeout
+}
+
+// Serial implements cron.SerialProvider.
+func (job Job) Serial() bool {
+	return job.Config.SerialOrDefault()
 }
 
 // OnStart is a lifecycle event handler.

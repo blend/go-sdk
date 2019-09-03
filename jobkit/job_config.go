@@ -18,6 +18,8 @@ type JobConfig struct {
 	Schedule string `json:"schedule" yaml:"schedule"`
 	// Timeout represents the abort threshold for the job.
 	Timeout time.Duration `json:"timeout" yaml:"timeout"`
+	// Serial indicates if job executions cannot overlap.
+	Serial *bool `json:"serial" yaml:"serial"`
 
 	// NotifyOnStart governs if we should send notifications job start.
 	NotifyOnStart *bool `json:"notifyOnStart" yaml:"notifyOnStart"`
@@ -44,6 +46,14 @@ func (jc JobConfig) ScheduleOrDefault() string {
 		return jc.Schedule
 	}
 	return "* */5 * * * * *"
+}
+
+// SerialOrDefault returns a value or a default.
+func (jc JobConfig) SerialOrDefault() bool {
+	if jc.Serial != nil {
+		return *jc.Serial
+	}
+	return true
 }
 
 // NotifyOnStartOrDefault returns a value or a default.
