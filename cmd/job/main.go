@@ -1,9 +1,6 @@
 package main
 
 import (
-	"context"
-	"io"
-	"os"
 	"strings"
 	"time"
 
@@ -21,7 +18,6 @@ import (
 	"github.com/blend/go-sdk/jobkit"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/ref"
-	"github.com/blend/go-sdk/sh"
 	"github.com/blend/go-sdk/slack"
 	"github.com/blend/go-sdk/stats"
 	"github.com/blend/go-sdk/stringutil"
@@ -198,10 +194,12 @@ func run(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
+
 		job.Log = log
 		job.EmailClient = emailClient
 		job.SlackClient = slackClient
 		job.StatsClient = statsClient
+
 		log.Infof("loading job `%s` with schedule `%s`", jobCfg.Name, jobCfg.ScheduleOrDefault())
 		jobs.LoadJobs(job)
 	}
@@ -234,21 +232,7 @@ func createJobFromConfig(base config, cfg jobConfig) (*jobkit.Job, error) {
 	if len(cfg.Exec) == 0 {
 		return nil, ex.New("job exec and command unset", ex.OptMessagef("job: %s", cfg.Name))
 	}
-	action := func(ctx context.Context) error {
-		if cfg.DiscardOutput == nil || (cfg.DiscardOutput != nil && !*cfg.DiscardOutput) {
-			if jis := jobkit.GetJobInvocationState(ctx); jis != nil {
-				cmd, err := sh.CmdContext(ctx, cfg.Exec[0], cfg.Exec[1:]...)
-				if err != nil {
-					return err
-				}
-				cmd.Stdout = io.MultiWriter(jis.Output, os.Stdout)
-				cmd.Stderr = io.MultiWriter(jis.ErrorOutput, os.Stderr)
-				return ex.New(cmd.Run())
-			}
-		}
-		return sh.ForkContext(ctx, cfg.Exec[0], cfg.Exec[1:]...)
-	}
-
+	action := jobkit.CreateShellAction(cfg.Exec, jobkit.OptShellActionDiscardOutput(*cfg.DiscardOutput))
 	job, err := jobkit.NewJob(cfg.JobConfig, action)
 	if err != nil {
 		return nil, err
