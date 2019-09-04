@@ -430,16 +430,12 @@ func TestAssertNotFatal(t *testing.T) {
 	buf := bytes.NewBuffer(nil)
 	a := New(t, OptOutput(buf))
 	nf := a.NonFatal()
-	if nf.t == nil {
+	if nf.T == nil {
 		t.Errorf("should set t")
 		t.FailNow()
 	}
-	if nf.output == nil {
+	if nf.Output == nil {
 		t.Errorf("should set output")
-		t.FailNow()
-	}
-	if nf.Output() == nil {
-		t.Errorf("Output() is wrong")
 		t.FailNow()
 	}
 }

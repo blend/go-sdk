@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"sync/atomic"
-	"testing"
 	"time"
 )
 
@@ -43,15 +42,4 @@ func Rate() float64 {
 // ReportRate writes the rate summary to stdout.
 func ReportRate() {
 	fmt.Fprintf(os.Stdout, "asserts: %d Δt: %v λ: %0.2f assert/sec\n", Count(), Elapsed(), Rate())
-}
-
-// Main wraps a testing.M.
-func Main(m *testing.M) {
-	Started()
-	var statusCode int
-	func() {
-		defer ReportRate()
-		statusCode = m.Run()
-	}()
-	os.Exit(statusCode)
 }

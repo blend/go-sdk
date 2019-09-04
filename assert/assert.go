@@ -63,8 +63,8 @@ func Empty(opts ...Option) *Assertions {
 func New(t *testing.T, opts ...Option) *Assertions {
 	a := Assertions{
 		T:            t,
-		timerAbort:   make(chan bool),
-		timerAborted: make(chan bool),
+		timerAbort:   make(chan struct{}),
+		timerAborted: make(chan struct{}),
 	}
 	for _, opt := range opts {
 		opt(&a)
@@ -86,8 +86,8 @@ func OptOutput(wr io.Writer) Option {
 type Assertions struct {
 	Output       io.Writer
 	T            *testing.T
-	timerAbort   chan bool
-	timerAborted chan bool
+	timerAbort   chan struct{}
+	timerAborted chan struct{}
 }
 
 // assertion represents the actions to take for *each* assertion.
@@ -101,7 +101,7 @@ func (a *Assertions) assertion() {
 // They will typically return a bool to indicate if the assertion succeeded, or if you should consider the overall
 // test to still be a success.
 func (a *Assertions) NonFatal() *Optional { //golint you can bite me.
-	return &Optional{t: a.T, output: a.Output}
+	return &Optional{T: a.T, Output: a.Output}
 }
 
 // NotNil asserts that a reference is not nil.
@@ -363,7 +363,7 @@ func (a *Assertions) StartTimeout(timeout time.Duration, userMessageComponents .
 			a.T.Errorf("Timeout Reached")
 			a.T.FailNow()
 		case <-a.timerAbort:
-			a.timerAborted <- true
+			close(a.timerAborted)
 			return
 		}
 	}()
@@ -371,25 +371,14 @@ func (a *Assertions) StartTimeout(timeout time.Duration, userMessageComponents .
 
 // EndTimeout marks a timed block as complete.
 func (a *Assertions) EndTimeout() {
-	a.timerAbort <- true
+	close(a.timerAbort)
 	<-a.timerAborted
 }
 
 // Optional is an assertion type that does not stop a test if an assertion fails, simply outputs the error.
 type Optional struct {
-	output io.Writer
-	t      *testing.T
-}
-
-// WithOutput sets an output to capture error output.
-func (o *Optional) WithOutput(w io.Writer) *Optional {
-	o.output = w
-	return o
-}
-
-// Output returns the underlying output writer.
-func (o *Optional) Output() io.Writer {
-	return o.output
+	T      *testing.T
+	Output io.Writer
 }
 
 func (o *Optional) assertion() {
@@ -400,7 +389,7 @@ func (o *Optional) assertion() {
 func (o *Optional) Nil(object interface{}, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldBeNil(object); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -410,7 +399,7 @@ func (o *Optional) Nil(object interface{}, userMessageComponents ...interface{})
 func (o *Optional) NotNil(object interface{}, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldNotBeNil(object); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -420,7 +409,7 @@ func (o *Optional) NotNil(object interface{}, userMessageComponents ...interface
 func (o *Optional) Len(collection interface{}, length int, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldHaveLength(collection, length); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -430,7 +419,7 @@ func (o *Optional) Len(collection interface{}, length int, userMessageComponents
 func (o *Optional) Empty(collection interface{}, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldBeEmpty(collection); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -440,7 +429,7 @@ func (o *Optional) Empty(collection interface{}, userMessageComponents ...interf
 func (o *Optional) NotEmpty(collection interface{}, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldNotBeEmpty(collection); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -450,7 +439,7 @@ func (o *Optional) NotEmpty(collection interface{}, userMessageComponents ...int
 func (o *Optional) Equal(expected interface{}, actual interface{}, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldBeEqual(expected, actual); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -460,7 +449,7 @@ func (o *Optional) Equal(expected interface{}, actual interface{}, userMessageCo
 func (o *Optional) ReferenceEqual(expected interface{}, actual interface{}, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldBeReferenceEqual(expected, actual); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -470,7 +459,7 @@ func (o *Optional) ReferenceEqual(expected interface{}, actual interface{}, user
 func (o *Optional) NotEqual(expected interface{}, actual interface{}, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldNotBeEqual(expected, actual); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -480,7 +469,7 @@ func (o *Optional) NotEqual(expected interface{}, actual interface{}, userMessag
 func (o *Optional) PanicEqual(expected interface{}, action func(), userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldBePanicEqual(expected, action); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -490,7 +479,7 @@ func (o *Optional) PanicEqual(expected interface{}, action func(), userMessageCo
 func (o *Optional) Zero(value interface{}, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldBeZero(value); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -500,7 +489,7 @@ func (o *Optional) Zero(value interface{}, userMessageComponents ...interface{})
 func (o *Optional) NotZero(value interface{}, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldBeNonZero(value); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -510,7 +499,7 @@ func (o *Optional) NotZero(value interface{}, userMessageComponents ...interface
 func (o *Optional) True(object bool, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldBeTrue(object); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -520,7 +509,7 @@ func (o *Optional) True(object bool, userMessageComponents ...interface{}) bool 
 func (o *Optional) False(object bool, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldBeFalse(object); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -530,7 +519,7 @@ func (o *Optional) False(object bool, userMessageComponents ...interface{}) bool
 func (o *Optional) InDelta(a, b, delta float64, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldBeInDelta(a, b, delta); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -540,7 +529,7 @@ func (o *Optional) InDelta(a, b, delta float64, userMessageComponents ...interfa
 func (o *Optional) InTimeDelta(a, b time.Time, delta time.Duration, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldBeInTimeDelta(a, b, delta); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -550,7 +539,7 @@ func (o *Optional) InTimeDelta(a, b time.Time, delta time.Duration, userMessageC
 func (o *Optional) FileExists(filepath string, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := fileShouldExist(filepath); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -560,7 +549,7 @@ func (o *Optional) FileExists(filepath string, userMessageComponents ...interfac
 func (o *Optional) Contains(corpus, substring string, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldContain(corpus, substring); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -570,7 +559,7 @@ func (o *Optional) Contains(corpus, substring string, userMessageComponents ...i
 func (o *Optional) NotContains(corpus, substring string, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldNotContain(corpus, substring); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -580,7 +569,7 @@ func (o *Optional) NotContains(corpus, substring string, userMessageComponents .
 func (o *Optional) Any(target interface{}, predicate Predicate, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldAny(target, predicate); didFail {
-		fail(o.output, o.t, prefixOptional(message), userMessageComponents...)
+		fail(o.Output, o.T, prefixOptional(message), userMessageComponents...)
 		return false
 	}
 	return true
@@ -590,7 +579,7 @@ func (o *Optional) Any(target interface{}, predicate Predicate, userMessageCompo
 func (o *Optional) AnyOfInt(target []int, predicate PredicateOfInt, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldAnyOfInt(target, predicate); didFail {
-		fail(o.output, o.t, message, userMessageComponents...)
+		fail(o.Output, o.T, message, userMessageComponents...)
 		return false
 	}
 	return true
@@ -600,7 +589,7 @@ func (o *Optional) AnyOfInt(target []int, predicate PredicateOfInt, userMessageC
 func (o *Optional) AnyOfFloat(target []float64, predicate PredicateOfFloat, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldAnyOfFloat(target, predicate); didFail {
-		fail(o.output, o.t, message, userMessageComponents...)
+		fail(o.Output, o.T, message, userMessageComponents...)
 		return false
 	}
 	return true
@@ -610,7 +599,7 @@ func (o *Optional) AnyOfFloat(target []float64, predicate PredicateOfFloat, user
 func (o *Optional) AnyOfString(target []string, predicate PredicateOfString, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldAnyOfString(target, predicate); didFail {
-		fail(o.output, o.t, message, userMessageComponents...)
+		fail(o.Output, o.T, message, userMessageComponents...)
 		return false
 	}
 	return true
@@ -620,7 +609,7 @@ func (o *Optional) AnyOfString(target []string, predicate PredicateOfString, use
 func (o *Optional) All(target interface{}, predicate Predicate, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldAll(target, predicate); didFail {
-		fail(o.output, o.t, message, userMessageComponents...)
+		fail(o.Output, o.T, message, userMessageComponents...)
 		return false
 	}
 	return true
@@ -630,7 +619,7 @@ func (o *Optional) All(target interface{}, predicate Predicate, userMessageCompo
 func (o *Optional) AllOfInt(target []int, predicate PredicateOfInt, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldAllOfInt(target, predicate); didFail {
-		fail(o.output, o.t, message, userMessageComponents...)
+		fail(o.Output, o.T, message, userMessageComponents...)
 		return false
 	}
 	return true
@@ -640,7 +629,7 @@ func (o *Optional) AllOfInt(target []int, predicate PredicateOfInt, userMessageC
 func (o *Optional) AllOfFloat(target []float64, predicate PredicateOfFloat, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldAllOfFloat(target, predicate); didFail {
-		fail(o.output, o.t, message, userMessageComponents...)
+		fail(o.Output, o.T, message, userMessageComponents...)
 		return false
 	}
 	return true
@@ -650,7 +639,7 @@ func (o *Optional) AllOfFloat(target []float64, predicate PredicateOfFloat, user
 func (o *Optional) AllOfString(target []string, predicate PredicateOfString, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldAllOfString(target, predicate); didFail {
-		fail(o.output, o.t, message, userMessageComponents...)
+		fail(o.Output, o.T, message, userMessageComponents...)
 		return false
 	}
 	return true
@@ -660,7 +649,7 @@ func (o *Optional) AllOfString(target []string, predicate PredicateOfString, use
 func (o *Optional) None(target interface{}, predicate Predicate, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldNone(target, predicate); didFail {
-		fail(o.output, o.t, message, userMessageComponents...)
+		fail(o.Output, o.T, message, userMessageComponents...)
 		return false
 	}
 	return true
@@ -670,7 +659,7 @@ func (o *Optional) None(target interface{}, predicate Predicate, userMessageComp
 func (o *Optional) NoneOfInt(target []int, predicate PredicateOfInt, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldNoneOfInt(target, predicate); didFail {
-		fail(o.output, o.t, message, userMessageComponents...)
+		fail(o.Output, o.T, message, userMessageComponents...)
 		return false
 	}
 	return true
@@ -680,7 +669,7 @@ func (o *Optional) NoneOfInt(target []int, predicate PredicateOfInt, userMessage
 func (o *Optional) NoneOfFloat(target []float64, predicate PredicateOfFloat, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldNoneOfFloat(target, predicate); didFail {
-		fail(o.output, o.t, message, userMessageComponents...)
+		fail(o.Output, o.T, message, userMessageComponents...)
 		return false
 	}
 	return true
@@ -690,7 +679,7 @@ func (o *Optional) NoneOfFloat(target []float64, predicate PredicateOfFloat, use
 func (o *Optional) NoneOfString(target []string, predicate PredicateOfString, userMessageComponents ...interface{}) bool {
 	o.assertion()
 	if didFail, message := shouldNoneOfString(target, predicate); didFail {
-		fail(o.output, o.t, message, userMessageComponents...)
+		fail(o.Output, o.T, message, userMessageComponents...)
 		return false
 	}
 	return true
@@ -698,7 +687,7 @@ func (o *Optional) NoneOfString(target []string, predicate PredicateOfString, us
 
 // Fail manually injects a failure.
 func (o *Optional) Fail(userMessageComponents ...interface{}) {
-	fail(o.output, o.t, prefixOptional("Assertion Failed"), userMessageComponents...)
+	fail(o.Output, o.T, prefixOptional("Assertion Failed"), userMessageComponents...)
 }
 
 // --------------------------------------------------------------------------------
