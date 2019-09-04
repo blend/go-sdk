@@ -9,8 +9,8 @@ import (
 
 func TestEmpty(t *testing.T) {
 	buf := bytes.NewBuffer(nil)
-	a := Empty().WithOutput(buf)
-	if a.Output() == nil {
+	a := Empty(OptOutput(buf))
+	if a.Output == nil {
 		t.Error("The empty assertion helper should have an output set")
 		t.Fail()
 	}
@@ -411,7 +411,7 @@ func TestInTimeDelta(t *testing.T) {
 func TestAssertNew(t *testing.T) {
 	a := New(t)
 
-	if a.t == nil {
+	if a.T == nil {
 		t.Errorf("should pass t to the assertion helper")
 		t.Fail()
 	}
@@ -419,20 +419,16 @@ func TestAssertNew(t *testing.T) {
 
 func TestAssertWithOutput(t *testing.T) {
 	buf := bytes.NewBuffer(nil)
-	a := New(t).WithOutput(buf)
-	if a.output == nil {
+	a := New(t, OptOutput(buf))
+	if a.Output == nil {
 		t.Errorf("should set output")
-		t.FailNow()
-	}
-	if a.Output() == nil {
-		t.Errorf("Output() is wrong")
 		t.FailNow()
 	}
 }
 
 func TestAssertNotFatal(t *testing.T) {
 	buf := bytes.NewBuffer(nil)
-	a := New(t).WithOutput(buf)
+	a := New(t, OptOutput(buf))
 	nf := a.NonFatal()
 	if nf.t == nil {
 		t.Errorf("should set t")
@@ -459,7 +455,7 @@ func TestAssertNil(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).Nil("foo")
+		New(nil, OptOutput(output)).Nil("foo")
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -482,7 +478,7 @@ func TestAssertNotNil(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).NotNil(nil)
+		New(nil, OptOutput(output)).NotNil(nil)
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -505,7 +501,7 @@ func TestAssertLen(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).Len([]string{}, 3)
+		New(nil, OptOutput(output)).Len([]string{}, 3)
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -528,7 +524,7 @@ func TestAssertEmpty(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).Empty("foo")
+		New(nil, OptOutput(output)).Empty("foo")
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -551,7 +547,7 @@ func TestAssertNotEmpty(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).NotEmpty("")
+		New(nil, OptOutput(output)).NotEmpty("")
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -574,7 +570,7 @@ func TestAssertEqual(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).Equal("foo", "bar")
+		New(nil, OptOutput(output)).Equal("foo", "bar")
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -603,7 +599,7 @@ func TestAssertReferenceEqual(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).ReferenceEqual(ref1, ref3)
+		New(nil, OptOutput(output)).ReferenceEqual(ref1, ref3)
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -626,7 +622,7 @@ func TestAssertNotEqual(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).NotEqual("foo", "foo")
+		New(nil, OptOutput(output)).NotEqual("foo", "foo")
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -649,7 +645,7 @@ func TestAssertZero(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).Zero(1)
+		New(nil, OptOutput(output)).Zero(1)
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -672,7 +668,7 @@ func TestAssertNotZero(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).NotZero(0)
+		New(nil, OptOutput(output)).NotZero(0)
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -695,7 +691,7 @@ func TestAssertTrue(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).True(1 == 0)
+		New(nil, OptOutput(output)).True(1 == 0)
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -718,7 +714,7 @@ func TestAssertFalse(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).False(1 == 1)
+		New(nil, OptOutput(output)).False(1 == 1)
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -742,7 +738,7 @@ func TestAssertInDelta(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).InDelta(1, 3, 1)
+		New(nil, OptOutput(output)).InDelta(1, 3, 1)
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -769,7 +765,7 @@ func TestAssertInTimeDelta(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).InTimeDelta(t1, t3, time.Second)
+		New(nil, OptOutput(output)).InTimeDelta(t1, t3, time.Second)
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -792,7 +788,7 @@ func TestAssertContains(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).Contains("foo bar", "baz")
+		New(nil, OptOutput(output)).Contains("foo bar", "baz")
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -815,7 +811,7 @@ func TestAssertNotContains(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).NotContains("foo bar", "foo")
+		New(nil, OptOutput(output)).NotContains("foo bar", "foo")
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -838,7 +834,7 @@ func TestAssertAny(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).Any([]int{1, 2, 3}, func(v Any) bool { return v.(int) == 0 }) // should not be ok
+		New(nil, OptOutput(output)).Any([]int{1, 2, 3}, func(v Any) bool { return v.(int) == 0 }) // should not be ok
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -861,7 +857,7 @@ func TestAssertAnyOfInt(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).AnyOfInt([]int{1, 2, 3}, func(v int) bool { return v == 0 }) // should not  be ok
+		New(nil, OptOutput(output)).AnyOfInt([]int{1, 2, 3}, func(v int) bool { return v == 0 }) // should not  be ok
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -884,7 +880,7 @@ func TestAssertAnyOfFloat64(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).AnyOfFloat64([]float64{1, 2, 3}, func(v float64) bool { return v == 0 }) // should not be ok
+		New(nil, OptOutput(output)).AnyOfFloat64([]float64{1, 2, 3}, func(v float64) bool { return v == 0 }) // should not be ok
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -907,7 +903,7 @@ func TestAssertAnyOfString(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).AnyOfString([]string{"foo", "bar", "baz"}, func(v string) bool { return v == "buzz" }) // should not be ok
+		New(nil, OptOutput(output)).AnyOfString([]string{"foo", "bar", "baz"}, func(v string) bool { return v == "buzz" }) // should not be ok
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -930,7 +926,7 @@ func TestAssertAll(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).All([]int{1, 2, 3}, func(v Any) bool { return v.(int) > 1 }) // should not be ok
+		New(nil, OptOutput(output)).All([]int{1, 2, 3}, func(v Any) bool { return v.(int) > 1 }) // should not be ok
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -953,7 +949,7 @@ func TestAssertAllOfInt(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).AllOfInt([]int{1, 2, 3}, func(v int) bool { return v > 1 }) // should not  be ok
+		New(nil, OptOutput(output)).AllOfInt([]int{1, 2, 3}, func(v int) bool { return v > 1 }) // should not  be ok
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -976,7 +972,7 @@ func TestAssertAllOfFloat64(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).AllOfFloat64([]float64{1, 2, 3}, func(v float64) bool { return v > 1 }) // should not be ok
+		New(nil, OptOutput(output)).AllOfFloat64([]float64{1, 2, 3}, func(v float64) bool { return v > 1 }) // should not be ok
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -999,7 +995,7 @@ func TestAssertAllOfString(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).AllOfString([]string{"foo", "bar", "baz"}, func(v string) bool { return v == "foo" }) // should not be ok
+		New(nil, OptOutput(output)).AllOfString([]string{"foo", "bar", "baz"}, func(v string) bool { return v == "foo" }) // should not be ok
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -1022,7 +1018,7 @@ func TestAssertNone(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).None([]int{1, 2, 3}, func(v Any) bool { return v.(int) > 2 }) // should not be ok
+		New(nil, OptOutput(output)).None([]int{1, 2, 3}, func(v Any) bool { return v.(int) > 2 }) // should not be ok
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -1045,7 +1041,7 @@ func TestAssertNoneOfInt(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).NoneOfInt([]int{1, 2, 3}, func(v int) bool { return v > 2 }) // should not  be ok
+		New(nil, OptOutput(output)).NoneOfInt([]int{1, 2, 3}, func(v int) bool { return v > 2 }) // should not  be ok
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -1068,7 +1064,7 @@ func TestAssertNoneOfFloat64(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).NoneOfFloat64([]float64{1, 2, 3}, func(v float64) bool { return v > 2 }) // should not be ok
+		New(nil, OptOutput(output)).NoneOfFloat64([]float64{1, 2, 3}, func(v float64) bool { return v > 2 }) // should not be ok
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -1091,7 +1087,7 @@ func TestAssertNoneOfString(t *testing.T) {
 
 	output := bytes.NewBuffer(nil)
 	err = safeExec(func() {
-		New(nil).WithOutput(output).NoneOfString([]string{"foo", "bar", "baz"}, func(v string) bool { return v == "foo" }) // should not be ok
+		New(nil, OptOutput(output)).NoneOfString([]string{"foo", "bar", "baz"}, func(v string) bool { return v == "foo" }) // should not be ok
 	})
 	if err == nil {
 		t.Errorf("should have produced a panic")
@@ -1114,7 +1110,7 @@ func TestAssertNonFatalNil(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().Nil("foo") {
+	if New(nil, OptOutput(output)).NonFatal().Nil("foo") {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
@@ -1131,7 +1127,7 @@ func TestAssertNonFatalNotNil(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().NotNil(nil) {
+	if New(nil, OptOutput(output)).NonFatal().NotNil(nil) {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
@@ -1148,7 +1144,7 @@ func TestAssertNonFatalLen(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().Len("foo", 4) {
+	if New(nil, OptOutput(output)).NonFatal().Len("foo", 4) {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
@@ -1165,7 +1161,7 @@ func TestAssertNonFatalEmpty(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().Empty("foo") {
+	if New(nil, OptOutput(output)).NonFatal().Empty("foo") {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
@@ -1182,7 +1178,7 @@ func TestAssertNonFatalNotEmpty(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().NotEmpty("") {
+	if New(nil, OptOutput(output)).NonFatal().NotEmpty("") {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
@@ -1199,7 +1195,7 @@ func TestAssertNonFatalEqual(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().Equal("foo", "bar") {
+	if New(nil, OptOutput(output)).NonFatal().Equal("foo", "bar") {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
@@ -1222,7 +1218,7 @@ func TestAssertNonFatalReferenceEqual(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().ReferenceEqual(ref1, ref3) {
+	if New(nil, OptOutput(output)).NonFatal().ReferenceEqual(ref1, ref3) {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
@@ -1239,7 +1235,7 @@ func TestAssertNonFatalNotEqual(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().NotEqual("foo", "foo") {
+	if New(nil, OptOutput(output)).NonFatal().NotEqual("foo", "foo") {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
@@ -1256,7 +1252,7 @@ func TestAssertNonFatalZero(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().Zero(1) {
+	if New(nil, OptOutput(output)).NonFatal().Zero(1) {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
@@ -1273,7 +1269,7 @@ func TestAssertNonFatalNotZero(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().NotZero(0) {
+	if New(nil, OptOutput(output)).NonFatal().NotZero(0) {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
@@ -1290,7 +1286,7 @@ func TestAssertNonFatalTrue(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().True(1 == 0) {
+	if New(nil, OptOutput(output)).NonFatal().True(1 == 0) {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
@@ -1307,7 +1303,7 @@ func TestAssertNonFatalFalse(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().False(1 == 1) {
+	if New(nil, OptOutput(output)).NonFatal().False(1 == 1) {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
@@ -1324,7 +1320,7 @@ func TestAssertNonFatalInDelta(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().InDelta(1, 3, 1) {
+	if New(nil, OptOutput(output)).NonFatal().InDelta(1, 3, 1) {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
@@ -1345,7 +1341,7 @@ func TestAssertNonFatalInTimeDelta(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().InTimeDelta(t1, t3, time.Second) {
+	if New(nil, OptOutput(output)).NonFatal().InTimeDelta(t1, t3, time.Second) {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
@@ -1362,7 +1358,7 @@ func TestAssertNonFatalContains(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().Contains("foo bar", "something") {
+	if New(nil, OptOutput(output)).NonFatal().Contains("foo bar", "something") {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
@@ -1379,7 +1375,7 @@ func TestAssertNonFatalNotContains(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().NotContains("foo bar", "bar") {
+	if New(nil, OptOutput(output)).NonFatal().NotContains("foo bar", "bar") {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
@@ -1396,7 +1392,7 @@ func TestAssertNonFatalAny(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().Any([]int{1, 2, 3}, func(v Any) bool { return v.(int) == 0 }) {
+	if New(nil, OptOutput(output)).NonFatal().Any([]int{1, 2, 3}, func(v Any) bool { return v.(int) == 0 }) {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
@@ -1413,7 +1409,7 @@ func TestAssertNonFatalAll(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().All([]int{1, 2, 3}, func(v Any) bool { return v.(int) > 1 }) {
+	if New(nil, OptOutput(output)).NonFatal().All([]int{1, 2, 3}, func(v Any) bool { return v.(int) > 1 }) {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
@@ -1430,7 +1426,7 @@ func TestAssertNonFatalNone(t *testing.T) {
 	}
 
 	output := bytes.NewBuffer(nil)
-	if New(nil).WithOutput(output).NonFatal().None([]int{1, 2, 3}, func(v Any) bool { return v.(int) > 2 }) {
+	if New(nil, OptOutput(output)).NonFatal().None([]int{1, 2, 3}, func(v Any) bool { return v.(int) > 2 }) {
 		t.Errorf("should have failed")
 		t.FailNow()
 	}
