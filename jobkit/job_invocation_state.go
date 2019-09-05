@@ -1,7 +1,6 @@
 package jobkit
 
 import (
-	"bytes"
 	"context"
 
 	"github.com/blend/go-sdk/cron"
@@ -13,7 +12,6 @@ func WithJobInvocationState(ctx context.Context, jis *JobInvocationState) contex
 	if ji == nil {
 		return ctx
 	}
-
 	ji.State = jis
 	return ctx
 }
@@ -24,7 +22,6 @@ func GetJobInvocationState(ctx context.Context) *JobInvocationState {
 	if ji == nil {
 		return nil
 	}
-
 	if typed, ok := ji.State.(*JobInvocationState); ok {
 		return typed
 	}
@@ -34,17 +31,11 @@ func GetJobInvocationState(ctx context.Context) *JobInvocationState {
 // NewJobInvocationState returns a new job invocation state.
 func NewJobInvocationState() *JobInvocationState {
 	return &JobInvocationState{
-		LineOutput:     new(LineWriter),
-		CombinedOutput: new(bytes.Buffer),
-		Output:         new(bytes.Buffer),
-		ErrorOutput:    new(bytes.Buffer),
+		Output: new(LineWriter),
 	}
 }
 
 // JobInvocationState is the state object for a job invocation.
 type JobInvocationState struct {
-	LineOutput     *LineWriter
-	CombinedOutput *bytes.Buffer
-	Output         *bytes.Buffer
-	ErrorOutput    *bytes.Buffer
+	Output *LineWriter
 }

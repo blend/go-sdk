@@ -67,7 +67,7 @@ var invocationTemplate = `
 		<tbody>
 			<tr>
 				<td>
-					<pre>{{ .ViewModel.State.CombinedOutput }}</pre>
+					<pre>{{ .ViewModel.State.Output.CombinedOutput }}</pre>
 				</td>
 			</tr>
 		</tbody>
