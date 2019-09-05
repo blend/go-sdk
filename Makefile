@@ -13,8 +13,10 @@ DB_SSLMODE		?= disable
 # coverage stuff
 CIRCLE_ARTIFACTS 	?= "."
 COVERAGE_OUT 		:= "$(CIRCLE_ARTIFACTS)/coverage.html"
+BUILD_NUMBER 		?= ${GIT_REF}
 
 export GIT_REF
+export BUILD_NUMBER
 export VERSION
 export DB_SSLMODE
 
@@ -86,6 +88,10 @@ test-circleci:
 test:
 	@echo "$(VERSION)/$(GIT_REF) >> tests"
 	@go test $(PKGS) -timeout 15s
+
+test-docker:
+	@echo "$(VERSION)/$(GIT_REF) >> tests (docker)"
+	@bash ./_bin/run_tests docker-compose.yml
 
 test-verbose:
 	@echo "$(VERSION)/$(GIT_REF) >> tests"
