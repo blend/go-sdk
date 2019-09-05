@@ -146,11 +146,64 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 		if err != nil {
 			return web.JSON.BadRequest(err)
 		}
-		invocation := job.GetInvocationByID(web.StringValue(r.RouteParam("invocation")))
+		invocationID, err := r.RouteParam("invocation")
+		if err != nil {
+			return web.JSON.BadRequest(err)
+		}
+		if job.Current != nil && job.Current.ID == invocationID {
+			return web.JSON.Result(job.Current)
+		}
+		invocation := job.GetInvocationByID(invocationID)
 		if invocation == nil {
 			return web.JSON.NotFound()
 		}
 		return web.JSON.Result(invocation)
+	})
+	app.GET("/job.invocation.output/:jobName/:invocation", func(r *web.Ctx) web.Result {
+		job, err := jm.Job(web.StringValue(r.RouteParam("jobName")))
+		if err != nil {
+			return web.Text.BadRequest(err)
+		}
+		invocationID, err := r.RouteParam("invocation")
+		if err != nil {
+			return web.Text.BadRequest(err)
+		}
+		var invocation *cron.JobInvocation
+		if job.Current != nil && job.Current.ID == invocationID {
+			invocation = job.Current
+		} else {
+			invocation = job.GetInvocationByID(invocationID)
+		}
+		if invocation == nil {
+			return web.Text.NotFound()
+		}
+		if typed, ok := invocation.State.(*JobInvocationState); ok {
+			return web.Text.Result(typed.CombinedOutput.String())
+		}
+		return web.Text.NotFound()
+	})
+	app.GET("/api/job.invocation.output/:jobName/:invocation", func(r *web.Ctx) web.Result {
+		job, err := jm.Job(web.StringValue(r.RouteParam("jobName")))
+		if err != nil {
+			return web.JSON.BadRequest(err)
+		}
+		invocationID, err := r.RouteParam("invocation")
+		if err != nil {
+			return web.JSON.BadRequest(err)
+		}
+		var invocation *cron.JobInvocation
+		if job.Current != nil && job.Current.ID == invocationID {
+			invocation = job.Current
+		} else {
+			invocation = job.GetInvocationByID(invocationID)
+		}
+		if invocation == nil {
+			return web.JSON.NotFound()
+		}
+		if typed, ok := invocation.State.(*JobInvocationState); ok {
+			return web.JSON.Result(typed.LineOutput.Lines)
+		}
+		return web.JSON.NotFound()
 	})
 	return app
 }

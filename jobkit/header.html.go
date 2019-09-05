@@ -449,6 +449,13 @@ var headerTemplate = `
 			padding: 10px;
 		}
 
+		tr.running {
+			color: white;
+			background-color: #0F9960;
+		}
+		tr.running a {
+			color: white;
+		}
 		tr.failed {
 			background-color: #F55656
 		}

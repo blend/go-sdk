@@ -3,6 +3,7 @@ package jobkit
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
@@ -22,7 +23,7 @@ func TestLoggingDebugf(t *testing.T) {
 	})
 
 	triggered := make(chan struct{})
-	log := logger.All()
+	log := logger.All(logger.OptOutput(ioutil.Discard))
 	defer log.Close()
 
 	var message string
@@ -48,7 +49,7 @@ func TestLoggingInfof(t *testing.T) {
 	})
 
 	triggered := make(chan struct{})
-	log := logger.All()
+	log := logger.All(logger.OptOutput(ioutil.Discard))
 	defer log.Close()
 
 	var message string
@@ -75,7 +76,7 @@ func TestLoggingWarningf(t *testing.T) {
 	})
 
 	triggered := make(chan struct{})
-	log := logger.All()
+	log := logger.All(logger.OptOutput(ioutil.Discard))
 	defer log.Close()
 
 	var message string
@@ -102,7 +103,7 @@ func TestLoggingWarning(t *testing.T) {
 	})
 
 	triggered := make(chan struct{})
-	log := logger.All()
+	log := logger.All(logger.OptOutput(ioutil.Discard))
 	defer log.Close()
 
 	var message string
@@ -129,7 +130,7 @@ func TestLoggingErrorf(t *testing.T) {
 	})
 
 	triggered := make(chan struct{})
-	log := logger.All()
+	log := logger.All(logger.OptOutput(ioutil.Discard))
 	defer log.Close()
 
 	var message string
@@ -156,7 +157,7 @@ func TestLoggingError(t *testing.T) {
 	})
 
 	triggered := make(chan struct{})
-	log := logger.All()
+	log := logger.All(logger.OptOutput(ioutil.Discard))
 	defer log.Close()
 
 	var message string
@@ -183,7 +184,7 @@ func TestLoggingFatalf(t *testing.T) {
 	})
 
 	triggered := make(chan struct{})
-	log := logger.All()
+	log := logger.All(logger.OptOutput(ioutil.Discard))
 	defer log.Close()
 
 	var message string
@@ -210,7 +211,7 @@ func TestLoggingFatal(t *testing.T) {
 	})
 
 	triggered := make(chan struct{})
-	log := logger.All()
+	log := logger.All(logger.OptOutput(ioutil.Discard))
 	defer log.Close()
 
 	var message string

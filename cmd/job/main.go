@@ -1,9 +1,6 @@
 package main
 
 import (
-	"context"
-	"io"
-	"os"
 	"strings"
 	"time"
 
@@ -21,7 +18,6 @@ import (
 	"github.com/blend/go-sdk/jobkit"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/ref"
-	"github.com/blend/go-sdk/sh"
 	"github.com/blend/go-sdk/slack"
 	"github.com/blend/go-sdk/stats"
 	"github.com/blend/go-sdk/stringutil"
@@ -35,6 +31,7 @@ var (
 	flagDefaultJobSchedule      *string
 	flagDefaultJobTimeout       *time.Duration
 	flagDefaultJobDiscardOutput *bool
+	flagDefaultJobSerial        *bool
 	flagDisableServer           *bool
 )
 
@@ -63,10 +60,19 @@ type jobConfig struct {
 	DiscardOutput *bool `yaml:"discardOutput"`
 }
 
+// DiscardOutputOrDefault returns a value or a default.
+func (jc *jobConfig) DiscardOutputOrDefault() bool {
+	if jc.DiscardOutput != nil {
+		return *jc.DiscardOutput
+	}
+	return false
+}
+
 func (jc *jobConfig) Resolve() error {
 	return configutil.AnyError(
 		configutil.SetString(&jc.Name, configutil.String(*flagDefaultJobName), configutil.String(env.Env().ServiceName()), configutil.String(jc.Name), configutil.String(stringutil.Letters.Random(8))),
 		configutil.SetBool(&jc.DiscardOutput, configutil.Bool(flagDefaultJobDiscardOutput), configutil.Bool(jc.DiscardOutput), configutil.Bool(ref.Bool(false))),
+		configutil.SetBool(&jc.Serial, configutil.Bool(flagDefaultJobSerial), configutil.Bool(jc.Serial), configutil.Bool(ref.Bool(true))),
 		configutil.SetString(&jc.Schedule, configutil.String(*flagDefaultJobSchedule), configutil.String(jc.Schedule)),
 		configutil.SetDuration(&jc.Timeout, configutil.Duration(*flagDefaultJobTimeout), configutil.Duration(jc.Timeout)),
 	)
@@ -121,6 +127,7 @@ func main() {
 	flagDefaultJobSchedule = cmd.Flags().StringP("schedule", "s", "", "The job schedule in cron format (ex: '*/5 * * * *')")
 	flagDefaultJobTimeout = cmd.Flags().Duration("timeout", 0, "The job execution timeout as a duration (ex: 5s)")
 	flagDefaultJobDiscardOutput = cmd.Flags().Bool("discard-output", false, "If jobs should discard console output from the action.")
+	flagDefaultJobSerial = cmd.Flags().Bool("serial", true, "The job should run serially (that is, only one can be active at a time)")
 	flagDisableServer = cmd.Flags().Bool("disable-server", false, "If the management server should be disabled.")
 
 	if err := cmd.Execute(); err != nil {
@@ -173,8 +180,8 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	if !cfg.EmailDefaults.IsZero() {
-		log.Infof("using email defaults; from=%s", cfg.EmailDefaults.From)
-		log.Infof("using email defaults; to=%s", stringutil.CSV(cfg.EmailDefaults.To))
+		log.Debugf("using email defaults; from=%s", cfg.EmailDefaults.From)
+		log.Debugf("using email defaults; to=%s", stringutil.CSV(cfg.EmailDefaults.To))
 	}
 
 	var slackClient slack.Sender
@@ -198,11 +205,20 @@ func run(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
+
 		job.Log = log
 		job.EmailClient = emailClient
 		job.SlackClient = slackClient
 		job.StatsClient = statsClient
-		log.Infof("loading job `%s` with schedule `%s`", jobCfg.Name, jobCfg.ScheduleOrDefault())
+
+		var serial string
+		if jobCfg.SerialOrDefault() {
+			serial = "serial execution"
+		} else {
+			serial = "parallel execution"
+		}
+
+		log.Infof("loading job `%s` with schedule `%s` with %v", jobCfg.Name, jobCfg.ScheduleOrDefault(), serial)
 		jobs.LoadJobs(job)
 	}
 
@@ -234,21 +250,7 @@ func createJobFromConfig(base config, cfg jobConfig) (*jobkit.Job, error) {
 	if len(cfg.Exec) == 0 {
 		return nil, ex.New("job exec and command unset", ex.OptMessagef("job: %s", cfg.Name))
 	}
-	action := func(ctx context.Context) error {
-		if cfg.DiscardOutput == nil || (cfg.DiscardOutput != nil && !*cfg.DiscardOutput) {
-			if jis := jobkit.GetJobInvocationState(ctx); jis != nil {
-				cmd, err := sh.CmdContext(ctx, cfg.Exec[0], cfg.Exec[1:]...)
-				if err != nil {
-					return err
-				}
-				cmd.Stdout = io.MultiWriter(jis.Output, os.Stdout)
-				cmd.Stderr = io.MultiWriter(jis.ErrorOutput, os.Stderr)
-				return ex.New(cmd.Run())
-			}
-		}
-		return sh.ForkContext(ctx, cfg.Exec[0], cfg.Exec[1:]...)
-	}
-
+	action := jobkit.CreateShellAction(cfg.Exec, jobkit.OptShellActionDiscardOutput(cfg.DiscardOutputOrDefault()))
 	job, err := jobkit.NewJob(cfg.JobConfig, action)
 	if err != nil {
 		return nil, err

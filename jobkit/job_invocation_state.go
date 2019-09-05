@@ -34,13 +34,17 @@ func GetJobInvocationState(ctx context.Context) *JobInvocationState {
 // NewJobInvocationState returns a new job invocation state.
 func NewJobInvocationState() *JobInvocationState {
 	return &JobInvocationState{
-		Output:      new(bytes.Buffer),
-		ErrorOutput: new(bytes.Buffer),
+		LineOutput:     new(LineWriter),
+		CombinedOutput: new(bytes.Buffer),
+		Output:         new(bytes.Buffer),
+		ErrorOutput:    new(bytes.Buffer),
 	}
 }
 
 // JobInvocationState is the state object for a job invocation.
 type JobInvocationState struct {
-	Output      *bytes.Buffer
-	ErrorOutput *bytes.Buffer
+	LineOutput     *LineWriter
+	CombinedOutput *bytes.Buffer
+	Output         *bytes.Buffer
+	ErrorOutput    *bytes.Buffer
 }

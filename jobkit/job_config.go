@@ -18,6 +18,10 @@ type JobConfig struct {
 	Schedule string `json:"schedule" yaml:"schedule"`
 	// Timeout represents the abort threshold for the job.
 	Timeout time.Duration `json:"timeout" yaml:"timeout"`
+	// ShutdownGracePeriod represents the time a job is given to clean itself up.
+	ShutdownGracePeriod time.Duration `json:"shutdownGracePeriod" yaml:"shutdownGracePeriod"`
+	// Serial indicates if job executions cannot overlap.
+	Serial *bool `json:"serial" yaml:"serial"`
 
 	// NotifyOnStart governs if we should send notifications job start.
 	NotifyOnStart *bool `json:"notifyOnStart" yaml:"notifyOnStart"`
@@ -25,6 +29,8 @@ type JobConfig struct {
 	NotifyOnSuccess *bool `json:"notifyOnSuccess" yaml:"notifyOnSuccess"`
 	// NotifyOnFailure governs if we should send notifications on any failure.
 	NotifyOnFailure *bool `json:"notifyOnFailure" yaml:"notifyOnFailure"`
+	// NotifyOnCancellation governs if we should send notifications on cancellation.
+	NotifyOnCancellation *bool `json:"notifyOnCancellation" yaml:"notifyOnCancellation"`
 	// NotifyOnBroken governs if we should send notifications on a success => failure transition.
 	NotifyOnBroken *bool `json:"notifyOnBroken" yaml:"notifyOnBroken"`
 	// NotifyOnFixed governs if we should send notifications on a failure => success transition.
@@ -44,6 +50,14 @@ func (jc JobConfig) ScheduleOrDefault() string {
 		return jc.Schedule
 	}
 	return "* */5 * * * * *"
+}
+
+// SerialOrDefault returns a value or a default.
+func (jc JobConfig) SerialOrDefault() bool {
+	if jc.Serial != nil {
+		return *jc.Serial
+	}
+	return true
 }
 
 // NotifyOnStartOrDefault returns a value or a default.
@@ -66,6 +80,14 @@ func (jc JobConfig) NotifyOnSuccessOrDefault() bool {
 func (jc JobConfig) NotifyOnFailureOrDefault() bool {
 	if jc.NotifyOnFailure != nil {
 		return *jc.NotifyOnFailure
+	}
+	return true
+}
+
+// NotifyOnCancellationOrDefault returns a value or a default.
+func (jc JobConfig) NotifyOnCancellationOrDefault() bool {
+	if jc.NotifyOnCancellation != nil {
+		return *jc.NotifyOnCancellation
 	}
 	return true
 }

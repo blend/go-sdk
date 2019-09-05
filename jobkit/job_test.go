@@ -42,9 +42,10 @@ func TestJobLifecycleHooksNotificationsUnset(t *testing.T) {
 		JobName: "test-job",
 	})
 
-	slackMessages := make(chan slack.Message, 1)
+	slackMessages := make(chan slack.Message, 16)
 
 	job := &Job{
+		Config:      JobConfig{},
 		SlackClient: slack.MockWebhookSender(slackMessages),
 	}
 
@@ -55,16 +56,16 @@ func TestJobLifecycleHooksNotificationsUnset(t *testing.T) {
 	assert.Empty(slackMessages)
 
 	job.OnFailure(ctx)
-	assert.Empty(slackMessages)
+	assert.NotEmpty(slackMessages)
 
 	job.OnCancellation(ctx)
-	assert.Empty(slackMessages)
+	assert.NotEmpty(slackMessages)
 
 	job.OnBroken(ctx)
-	assert.Empty(slackMessages)
+	assert.NotEmpty(slackMessages)
 
 	job.OnFixed(ctx)
-	assert.Empty(slackMessages)
+	assert.NotEmpty(slackMessages)
 }
 
 func TestJobLifecycleHooksNotificationsSetDisabled(t *testing.T) {
@@ -80,11 +81,12 @@ func TestJobLifecycleHooksNotificationsSetDisabled(t *testing.T) {
 	job := &Job{
 		SlackClient: slack.MockWebhookSender(slackMessages),
 		Config: JobConfig{
-			NotifyOnStart:   ref.Bool(false),
-			NotifyOnSuccess: ref.Bool(false),
-			NotifyOnFailure: ref.Bool(false),
-			NotifyOnBroken:  ref.Bool(false),
-			NotifyOnFixed:   ref.Bool(false),
+			NotifyOnStart:        ref.Bool(false),
+			NotifyOnSuccess:      ref.Bool(false),
+			NotifyOnFailure:      ref.Bool(false),
+			NotifyOnBroken:       ref.Bool(false),
+			NotifyOnFixed:        ref.Bool(false),
+			NotifyOnCancellation: ref.Bool(false),
 		},
 	}
 
@@ -121,11 +123,12 @@ func TestJobLifecycleHooksNotificationsSetEnabled(t *testing.T) {
 	job := &Job{
 		SlackClient: slack.MockWebhookSender(slackMessages),
 		Config: JobConfig{
-			NotifyOnStart:   ref.Bool(true),
-			NotifyOnSuccess: ref.Bool(true),
-			NotifyOnFailure: ref.Bool(true),
-			NotifyOnBroken:  ref.Bool(true),
-			NotifyOnFixed:   ref.Bool(true),
+			NotifyOnStart:        ref.Bool(true),
+			NotifyOnSuccess:      ref.Bool(true),
+			NotifyOnFailure:      ref.Bool(true),
+			NotifyOnBroken:       ref.Bool(true),
+			NotifyOnFixed:        ref.Bool(true),
+			NotifyOnCancellation: ref.Bool(true),
 		},
 	}
 

@@ -33,6 +33,12 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 		js.TimeoutProvider = func() time.Duration { return 0 }
 	}
 
+	if typed, ok := job.(ShutdownGracePeriodProvider); ok {
+		js.ShutdownGracePeriodProvider = typed.ShutdownGracePeriod
+	} else {
+		js.ShutdownGracePeriodProvider = func() time.Duration { return 0 }
+	}
+
 	if typed, ok := job.(EnabledProvider); ok {
 		js.EnabledProvider = typed.Enabled
 	} else {
@@ -88,6 +94,7 @@ type JobScheduler struct {
 	EnabledProvider                func() bool          `json:"-"`
 	SerialProvider                 func() bool          `json:"-"`
 	TimeoutProvider                func() time.Duration `json:"-"`
+	ShutdownGracePeriodProvider    func() time.Duration `json:"-"`
 	ShouldTriggerListenersProvider func() bool          `json:"-"`
 	ShouldWriteOutputProvider      func() bool          `json:"-"`
 }
@@ -108,7 +115,13 @@ func (js *JobScheduler) Stop() error {
 	if !js.Latch.CanStop() {
 		return fmt.Errorf("already stopped")
 	}
+	// Signal we are stopping.
 	js.Latch.Stopping()
+
+	// Cancel jobs in flight and
+	// let them clean themselves up.
+	js.Cancel()
+
 	<-js.Latch.NotifyStopped()
 	return nil
 }
@@ -156,7 +169,23 @@ func (js *JobScheduler) Disable() {
 // Cancel stops an execution in process.
 func (js *JobScheduler) Cancel() {
 	if js.Current != nil {
-		js.Current.Cancel()
+		if shutdownGracePeriod := js.ShutdownGracePeriodProvider(); shutdownGracePeriod > 0 {
+			go func() {
+				alarm := time.After(shutdownGracePeriod)
+				select {
+				case <-js.Current.Context.Done():
+					return
+				case <-alarm:
+					if js.Current != nil {
+						js.Current.Cancel()
+					}
+					return
+				}
+			}()
+
+		} else { // signal cancellation immediately
+			js.Current.Cancel()
+		}
 	}
 }
 
@@ -181,6 +210,9 @@ func (js *JobScheduler) RunLoop() {
 		if js.NextRuntime.IsZero() {
 			return
 		}
+		// this references the underlying js.Latch
+		// it returns the current latch signal for stopping *before*
+		// the job kicks off.
 		notifyStopping = js.NotifyStopping()
 		runAt := time.After(js.NextRuntime.UTC().Sub(Now()))
 		select {
@@ -193,6 +225,9 @@ func (js *JobScheduler) RunLoop() {
 			// set up the next runtime.
 			js.NextRuntime = js.Schedule.Next(js.NextRuntime)
 		case <-notifyStopping:
+			// note: we bail hard here
+			// because the job executions in flight are
+			// responsible for themselves.
 			return
 		}
 	}
@@ -234,7 +269,9 @@ func (js *JobScheduler) Run() {
 		if r := recover(); r != nil {
 			err = ex.New(err)
 		}
-		ji.Cancel()
+		if ji.Cancel != nil {
+			ji.Cancel()
+		}
 		if tf != nil {
 			tf.Finish(ji.Context)
 		}
@@ -269,7 +306,9 @@ func (js *JobScheduler) Run() {
 	select {
 	case <-ji.Context.Done():
 		err = ErrJobCancelled
+		return
 	case err = <-js.safeAsyncExec(ji.Context):
+		return
 	}
 }
 
