@@ -2,6 +2,7 @@ package jobkit
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/web"
@@ -178,7 +179,7 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 			return web.Text.NotFound()
 		}
 		if typed, ok := invocation.State.(*JobInvocationState); ok {
-			return web.Text.Result(typed.CombinedOutput.String())
+			return web.Text.Result(typed.Output.CombinedOutput())
 		}
 		return web.Text.NotFound()
 	})
@@ -200,10 +201,18 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 		if invocation == nil {
 			return web.JSON.NotFound()
 		}
-		if typed, ok := invocation.State.(*JobInvocationState); ok {
-			return web.JSON.Result(typed.LineOutput.Lines)
+		typed, ok := invocation.State.(*JobInvocationState)
+		if !ok {
+			return web.JSON.NotFound()
 		}
-		return web.JSON.NotFound()
+		lines := typed.Output.Lines
+		if after, _ := web.Int64Value(r.QueryValue("after")); after > 0 {
+			afterTS := time.Unix(after, 0).UTC()
+			lines = FilterLines(lines, func(l Line) bool {
+				return l.Timestamp.After(afterTS)
+			})
+		}
+		return web.JSON.Result(lines)
 	})
 	return app
 }

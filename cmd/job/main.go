@@ -21,6 +21,7 @@ import (
 	"github.com/blend/go-sdk/slack"
 	"github.com/blend/go-sdk/stats"
 	"github.com/blend/go-sdk/stringutil"
+	"github.com/blend/go-sdk/webutil"
 )
 
 var (
@@ -153,7 +154,18 @@ func run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	log.Flags.Enable(cron.FlagStarted, cron.FlagComplete, cron.FlagFixed, cron.FlagBroken, cron.FlagFailed, cron.FlagCancelled)
+	log.Flags.Enable(
+		logger.Error,
+		logger.Fatal,
+		cron.FlagStarted,
+		cron.FlagComplete,
+		cron.FlagFixed,
+		cron.FlagBroken,
+		cron.FlagFailed,
+		cron.FlagCancelled,
+		webutil.HTTPRequest,
+		webutil.HTTPResponse,
+	)
 
 	log.Debugf("using logger flags: %s", log.Flags.String())
 
@@ -198,7 +210,7 @@ func run(cmd *cobra.Command, args []string) error {
 		log.Infof("adding datadog metrics")
 	}
 
-	jobs := cron.New(cron.OptConfig(cfg.Config.Cron), cron.OptLog(log))
+	jobs := cron.New(cron.OptConfig(cfg.Config.Cron), cron.OptLog(log.WithPath("cron")))
 
 	for _, jobCfg := range cfg.Jobs {
 		job, err := createJobFromConfig(cfg, jobCfg)

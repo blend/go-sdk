@@ -225,6 +225,7 @@ func (jm *JobManager) StartAsync() error {
 		return fmt.Errorf("already started")
 	}
 	jm.Starting()
+	logger.MaybeInfo(jm.Log, "job manager starting")
 	for _, job := range jm.Jobs {
 		job.Log = jm.Log
 		job.Tracer = jm.Tracer
@@ -233,6 +234,7 @@ func (jm *JobManager) StartAsync() error {
 		<-job.NotifyStarted()
 	}
 	jm.Started()
+	logger.MaybeInfo(jm.Log, "job manager started")
 	return nil
 }
 
@@ -242,9 +244,11 @@ func (jm *JobManager) Stop() error {
 		return fmt.Errorf("already stopped")
 	}
 	jm.Stopping()
+	logger.MaybeInfo(jm.Log, "job manager shutting down")
 	for _, job := range jm.Jobs {
 		job.Stop()
 	}
 	jm.Stopped()
+	logger.MaybeInfo(jm.Log, "job manager shutdown complete")
 	return nil
 }

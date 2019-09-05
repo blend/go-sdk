@@ -84,9 +84,7 @@ func TestManagementServerIndex(t *testing.T) {
 			ID:      invocationID,
 			JobName: jobName,
 			State: JobInvocationState{
-				CombinedOutput: bytes.NewBufferString(output + errorOutput),
-				Output:         bytes.NewBufferString(output),
-				ErrorOutput:    bytes.NewBufferString(errorOutput),
+				Output: NewLineWriter(bytes.NewBufferString(output + errorOutput).Bytes()),
 			},
 		},
 	}

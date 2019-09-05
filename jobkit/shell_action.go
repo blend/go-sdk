@@ -36,8 +36,8 @@ func CreateShellAction(exec []string, opts ...ShellActionOption) func(context.Co
 				return err
 			}
 			if !options.DiscardOutput {
-				cmd.Stdout = io.MultiWriter(jis.LineOutput, jis.CombinedOutput, jis.Output, os.Stdout)
-				cmd.Stderr = io.MultiWriter(jis.LineOutput, jis.CombinedOutput, jis.ErrorOutput, os.Stderr)
+				cmd.Stdout = io.MultiWriter(jis.Output, os.Stdout)
+				cmd.Stderr = io.MultiWriter(jis.Output, os.Stderr)
 			}
 			return ex.New(cmd.Run())
 		}
