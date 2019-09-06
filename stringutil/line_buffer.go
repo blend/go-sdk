@@ -91,7 +91,10 @@ type Line struct {
 
 // MarshalJSON implements json.Marshaler.
 func (l Line) MarshalJSON() ([]byte, error) {
-	return []byte(`{ "_ts": "` + l.Timestamp.Format(time.RFC3339) + `","line":"` + string(l.Line) + `"}`), nil
+	return json.Marshal(map[string]interface{}{
+		"_ts":  l.Timestamp,
+		"line": string(l.Line),
+	})
 }
 
 // UnmarshalJSON implements json.Unmarshaler.

@@ -3,9 +3,9 @@ package jobkit
 var indexTemplate = `
 {{ define "index" }}
 {{ template "header" . }}
-<div class="container">
+<div class="job container">
 		{{ range $index, $job := .ViewModel.Jobs }}
-		<table class="job u-full-width">
+		<table class="u-full-width">
 			<thead>
 				<tr>
 					<th>Job Name</th>

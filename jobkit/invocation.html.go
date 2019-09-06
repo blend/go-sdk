@@ -57,6 +57,9 @@ var invocationTemplate = `
 			</tr>
 		</tbody>
 	</table>
+	<link rel="stylesheet" href="/static/css/xterm.css" />
+	<script src="/static/js/xterm.js"></script>
+	<script src="/static/js/jquery.min.js"></script>
 	{{ if .ViewModel.Output }}
 	<table class="u-full-width">
 		<thead>
@@ -67,7 +70,47 @@ var invocationTemplate = `
 		<tbody>
 			<tr>
 				<td>
-					<pre>{{ .ViewModel.Output }}</pre>
+					<div id="terminal"></div>
+					<script>
+						var term = new Terminal();
+						term.open(document.getElementById('terminal'));
+
+						const interval = 2000;
+						var lastUpdateNanos = '';
+
+						var getLogsURL = () => {
+							var logsURL = "/api/job.invocation.output/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}";
+
+							if (lastUpdateNanos != '') {
+								logsURL = logsURL + '?afterNanos=' + lastUpdateNanos;
+							}
+							return logsURL;
+						};
+
+						var getLogs = (cb) => {
+							$.get(getLogsURL()).then((res) => {
+								if (res.lines == null ||  res.lines.length == 0) {
+									return
+								}
+								lastUpdateNanos = res.serverTimeNanos.toString();
+								for(var i = 0; i < res.lines.length; i++) {
+									term.write(res.lines[i].line + '\r\n');
+								}
+								if (cb) {
+									cb();
+								}
+								return
+							}).fail((res) => {
+								cb();
+							});
+						};
+						var poll = () => {
+							getLogs(() => {
+								setTimeout(poll, interval);
+							});
+						};
+						poll();
+					</script>
 				</td>
 			</tr>
 		</tbody>

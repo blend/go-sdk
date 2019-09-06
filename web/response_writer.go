@@ -13,4 +13,5 @@ type ResponseWriter interface {
 	io.Closer
 	StatusCode() int
 	ContentLength() int
+	InnerResponse() http.ResponseWriter
 }

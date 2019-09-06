@@ -2,7 +2,10 @@ package jobkit
 
 import (
 	"fmt"
+	"path/filepath"
 	"time"
+
+	"github.com/blend/go-sdk/webutil"
 
 	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/stringutil"
@@ -13,6 +16,7 @@ import (
 // trigger jobs or look at job statuses via. a json api.
 func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App {
 	app := web.MustNew(append([]web.Option{web.OptConfig(cfg.Web)}, options...)...)
+	app.DefaultMiddleware = nil
 	app.Views.AddLiterals(
 		headerTemplate,
 		footerTemplate,
@@ -21,6 +25,18 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 	)
 	app.GET("/", func(r *web.Ctx) web.Result {
 		return r.Views.View("index", jm.Status())
+	})
+	app.GET("/static/*filepath", func(r *web.Ctx) web.Result {
+		path := filepath.Join("static", web.StringValue(r.RouteParam("filepath")))
+		contents, err := GzipAsset(path)
+		if err != nil {
+			return r.Views.NotFound()
+		}
+		r.Response.InnerResponse().Header().Set("Content-Type", web.StringValue(webutil.DetectContentType(path)))
+		r.Response.InnerResponse().Header().Set("Content-Encoding", "gzip")
+		r.Response.InnerResponse().Header().Set("Vary", "Accept-Encoding")
+		r.Response.InnerResponse().Write(contents)
+		return nil
 	})
 	app.GET("/status.json", func(r *web.Ctx) web.Result {
 		return web.JSON.Result(jm.Status())
@@ -199,14 +215,20 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 		if invocation == nil {
 			return web.JSON.NotFound()
 		}
-		lines := invocation.Output.Lines
-		if after, _ := web.Int64Value(r.QueryValue("after")); after > 0 {
-			afterTS := time.Unix(after, 0).UTC()
+		lines := append(invocation.Output.Lines)
+		if !invocation.Output.Current.Timestamp.IsZero() {
+			lines = append(lines, invocation.Output.Current)
+		}
+		if afterNanos, _ := web.Int64Value(r.QueryValue("afterNanos")); afterNanos > 0 {
+			afterTS := time.Unix(0, afterNanos)
 			lines = stringutil.FilterLines(lines, func(l stringutil.Line) bool {
 				return l.Timestamp.After(afterTS)
 			})
 		}
-		return web.JSON.Result(lines)
+		return web.JSON.Result(map[string]interface{}{
+			"serverTimeNanos": time.Now().UTC().UnixNano(),
+			"lines":           lines,
+		})
 	})
 	return app
 }
