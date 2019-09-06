@@ -75,7 +75,7 @@ func (ji *JobInvocation) UnmarshalJSON(contents []byte) error {
 		Timeout   time.Time       `json:"timeout"`
 		Elapsed   time.Duration   `json:"elapsed"`
 		Status    JobStatus       `json:"status"`
-		Error     string          `json:"error"`
+		Error     string          `json:"err"`
 		Output    json.RawMessage `json:"output"`
 	}
 	if err := json.Unmarshal(contents, &values); err != nil {

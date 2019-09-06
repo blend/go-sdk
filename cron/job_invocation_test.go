@@ -42,8 +42,8 @@ func TestJobInvocationJSON(t *testing.T) {
 	assert.Equal(test.Status, verify.Status)
 	assert.Equal(test.Elapsed, verify.Elapsed)
 
-	assert.NotNil(test.Err)
-	assert.Contains(test.Err.Error(), "this is a test")
+	assert.NotNil(verify.Err)
+	assert.Contains(verify.Err.Error(), "this is a test")
 
 	assert.NotNil(verify.Output)
 	assert.Len(verify.Output.Lines, 3)
