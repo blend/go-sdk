@@ -57,14 +57,6 @@ var invocationTemplate = `
 			</tr>
 		</tbody>
 	</table>
-
-	<!-- deps -->
-	<link rel="stylesheet" href="/static/css/xterm.css" />
-	<script src="/static/js/xterm.js"></script>
-	<script src="/static/js/addons/fit/fit.js"></script>
-	<script src="/static/js/addons/webLinks/webLinks.js"></script>
-	<script src="/static/js/jquery.min.js"></script>
-
 	{{ if .ViewModel.Output }}
 	<table class="u-full-width">
 		<thead>
@@ -75,49 +67,7 @@ var invocationTemplate = `
 		<tbody>
 			<tr>
 				<td>
-					<div id="terminal"></div>
-					<script>
-						Terminal.applyAddon(fit);
-						Terminal.applyAddon(webLinks);
-						var term = new Terminal();
-						term.open(document.getElementById('terminal'));
-						term.fit();
-
-						const interval = 2000;
-						var lastUpdateNanos = '';
-
-						var getLogsURL = () => {
-							var logsURL = "/api/job.invocation.output/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}";
-
-							if (lastUpdateNanos != '') {
-								logsURL = logsURL + '?afterNanos=' + lastUpdateNanos;
-							}
-							return logsURL;
-						};
-
-						var getLogs = (cb) => {
-							$.get(getLogsURL()).then((res) => {
-								lastUpdateNanos = res.serverTimeNanos.toString();
-								if (res.lines != null) {
-									for(var i = 0; i < res.lines.length; i++) {
-										term.write(res.lines[i].line + '\r\n');
-									}
-								}
-								if (cb) {
-									cb();
-								}
-								return
-							}).fail((res) => {
-								cb();
-							});
-						};
-						var poll = () => {
-							getLogs(() => {
-								setTimeout(poll, interval);
-							});
-						};
-						poll();
-					</script>
+				<pre>{{ .ViewModel.Output }}</pre>
 				</td>
 			</tr>
 		</tbody>

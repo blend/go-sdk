@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+	"time"
 
 	"github.com/blend/go-sdk/async"
 	"github.com/blend/go-sdk/ex"
@@ -28,12 +29,14 @@ func New(options ...JobManagerOption) *JobManager {
 // JobManager is the main orchestration and job management object.
 type JobManager struct {
 	sync.Mutex
-	*async.Latch
-
-	Config Config
-	Tracer Tracer
-	Log    logger.Log
-	Jobs   map[string]*JobScheduler
+	Latch   *async.Latch
+	Config  Config
+	Tracer  Tracer
+	Log     logger.Log
+	Started time.Time
+	Paused  time.Time
+	Stopped time.Time
+	Jobs    map[string]*JobScheduler
 }
 
 // --------------------------------------------------------------------------------
@@ -200,13 +203,31 @@ func (jm *JobManager) Status() *Status {
 	jm.Lock()
 	defer jm.Unlock()
 
+	var jobManagerStatus JobManagerStatus
+	if jm.Latch.IsStarted() {
+		jobManagerStatus = JobManagerStatusRunning
+	} else if jm.Latch.IsPaused() {
+		jobManagerStatus = JobManagerStatusPaused
+	} else if jm.Latch.IsResuming() {
+		jobManagerStatus = JobManagerStatusResuming
+	} else {
+		jobManagerStatus = JobManagerStatusStopped
+	}
+
 	status := Status{
+		Status:  jobManagerStatus,
+		Started: jm.Started,
+		Stopped: jm.Stopped,
 		Running: map[string][]*JobInvocation{},
 	}
 
 	for _, job := range jm.Jobs {
 		status.Jobs = append(status.Jobs, job)
-
+		if job.Last != nil {
+			if job.Last.Started.After(status.JobLastStarted) {
+				status.JobLastStarted = job.Last.Started
+			}
+		}
 		if job.Current != nil {
 			status.Running[job.Name] = append(status.Running[job.Name], job.Current)
 		}
@@ -224,17 +245,22 @@ func (jm *JobManager) Start() error {
 	if err := jm.StartAsync(); err != nil {
 		return err
 	}
-	<-jm.NotifyStopped()
+	<-jm.Latch.NotifyStopped()
 	return nil
+}
+
+// NotifyStarted implements graceful.Graceful.
+func (jm *JobManager) NotifyStarted() <-chan struct{} {
+	return jm.Latch.NotifyStarted()
 }
 
 // StartAsync starts the job manager and the loaded jobs.
 // It does not block.
 func (jm *JobManager) StartAsync() error {
-	if !jm.CanStart() {
+	if !jm.Latch.CanStart() {
 		return fmt.Errorf("already started")
 	}
-	jm.Starting()
+	jm.Latch.Starting()
 	logger.MaybeInfo(jm.Log, "job manager starting")
 	for _, job := range jm.Jobs {
 		job.Log = jm.Log
@@ -243,22 +269,62 @@ func (jm *JobManager) StartAsync() error {
 		go job.Start()
 		<-job.NotifyStarted()
 	}
-	jm.Started()
+	jm.Latch.Started()
+	jm.Started = time.Now().UTC()
 	logger.MaybeInfo(jm.Log, "job manager started")
+	return nil
+}
+
+// Pause stops the schedule runner for a JobManager.
+func (jm *JobManager) Pause() error {
+	if !jm.Latch.CanPause() {
+		return fmt.Errorf("already paused")
+	}
+	jm.Latch.Pausing()
+	logger.MaybeInfo(jm.Log, "job manager pausing")
+	for _, job := range jm.Jobs {
+		job.Stop()
+	}
+	jm.Latch.Paused()
+	jm.Paused = time.Now().UTC()
+	logger.MaybeInfo(jm.Log, "job manager pausing complete")
+	return nil
+}
+
+// Resume stops the schedule runner for a JobManager.
+func (jm *JobManager) Resume() error {
+	if !jm.Latch.CanStart() {
+		return fmt.Errorf("already resumed")
+	}
+	jm.Latch.Resuming()
+	logger.MaybeInfo(jm.Log, "job manager resuming")
+	for _, job := range jm.Jobs {
+		go job.Start()
+		<-job.NotifyStarted()
+	}
+	jm.Latch.Paused()
+	jm.Started = time.Now().UTC()
+	logger.MaybeInfo(jm.Log, "job manager resuming complete")
 	return nil
 }
 
 // Stop stops the schedule runner for a JobManager.
 func (jm *JobManager) Stop() error {
-	if !jm.CanStop() {
+	if !jm.Latch.CanStop() {
 		return fmt.Errorf("already stopped")
 	}
-	jm.Stopping()
+	jm.Latch.Stopping()
 	logger.MaybeInfo(jm.Log, "job manager shutting down")
 	for _, job := range jm.Jobs {
 		job.Stop()
 	}
-	jm.Stopped()
+	jm.Latch.Stopped()
+	jm.Stopped = time.Now().UTC()
 	logger.MaybeInfo(jm.Log, "job manager shutdown complete")
 	return nil
+}
+
+// NotifyStopped implements graceful.Graceful.
+func (jm *JobManager) NotifyStopped() <-chan struct{} {
+	return jm.Latch.NotifyStopped()
 }

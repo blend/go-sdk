@@ -48,22 +48,24 @@ const (
 	FlagDisabled = "cron.disabled"
 )
 
-// State is a job state.
-type State string
+// JobManagerStatus is a job manager status.
+type JobManagerStatus string
 
 const (
-	//StateRunning is the running state.
-	StateRunning State = "running"
-	// StateEnabled is the enabled state.
-	StateEnabled State = "enabled"
-	// StateDisabled is the disabled state.
-	StateDisabled State = "disabled"
+	// JobManagerStatusRunning is a job manager status.
+	JobManagerStatusRunning JobManagerStatus = "started"
+	// JobManagerStatusPaused is a job manager status.
+	JobManagerStatusPaused JobManagerStatus = "paused"
+	// JobManagerStatusResuming is a job manager status.
+	JobManagerStatusResuming JobManagerStatus = "resuming"
+	// JobManagerStatusStopped is a job manager status.
+	JobManagerStatusStopped JobManagerStatus = "stopped"
 )
 
 // JobStatus is a job status.
 type JobStatus string
 
-// Status values.
+// JobStatus values.
 const (
 	JobStatusRunning   JobStatus = "running"
 	JobStatusCancelled JobStatus = "cancelled"

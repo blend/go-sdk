@@ -2,10 +2,7 @@ package jobkit
 
 import (
 	"fmt"
-	"path/filepath"
 	"time"
-
-	"github.com/blend/go-sdk/webutil"
 
 	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/stringutil"
@@ -26,29 +23,30 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 	app.GET("/", func(r *web.Ctx) web.Result {
 		return r.Views.View("index", jm.Status())
 	})
-	app.GET("/static/*filepath", func(r *web.Ctx) web.Result {
-		path := filepath.Join("static", web.StringValue(r.RouteParam("filepath")))
-		contents, err := GzipAsset(path)
-		if err != nil {
-			return r.Views.NotFound()
-		}
-		r.Response.InnerResponse().Header().Set("Content-Type", web.StringValue(webutil.DetectContentType(path)))
-		r.Response.InnerResponse().Header().Set("Content-Encoding", "gzip")
-		r.Response.InnerResponse().Header().Set("Vary", "Accept-Encoding")
-		r.Response.InnerResponse().Write(contents)
-		return nil
-	})
 	app.GET("/status.json", func(r *web.Ctx) web.Result {
 		return web.JSON.Result(jm.Status())
 	})
-	app.GET("/healthz", func(_ *web.Ctx) web.Result {
-		if jm.IsStarted() {
-			return web.JSON.OK()
-		}
-		return web.JSON.InternalError(fmt.Errorf("job manager is stopped or in an inconsistent state"))
-	})
 	app.GET("/api/jobs", func(_ *web.Ctx) web.Result {
-		return web.JSON.Result(jm.Status())
+		return web.JSON.Result(jm.Status().Jobs)
+	})
+	app.GET("/api/jobs.running", func(_ *web.Ctx) web.Result {
+		return web.JSON.Result(jm.Status().Running)
+	})
+	app.POST("/pause", func(_ *web.Ctx) web.Result {
+		jm.Pause()
+		return web.RedirectWithMethod("GET", "/")
+	})
+	app.POST("/resume", func(_ *web.Ctx) web.Result {
+		jm.Resume()
+		return web.RedirectWithMethod("GET", "/")
+	})
+	app.POST("/api/pause", func(_ *web.Ctx) web.Result {
+		jm.Pause()
+		return web.JSON.OK()
+	})
+	app.POST("/api/resume", func(_ *web.Ctx) web.Result {
+		jm.Resume()
+		return web.JSON.OK()
 	})
 	app.GET("/api/job.status/:jobName", func(r *web.Ctx) web.Result {
 		jobName, err := r.RouteParam("jobName")
