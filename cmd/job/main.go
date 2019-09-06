@@ -1,11 +1,13 @@
 package main
 
 import (
+	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
 
+	"github.com/blend/go-sdk/ansi"
 	"github.com/blend/go-sdk/aws"
 	"github.com/blend/go-sdk/aws/ses"
 	"github.com/blend/go-sdk/configutil"
@@ -21,7 +23,6 @@ import (
 	"github.com/blend/go-sdk/slack"
 	"github.com/blend/go-sdk/stats"
 	"github.com/blend/go-sdk/stringutil"
-	"github.com/blend/go-sdk/webutil"
 )
 
 var (
@@ -30,9 +31,11 @@ var (
 	flagDefaultJobName                *string
 	flagDefaultJobExec                *string
 	flagDefaultJobSchedule            *string
+	flagDefaultJobHistoryPath         *string
 	flagDefaultJobTimeout             *time.Duration
 	flagDefaultJobShutdownGracePeriod *time.Duration
 	flagDefaultJobDiscardOutput       *bool
+	flagDefaultJobHistoryEnabled      *bool
 	flagDefaultJobSerial              *bool
 	flagDisableServer                 *bool
 )
@@ -44,6 +47,9 @@ type config struct {
 }
 
 func (c *config) Resolve() error {
+	if len(c.Logger.Flags) == 0 {
+		c.Logger.Flags = []string{"all"}
+	}
 	if err := configutil.SetString(&c.Web.BindAddr, configutil.String(*flagBind), configutil.Env("BIND_ADDR"), configutil.String(c.Web.BindAddr)); err != nil {
 		return err
 	}
@@ -74,8 +80,10 @@ func (jc *jobConfig) Resolve() error {
 	return configutil.AnyError(
 		configutil.SetString(&jc.Name, configutil.String(*flagDefaultJobName), configutil.String(env.Env().ServiceName()), configutil.String(jc.Name), configutil.String(stringutil.Letters.Random(8))),
 		configutil.SetBool(&jc.DiscardOutput, configutil.Bool(flagDefaultJobDiscardOutput), configutil.Bool(jc.DiscardOutput), configutil.Bool(ref.Bool(false))),
+		configutil.SetBool(&jc.HistoryEnabled, configutil.Bool(flagDefaultJobHistoryEnabled), configutil.Bool(jc.HistoryEnabled), configutil.Bool(ref.Bool(true))),
 		configutil.SetBool(&jc.Serial, configutil.Bool(flagDefaultJobSerial), configutil.Bool(jc.Serial), configutil.Bool(ref.Bool(true))),
 		configutil.SetString(&jc.Schedule, configutil.String(*flagDefaultJobSchedule), configutil.String(jc.Schedule)),
+		configutil.SetString(&jc.HistoryPath, configutil.String(*flagDefaultJobHistoryPath), configutil.String(jc.HistoryPath)),
 		configutil.SetDuration(&jc.Timeout, configutil.Duration(*flagDefaultJobTimeout), configutil.Duration(jc.Timeout)),
 		configutil.SetDuration(&jc.ShutdownGracePeriod, configutil.Duration(*flagDefaultJobShutdownGracePeriod), configutil.Duration(jc.ShutdownGracePeriod)),
 	)
@@ -128,6 +136,8 @@ func main() {
 	flagConfigPath = cmd.Flags().StringP("config", "c", "", "The config path.")
 	flagDefaultJobName = cmd.Flags().StringP("name", "n", "", "The job name (will default to a random string of 8 letters).")
 	flagDefaultJobSchedule = cmd.Flags().StringP("schedule", "s", "", "The job schedule in cron format (ex: '*/5 * * * *')")
+	flagDefaultJobHistoryPath = cmd.Flags().String("history-path", "", "The job history path.")
+	flagDefaultJobHistoryEnabled = cmd.Flags().Bool("history-enabled", true, "If job history should be saved to disk.")
 	flagDefaultJobTimeout = cmd.Flags().Duration("timeout", 0, "The job execution timeout as a duration (ex: 5s)")
 	flagDefaultJobShutdownGracePeriod = cmd.Flags().Duration("shutdown-grace-period", 0, "The grace period to wait for the job to complete on stop (ex: 5s)")
 	flagDefaultJobDiscardOutput = cmd.Flags().Bool("discard-output", false, "If jobs should discard console output from the action.")
@@ -157,20 +167,6 @@ func run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	log.Flags.Enable(
-		logger.Error,
-		logger.Fatal,
-		cron.FlagStarted,
-		cron.FlagComplete,
-		cron.FlagFixed,
-		cron.FlagBroken,
-		cron.FlagFailed,
-		cron.FlagCancelled,
-		webutil.HTTPRequest,
-		webutil.HTTPResponse,
-	)
-
-	log.Debugf("using logger flags: %s", log.Flags.String())
 
 	defaultJobCfg, err := createDefaultJobConfig(args...)
 	if err != nil {
@@ -195,8 +191,8 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	if !cfg.EmailDefaults.IsZero() {
-		log.Debugf("using email defaults; from=%s", cfg.EmailDefaults.From)
-		log.Debugf("using email defaults; to=%s", stringutil.CSV(cfg.EmailDefaults.To))
+		log.Debugf("using email defaults from: %s", cfg.EmailDefaults.From)
+		log.Debugf("using email defaults; to: %s", stringutil.CSV(cfg.EmailDefaults.To))
 	}
 
 	var slackClient slack.Sender
@@ -233,7 +229,12 @@ func run(cmd *cobra.Command, args []string) error {
 			serial = "parallel execution"
 		}
 
-		log.Infof("loading job `%s` with schedule `%s` with %v", jobCfg.Name, jobCfg.ScheduleOrDefault(), serial)
+		log.Infof("loading job `%s` with schedule: %s with %v", jobCfg.Name, ansi.ColorLightWhite.Apply(jobCfg.ScheduleOrDefault()), serial)
+		if jobCfg.HistoryEnabledOrDefault() {
+			log.Infof("loading job `%s` with history: %v and output path: %s", jobCfg.Name, ansi.ColorGreen.Apply("enabled"), ansi.ColorLightWhite.Apply(jobCfg.HistoryPathOrDefault()))
+		} else {
+			log.Infof("loading job `%s` with history: %v", jobCfg.Name, ansi.ColorRed.Apply("disabled"))
+		}
 		if err = jobs.LoadJobs(job); err != nil {
 			log.Error(err)
 		}
@@ -274,6 +275,9 @@ func createJobFromConfig(base config, cfg jobConfig) (*jobkit.Job, error) {
 	}
 	if job.Config.Description == "" {
 		job.Config.Description = strings.Join(cfg.Exec, " ")
+	}
+	if job.Config.HistoryPath == "" && base.HistoryPath != "" {
+		job.Config.HistoryPath = filepath.Join(base.HistoryPath, stringutil.Slugify(job.Name())+".json")
 	}
 	job.EmailDefaults = email.MergeMessages(base.EmailDefaults, cfg.EmailDefaults)
 	return job, nil

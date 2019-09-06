@@ -13,9 +13,8 @@ import (
 
 // Config is the jobkit config.
 type Config struct {
-	// MaxLogBytes is the maximum number of bytes to maintain for logs.
-	// This applies to all jobs.
-	MaxLogBytes int `yaml:"maxLogBytes"`
+	// HistoryPath is the default historyPath.
+	HistoryPath string `yaml:"historyPath"`
 	// Cron is the cron manager config.
 	Cron cron.Config `yaml:"cron"`
 	// Logger is the logger config.
@@ -45,12 +44,4 @@ func (c *Config) Resolve() error {
 		c.Datadog.Resolve(),
 		c.Slack.Resolve(),
 	)
-}
-
-// MaxLogBytesOrDefault is a the maximum amount of log data to buffer.
-func (c Config) MaxLogBytesOrDefault() int {
-	if c.MaxLogBytes > 0 {
-		return c.MaxLogBytes
-	}
-	return DefaultMaxLogBytes
 }

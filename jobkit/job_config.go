@@ -1,9 +1,11 @@
 package jobkit
 
 import (
+	"path/filepath"
 	"time"
 
 	"github.com/blend/go-sdk/email"
+	"github.com/blend/go-sdk/stringutil"
 )
 
 // JobConfig is something you can use to give your jobs some knobs to turn
@@ -22,6 +24,10 @@ type JobConfig struct {
 	ShutdownGracePeriod time.Duration `json:"shutdownGracePeriod" yaml:"shutdownGracePeriod"`
 	// Serial indicates if job executions cannot overlap.
 	Serial *bool `json:"serial" yaml:"serial"`
+	// HistoryEnabled sets if we should save invocation history and restore it.
+	HistoryEnabled *bool `json:"historyEnabled" yaml:"historyEnabled"`
+	// HistoryPath is the path to write history to.
+	HistoryPath string `json:"historyPath" yaml:"historyPath"`
 
 	// NotifyOnStart governs if we should send notifications job start.
 	NotifyOnStart *bool `json:"notifyOnStart" yaml:"notifyOnStart"`
@@ -58,6 +64,22 @@ func (jc JobConfig) SerialOrDefault() bool {
 		return *jc.Serial
 	}
 	return true
+}
+
+// HistoryEnabledOrDefault returns a value or a default.
+func (jc JobConfig) HistoryEnabledOrDefault() bool {
+	if jc.HistoryEnabled != nil {
+		return *jc.HistoryEnabled
+	}
+	return true
+}
+
+// HistoryPathOrDefault returns a value or a default.
+func (jc JobConfig) HistoryPathOrDefault() string {
+	if jc.HistoryPath != "" {
+		return jc.HistoryPath
+	}
+	return filepath.Join("_history", stringutil.Slugify(jc.Name)+".json")
 }
 
 // NotifyOnStartOrDefault returns a value or a default.

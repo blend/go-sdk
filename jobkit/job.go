@@ -196,7 +196,7 @@ func (job Job) stats(ctx context.Context, flag string) {
 			job.Error(ctx, job.StatsClient.TimeInMilliseconds(string(flag), ji.Elapsed, fmt.Sprintf("%s:%s", stats.TagJob, job.Name())))
 		}
 	} else {
-		job.Debugf(ctx, "stats; client unset, skipping.")
+		job.Debugf(ctx, "stats client unset, skipping logging stats")
 	}
 }
 
@@ -206,7 +206,7 @@ func (job Job) notify(ctx context.Context, flag string) {
 			job.Error(ctx, job.SlackClient.Send(context.Background(), NewSlackMessage(ji)))
 		}
 	} else {
-		job.Debugf(ctx, "notify (slack); sender unset, skipping.")
+		job.Debugf(ctx, "notify (slack); sender unset skipping sending slack notification")
 	}
 
 	if job.EmailClient != nil {
@@ -216,25 +216,29 @@ func (job Job) notify(ctx context.Context, flag string) {
 				job.Error(ctx, err)
 			}
 			job.Error(ctx, job.EmailClient.Send(context.Background(), message))
-			job.Debugf(ctx, "notify (email); sent email to %s (%s)", stringutil.CSV(message.To), message.Subject)
+			job.Debugf(ctx, "notify (email); sent email notification to %s (%s)", stringutil.CSV(message.To), message.Subject)
 		} else {
 			job.Debugf(ctx, "notify (email); job invocation not found on context")
 		}
 	} else {
-		job.Debugf(ctx, "notify (email); sender unset, skipping.")
+		job.Debugf(ctx, "notify (email); email sender unset, skipping sending email notification")
 	}
 }
 
 // HistoryPersist writes the history to disk.
 // It does so completely.
 func (job Job) HistoryPersist(ctx context.Context, log []cron.JobInvocation) error {
-	historyDirectory := filepath.Join("_history", job.Name())
+	if !job.Config.HistoryEnabledOrDefault() {
+		return nil
+	}
+	historyPath := job.Config.HistoryPathOrDefault()
+	historyDirectory := filepath.Dir(historyPath)
 	if _, err := os.Stat(historyDirectory); err != nil {
 		if err := os.MkdirAll(historyDirectory, 0755); err != nil {
 			return ex.New(err)
 		}
 	}
-	f, err := os.Create(filepath.Join(historyDirectory, "data.json"))
+	f, err := os.Create(historyPath)
 	if err != nil {
 		return err
 	}
@@ -244,13 +248,15 @@ func (job Job) HistoryPersist(ctx context.Context, log []cron.JobInvocation) err
 
 // HistoryRestore restores history from disc.
 func (job Job) HistoryRestore(ctx context.Context) (output []cron.JobInvocation, err error) {
-	historyFile := filepath.Join("_history", job.Name(), "data.json")
-	if _, statErr := os.Stat(historyFile); statErr != nil {
-		// skipping loading history.
+	if !job.Config.HistoryEnabledOrDefault() {
+		return nil, nil
+	}
+	historyPath := job.Config.HistoryPathOrDefault()
+	if _, statErr := os.Stat(historyPath); statErr != nil {
 		return
 	}
 	var f *os.File
-	f, err = os.Open(historyFile)
+	f, err = os.Open(historyPath)
 	if err != nil {
 		return
 	}
