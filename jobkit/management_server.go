@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/cron"
+	"github.com/blend/go-sdk/stringutil"
 	"github.com/blend/go-sdk/web"
 )
 
@@ -178,10 +179,7 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 		if invocation == nil {
 			return web.Text.NotFound()
 		}
-		if typed, ok := invocation.State.(*JobInvocationState); ok {
-			return web.Text.Result(typed.Output.CombinedOutput())
-		}
-		return web.Text.NotFound()
+		return web.Text.Result(invocation.Output.String())
 	})
 	app.GET("/api/job.invocation.output/:jobName/:invocation", func(r *web.Ctx) web.Result {
 		job, err := jm.Job(web.StringValue(r.RouteParam("jobName")))
@@ -201,14 +199,10 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 		if invocation == nil {
 			return web.JSON.NotFound()
 		}
-		typed, ok := invocation.State.(*JobInvocationState)
-		if !ok {
-			return web.JSON.NotFound()
-		}
-		lines := typed.Output.Lines
+		lines := invocation.Output.Lines
 		if after, _ := web.Int64Value(r.QueryValue("after")); after > 0 {
 			afterTS := time.Unix(after, 0).UTC()
-			lines = FilterLines(lines, func(l Line) bool {
+			lines = stringutil.FilterLines(lines, func(l stringutil.Line) bool {
 				return l.Timestamp.After(afterTS)
 			})
 		}

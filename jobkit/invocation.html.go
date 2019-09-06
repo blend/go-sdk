@@ -57,7 +57,7 @@ var invocationTemplate = `
 			</tr>
 		</tbody>
 	</table>
-	{{ if .ViewModel.State }}
+	{{ if .ViewModel.Output }}
 	<table class="u-full-width">
 		<thead>
 			<tr>
@@ -67,7 +67,7 @@ var invocationTemplate = `
 		<tbody>
 			<tr>
 				<td>
-					<pre>{{ .ViewModel.State.Output.CombinedOutput }}</pre>
+					<pre>{{ .ViewModel.Output }}</pre>
 				</td>
 			</tr>
 		</tbody>

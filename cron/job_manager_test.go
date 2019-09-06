@@ -3,6 +3,7 @@ package cron
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"sync"
 	"testing"
 	"time"
@@ -106,7 +107,7 @@ func TestFiresErrorOnTaskError(t *testing.T) {
 	a.StartTimeout(2000 * time.Millisecond)
 	defer a.EndTimeout()
 
-	agent := logger.All()
+	agent := logger.All(logger.OptOutput(ioutil.Discard))
 	defer agent.Close()
 
 	manager := New(OptLog(agent))

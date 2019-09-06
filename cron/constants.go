@@ -9,18 +9,13 @@ const (
 	EnvVarHeartbeatInterval = "CRON_HEARTBEAT_INTERVAL"
 )
 
-// Retention defaults
+// Constats and defaults
 const (
-	DefaultHistoryMaxCount = 10
-	DefaultHistoryMaxAge   = 6 * time.Hour
-)
-
-const (
-	// DefaultHeartbeatInterval is the interval between schedule next run checks.
-	DefaultHeartbeatInterval = 50 * time.Millisecond
-	// DefaultShutdownGracePeriod is the grace period to allow jobs to finish by default.
-	// It defaults to unset, i.e. no grace period is given.
-	DefaultShutdownGracePeriod time.Duration = 0
+	DefaultHistoryMaxCount                     = 10
+	DefaultHistoryMaxAge                       = 6 * time.Hour
+	DefaultHistoryRestoreTimeout               = 5 * time.Second
+	DefaultShutdownGracePeriod   time.Duration = 0
+	DefaultHeartbeatInterval                   = 50 * time.Millisecond
 )
 
 const (

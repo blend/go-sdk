@@ -25,15 +25,16 @@ import (
 )
 
 var (
-	flagBind                    *string
-	flagConfigPath              *string
-	flagDefaultJobName          *string
-	flagDefaultJobExec          *string
-	flagDefaultJobSchedule      *string
-	flagDefaultJobTimeout       *time.Duration
-	flagDefaultJobDiscardOutput *bool
-	flagDefaultJobSerial        *bool
-	flagDisableServer           *bool
+	flagBind                          *string
+	flagConfigPath                    *string
+	flagDefaultJobName                *string
+	flagDefaultJobExec                *string
+	flagDefaultJobSchedule            *string
+	flagDefaultJobTimeout             *time.Duration
+	flagDefaultJobShutdownGracePeriod *time.Duration
+	flagDefaultJobDiscardOutput       *bool
+	flagDefaultJobSerial              *bool
+	flagDisableServer                 *bool
 )
 
 type config struct {
@@ -76,6 +77,7 @@ func (jc *jobConfig) Resolve() error {
 		configutil.SetBool(&jc.Serial, configutil.Bool(flagDefaultJobSerial), configutil.Bool(jc.Serial), configutil.Bool(ref.Bool(true))),
 		configutil.SetString(&jc.Schedule, configutil.String(*flagDefaultJobSchedule), configutil.String(jc.Schedule)),
 		configutil.SetDuration(&jc.Timeout, configutil.Duration(*flagDefaultJobTimeout), configutil.Duration(jc.Timeout)),
+		configutil.SetDuration(&jc.ShutdownGracePeriod, configutil.Duration(*flagDefaultJobShutdownGracePeriod), configutil.Duration(jc.ShutdownGracePeriod)),
 	)
 }
 
@@ -127,6 +129,7 @@ func main() {
 	flagDefaultJobName = cmd.Flags().StringP("name", "n", "", "The job name (will default to a random string of 8 letters).")
 	flagDefaultJobSchedule = cmd.Flags().StringP("schedule", "s", "", "The job schedule in cron format (ex: '*/5 * * * *')")
 	flagDefaultJobTimeout = cmd.Flags().Duration("timeout", 0, "The job execution timeout as a duration (ex: 5s)")
+	flagDefaultJobShutdownGracePeriod = cmd.Flags().Duration("shutdown-grace-period", 0, "The grace period to wait for the job to complete on stop (ex: 5s)")
 	flagDefaultJobDiscardOutput = cmd.Flags().Bool("discard-output", false, "If jobs should discard console output from the action.")
 	flagDefaultJobSerial = cmd.Flags().Bool("serial", true, "The job should run serially (that is, only one can be active at a time)")
 	flagDisableServer = cmd.Flags().Bool("disable-server", false, "If the management server should be disabled.")
@@ -231,7 +234,9 @@ func run(cmd *cobra.Command, args []string) error {
 		}
 
 		log.Infof("loading job `%s` with schedule `%s` with %v", jobCfg.Name, jobCfg.ScheduleOrDefault(), serial)
-		jobs.LoadJobs(job)
+		if err = jobs.LoadJobs(job); err != nil {
+			log.Error(err)
+		}
 	}
 
 	hosted := []graceful.Graceful{jobs}

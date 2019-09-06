@@ -104,3 +104,9 @@ type OnDisabledReceiver interface {
 type OnEnabledReceiver interface {
 	OnEnabled(context.Context)
 }
+
+// HistoryPersister is a job that can persist and restore it's invocation history.
+type HistoryPersister interface {
+	HistoryRestore(context.Context) ([]JobInvocation, error)
+	HistoryPersist(context.Context, []JobInvocation) error
+}

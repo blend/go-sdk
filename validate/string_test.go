@@ -291,11 +291,6 @@ func TestStringIsSlug(t *testing.T) {
 	assert.Nil(Value(verr))
 	assert.Equal(ErrStringIsSlug, Cause(verr))
 
-	bad := ""
-	verr = String(&bad).IsSlug()()
-	assert.NotNil(verr)
-	assert.Equal(ErrStringIsSlug, Cause(verr))
-
 	good := "abcdefghijklmnopqrstuvwxyz"
 	verr = String(&good).IsSlug()()
 	assert.Nil(verr)
@@ -320,8 +315,8 @@ func TestStringIsSlug(t *testing.T) {
 	verr = String(&good).IsSlug()()
 	assert.Nil(verr)
 
-	bad = "this/../is/../hacking?"
-	verr = String(&good).IsSlug()()
+	bad := "this/../is/../hacking?"
+	verr = String(&bad).IsSlug()()
 	assert.NotNil(verr)
 	assert.Equal(ErrStringIsSlug, Cause(verr))
 }

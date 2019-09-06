@@ -1,9 +1,25 @@
 package reverseproxy
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/blend/go-sdk/logger"
+)
 
 // ProxyOption is a function that mutates a proxy.
 type ProxyOption func(*Proxy) error
+
+// OptProxyLog sets the proxy logger, as well
+// as the logger on any upstreams that are configured.
+func OptProxyLog(log logger.Log) ProxyOption {
+	return func(p *Proxy) error {
+		p.Log = log
+		for _, us := range p.Upstreams {
+			us.Log = log
+		}
+		return nil
+	}
+}
 
 // OptProxyUpstream adds a proxy upstream.
 func OptProxyUpstream(upstream *Upstream) ProxyOption {

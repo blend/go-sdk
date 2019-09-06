@@ -3,6 +3,7 @@ package cron
 // NOTE: ALL TIMES ARE IN UTC. JUST USE UTC.
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"sync"
@@ -49,11 +50,20 @@ func (jm *JobManager) LoadJobs(jobs ...Job) error {
 		if _, hasJob := jm.Jobs[jobName]; hasJob {
 			return ex.New(ErrJobAlreadyLoaded, ex.OptMessagef("job: %s", job.Name()))
 		}
-		jm.Jobs[jobName] = NewJobScheduler(job,
+
+		scheduler := NewJobScheduler(job,
 			OptJobSchedulerTracer(jm.Tracer),
 			OptJobSchedulerLog(jm.Log),
 			OptJobSchedulerConfig(jm.Config),
 		)
+		if typed, ok := job.(HistoryPersister); ok {
+			var err error
+			scheduler.History, err = typed.HistoryRestore(context.Background())
+			if err != nil {
+				logger.MaybeError(jm.Log, err)
+			}
+		}
+		jm.Jobs[jobName] = scheduler
 	}
 	return nil
 }
@@ -176,12 +186,12 @@ func (jm *JobManager) CancelJob(jobName string) (err error) {
 	jm.Lock()
 	defer jm.Unlock()
 
-	job, ok := jm.Jobs[jobName]
+	jobScheduler, ok := jm.Jobs[jobName]
 	if !ok {
 		err = ex.New(ErrJobNotFound, ex.OptMessagef("job: %s", jobName))
 		return
 	}
-	job.Cancel()
+	jobScheduler.Cancel()
 	return
 }
 

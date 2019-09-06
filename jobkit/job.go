@@ -2,11 +2,15 @@ package jobkit
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/email"
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/slack"
 	"github.com/blend/go-sdk/stats"
@@ -27,6 +31,7 @@ var (
 	_ cron.OnFixedReceiver             = (*Job)(nil)
 	_ cron.OnDisabledReceiver          = (*Job)(nil)
 	_ cron.OnEnabledReceiver           = (*Job)(nil)
+	_ cron.HistoryPersister            = (*Job)(nil)
 )
 
 // NewJob returns a new job.
@@ -188,39 +193,88 @@ func (job Job) stats(ctx context.Context, flag string) {
 	if job.StatsClient != nil {
 		job.StatsClient.Increment(string(flag), fmt.Sprintf("%s:%s", stats.TagJob, job.Name()))
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
-			Error(ctx, job.Log, job.StatsClient.TimeInMilliseconds(string(flag), ji.Elapsed, fmt.Sprintf("%s:%s", stats.TagJob, job.Name())))
+			job.Error(ctx, job.StatsClient.TimeInMilliseconds(string(flag), ji.Elapsed, fmt.Sprintf("%s:%s", stats.TagJob, job.Name())))
 		}
 	} else {
-		Debugf(ctx, job.Log, "stats; client unset, skipping.")
+		job.Debugf(ctx, "stats; client unset, skipping.")
 	}
 }
 
 func (job Job) notify(ctx context.Context, flag string) {
 	if job.SlackClient != nil {
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
-			Error(ctx, job.Log, job.SlackClient.Send(context.Background(), NewSlackMessage(ji)))
+			job.Error(ctx, job.SlackClient.Send(context.Background(), NewSlackMessage(ji)))
 		}
 	} else {
-		Debugf(ctx, job.Log, "notify (slack); sender unset, skipping.")
+		job.Debugf(ctx, "notify (slack); sender unset, skipping.")
 	}
 
 	if job.EmailClient != nil {
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
 			message, err := NewEmailMessage(job.EmailDefaults, ji)
 			if err != nil {
-				Error(ctx, job.Log, err)
+				job.Error(ctx, err)
 			}
-			Error(ctx, job.Log, job.EmailClient.Send(context.Background(), message))
-			Debugf(ctx, job.Log, "notify (email); sent email to %s (%s)", stringutil.CSV(message.To), message.Subject)
+			job.Error(ctx, job.EmailClient.Send(context.Background(), message))
+			job.Debugf(ctx, "notify (email); sent email to %s (%s)", stringutil.CSV(message.To), message.Subject)
 		} else {
-			Debugf(ctx, job.Log, "notify (email); job invocation not found on context")
+			job.Debugf(ctx, "notify (email); job invocation not found on context")
 		}
 	} else {
-		Debugf(ctx, job.Log, "notify (email); sender unset, skipping.")
+		job.Debugf(ctx, "notify (email); sender unset, skipping.")
 	}
+}
+
+// HistoryPersist writes the history to disk.
+// It does so completely.
+func (job Job) HistoryPersist(ctx context.Context, log []cron.JobInvocation) error {
+	historyDirectory := filepath.Join("_history", job.Name())
+	if _, err := os.Stat(historyDirectory); err != nil {
+		if err := os.MkdirAll(historyDirectory, 0755); err != nil {
+			return ex.New(err)
+		}
+	}
+	f, err := os.Create(filepath.Join(historyDirectory, "data.json"))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	return json.NewEncoder(f).Encode(log)
+}
+
+// HistoryRestore restores history from disc.
+func (job Job) HistoryRestore(ctx context.Context) (output []cron.JobInvocation, err error) {
+	historyFile := filepath.Join("_history", job.Name(), "data.json")
+	if _, statErr := os.Stat(historyFile); statErr != nil {
+		// skipping loading history.
+		return
+	}
+	var f *os.File
+	f, err = os.Open(historyFile)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	err = json.NewDecoder(f).Decode(&output)
+	return
 }
 
 // Execute is the job body.
 func (job Job) Execute(ctx context.Context) error {
-	return job.Action(WithJobInvocationState(ctx, NewJobInvocationState()))
+	return job.Action(ctx)
+}
+
+// Debugf logs a debug message if the logger is set.
+func (job Job) Debugf(ctx context.Context, format string, args ...interface{}) {
+	if job.Log != nil {
+		job.Log.WithPath(job.Name(), cron.GetJobInvocation(ctx).ID).WithContext(ctx).Debugf(format, args...)
+	}
+}
+
+// Error logs an error if the logger i set.
+func (job Job) Error(ctx context.Context, err error) error {
+	if job.Log != nil {
+		job.Log.WithPath(job.Name(), cron.GetJobInvocation(ctx).ID).WithContext(ctx).Error(err)
+	}
+	return err
 }

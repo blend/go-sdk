@@ -1,4 +1,4 @@
-package jobkit
+package stringutil
 
 import (
 	"encoding/json"
@@ -13,10 +13,10 @@ func justError(_ interface{}, err error) error {
 	return err
 }
 
-func TestLineWriter(t *testing.T) {
+func TestLineBuffer(t *testing.T) {
 	assert := assert.New(t)
 
-	lw := new(LineWriter)
+	lw := new(LineBuffer)
 
 	assert.Nil(justError(io.WriteString(lw, "this is a test\n")))
 	assert.Nil(justError(io.WriteString(lw, "this is another test\n")))
@@ -25,10 +25,10 @@ func TestLineWriter(t *testing.T) {
 	assert.Len(lw.Lines, 4)
 }
 
-func TestLineWriterWritten(t *testing.T) {
+func TestLineBufferWritten(t *testing.T) {
 	assert := assert.New(t)
 
-	lw := new(LineWriter)
+	lw := new(LineBuffer)
 
 	written, err := lw.Write([]byte("this is just a test"))
 	assert.Nil(err)
@@ -58,7 +58,7 @@ func TestLineWriterWritten(t *testing.T) {
 	assert.Equal("this is another testthis is another test", string(lw.Lines[1].Line))
 }
 
-func TestLineWriterLinesJSON(t *testing.T) {
+func TestLineBufferLinesJSON(t *testing.T) {
 	assert := assert.New(t)
 
 	lines := []Line{
