@@ -57,9 +57,14 @@ var invocationTemplate = `
 			</tr>
 		</tbody>
 	</table>
+
+	<!-- deps -->
 	<link rel="stylesheet" href="/static/css/xterm.css" />
 	<script src="/static/js/xterm.js"></script>
+	<script src="/static/js/addons/fit/fit.js"></script>
+	<script src="/static/js/addons/webLinks/webLinks.js"></script>
 	<script src="/static/js/jquery.min.js"></script>
+
 	{{ if .ViewModel.Output }}
 	<table class="u-full-width">
 		<thead>
@@ -72,8 +77,11 @@ var invocationTemplate = `
 				<td>
 					<div id="terminal"></div>
 					<script>
+						Terminal.applyAddon(fit);
+						Terminal.applyAddon(webLinks);
 						var term = new Terminal();
 						term.open(document.getElementById('terminal'));
+						term.fit();
 
 						const interval = 2000;
 						var lastUpdateNanos = '';
@@ -89,12 +97,11 @@ var invocationTemplate = `
 
 						var getLogs = (cb) => {
 							$.get(getLogsURL()).then((res) => {
-								if (res.lines == null ||  res.lines.length == 0) {
-									return
-								}
 								lastUpdateNanos = res.serverTimeNanos.toString();
-								for(var i = 0; i < res.lines.length; i++) {
-									term.write(res.lines[i].line + '\r\n');
+								if (res.lines != null) {
+									for(var i = 0; i < res.lines.length; i++) {
+										term.write(res.lines[i].line + '\r\n');
+									}
 								}
 								if (cb) {
 									cb();
