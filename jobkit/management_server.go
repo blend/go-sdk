@@ -229,8 +229,6 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 			return nil
 		}
 
-		fmt.Printf("request: %#v\n", r.Request)
-		fmt.Printf("request URL: %#v\n", r.Request.URL)
 		r.Response.Header().Set(webutil.HeaderContentType, "text/event-stream")
 		r.Response.Header().Set(webutil.HeaderVary, "Content-Type")
 		r.Response.WriteHeader(http.StatusOK)
