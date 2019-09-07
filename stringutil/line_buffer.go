@@ -17,12 +17,12 @@ func NewLineBuffer(contents []byte) *LineBuffer {
 // LineBuffer is a writer that accepts binary but splits out onto new lines.
 type LineBuffer struct {
 	// Lines are the string lines broken up by newlines with associated timestamps.
-	Lines []Line
+	Lines []Line `json:"lines"`
 	// Current is a temporary holder for the current line.
 	// It is added to the `Lines` slice when a newline is processed.
-	Current Line
+	Current Line `json:"current"`
 	// LineHandler is an optional handler when a new line is added.
-	LineHandler LineHandler
+	LineHandler LineHandler `json:"-"`
 }
 
 // Write writes the contents to the lines buffer.

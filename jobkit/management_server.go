@@ -259,6 +259,8 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 				if !jm.IsJobInvocationRunning(invocation.JobName, invocation.ID) {
 					return nil
 				}
+				io.WriteString(r.Response, "event: ping\n")
+				r.Response.Flush()
 			}
 		}
 	})
