@@ -90,6 +90,7 @@ type JobScheduler struct {
 
 	// Meta Fields
 	Disabled    bool                      `json:"disabled"`
+	Parallel    bool                      `json:"parallel"`
 	NextRuntime time.Time                 `json:"nextRuntime"`
 	Current     map[string]*JobInvocation `json:"current"`
 	Last        *JobInvocation            `json:"last"`
@@ -248,8 +249,11 @@ func (js *JobScheduler) RunLoop() {
 		runAt := time.After(js.NextRuntime.UTC().Sub(Now()))
 		select {
 		case <-runAt:
-			if js.enabled() {
-				// start the job
+			// can start checks if the job is enabled
+			// AND if it can run in parallel if another
+			// invocation is already started.
+			if js.CanScheduledRun() {
+				// start the job invocation.
 				go js.Run()
 			}
 			// set up the next runtime.
@@ -257,7 +261,7 @@ func (js *JobScheduler) RunLoop() {
 		case <-notifyStopping:
 			// note: we bail hard here
 			// because the job executions in flight are
-			// responsible for themselves.
+			// handled by the context cancellation.
 			return
 		}
 	}
@@ -268,7 +272,7 @@ func (js *JobScheduler) RunLoop() {
 // It blocks on the job execution to enforce or clear timeouts.
 func (js *JobScheduler) Run() {
 	// check if the job can run
-	if !js.enabled() {
+	if !js.CanRun() {
 		return
 	}
 
@@ -367,6 +371,50 @@ func (js *JobScheduler) PersistHistory(ctx context.Context) error {
 	return nil
 }
 
+// CanScheduledRun returns if a job will be triggered automatically
+// and isn't already in flight and set to be serial.
+func (js *JobScheduler) CanScheduledRun() bool {
+	if !js.Enabled() {
+		return false
+	}
+	if !js.CanRun() {
+		return false
+	}
+	return true
+}
+
+// Enabled returns if the job is explicitly disabled,
+// otherwise it checks if the job has an EnabledProvider
+// returns the result of that.
+// It returns true if there is no provider set.
+func (js *JobScheduler) Enabled() bool {
+	if js.Disabled {
+		return false
+	}
+
+	if js.EnabledProvider != nil {
+		if !js.EnabledProvider() {
+			return false
+		}
+	}
+
+	return true
+}
+
+// CanRun returns if the job can be triggered
+// with a call to Run.
+func (js *JobScheduler) CanRun() bool {
+	if js.Parallel {
+		return false
+	}
+	if js.SerialProvider != nil && js.SerialProvider() {
+		if len(js.Current) > 0 {
+			return false
+		}
+	}
+	return true
+}
+
 //
 // utility functions
 //
@@ -402,26 +450,6 @@ func (js *JobScheduler) createContextWithTimeout(timeout time.Duration) (context
 		return context.WithTimeout(context.Background(), timeout)
 	}
 	return context.WithCancel(context.Background())
-}
-
-// enabled returns if a job can execute.
-func (js *JobScheduler) enabled() bool {
-	if js.Disabled {
-		return false
-	}
-
-	if js.EnabledProvider != nil {
-		if !js.EnabledProvider() {
-			return false
-		}
-	}
-
-	if js.SerialProvider != nil && js.SerialProvider() {
-		if len(js.Current) > 0 {
-			return false
-		}
-	}
-	return true
 }
 
 func (js *JobScheduler) onStart(ctx context.Context, ji *JobInvocation) {

@@ -67,15 +67,11 @@ var indexTemplate = `
 							<input type="submit" class="button" value="Disable" />
 						</form>
 					{{end}}
-					{{ if $job.Current }}
-					<form method="POST" action="/job.cancel/{{ $job.Name }}">
-						<input type="submit" class="button button-danger" value="Cancel" />
-					</form>
-					{{else}}
+					{{ if $job.CanRun }}
 					<form method="POST" action="/job.run/{{ $job.Name }}">
 						<input type="submit" class="button button-primary" value="Run" />
 					</form>
-					{{end}}
+					{{ end }}
 					</td>
 				</tr>
 				{{ if $job.Description }}

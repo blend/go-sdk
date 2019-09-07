@@ -51,8 +51,10 @@ var invocationTemplate = `
 		<tbody>
 			<tr>
 				<td class="align-right">
+					<span>Output</span>
 					<a href="/api/job.invocation.output/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}">JSON</a>
 					<a href="/job.invocation.output/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}">Raw</a>
+					<a href="/api/job.invocation.output.stream/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}">Stream</a>
 				</td>
 			</tr>
 		</tbody>
