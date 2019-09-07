@@ -168,6 +168,8 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	log.Debugf("using logger flags: %v", log.Flags.String())
+
 	defaultJobCfg, err := createDefaultJobConfig(args...)
 	if err != nil {
 		return err
