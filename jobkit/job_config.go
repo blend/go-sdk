@@ -71,7 +71,7 @@ func (jc JobConfig) HistoryEnabledOrDefault() bool {
 	if jc.HistoryEnabled != nil {
 		return *jc.HistoryEnabled
 	}
-	return false
+	return true
 }
 
 // HistoryPathOrDefault returns a value or a default.
