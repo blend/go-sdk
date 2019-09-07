@@ -61,6 +61,9 @@ func (jm *JobManager) LoadJobs(jobs ...Job) error {
 		)
 		if typed, ok := job.(HistoryPersister); ok {
 			var err error
+			if jm.Log != nil {
+				jm.Log.WithPath(job.Name()).Debugf("restoring job history")
+			}
 			scheduler.History, err = typed.HistoryRestore(context.Background())
 			if err != nil {
 				logger.MaybeError(jm.Log, err)
