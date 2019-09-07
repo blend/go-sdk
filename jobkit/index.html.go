@@ -10,7 +10,6 @@ var indexTemplate = `
 				<tr>
 					<th>Job Name</th>
 					<th>Schedule</th>
-					<th>Current</th>
 					<th>Next Run</th>
 					<th>Last Ran</th>
 					<th>Last Result</th>
@@ -25,13 +24,6 @@ var indexTemplate = `
 					</td>
 					<td> <!-- schedule -->
 						<pre>{{ $job.Schedule }}</pre>
-						</td>
-					<td> <!-- current -->
-					{{ if $job.Current }}
-						{{ $job.Current.Started | since_utc }}
-					{{else}}
-						<span>-</span>
-					{{end}}
 					</td>
 					<td> <!-- next run-->
 					{{ if $job.Disabled }}
