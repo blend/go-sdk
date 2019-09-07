@@ -67,7 +67,9 @@ var invocationTemplate = `
 		<tbody>
 			<tr>
 				<td>
-				<div id="terminal"></div>
+				<div id="terminal">
+					<pre>{{ .ViewModel.Output }}</pre>
+				</div>
 				<script>
 					var es = new EventSource("/api/job.invocation.output.stream/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}");
 					var terminal = document.getElementById('terminal')
