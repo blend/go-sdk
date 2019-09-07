@@ -2,6 +2,8 @@ package jobkit
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"time"
 
 	"github.com/blend/go-sdk/cron"
@@ -10,6 +12,7 @@ import (
 	"github.com/blend/go-sdk/stringutil"
 	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/web"
+	"github.com/blend/go-sdk/webutil"
 )
 
 // NewManagementServer returns a new management server that lets you
@@ -222,29 +225,39 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 		if result != nil {
 			return result
 		}
+		if !jm.IsJobInvocationRunning(invocation.JobName, invocation.ID) {
+			return nil
+		}
+		r.Response.Header().Set(webutil.HeaderContentType, "text/event-stream")
+		r.Response.Header().Set(webutil.HeaderVary, "Content-Type")
+		r.Response.WriteHeader(http.StatusOK)
+
+		io.WriteString(r.Response, "event: ping\n")
+
 		listenerID := uuid.V4().String()
 		shouldClose := make(chan struct{})
 		invocation.OutputHandlers.Add(listenerID, func(l stringutil.Line) {
-			if _, err := r.Response.Write([]byte(string(l.Line) + "\n")); err != nil {
+			io.WriteString(r.Response, "data: ")
+			if _, err := r.Response.Write([]byte(string(l.Line) + "\n\n")); err != nil {
 				logger.MaybeError(app.Log, err)
-				close(shouldClose)
+				if shouldClose != nil {
+					close(shouldClose)
+					shouldClose = nil
+				}
 			}
 			r.Response.Flush()
 		})
 		defer func() { invocation.OutputHandlers.Remove(listenerID) }()
 
-		r.Response.Write(invocation.Output.Bytes())
-		r.Response.Flush()
-
 		alarm := time.Tick(500 * time.Millisecond)
 		for {
 			select {
 			case <-shouldClose:
-				if !jm.IsJobRunning(invocation.JobName) {
+				return nil
+			case <-alarm:
+				if !jm.IsJobInvocationRunning(invocation.JobName, invocation.ID) {
 					return nil
 				}
-			case <-alarm:
-				return nil
 			}
 		}
 	})

@@ -282,7 +282,7 @@ func (js *JobScheduler) Run() {
 	if timeout > 0 {
 		ji.Timeout = ji.Started.Add(timeout)
 	}
-	js.setCurrent(ji)
+	js.addCurrent(ji)
 
 	var err error
 	var tf TraceFinisher
@@ -371,7 +371,7 @@ func (js *JobScheduler) PersistHistory(ctx context.Context) error {
 // utility functions
 //
 
-func (js *JobScheduler) setCurrent(ji *JobInvocation) {
+func (js *JobScheduler) addCurrent(ji *JobInvocation) {
 	js.Current[ji.ID] = ji
 }
 
@@ -417,7 +417,7 @@ func (js *JobScheduler) enabled() bool {
 	}
 
 	if js.SerialProvider != nil && js.SerialProvider() {
-		if js.Current != nil {
+		if len(js.Current) > 0 {
 			return false
 		}
 	}

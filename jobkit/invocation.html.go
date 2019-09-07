@@ -70,8 +70,11 @@ var invocationTemplate = `
 				<div id="terminal"></div>
 				<script>
 					var es = new EventSource("/api/job.invocation.output.stream/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}");
+					var terminal = document.getElementById('terminal')
 					es.onmessage = (e) => {
-
+						var line = document.createElement('pre');
+						line.textContent = e.data;
+						terminal.appendChild(line);
 					};
 				</script>
 				</td>
