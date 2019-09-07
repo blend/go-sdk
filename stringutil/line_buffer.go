@@ -3,6 +3,7 @@ package stringutil
 import (
 	"bytes"
 	"encoding/json"
+	"sync"
 	"time"
 )
 
@@ -20,6 +21,8 @@ type LineBuffer struct {
 	// Current is a temporary holder for the current line.
 	// It is added to the `Lines` slice when a newline is processed.
 	Current Line
+	// LineHandler is an optional handler when a new line is added.
+	LineHandler LineHandler
 }
 
 // Write writes the contents to the lines buffer.
@@ -72,6 +75,9 @@ func (lw *LineBuffer) String() string {
 // commit line adds the current line to the lines set and resets
 // the current line
 func (lw *LineBuffer) commitLine() {
+	if lw.LineHandler != nil {
+		lw.LineHandler(lw.Current)
+	}
 	lw.Lines = append(lw.Lines, lw.Current)
 	lw.Current.Timestamp = time.Time{}
 	lw.Current.Line = nil
@@ -82,6 +88,9 @@ var (
 	_ json.Marshaler   = (*Line)(nil)
 	_ json.Unmarshaler = (*Line)(nil)
 )
+
+// LineHandler is a handler for lines.
+type LineHandler func(Line)
 
 // Line is a line of output.
 type Line struct {
@@ -116,6 +125,41 @@ func (l *Line) UnmarshalJSON(contents []byte) error {
 		l.Line = []byte(typed)
 	}
 	return nil
+}
+
+// LineHandlers is a synchronized map of listeners for new lines to a line buffer.
+type LineHandlers struct {
+	sync.RWMutex
+	Handlers map[string]LineHandler
+}
+
+// Add adds a listener.
+func (lh *LineHandlers) Add(uid string, handler LineHandler) {
+	lh.Lock()
+	if lh.Handlers == nil {
+		lh.Handlers = make(map[string]LineHandler)
+	}
+	lh.Handlers[uid] = handler
+	lh.Unlock()
+}
+
+// Remove removes a listener.
+func (lh *LineHandlers) Remove(uid string) {
+	lh.Lock()
+	if lh.Handlers == nil {
+		lh.Handlers = make(map[string]LineHandler)
+	}
+	delete(lh.Handlers, uid)
+	lh.Unlock()
+}
+
+// Handle calls the handlers.
+func (lh *LineHandlers) Handle(line Line) {
+	lh.RLock()
+	defer lh.RUnlock()
+	for _, handler := range lh.Handlers {
+		handler(line)
+	}
 }
 
 // FilterLines applies a predicate to a set of lines.

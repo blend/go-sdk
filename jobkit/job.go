@@ -189,42 +189,6 @@ func (job Job) OnDisabled(ctx context.Context) {
 	}
 }
 
-func (job Job) stats(ctx context.Context, flag string) {
-	if job.StatsClient != nil {
-		job.StatsClient.Increment(string(flag), fmt.Sprintf("%s:%s", stats.TagJob, job.Name()))
-		if ji := cron.GetJobInvocation(ctx); ji != nil {
-			job.Error(ctx, job.StatsClient.TimeInMilliseconds(string(flag), ji.Elapsed, fmt.Sprintf("%s:%s", stats.TagJob, job.Name())))
-		}
-	} else {
-		job.Debugf(ctx, "stats client unset, skipping logging stats")
-	}
-}
-
-func (job Job) notify(ctx context.Context, flag string) {
-	if job.SlackClient != nil {
-		if ji := cron.GetJobInvocation(ctx); ji != nil {
-			job.Error(ctx, job.SlackClient.Send(context.Background(), NewSlackMessage(ji)))
-		}
-	} else {
-		job.Debugf(ctx, "notify (slack); sender unset skipping sending slack notification")
-	}
-
-	if job.EmailClient != nil {
-		if ji := cron.GetJobInvocation(ctx); ji != nil {
-			message, err := NewEmailMessage(job.EmailDefaults, ji)
-			if err != nil {
-				job.Error(ctx, err)
-			}
-			job.Error(ctx, job.EmailClient.Send(context.Background(), message))
-			job.Debugf(ctx, "notify (email); sent email notification to %s (%s)", stringutil.CSV(message.To), message.Subject)
-		} else {
-			job.Debugf(ctx, "notify (email); job invocation not found on context")
-		}
-	} else {
-		job.Debugf(ctx, "notify (email); email sender unset, skipping sending email notification")
-	}
-}
-
 // HistoryPersist writes the history to disk.
 // It does so completely.
 func (job Job) HistoryPersist(ctx context.Context, log []cron.JobInvocation) error {
@@ -267,8 +231,15 @@ func (job Job) HistoryRestore(ctx context.Context) (output []cron.JobInvocation,
 
 // Execute is the job body.
 func (job Job) Execute(ctx context.Context) error {
+	ji := cron.GetJobInvocation(ctx)
+	handlers := new(stringutil.LineHandlers)
+	ji.Output.LineHandler = handlers.Handle
 	return job.Action(ctx)
 }
+
+//
+// exported utility methods
+//
 
 // Debugf logs a debug message if the logger is set.
 func (job Job) Debugf(ctx context.Context, format string, args ...interface{}) {
@@ -283,4 +254,45 @@ func (job Job) Error(ctx context.Context, err error) error {
 		job.Log.WithPath(job.Name(), cron.GetJobInvocation(ctx).ID).WithContext(ctx).Error(err)
 	}
 	return err
+
+}
+
+//
+// private utility methods
+//
+
+func (job Job) stats(ctx context.Context, flag string) {
+	if job.StatsClient != nil {
+		job.StatsClient.Increment(string(flag), fmt.Sprintf("%s:%s", stats.TagJob, job.Name()))
+		if ji := cron.GetJobInvocation(ctx); ji != nil {
+			job.Error(ctx, job.StatsClient.TimeInMilliseconds(string(flag), ji.Elapsed, fmt.Sprintf("%s:%s", stats.TagJob, job.Name())))
+		}
+	} else {
+		job.Debugf(ctx, "stats client unset, skipping logging stats")
+	}
+}
+
+func (job Job) notify(ctx context.Context, flag string) {
+	if job.SlackClient != nil {
+		if ji := cron.GetJobInvocation(ctx); ji != nil {
+			job.Error(ctx, job.SlackClient.Send(context.Background(), NewSlackMessage(ji)))
+		}
+	} else {
+		job.Debugf(ctx, "notify (slack); sender unset skipping sending slack notification")
+	}
+
+	if job.EmailClient != nil {
+		if ji := cron.GetJobInvocation(ctx); ji != nil {
+			message, err := NewEmailMessage(job.EmailDefaults, ji)
+			if err != nil {
+				job.Error(ctx, err)
+			}
+			job.Error(ctx, job.EmailClient.Send(context.Background(), message))
+			job.Debugf(ctx, "notify (email); sent email notification to %s (%s)", stringutil.CSV(message.To), message.Subject)
+		} else {
+			job.Debugf(ctx, "notify (email); job invocation not found on context")
+		}
+	} else {
+		job.Debugf(ctx, "notify (email); email sender unset, skipping sending email notification")
+	}
 }

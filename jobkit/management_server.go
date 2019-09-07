@@ -6,6 +6,7 @@ import (
 
 	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/stringutil"
+	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/web"
 )
 
@@ -139,79 +140,54 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 		}
 		return web.RedirectWithMethod("GET", "/")
 	})
-	app.GET("/job.invocation/:jobName/:invocation", func(r *web.Ctx) web.Result {
+
+	var getJobInvocation = func(r *web.Ctx, resultProvider web.ResultProvider) (*cron.JobInvocation, web.Result) {
 		job, err := jm.Job(web.StringValue(r.RouteParam("jobName")))
 		if err != nil {
-			return r.Views.BadRequest(err)
+			return nil, resultProvider.BadRequest(err)
 		}
 		invocationID, err := r.RouteParam("invocation")
 		if err != nil {
-			return r.Views.BadRequest(err)
+			return nil, resultProvider.BadRequest(err)
 		}
+
+		var invocation *cron.JobInvocation
 		if job.Current != nil && job.Current.ID == invocationID {
-			return r.Views.View("invocation", job.Current)
+			invocation = job.Current
+		} else {
+			invocation = job.GetInvocationByID(invocationID)
 		}
-		invocation := job.GetInvocationByID(invocationID)
 		if invocation == nil {
-			return r.Views.NotFound()
+			return nil, resultProvider.NotFound()
+		}
+		return invocation, nil
+	}
+
+	app.GET("/job.invocation/:jobName/:invocation", func(r *web.Ctx) web.Result {
+		invocation, result := getJobInvocation(r, r.Views)
+		if result != nil {
+			return result
 		}
 		return r.Views.View("invocation", invocation)
 	})
 	app.GET("/api/job.invocation/:jobName/:invocation", func(r *web.Ctx) web.Result {
-		job, err := jm.Job(web.StringValue(r.RouteParam("jobName")))
-		if err != nil {
-			return web.JSON.BadRequest(err)
-		}
-		invocationID, err := r.RouteParam("invocation")
-		if err != nil {
-			return web.JSON.BadRequest(err)
-		}
-		if job.Current != nil && job.Current.ID == invocationID {
-			return web.JSON.Result(job.Current)
-		}
-		invocation := job.GetInvocationByID(invocationID)
-		if invocation == nil {
-			return web.JSON.NotFound()
+		invocation, result := getJobInvocation(r, web.JSON)
+		if result != nil {
+			return result
 		}
 		return web.JSON.Result(invocation)
 	})
 	app.GET("/job.invocation.output/:jobName/:invocation", func(r *web.Ctx) web.Result {
-		job, err := jm.Job(web.StringValue(r.RouteParam("jobName")))
-		if err != nil {
-			return web.Text.BadRequest(err)
-		}
-		invocationID, err := r.RouteParam("invocation")
-		if err != nil {
-			return web.Text.BadRequest(err)
-		}
-		var invocation *cron.JobInvocation
-		if job.Current != nil && job.Current.ID == invocationID {
-			invocation = job.Current
-		} else {
-			invocation = job.GetInvocationByID(invocationID)
-		}
-		if invocation == nil {
-			return web.Text.NotFound()
+		invocation, result := getJobInvocation(r, web.Text)
+		if result != nil {
+			return result
 		}
 		return web.Text.Result(invocation.Output.String())
 	})
 	app.GET("/api/job.invocation.output/:jobName/:invocation", func(r *web.Ctx) web.Result {
-		job, err := jm.Job(web.StringValue(r.RouteParam("jobName")))
-		if err != nil {
-			return web.JSON.BadRequest(err)
-		}
-		invocationID, err := r.RouteParam("invocation")
-		if err != nil {
-			return web.JSON.BadRequest(err)
-		}
-		var invocation *cron.JobInvocation
-		if job.Current != nil && job.Current.ID == invocationID {
-			invocation = job.Current
-		} else {
-			invocation = job.GetInvocationByID(invocationID)
-		}
-		if invocation == nil {
-			return web.JSON.NotFound()
+		invocation, result := getJobInvocation(r, web.JSON)
+		if result != nil {
+			return result
 		}
 		lines := append(invocation.Output.Lines)
 		if !invocation.Output.Current.Timestamp.IsZero() {
@@ -227,6 +203,16 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 			"serverTimeNanos": time.Now().UTC().UnixNano(),
 			"lines":           lines,
 		})
+	})
+
+	app.GET("/api/job.invocation.output/:jobName/:invocation", func(r *web.Ctx) web.Result {
+		invocation, result := getJobInvocation(r, web.JSON)
+		if result != nil {
+			return result
+		}
+		listenerID := uuid.V4().String()
+
+		return web.Text.Result(listenerID)
 	})
 	return app
 }

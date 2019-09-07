@@ -12,30 +12,34 @@ import (
 
 // NewJobInvocation returns a new job invocation.
 func NewJobInvocation(jobName string) *JobInvocation {
-	return &JobInvocation{
-		ID:      NewJobInvocationID(),
-		Started: Now(),
-		Status:  JobStatusRunning,
-		JobName: jobName,
-		Output:  new(stringutil.LineBuffer),
+	ji := &JobInvocation{
+		ID:             NewJobInvocationID(),
+		Started:        Now(),
+		Status:         JobStatusRunning,
+		JobName:        jobName,
+		Output:         new(stringutil.LineBuffer),
+		OutputHandlers: new(stringutil.LineHandlers),
 	}
+	ji.Output.LineHandler = ji.OutputHandlers.Handle
+	return ji
 }
 
 // JobInvocation is metadata for a job invocation (or instance of a job running).
 type JobInvocation struct {
-	ID        string
-	JobName   string
-	Started   time.Time
-	Finished  time.Time
-	Cancelled time.Time
-	Timeout   time.Time
-	Err       error
-	Elapsed   time.Duration
-	Status    JobStatus
-	Output    *stringutil.LineBuffer
-	State     interface{}
-	Context   context.Context
-	Cancel    context.CancelFunc
+	ID             string
+	JobName        string
+	Started        time.Time
+	Finished       time.Time
+	Cancelled      time.Time
+	Timeout        time.Time
+	Err            error
+	Elapsed        time.Duration
+	Status         JobStatus
+	Output         *stringutil.LineBuffer
+	OutputHandlers *stringutil.LineHandlers
+	State          interface{}
+	Context        context.Context
+	Cancel         context.CancelFunc
 }
 
 // MarshalJSON marshals the invocation as json.
