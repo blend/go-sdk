@@ -313,13 +313,6 @@ var headerTemplate = `
 		td {
 		padding: 6px 7px;
 		text-align: left; }
-		th:first-child,
-		td:first-child {
-		padding-left: 0; }
-		th:last-child,
-		td:last-child {
-		padding-right: 0; }
-
 
 		/* Spacing
 		–––––––––––––––––––––––––––––––––––––––––––––––––– */
