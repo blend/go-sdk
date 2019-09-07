@@ -135,13 +135,24 @@ func (jm *JobManager) IsJobDisabled(jobName string) (value bool) {
 	return
 }
 
-// IsJobRunning returns if a task is currently running.
+// IsJobRunning returns if a job is currently running.
 func (jm *JobManager) IsJobRunning(jobName string) (isRunning bool) {
 	jm.Lock()
 	defer jm.Unlock()
 
 	if job, ok := jm.Jobs[jobName]; ok {
-		isRunning = job.Current != nil
+		isRunning = len(job.Current) > 0
+	}
+	return
+}
+
+// IsJobInvocationRunning returns if a job invocation is currently running.
+func (jm *JobManager) IsJobInvocationRunning(jobName, invocationID string) (isRunning bool) {
+	jm.Lock()
+	defer jm.Unlock()
+
+	if job, ok := jm.Jobs[jobName]; ok {
+		_, isRunning = job.Current[invocationID]
 	}
 	return
 }
@@ -228,8 +239,8 @@ func (jm *JobManager) Status() *Status {
 				status.JobLastStarted = job.Last.Started
 			}
 		}
-		if job.Current != nil {
-			status.Running[job.Name] = append(status.Running[job.Name], job.Current)
+		for _, ji := range job.Current {
+			status.Running[job.Name] = append(status.Running[job.Name], ji)
 		}
 	}
 	sort.Sort(JobSchedulersByJobNameAsc(status.Jobs))

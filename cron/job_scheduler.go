@@ -14,9 +14,10 @@ import (
 // NewJobScheduler returns a job scheduler for a given job.
 func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 	js := &JobScheduler{
-		Latch: async.NewLatch(),
-		Name:  job.Name(),
-		Job:   job,
+		Latch:   async.NewLatch(),
+		Name:    job.Name(),
+		Job:     job,
+		Current: make(map[string]*JobInvocation),
 	}
 
 	if typed, ok := job.(DescriptionProvider); ok {
@@ -88,11 +89,11 @@ type JobScheduler struct {
 	Log    logger.Log `json:"-"`
 
 	// Meta Fields
-	Disabled    bool            `json:"disabled"`
-	NextRuntime time.Time       `json:"nextRuntime"`
-	Current     *JobInvocation  `json:"current"`
-	Last        *JobInvocation  `json:"last"`
-	History     []JobInvocation `json:"history"`
+	Disabled    bool                      `json:"disabled"`
+	NextRuntime time.Time                 `json:"nextRuntime"`
+	Current     map[string]*JobInvocation `json:"current"`
+	Last        *JobInvocation            `json:"last"`
+	History     []JobInvocation           `json:"history"`
 
 	Schedule                       Schedule                                     `json:"-"`
 	EnabledProvider                func() bool                                  `json:"-"`
@@ -179,7 +180,7 @@ func (js *JobScheduler) Disable() {
 
 // Cancel stops an execution in process.
 func (js *JobScheduler) Cancel() error {
-	if js.Current == nil {
+	if len(js.Current) == 0 {
 		js.debugf("job cancellation, job not active")
 		return nil
 	}
@@ -191,7 +192,9 @@ func (js *JobScheduler) Cancel() error {
 		return js.cancel(ctx)
 	}
 	js.debugf("job cancellation; cancelling immediately")
-	js.Current.Cancel()
+	for _, ji := range js.Current {
+		ji.Cancel()
+	}
 	return nil
 }
 
@@ -199,15 +202,17 @@ func (js *JobScheduler) Cancel() error {
 func (js *JobScheduler) cancel(ctx context.Context) error {
 	deadlinePoll := time.Tick(500 * time.Millisecond)
 	for {
-		if js.Current == nil {
+		if len(js.Current) == 0 {
 			return nil
 		}
 		js.debugf("job cancellation; waiting for cancellation")
 		select {
 		case <-ctx.Done():
-			if js.Current != nil {
+			if len(js.Current) > 0 {
 				js.debugf("job cancellation; signaling for cancellation")
-				js.Current.Cancel()
+				for _, ji := range js.Current {
+					ji.Cancel()
+				}
 			}
 			return nil
 		case <-deadlinePoll:
@@ -315,7 +320,7 @@ func (js *JobScheduler) Run() {
 		}
 
 		js.addHistory(*ji)
-		js.setCurrent(nil)
+		js.removeCurrent(ji)
 		js.setLast(ji)
 		js.PersistHistory(ji.Context)
 	}()
@@ -367,7 +372,11 @@ func (js *JobScheduler) PersistHistory(ctx context.Context) error {
 //
 
 func (js *JobScheduler) setCurrent(ji *JobInvocation) {
-	js.Current = ji
+	js.Current[ji.ID] = ji
+}
+
+func (js *JobScheduler) removeCurrent(ji *JobInvocation) {
+	delete(js.Current, ji.ID)
 }
 
 func (js *JobScheduler) setLast(ji *JobInvocation) {

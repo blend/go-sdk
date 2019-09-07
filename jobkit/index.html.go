@@ -111,14 +111,14 @@ var indexTemplate = `
 							</thead>
 							<tbody>
 
-							{{ if $job.Current }}
+							{{ range $key, $ji := $job.Current }}
 							<tr class="running">
-								<td><a href="/job.invocation/{{$job.Name}}/{{ $job.Current.ID }}">{{ $job.Current.ID }}</a></td>
-								<td>{{ $job.Current.Started | rfc3339 }}</td>
-								<td>{{ if $job.Current.Finished.IsZero }}-{{ else }}{{ $job.Current.Finished | rfc3339 }}{{ end }}</td>
-								<td>{{ if $job.Current.Timeout.IsZero }}-{{ else }}{{ $job.Current.Timeout | rfc3339 }}{{ end }}</td>
+								<td><a href="/job.invocation/{{$job.Name}}/{{ $ji.ID }}">{{ $ji.ID }}</a></td>
+								<td>{{ $ji.Started | rfc3339 }}</td>
+								<td>{{ if $ji.Finished.IsZero }}-{{ else }}{{ $ji.Finished | rfc3339 }}{{ end }}</td>
+								<td>{{ if $ji.Timeout.IsZero }}-{{ else }}{{ $ji.Timeout | rfc3339 }}{{ end }}</td>
 								<td>-</td>
-								<td>{{ $job.Current.Started | since_utc }}</td>
+								<td>{{ $ji.Started | since_utc }}</td>
 								<td>-</td>
 							<tr>
 							{{ end }}

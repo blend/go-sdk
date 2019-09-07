@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/cron"
+	"github.com/blend/go-sdk/ex"
+	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/stringutil"
 	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/web"
@@ -13,14 +15,20 @@ import (
 // NewManagementServer returns a new management server that lets you
 // trigger jobs or look at job statuses via. a json api.
 func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App {
-	app := web.MustNew(append([]web.Option{web.OptConfig(cfg.Web)}, options...)...)
-	app.DefaultMiddleware = nil
+	app := web.MustNew(
+		append([]web.Option{
+			web.OptConfig(cfg.Web),
+		}, options...)...)
+
 	app.Views.AddLiterals(
 		headerTemplate,
 		footerTemplate,
 		indexTemplate,
 		invocationTemplate,
 	)
+	app.PanicAction = func(r *web.Ctx, err interface{}) web.Result {
+		return r.Views.InternalError(ex.New(err))
+	}
 	app.GET("/", func(r *web.Ctx) web.Result {
 		return r.Views.View("index", jm.Status())
 	})
@@ -152,11 +160,16 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 		}
 
 		var invocation *cron.JobInvocation
-		if job.Current != nil && job.Current.ID == invocationID {
-			invocation = job.Current
+		if invocationID == "current" && len(job.Current) > 0 {
+			for _, invocation = range job.Current {
+				break
+			}
+		} else if current, ok := job.Current[invocationID]; ok {
+			invocation = current
 		} else {
 			invocation = job.GetInvocationByID(invocationID)
 		}
+
 		if invocation == nil {
 			return nil, resultProvider.NotFound()
 		}
@@ -212,15 +225,28 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 		listenerID := uuid.V4().String()
 		shouldClose := make(chan struct{})
 		invocation.OutputHandlers.Add(listenerID, func(l stringutil.Line) {
-			app.Log.Debugf("sending log line: %s", string(l.Line))
 			if _, err := r.Response.Write([]byte(string(l.Line) + "\n")); err != nil {
+				logger.MaybeError(app.Log, err)
 				close(shouldClose)
 			}
 			r.Response.Flush()
 		})
 		defer func() { invocation.OutputHandlers.Remove(listenerID) }()
-		<-shouldClose
-		return nil
+
+		r.Response.Write(invocation.Output.Bytes())
+		r.Response.Flush()
+
+		alarm := time.Tick(500 * time.Millisecond)
+		for {
+			select {
+			case <-shouldClose:
+				if !jm.IsJobRunning(invocation.JobName) {
+					return nil
+				}
+			case <-alarm:
+				return nil
+			}
+		}
 	})
 	return app
 }

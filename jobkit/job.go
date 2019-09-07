@@ -231,9 +231,6 @@ func (job Job) HistoryRestore(ctx context.Context) (output []cron.JobInvocation,
 
 // Execute is the job body.
 func (job Job) Execute(ctx context.Context) error {
-	ji := cron.GetJobInvocation(ctx)
-	handlers := new(stringutil.LineHandlers)
-	ji.Output.LineHandler = handlers.Handle
 	return job.Action(ctx)
 }
 
