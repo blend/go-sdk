@@ -180,14 +180,17 @@ func (js *JobScheduler) Disable() {
 // Cancel stops an execution in process.
 func (js *JobScheduler) Cancel() error {
 	if js.Current == nil {
+		js.debugf("job cancellation, job not active")
 		return nil
 	}
 	gracePeriod := js.ShutdownGracePeriodProvider()
 	if gracePeriod > 0 {
+		js.debugf("job cancellation; cancelling with %v grace period", gracePeriod)
 		ctx, cancel := js.createContextWithTimeout(js.ShutdownGracePeriodProvider())
 		defer cancel()
 		return js.cancel(ctx)
 	}
+	js.debugf("job cancellation; cancelling immediately")
 	js.Current.Cancel()
 	return nil
 }
@@ -199,11 +202,11 @@ func (js *JobScheduler) cancel(ctx context.Context) error {
 		if js.Current == nil {
 			return nil
 		}
-		js.debugf("job in flight cancelling")
+		js.debugf("job cancellation; waiting for cancellation")
 		select {
 		case <-ctx.Done():
 			if js.Current != nil {
-				js.debugf("job in flight cancelled")
+				js.debugf("job cancellation; signaling for cancellation")
 				js.Current.Cancel()
 			}
 			return nil

@@ -204,15 +204,23 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 			"lines":           lines,
 		})
 	})
-
-	app.GET("/api/job.invocation.output/:jobName/:invocation", func(r *web.Ctx) web.Result {
+	app.GET("/api/job.invocation.output.stream/:jobName/:invocation", func(r *web.Ctx) web.Result {
 		invocation, result := getJobInvocation(r, web.JSON)
 		if result != nil {
 			return result
 		}
 		listenerID := uuid.V4().String()
-
-		return web.Text.Result(listenerID)
+		shouldClose := make(chan struct{})
+		invocation.OutputHandlers.Add(listenerID, func(l stringutil.Line) {
+			app.Log.Debugf("sending log line: %s", string(l.Line))
+			if _, err := r.Response.Write([]byte(string(l.Line) + "\n")); err != nil {
+				close(shouldClose)
+			}
+			r.Response.Flush()
+		})
+		defer func() { invocation.OutputHandlers.Remove(listenerID) }()
+		<-shouldClose
+		return nil
 	})
 	return app
 }

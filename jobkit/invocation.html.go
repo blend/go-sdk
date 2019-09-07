@@ -67,7 +67,13 @@ var invocationTemplate = `
 		<tbody>
 			<tr>
 				<td>
-				<pre>{{ .ViewModel.Output }}</pre>
+				<div id="terminal"></div>
+				<script>
+					var es = new EventSource("/api/job.invocation.output.stream/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}");
+					es.onmessage = (e) => {
+
+					};
+				</script>
 				</td>
 			</tr>
 		</tbody>
