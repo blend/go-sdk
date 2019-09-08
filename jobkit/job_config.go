@@ -16,6 +16,8 @@ type JobConfig struct {
 	Name string `json:"name" yaml:"name"`
 	// Description is a description of the job.
 	Description string `json:"description" yaml:"description"`
+	// Labels define extra metadata that can be used to filter jobs.
+	Labels map[string]string `json:"labels" yaml:"labels"`
 	// Schedule returns the job schedule.
 	Schedule string `json:"schedule" yaml:"schedule"`
 	// Timeout represents the abort threshold for the job.
@@ -28,6 +30,10 @@ type JobConfig struct {
 	HistoryEnabled *bool `json:"historyEnabled" yaml:"historyEnabled"`
 	// HistoryPath is the path to write history to.
 	HistoryPath string `json:"historyPath" yaml:"historyPath"`
+	// HistoryMaxCount is the maximum number of history items to keep.
+	HistoryMaxCount int `json:"historyMaxCount" yaml:"historyMaxCount"`
+	// HistoryMaxAge is the maximum age of history items to keep.
+	HistoryMaxAge int `json:"historyMaxAge" yaml:"historyMaxAge"`
 
 	// NotifyOnStart governs if we should send notifications job start.
 	NotifyOnStart *bool `json:"notifyOnStart" yaml:"notifyOnStart"`

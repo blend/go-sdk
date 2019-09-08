@@ -60,16 +60,34 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 		jm.Resume()
 		return web.JSON.OK()
 	})
-	app.GET("/api/job.status/:jobName", func(r *web.Ctx) web.Result {
+	app.GET("/api/job/:jobName", func(r *web.Ctx) web.Result {
 		jobName, err := r.RouteParam("jobName")
 		if err != nil {
 			return web.JSON.BadRequest(err)
 		}
-		status, err := jm.Job(jobName)
+		job, err := jm.Job(jobName)
 		if err := jm.RunJob(jobName); err != nil {
 			return web.JSON.BadRequest(err)
 		}
-		return web.JSON.Result(status)
+		return web.JSON.Result(job)
+	})
+	app.GET("/api/job.stats", func(r *web.Ctx) web.Result {
+		output := make(map[string]cron.JobStats)
+		for _, job := range jm.Jobs {
+			output[job.Name] = job.Stats()
+		}
+		return web.JSON.Result(output)
+	})
+	app.GET("/api/job.stats/:jobName", func(r *web.Ctx) web.Result {
+		jobName, err := r.RouteParam("jobName")
+		if err != nil {
+			return web.JSON.BadRequest(err)
+		}
+		job, err := jm.Job(jobName)
+		if err := jm.RunJob(jobName); err != nil {
+			return web.JSON.BadRequest(err)
+		}
+		return web.JSON.Result(job.Stats())
 	})
 	app.POST("/job.run/:jobName", func(r *web.Ctx) web.Result {
 		jobName, err := r.RouteParam("jobName")

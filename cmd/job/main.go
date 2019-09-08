@@ -32,13 +32,33 @@ var (
 	flagDefaultJobExec                *string
 	flagDefaultJobSchedule            *string
 	flagDefaultJobHistoryPath         *string
+	flagDefaultJobHistoryMaxCount     *int
+	flagDefaultJobHistoryMaxAge       *time.Duration
 	flagDefaultJobTimeout             *time.Duration
 	flagDefaultJobShutdownGracePeriod *time.Duration
+	flagDefaultJobLabels              *[]string
 	flagDefaultJobDiscardOutput       *bool
 	flagDefaultJobHistoryEnabled      *bool
 	flagDefaultJobSerial              *bool
 	flagDisableServer                 *bool
 )
+
+func initFlags(cmd *cobra.Command) {
+	flagBind = cmd.Flags().String("bind", "", "The management http server bind address.")
+	flagConfigPath = cmd.Flags().StringP("config", "c", "", "The config path.")
+	flagDefaultJobName = cmd.Flags().StringP("name", "n", "", "The job name (will default to a random string of 8 letters).")
+	flagDefaultJobSchedule = cmd.Flags().StringP("schedule", "s", "", "The job schedule in cron format (ex: '*/5 * * * *')")
+	flagDefaultJobHistoryPath = cmd.Flags().String("history-path", "", "The job history path.")
+	flagDefaultJobHistoryEnabled = cmd.Flags().Bool("history-enabled", false, "If job history should be saved to disk.")
+	flagDefaultJobHistoryMaxCount = cmd.Flags().Int("history-max-count", 0, "Maximum number of history items to maintain (defaults unbounded).")
+	flagDefaultJobHistoryMaxAge = cmd.Flags().Duration("history-max-age", 0, "Maximum age of history items to maintain (defaults unbounded).")
+	flagDefaultJobTimeout = cmd.Flags().Duration("timeout", 0, "The job execution timeout as a duration (ex: 5s)")
+	flagDefaultJobShutdownGracePeriod = cmd.Flags().Duration("shutdown-grace-period", 0, "The grace period to wait for the job to complete on stop (ex: 5s)")
+	flagDefaultJobLabels = cmd.Flags().StringSlice("label", nil, "Labels for the job that can be used with filtering or tagging.")
+	flagDefaultJobDiscardOutput = cmd.Flags().Bool("discard-output", false, "If jobs should discard console output from the action.")
+	flagDefaultJobSerial = cmd.Flags().Bool("serial", true, "The job should run serially (that is, only one can be active at a time)")
+	flagDisableServer = cmd.Flags().Bool("disable-server", false, "If the management server should be disabled.")
+}
 
 type config struct {
 	jobkit.Config `yaml:",inline"`
@@ -84,6 +104,8 @@ func (jc *jobConfig) Resolve() error {
 		configutil.SetBool(&jc.Serial, configutil.Bool(flagDefaultJobSerial), configutil.Bool(jc.Serial), configutil.Bool(ref.Bool(true))),
 		configutil.SetString(&jc.Schedule, configutil.String(*flagDefaultJobSchedule), configutil.String(jc.Schedule)),
 		configutil.SetString(&jc.HistoryPath, configutil.String(*flagDefaultJobHistoryPath), configutil.String(jc.HistoryPath)),
+		configutil.SetInt(&jc.HistoryMaxCount, configutil.String(*flagDefaultJobHistoryMaxCount), configutil.String(jc.HistoryMaxCount)),
+		configutil.SetDuration(&jc.HistoryMaxAge, configutil.String(*flagDefaultJobHistoryMaxAge), configutil.String(jc.HistoryMaxAge)),
 		configutil.SetDuration(&jc.Timeout, configutil.Duration(*flagDefaultJobTimeout), configutil.Duration(jc.Timeout)),
 		configutil.SetDuration(&jc.ShutdownGracePeriod, configutil.Duration(*flagDefaultJobShutdownGracePeriod), configutil.Duration(jc.ShutdownGracePeriod)),
 	)
@@ -92,8 +114,8 @@ func (jc *jobConfig) Resolve() error {
 func command() *cobra.Command {
 	return &cobra.Command{
 		Use:   "job",
-		Short: "Job runs a command on a schedule, and tracks limited job history in memory.",
-		Long:  "Job runs a command on a schedule, and tracks limited job history in memory.",
+		Short: "Job runs a command on a schedule, and tracks limited job history.",
+		Long:  "Job runs a command on a schedule, and tracks limited job history.",
 		Example: `
 # echo 'hello world' with the default schedule
 job -- echo 'hello world'
@@ -130,20 +152,8 @@ jobs:
 
 func main() {
 	cmd := command()
+	initFlags(cmd)
 	cmd.Run = fatalExit(run)
-
-	flagBind = cmd.Flags().String("bind", "", "The management http server bind address.")
-	flagConfigPath = cmd.Flags().StringP("config", "c", "", "The config path.")
-	flagDefaultJobName = cmd.Flags().StringP("name", "n", "", "The job name (will default to a random string of 8 letters).")
-	flagDefaultJobSchedule = cmd.Flags().StringP("schedule", "s", "", "The job schedule in cron format (ex: '*/5 * * * *')")
-	flagDefaultJobHistoryPath = cmd.Flags().String("history-path", "", "The job history path.")
-	flagDefaultJobHistoryEnabled = cmd.Flags().Bool("history-enabled", false, "If job history should be saved to disk.")
-	flagDefaultJobTimeout = cmd.Flags().Duration("timeout", 0, "The job execution timeout as a duration (ex: 5s)")
-	flagDefaultJobShutdownGracePeriod = cmd.Flags().Duration("shutdown-grace-period", 0, "The grace period to wait for the job to complete on stop (ex: 5s)")
-	flagDefaultJobDiscardOutput = cmd.Flags().Bool("discard-output", false, "If jobs should discard console output from the action.")
-	flagDefaultJobSerial = cmd.Flags().Bool("serial", true, "The job should run serially (that is, only one can be active at a time)")
-	flagDisableServer = cmd.Flags().Bool("disable-server", false, "If the management server should be disabled.")
-
 	if err := cmd.Execute(); err != nil {
 		logger.FatalExit(err)
 	}

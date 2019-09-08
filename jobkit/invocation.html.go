@@ -3,13 +3,8 @@ package jobkit
 var invocationTemplate = `
 {{ define "invocation" }}
 {{ template "header" . }}
-<div class="container">
-	<ul class="breadcrumbs">
-		<li><a href="/">Jobs</a></li>
-		<li>{{ .ViewModel.JobName }}</li>
-		<li>{{ .ViewModel.ID }}</li>
-	</ul>
-	<table class="u-full-width">
+<div id="content" class="uk-container uk-container-expand">
+	<table class="uk-table uk-table-striped">
 		<thead>
 			<tr>
 				<th>Invocation</th>

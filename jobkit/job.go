@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/blend/go-sdk/sentry"
+
 	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/email"
 	"github.com/blend/go-sdk/ex"
@@ -93,6 +95,7 @@ type Job struct {
 	Log           logger.Log
 	StatsClient   stats.Collector
 	SlackClient   slack.Sender
+	SentryClient  sentry.Client
 	EmailDefaults email.Message
 	EmailClient   email.Sender
 }
@@ -105,6 +108,11 @@ func (job Job) Name() string {
 // Description returns the job description.
 func (job Job) Description() string {
 	return job.Config.Description
+}
+
+// Labels returns the job labels.
+func (job Job) Labels() map[string]string {
+	return job.Config.Labels
 }
 
 // Schedule returns the job schedule.

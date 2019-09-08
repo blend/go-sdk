@@ -2,6 +2,7 @@ package configutil
 
 import (
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/blend/go-sdk/ex"
@@ -21,6 +22,27 @@ func Parse(source StringSource) Parser {
 // Parser parses an int.
 type Parser struct {
 	Source StringSource
+}
+
+// Bool returns the bool value.
+func (p Parser) Bool() (*bool, error) {
+	value, err := p.Source.String()
+	if err != nil {
+		return nil, err
+	}
+	if value == nil {
+		return nil, nil
+	}
+	var parsed bool
+	switch strings.ToLower(*value) {
+	case "1", "true", "on", "yes":
+		parsed = true
+	case "0", "false", "off", "no":
+		parsed = false
+	default:
+		return nil, ex.New("invalid bool value", ex.OptMessagef("value: %s", *value))
+	}
+	return &parsed, nil
 }
 
 // Int returns the int value.

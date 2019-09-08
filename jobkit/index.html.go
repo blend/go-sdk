@@ -3,12 +3,12 @@ package jobkit
 var indexTemplate = `
 {{ define "index" }}
 {{ template "header" . }}
-<div class="job container">
-		{{ range $index, $job := .ViewModel.Jobs }}
-		<table class="u-full-width">
+	<div id="content" class="uk-container uk-container-expand">
+		<table class="uk-table uk-table-striped">
 			<thead>
 				<tr>
 					<th>Job Name</th>
+					<th>Success Rate</th>
 					<th>Schedule</th>
 					<th>Next Run</th>
 					<th>Last Ran</th>
@@ -18,12 +18,20 @@ var indexTemplate = `
 				</tr>
 			</thead>
 			<tbody>
-				<tr>
+		{{ range $index, $job := .ViewModel.Jobs }}
+				<tr class="job-details">
 					<td> <!-- job name -->
 						{{ $job.Name }}
 					</td>
+					<td> <!-- success rate -->
+						{{ $job.Stats.SuccessRate | format_pct }}
+					</td>
 					<td> <!-- schedule -->
-						<pre>{{ $job.Schedule }}</pre>
+					{{ if $job.Schedule }}
+						{{ $job.Schedule }}
+					{{ else }}
+						<span>-</span>
+					{{ end }}
 					</td>
 					<td> <!-- next run-->
 					{{ if $job.Disabled }}
@@ -59,78 +67,28 @@ var indexTemplate = `
 					</td>
 					<td> <!-- actions -->
 					{{ if $job.Disabled }}
-						<form method="POST" action="/job.enable/{{ $job.Name }}">
-							<input type="submit" class="button" value="Enable" />
+						<form method="POST" action="/job.enable/{{ $job.Name }}" class="uk-form">
+							<input type="submit" class="uk-button" value="Enable" />
 						</form>
 					{{else}}
-						<form method="POST" action="/job.disable/{{ $job.Name }}">
-							<input type="submit" class="button" value="Disable" />
+						<form method="POST" action="/job.disable/{{ $job.Name }}" class="uk-form">
+							<input type="submit" class="uk-button" value="Disable" />
 						</form>
 					{{end}}
 					{{ if $job.CanRun }}
-					<form method="POST" action="/job.run/{{ $job.Name }}">
-						<input type="submit" class="button button-primary" value="Run" />
+					<form method="POST" action="/job.run/{{ $job.Name }}" class="uk-form">
+						<input type="submit" class="uk-button uk-button-primary" value="Run" />
 					</form>
+					{{ else }}
+					<button class="uk-button uk-button-disabled" disabled>Running</button>
 					{{ end }}
 					</td>
 				</tr>
-				{{ if $job.Description }}
-				<tr>
-					<td colspan=8>
-						<h4>Description</h4>
-						<pre>{{ $job.Description }}</pre>
-					</td>
-				</tr>
-				{{ end }}
-				<tr>
-					<td colspan=8>
-						<h4>History</h4>
-						<table class="u-full-width">
-							<thead>
-								<tr>
-									<th>Invocation</th>
-									<th>Started</th>
-									<th>Finished</th>
-									<th>Timeout</th>
-									<th>Cancelled</th>
-									<th>Elapsed</th>
-									<th>Error</th>
-								</tr>
-							</thead>
-							<tbody>
-
-							{{ range $key, $ji := $job.Current }}
-							<tr class="running">
-								<td><a href="/job.invocation/{{$job.Name}}/{{ $ji.ID }}">{{ $ji.ID }}</a></td>
-								<td>{{ $ji.Started | rfc3339 }}</td>
-								<td>{{ if $ji.Finished.IsZero }}-{{ else }}{{ $ji.Finished | rfc3339 }}{{ end }}</td>
-								<td>{{ if $ji.Timeout.IsZero }}-{{ else }}{{ $ji.Timeout | rfc3339 }}{{ end }}</td>
-								<td>-</td>
-								<td>{{ $ji.Started | since_utc }}</td>
-								<td>-</td>
-							<tr>
-							{{ end }}
-
-							{{ range $index, $ji := $job.History | reverse }}
-							<tr class="{{ if $ji.Status | eq "failed" }}failed{{ else if $ji.Status | eq "cancelled"}}cancelled{{else}}ok{{end}}">
-								<td><a href="/job.invocation/{{$ji.JobName}}/{{ $ji.ID }}">{{ $ji.ID }}</a></td>
-								<td>{{ $ji.Started | rfc3339 }}</td>
-								<td>{{ if $ji.Finished.IsZero }}-{{ else }}{{ $ji.Finished | rfc3339 }}{{ end }}</td>
-								<td>{{ if $ji.Timeout.IsZero }}-{{ else }}{{ $ji.Timeout | rfc3339 }}{{ end }}</td>
-								<td>{{ if $ji.Cancelled.IsZero }}-{{ else }}{{ $ji.Cancelled | rfc3339 }}{{ end }}</td>
-								<td>{{ $ji.Elapsed }}</td>
-								<td>{{ if $ji.Err }}<code>{{ $ji.Err }}</code>{{ else }}-{{end}}</td>
-							</tr>
-							{{ end }}
-							</tbody>
-						</table>
-					</td>
-				</tr>
+		{{ else }}
+		<tr colspan=8><td>No Jobs Loaded</td></tr>
+		{{ end }}
 			</tbody>
 		</table>
-		{{ else }}
-		<h4>No Jobs Loaded</h4>
-		{{ end }}
 </div>
 {{ template "footer" . }}
 {{ end }}

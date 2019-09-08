@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/blend/go-sdk/mathutil"
+
 	"github.com/blend/go-sdk/async"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
@@ -20,8 +22,16 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 		Current: make(map[string]*JobInvocation),
 	}
 
+	for _, option := range options {
+		option(js)
+	}
+
 	if typed, ok := job.(DescriptionProvider); ok {
 		js.Description = typed.Description()
+	}
+
+	if typed, ok := job.(LabelsProvider); ok {
+		js.Labels = typed.Labels()
 	}
 
 	if typed, ok := job.(ScheduleProvider); ok {
@@ -46,6 +56,24 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 		js.EnabledProvider = func() bool { return DefaultEnabled }
 	}
 
+	if typed, ok := job.(HistoryEnabledProvider); ok {
+		js.HistoryEnabledProvider = typed.HistoryEnabled
+	} else {
+		js.HistoryEnabledProvider = func() bool { return js.Config.HistoryEnabledOrDefault() }
+	}
+
+	if typed, ok := job.(HistoryMaxCountProvider); ok {
+		js.HistoryMaxCountProvider = typed.HistoryMaxCount
+	} else {
+		js.HistoryMaxCountProvider = func() int { return js.Config.HistoryMaxCountOrDefault() }
+	}
+
+	if typed, ok := job.(HistoryMaxAgeProvider); ok {
+		js.HistoryMaxAgeProvider = typed.HistoryMaxAge
+	} else {
+		js.HistoryMaxAgeProvider = func() time.Duration { return js.Config.HistoryMaxAgeOrDefault() }
+	}
+
 	if typed, ok := job.(SerialProvider); ok {
 		js.SerialProvider = typed.Serial
 	} else {
@@ -68,10 +96,6 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 		js.HistoryPersist = typed.HistoryPersist
 	}
 
-	for _, option := range options {
-		option(js)
-	}
-
 	return js
 }
 
@@ -80,9 +104,10 @@ type JobScheduler struct {
 	sync.Mutex   `json:"-"`
 	*async.Latch `json:"-"`
 
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Job         Job    `json:"-"`
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	Labels      map[string]string `json:"labels"`
+	Job         Job               `json:"-"`
 
 	Config Config     `json:"-"`
 	Tracer Tracer     `json:"-"`
@@ -103,6 +128,9 @@ type JobScheduler struct {
 	ShutdownGracePeriodProvider    func() time.Duration                         `json:"-"`
 	ShouldTriggerListenersProvider func() bool                                  `json:"-"`
 	ShouldWriteOutputProvider      func() bool                                  `json:"-"`
+	HistoryEnabledProvider         func() bool                                  `json:"-"`
+	HistoryMaxCountProvider        func() int                                   `json:"-"`
+	HistoryMaxAgeProvider          func() time.Duration                         `json:"-"`
 	HistoryPersist                 func(context.Context, []JobInvocation) error `json:"-"`
 }
 
@@ -197,28 +225,6 @@ func (js *JobScheduler) Cancel() error {
 		ji.Cancel()
 	}
 	return nil
-}
-
-// Cancel stops an execution in process.
-func (js *JobScheduler) cancel(ctx context.Context) error {
-	deadlinePoll := time.Tick(500 * time.Millisecond)
-	for {
-		if len(js.Current) == 0 {
-			return nil
-		}
-		js.debugf("job cancellation; waiting for cancellation")
-		select {
-		case <-ctx.Done():
-			if len(js.Current) > 0 {
-				js.debugf("job cancellation; signaling for cancellation")
-				for _, ji := range js.Current {
-					ji.Cancel()
-				}
-			}
-			return nil
-		case <-deadlinePoll:
-		}
-	}
 }
 
 // RunLoop is the main scheduler loop.
@@ -416,6 +422,35 @@ func (js *JobScheduler) CanRun() bool {
 	return true
 }
 
+// Stats returns job stats.
+func (js *JobScheduler) Stats() JobStats {
+	var output JobStats
+	var elapsedTimes []time.Duration
+
+	output.RunsTotal = len(js.History)
+	for _, ji := range js.History {
+		if ji.Err != nil {
+			output.RunsErrored++
+		} else if !ji.Timeout.IsZero() {
+			output.RunsTimedOut++
+		} else if !ji.Cancelled.IsZero() {
+			output.RunsCancelled++
+		} else if !ji.Finished.IsZero() {
+			output.RunsSuccessful++
+		}
+		if ji.Elapsed > 0 {
+			elapsedTimes = append(elapsedTimes, ji.Elapsed)
+		}
+		output.OutputBytes += len(ji.Output.Bytes())
+	}
+	if output.RunsTotal > 0 {
+		output.SuccessRate = float64(output.RunsSuccessful) / float64(output.RunsTotal)
+	}
+	output.Elapsed50th = mathutil.PercentileOfDuration(elapsedTimes, 50.0)
+	output.Elapsed95th = mathutil.PercentileOfDuration(elapsedTimes, 95.0)
+	return output
+}
+
 //
 // utility functions
 //
@@ -430,6 +465,28 @@ func (js *JobScheduler) removeCurrent(ji *JobInvocation) {
 
 func (js *JobScheduler) setLast(ji *JobInvocation) {
 	js.Last = ji
+}
+
+// Cancel stops an execution in process.
+func (js *JobScheduler) cancel(ctx context.Context) error {
+	deadlinePoll := time.Tick(500 * time.Millisecond)
+	for {
+		if len(js.Current) == 0 {
+			return nil
+		}
+		js.debugf("job cancellation; waiting for cancellation")
+		select {
+		case <-ctx.Done():
+			if len(js.Current) > 0 {
+				js.debugf("job cancellation; signaling for cancellation")
+				for _, ji := range js.Current {
+					ji.Cancel()
+				}
+			}
+			return nil
+		case <-deadlinePoll:
+		}
+	}
 }
 
 // safeAsyncExec runs a given job's body and recovers panics.
@@ -514,13 +571,20 @@ func (js *JobScheduler) onFailure(ctx context.Context, ji *JobInvocation) {
 }
 
 func (js *JobScheduler) addHistory(ji JobInvocation) {
-	js.History = append(js.cullHistory(), ji)
+	if js.HistoryEnabledProvider() {
+		js.History = append(js.cullHistory(), ji)
+	}
 }
 
 func (js *JobScheduler) cullHistory() []JobInvocation {
+	if !js.HistoryEnabledProvider() {
+		return js.History
+	}
+
 	count := len(js.History)
-	maxCount := js.Config.HistoryMaxCountOrDefault()
-	maxAge := js.Config.HistoryMaxAgeOrDefault()
+	maxCount := js.HistoryMaxCountProvider()
+	maxAge := js.HistoryMaxAgeProvider()
+
 	now := time.Now().UTC()
 	var filtered []JobInvocation
 	for index, h := range js.History {

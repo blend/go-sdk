@@ -17,12 +17,19 @@ MethodName[Receiver|Provider] is the general pattern.
 They're mostly the same except
 */
 
-// DescriptionProvider is a type that proivdes a description.
+// DescriptionProvider is a type that provides a description.
 type DescriptionProvider interface {
 	Description() string
 }
 
-// ScheduleProvider returns a schedule for the job.
+// LabelsProvider is a type that provides labels.
+type LabelsProvider interface {
+	Labels() map[string]string
+}
+
+// ScheduleProvider is a type that provides a schedule for the job.
+// If a job does not implement this method, it is treated as
+// "OnDemand" or a job that must be triggered explicitly.
 type ScheduleProvider interface {
 	Schedule() Schedule
 }
@@ -103,6 +110,21 @@ type OnDisabledReceiver interface {
 // OnEnabledReceiver is a lifecycle hook for enabled events.
 type OnEnabledReceiver interface {
 	OnEnabled(context.Context)
+}
+
+// HistoryEnabledProvider is an optional interface that will allow jobs to control if it should track history.
+type HistoryEnabledProvider interface {
+	HistoryEnabled() bool
+}
+
+// HistoryMaxCountProvider is an optional interface that will allow jobs to control how many history items are tracked.
+type HistoryMaxCountProvider interface {
+	HistoryMaxCount() int
+}
+
+// HistoryMaxAgeProvider is an optional interface that will allow jobs to control how long to track history for.
+type HistoryMaxAgeProvider interface {
+	HistoryMaxAge() time.Duration
 }
 
 // HistoryPersister is a job that can persist and restore it's invocation history.

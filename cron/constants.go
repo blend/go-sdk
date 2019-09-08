@@ -11,8 +11,6 @@ const (
 
 // Constats and defaults
 const (
-	DefaultHistoryMaxCount                     = 10
-	DefaultHistoryMaxAge                       = 6 * time.Hour
 	DefaultHistoryRestoreTimeout               = 5 * time.Second
 	DefaultShutdownGracePeriod   time.Duration = 0
 	DefaultHeartbeatInterval                   = 50 * time.Millisecond
@@ -27,6 +25,12 @@ const (
 	DefaultShouldWriteOutput = true
 	// DefaultShouldTriggerListeners is a default.
 	DefaultShouldTriggerListeners = true
+	// DefaultHistoryEnabled is a default.
+	DefaultHistoryEnabled = true
+	// DefaultHistoryMaxCount is the default number of history items to track.
+	DefaultHistoryMaxCount = 10
+	// DefaultHistoryMaxAge is the default maximum age of history items.
+	DefaultHistoryMaxAge = 6 * time.Hour
 )
 
 const (

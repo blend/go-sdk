@@ -11,6 +11,35 @@ func TestParse(t *testing.T) {
 	assert := assert.New(t)
 
 	stringSource := String("")
+
+	boolValue, err := Parse(stringSource).Bool()
+	assert.Nil(err)
+	assert.Nil(boolValue)
+
+	trueValues := []string{"1", "true", "yes", "on"}
+	for _, tv := range trueValues {
+		stringSource = String(tv)
+		boolValue, err = Parse(stringSource).Bool()
+		assert.Nil(err)
+		assert.NotNil(boolValue)
+		assert.True(*boolValue)
+	}
+
+	falseValues := []string{"0", "false", "no", "off"}
+	for _, fv := range falseValues {
+		stringSource = String(fv)
+		boolValue, err = Parse(stringSource).Bool()
+		assert.Nil(err)
+		assert.NotNil(boolValue)
+		assert.False(*boolValue)
+	}
+
+	stringSource = String("not a bool")
+	boolValue, err = Parse(stringSource).Bool()
+	assert.NotNil(err)
+	assert.Nil(boolValue)
+
+	stringSource = String("")
 	intValue, err := Parse(stringSource).Int()
 	assert.Nil(err)
 	assert.Nil(intValue)
