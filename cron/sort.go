@@ -15,5 +15,5 @@ func (s JobSchedulersByJobNameAsc) Swap(i, j int) {
 
 // Less implements sorter.
 func (s JobSchedulersByJobNameAsc) Less(i, j int) bool {
-	return s[i].Name < s[j].Name
+	return s[i].Name() < s[j].Name()
 }

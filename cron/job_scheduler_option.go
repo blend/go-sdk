@@ -14,8 +14,3 @@ func OptJobSchedulerTracer(tracer Tracer) JobSchedulerOption {
 func OptJobSchedulerLog(log logger.Log) JobSchedulerOption {
 	return func(js *JobScheduler) { js.Log = log }
 }
-
-// OptJobSchedulerConfig sets the job scheduler config.
-func OptJobSchedulerConfig(hc Config) JobSchedulerOption {
-	return func(js *JobScheduler) { js.Config = hc }
-}

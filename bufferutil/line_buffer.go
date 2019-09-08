@@ -1,4 +1,4 @@
-package stringutil
+package bufferutil
 
 import (
 	"bytes"

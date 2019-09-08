@@ -30,7 +30,6 @@ func New(options ...JobManagerOption) *JobManager {
 type JobManager struct {
 	sync.Mutex
 	Latch   *async.Latch
-	Config  Config
 	Tracer  Tracer
 	Log     logger.Log
 	Started time.Time
@@ -57,14 +56,13 @@ func (jm *JobManager) LoadJobs(jobs ...Job) error {
 		scheduler := NewJobScheduler(job,
 			OptJobSchedulerTracer(jm.Tracer),
 			OptJobSchedulerLog(jm.Log),
-			OptJobSchedulerConfig(jm.Config),
 		)
-		if typed, ok := job.(HistoryPersister); ok {
+		if typed, ok := job.(HistoryProvider); ok {
 			var err error
 			if jm.Log != nil {
 				jm.Log.WithPath(job.Name()).Debugf("restoring job history")
 			}
-			scheduler.History, err = typed.HistoryRestore(context.Background())
+			scheduler.History, err = typed.RestoreHistory(context.Background())
 			if err != nil {
 				logger.MaybeError(jm.Log, err)
 			}
@@ -243,7 +241,7 @@ func (jm *JobManager) Status() *Status {
 			}
 		}
 		for _, ji := range job.Current {
-			status.Running[job.Name] = append(status.Running[job.Name], ji)
+			status.Running[job.Name()] = append(status.Running[job.Name()], ji)
 		}
 	}
 	sort.Sort(JobSchedulersByJobNameAsc(status.Jobs))
@@ -279,7 +277,6 @@ func (jm *JobManager) StartAsync() error {
 	for _, job := range jm.Jobs {
 		job.Log = jm.Log
 		job.Tracer = jm.Tracer
-		job.Config = jm.Config
 		go job.Start()
 		<-job.NotifyStarted()
 	}

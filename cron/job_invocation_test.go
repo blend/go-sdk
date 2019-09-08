@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/bufferutil"
 	"github.com/blend/go-sdk/ex"
-	"github.com/blend/go-sdk/stringutil"
 	"github.com/blend/go-sdk/uuid"
 )
 
@@ -24,7 +24,7 @@ func TestJobInvocationJSON(t *testing.T) {
 		Status:    JobStatusComplete,
 		Elapsed:   time.Second,
 		Err:       ex.New("this is a test"),
-		Output:    stringutil.NewLineBuffer([]byte("this\nis\na\ntest")),
+		Output:    bufferutil.NewLineBuffer([]byte("this\nis\na\ntest")),
 	}
 
 	contents, err := json.Marshal(test)

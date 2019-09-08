@@ -2,8 +2,8 @@ package jobkit
 
 import (
 	"path/filepath"
-	"time"
 
+	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/email"
 	"github.com/blend/go-sdk/stringutil"
 )
@@ -12,48 +12,33 @@ import (
 // from configuration.
 // You can use this job config by embedding it into your larger job config struct.
 type JobConfig struct {
+	cron.JobConfig `yaml:",inline"`
 	// Name is the name of the job.
-	Name string `json:"name" yaml:"name"`
+	Name string `yaml:"name"`
 	// Description is a description of the job.
-	Description string `json:"description" yaml:"description"`
-	// Labels define extra metadata that can be used to filter jobs.
-	Labels map[string]string `json:"labels" yaml:"labels"`
+	Description string `yaml:"description"`
 	// Schedule returns the job schedule.
-	Schedule string `json:"schedule" yaml:"schedule"`
-	// Timeout represents the abort threshold for the job.
-	Timeout time.Duration `json:"timeout" yaml:"timeout"`
-	// ShutdownGracePeriod represents the time a job is given to clean itself up.
-	ShutdownGracePeriod time.Duration `json:"shutdownGracePeriod" yaml:"shutdownGracePeriod"`
-	// Serial indicates if job executions cannot overlap.
-	Serial *bool `json:"serial" yaml:"serial"`
-	// HistoryEnabled sets if we should save invocation history and restore it.
-	HistoryEnabled *bool `json:"historyEnabled" yaml:"historyEnabled"`
-	// HistoryPath is the path to write history to.
-	HistoryPath string `json:"historyPath" yaml:"historyPath"`
-	// HistoryMaxCount is the maximum number of history items to keep.
-	HistoryMaxCount int `json:"historyMaxCount" yaml:"historyMaxCount"`
-	// HistoryMaxAge is the maximum age of history items to keep.
-	HistoryMaxAge int `json:"historyMaxAge" yaml:"historyMaxAge"`
+	Schedule string `yaml:"schedule"`
 
 	// NotifyOnStart governs if we should send notifications job start.
-	NotifyOnStart *bool `json:"notifyOnStart" yaml:"notifyOnStart"`
+	NotifyOnStart *bool `yaml:"notifyOnStart"`
 	// NotifyOnSuccess governs if we should send notifications on any success.
-	NotifyOnSuccess *bool `json:"notifyOnSuccess" yaml:"notifyOnSuccess"`
+	NotifyOnSuccess *bool `yaml:"notifyOnSuccess"`
 	// NotifyOnFailure governs if we should send notifications on any failure.
-	NotifyOnFailure *bool `json:"notifyOnFailure" yaml:"notifyOnFailure"`
+	NotifyOnFailure *bool `yaml:"notifyOnFailure"`
 	// NotifyOnCancellation governs if we should send notifications on cancellation.
-	NotifyOnCancellation *bool `json:"notifyOnCancellation" yaml:"notifyOnCancellation"`
+	NotifyOnCancellation *bool `yaml:"notifyOnCancellation"`
 	// NotifyOnBroken governs if we should send notifications on a success => failure transition.
-	NotifyOnBroken *bool `json:"notifyOnBroken" yaml:"notifyOnBroken"`
+	NotifyOnBroken *bool `yaml:"notifyOnBroken"`
 	// NotifyOnFixed governs if we should send notifications on a failure => success transition.
-	NotifyOnFixed *bool `json:"notifyOnFixed" yaml:"notifyOnFixed"`
+	NotifyOnFixed *bool `yaml:"notifyOnFixed"`
 	// NotifyOnEnabled governs if we should send notifications when a job is enabled.
-	NotifyOnEnabled *bool `json:"notifyOnEnabled" yaml:"notifyOnEnabled"`
+	NotifyOnEnabled *bool `yaml:"notifyOnEnabled"`
 	// NotifyOnDisabled governs if we should send notifications when a job is disabled.
-	NotifyOnDisabled *bool `json:"notifyOnDisabled" yaml:"notifyOnDisabled"`
+	NotifyOnDisabled *bool `yaml:"notifyOnDisabled"`
 
-	// EmailDefaults are the message defaults for email notifications.
-	EmailDefaults email.Message `json:"emailDefaults" yaml:"emailDefaults"`
+	// Email holds the message defaults for email notifications.
+	Email email.Message `yaml:"email"`
 }
 
 // ScheduleOrDefault returns the schedule or a default (every 5 minutes).
@@ -62,22 +47,6 @@ func (jc JobConfig) ScheduleOrDefault() string {
 		return jc.Schedule
 	}
 	return "* */5 * * * * *"
-}
-
-// SerialOrDefault returns a value or a default.
-func (jc JobConfig) SerialOrDefault() bool {
-	if jc.Serial != nil {
-		return *jc.Serial
-	}
-	return true
-}
-
-// HistoryEnabledOrDefault returns a value or a default.
-func (jc JobConfig) HistoryEnabledOrDefault() bool {
-	if jc.HistoryEnabled != nil {
-		return *jc.HistoryEnabled
-	}
-	return true
 }
 
 // HistoryPathOrDefault returns a value or a default.

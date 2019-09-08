@@ -17,12 +17,9 @@ var (
 func TestJobSchedulerCullHistoryMaxAge(t *testing.T) {
 	assert := assert.New(t)
 
-	js := NewJobScheduler(NewJob("foo", noop),
-		OptJobSchedulerConfig(Config{
-			HistoryMaxCount: 10,
-			HistoryMaxAge:   6 * time.Hour,
-		}),
-	)
+	js := NewJobScheduler(NewJob("foo", noop))
+	js.HistoryMaxCountProvider = func() int { return 10 }
+	js.HistoryMaxAgeProvider = func() time.Duration { return 6 * time.Hour }
 
 	js.History = []JobInvocation{
 		{ID: uuid.V4().String(), Started: time.Now().Add(-10 * time.Hour)},
@@ -44,12 +41,9 @@ func TestJobSchedulerCullHistoryMaxAge(t *testing.T) {
 func TestJobSchedulerCullHistoryMaxCount(t *testing.T) {
 	assert := assert.New(t)
 
-	js := NewJobScheduler(NewJob("foo", noop),
-		OptJobSchedulerConfig(Config{
-			HistoryMaxCount: 5,
-			HistoryMaxAge:   6 * time.Hour,
-		}),
-	)
+	js := NewJobScheduler(NewJob("foo", noop))
+	js.HistoryMaxCountProvider = func() int { return 5 }
+	js.HistoryMaxAgeProvider = func() time.Duration { return 6 * time.Hour }
 
 	js.History = []JobInvocation{
 		{ID: uuid.V4().String(), Started: time.Now().Add(-10 * time.Minute)},
@@ -79,11 +73,10 @@ func TestJobSchedulerEnableDisable(t *testing.T) {
 			OptJobBuilderOnDisabled(func(_ context.Context) { disabled = true }),
 			OptJobBuilderOnEnabled(func(_ context.Context) { enabled = true }),
 		),
-		OptJobSchedulerConfig(Config{
-			HistoryMaxCount: 5,
-			HistoryMaxAge:   6 * time.Hour,
-		}),
 	)
+
+	js.HistoryMaxCountProvider = func() int { return 5 }
+	js.HistoryMaxAgeProvider = func() time.Duration { return 6 * time.Hour }
 
 	js.Disable()
 	assert.True(js.Disabled)

@@ -3,7 +3,6 @@ package jobkit
 import (
 	"github.com/blend/go-sdk/aws"
 	"github.com/blend/go-sdk/configutil"
-	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/datadog"
 	"github.com/blend/go-sdk/email"
 	"github.com/blend/go-sdk/logger"
@@ -13,16 +12,12 @@ import (
 
 // Config is the jobkit config.
 type Config struct {
-	// HistoryPath is the default historyPath.
-	HistoryPath string `yaml:"historyPath"`
 	// Cron is the cron manager config.
-	Cron cron.Config `yaml:"cron"`
+	Cron JobConfig `yaml:"cron"`
 	// Logger is the logger config.
 	Logger logger.Config `yaml:"logger"`
 	// Web is the web config used for the management server.
 	Web web.Config `yaml:"web"`
-	// EmailDefaults sets the base options for notification emails.
-	EmailDefaults email.Message `yaml:"emailDefaults"`
 	// AWS is used by aws options like SES.
 	AWS aws.Config `yaml:"aws"`
 	// SMTP is the smtp options.

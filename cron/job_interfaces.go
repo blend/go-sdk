@@ -127,8 +127,8 @@ type HistoryMaxAgeProvider interface {
 	HistoryMaxAge() time.Duration
 }
 
-// HistoryPersister is a job that can persist and restore it's invocation history.
-type HistoryPersister interface {
-	HistoryRestore(context.Context) ([]JobInvocation, error)
-	HistoryPersist(context.Context, []JobInvocation) error
+// HistoryProvider is a job that can persist and restore its invocation history.
+type HistoryProvider interface {
+	RestoreHistory(context.Context) ([]JobInvocation, error)
+	PersistHistory(context.Context, []JobInvocation) error
 }

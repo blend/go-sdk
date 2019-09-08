@@ -17,7 +17,6 @@ import (
 func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 	js := &JobScheduler{
 		Latch:   async.NewLatch(),
-		Name:    job.Name(),
 		Job:     job,
 		Current: make(map[string]*JobInvocation),
 	}
@@ -27,11 +26,15 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 	}
 
 	if typed, ok := job.(DescriptionProvider); ok {
-		js.Description = typed.Description()
+		js.DescriptionProvider = typed.Description
+	} else {
+		js.DescriptionProvider = func() string { return "" }
 	}
 
 	if typed, ok := job.(LabelsProvider); ok {
-		js.Labels = typed.Labels()
+		js.LabelsProvider = typed.Labels
+	} else {
+		js.LabelsProvider = func() map[string]string { return nil }
 	}
 
 	if typed, ok := job.(ScheduleProvider); ok {
@@ -59,19 +62,19 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 	if typed, ok := job.(HistoryEnabledProvider); ok {
 		js.HistoryEnabledProvider = typed.HistoryEnabled
 	} else {
-		js.HistoryEnabledProvider = func() bool { return js.Config.HistoryEnabledOrDefault() }
+		js.HistoryEnabledProvider = func() bool { return false }
 	}
 
 	if typed, ok := job.(HistoryMaxCountProvider); ok {
 		js.HistoryMaxCountProvider = typed.HistoryMaxCount
 	} else {
-		js.HistoryMaxCountProvider = func() int { return js.Config.HistoryMaxCountOrDefault() }
+		js.HistoryMaxCountProvider = func() int { return 0 }
 	}
 
 	if typed, ok := job.(HistoryMaxAgeProvider); ok {
 		js.HistoryMaxAgeProvider = typed.HistoryMaxAge
 	} else {
-		js.HistoryMaxAgeProvider = func() time.Duration { return js.Config.HistoryMaxAgeOrDefault() }
+		js.HistoryMaxAgeProvider = func() time.Duration { return 0 }
 	}
 
 	if typed, ok := job.(SerialProvider); ok {
@@ -92,10 +95,6 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 		js.ShouldWriteOutputProvider = func() bool { return DefaultShouldWriteOutput }
 	}
 
-	if typed, ok := job.(HistoryPersister); ok {
-		js.HistoryPersist = typed.HistoryPersist
-	}
-
 	return js
 }
 
@@ -104,16 +103,11 @@ type JobScheduler struct {
 	sync.Mutex   `json:"-"`
 	*async.Latch `json:"-"`
 
-	Name        string            `json:"name"`
-	Description string            `json:"description"`
-	Labels      map[string]string `json:"labels"`
-	Job         Job               `json:"-"`
-
-	Config Config     `json:"-"`
+	Job    Job        `json:"-"`
 	Tracer Tracer     `json:"-"`
 	Log    logger.Log `json:"-"`
 
-	// Meta Fields
+	Schedule    Schedule                  `json:"-"`
 	Disabled    bool                      `json:"disabled"`
 	Parallel    bool                      `json:"parallel"`
 	NextRuntime time.Time                 `json:"nextRuntime"`
@@ -121,17 +115,28 @@ type JobScheduler struct {
 	Last        *JobInvocation            `json:"last"`
 	History     []JobInvocation           `json:"history"`
 
-	Schedule                       Schedule                                     `json:"-"`
-	EnabledProvider                func() bool                                  `json:"-"`
-	SerialProvider                 func() bool                                  `json:"-"`
-	TimeoutProvider                func() time.Duration                         `json:"-"`
-	ShutdownGracePeriodProvider    func() time.Duration                         `json:"-"`
-	ShouldTriggerListenersProvider func() bool                                  `json:"-"`
-	ShouldWriteOutputProvider      func() bool                                  `json:"-"`
-	HistoryEnabledProvider         func() bool                                  `json:"-"`
-	HistoryMaxCountProvider        func() int                                   `json:"-"`
-	HistoryMaxAgeProvider          func() time.Duration                         `json:"-"`
-	HistoryPersist                 func(context.Context, []JobInvocation) error `json:"-"`
+	DescriptionProvider            func() string            `json:"-"`
+	LabelsProvider                 func() map[string]string `json:"-"`
+	EnabledProvider                func() bool              `json:"-"`
+	SerialProvider                 func() bool              `json:"-"`
+	TimeoutProvider                func() time.Duration     `json:"-"`
+	ShutdownGracePeriodProvider    func() time.Duration     `json:"-"`
+	ShouldTriggerListenersProvider func() bool              `json:"-"`
+	ShouldWriteOutputProvider      func() bool              `json:"-"`
+	HistoryEnabledProvider         func() bool              `json:"-"`
+	HistoryMaxCountProvider        func() int               `json:"-"`
+	HistoryMaxAgeProvider          func() time.Duration     `json:"-"`
+	HistoryProvider                HistoryProvider          `json:"-"`
+}
+
+// Name returns the job name.
+func (js *JobScheduler) Name() string {
+	return js.Job.Name()
+}
+
+// Description returns the description.
+func (js *JobScheduler) Description() string {
+	return js.DescriptionProvider()
 }
 
 // Start starts the scheduler.
@@ -184,7 +189,7 @@ func (js *JobScheduler) Enable() {
 
 	js.Disabled = false
 	if js.Log != nil && js.ShouldTriggerListenersProvider() {
-		event := NewEvent(FlagEnabled, js.Name, OptEventWritable(js.ShouldWriteOutputProvider()))
+		event := NewEvent(FlagEnabled, js.Name(), OptEventWritable(js.ShouldWriteOutputProvider()))
 		js.Log.Trigger(context.Background(), event)
 	}
 	if typed, ok := js.Job.(OnEnabledReceiver); ok {
@@ -199,7 +204,7 @@ func (js *JobScheduler) Disable() {
 
 	js.Disabled = true
 	if js.Log != nil && js.ShouldTriggerListenersProvider() {
-		event := NewEvent(FlagDisabled, js.Name, OptEventWritable(js.ShouldWriteOutputProvider()))
+		event := NewEvent(FlagDisabled, js.Name(), OptEventWritable(js.ShouldWriteOutputProvider()))
 		js.Log.Trigger(context.Background(), event)
 	}
 	if typed, ok := js.Job.(OnDisabledReceiver); ok {
@@ -286,7 +291,7 @@ func (js *JobScheduler) Run() {
 
 	// create a job invocation, or a record of each
 	// individual execution of a job.
-	ji := NewJobInvocation(js.Name)
+	ji := NewJobInvocation(js.Name())
 	ji.Context, ji.Cancel = js.createContextWithTimeout(timeout)
 
 	if timeout > 0 {
@@ -369,9 +374,9 @@ func (js *JobScheduler) GetInvocationByID(id string) *JobInvocation {
 
 // PersistHistory calls the persist handler if it's set.
 func (js *JobScheduler) PersistHistory(ctx context.Context) error {
-	if js.HistoryPersist != nil {
+	if js.HistoryProvider != nil {
 		js.debugf("persisting history")
-		if err := js.HistoryPersist(ctx, js.History); err != nil {
+		if err := js.HistoryProvider.PersistHistory(ctx, js.History); err != nil {
 			return js.error(err)
 		}
 	}
@@ -607,14 +612,14 @@ func (js *JobScheduler) trigger(ctx context.Context, e logger.Event) {
 	if js.Log == nil {
 		return
 	}
-	js.Log.WithPath(js.Name).Trigger(ctx, e)
+	js.Log.WithPath(js.Name()).Trigger(ctx, e)
 }
 
 func (js *JobScheduler) error(err error) error {
 	if js.Log == nil {
 		return err
 	}
-	js.Log.WithPath(js.Name).Error(err)
+	js.Log.WithPath(js.Name()).Error(err)
 	return err
 }
 
@@ -622,12 +627,12 @@ func (js *JobScheduler) debugf(format string, args ...interface{}) {
 	if js.Log == nil {
 		return
 	}
-	js.Log.WithPath(js.Name).Debugf(format, args...)
+	js.Log.WithPath(js.Name()).Debugf(format, args...)
 }
 
 func (js *JobScheduler) infof(format string, args ...interface{}) {
 	if js.Log == nil {
 		return
 	}
-	js.Log.WithPath(js.Name).Infof(format, args...)
+	js.Log.WithPath(js.Name()).Infof(format, args...)
 }
