@@ -20,18 +20,23 @@
 	.uk-navbar-item,
 	.uk-navbar-toggle {
 		/* navbar height */
-	min-height: 52px;
-	padding: 0 8px;
-	font-size: 0.85rem;
+		min-height: 52px;
+		padding: 0 8px;
+		font-size: 0.85rem;
 	}
 	#content {
 		margin-top: 52px;
 		padding: 30px 0 0 0;
-		margin-left: 0;
+		margin-left: 25px;
+		margin-right: 25px;
 		transition: margin 0.2s cubic-bezier(.4,0,.2,1);
 	}
 	.uk-form {
 		display:inline-block;
+	}
+	.uk-logo {
+		font-size: 24px;
+		color: #fff;
 	}
 	</style>
 </head>
@@ -40,22 +45,18 @@
 	<div class="uk-container uk-container-expand uk-background-primary">
 		<nav class="uk-navbar uk-light" data-uk-navbar="mode:click; duration: 250" uk-navbar>
 			<div class="uk-navbar-left">
-				<ul class="uk-navbar-nav">
-					<li class="uk-active"><a href="/">Jobkit</a></li>
-				</ul>
+				<span class="uk-icon" uk-icon="icon: home; ratio: 1.5"></span>
+				<a href="/" class="uk-navbar-item uk-logo">Jobkit</a>
 			</div>
 			<div class="uk-navbar-center">
 				<div class="uk-navbar-item uk-visible@s">
-					<form action="/search" class="uk-search uk-search-default">
-						<span data-uk-search-icon="" class="uk-icon uk-search-icon"><svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" data-svg="search-icon"><circle fill="none" stroke="#000" stroke-width="1.1" cx="9" cy="9" r="7"></circle><path fill="none" stroke="#000" stroke-width="1.1" d="M14,14 L18,18 L14,14 Z"></path></svg></span>
-						<input name="selector" class="uk-search-input search-field" type="search" placeholder="Search">
+					<form action="/search" class="uk-search uk-search-navbar">
+						<span uk-search-icon></span>
+						<input name="selector" class="uk-search-input search-field" type="search" placeholder="Search" value="{{ .Ctx.State.Get "selector" }}">
 					</form>
 				</div>
 			</div>
 			<div class="uk-navbar-right">
-				<div class="uk-navbar-nav">
-					Hello
-				</div>
 			</div>
 		</nav>
 	</div>

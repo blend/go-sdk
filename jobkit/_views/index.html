@@ -1,140 +1,145 @@
 {{ define "index" }}
 {{ template "header" . }}
-	<div id="content" class="uk-container uk-container-expand">
-		<table class="uk-table uk-table-small uk-table-divider">
-			<thead>
-				<tr>
-					<th>Expand</th>
-					<th>Job</th>
-					<th>Success Rate</th>
-					<th>Schedule</th>
-					<th>Next Run</th>
-					<th>Last Ran</th>
-					<th>Last Result</th>
-					<th>Last Elapsed</th>
-					<th>Actions</th>
-				</tr>
-			</thead>
-			<tbody>
-			{{ range $index, $job := .ViewModel.Jobs }}
-				<tr id="{{ $job.Name }}">
-					<td>
-						<button class="uk-button" uk-toggle="target: #history-{{ $job.Name }}" type="button">+</button>
-					</td>
-					<td> <!-- job name -->
-						<ul class="uk-list uk-list-divider">
-					{{ range $key, $value := $job.Labels }}
-							<li><a href="/search?selector={{ $key | urlencode }}={{ $value | urlencode }}">{{ $key }}={{ $value }}</a></li>
-					{{ end }}
-						</ul>
-					</td>
-					<td> <!-- success rate -->
-						{{ $job.Stats.SuccessRate | format_pct }}
-					</td>
-					<td> <!-- schedule -->
-					{{ if $job.Schedule }}
-						{{ $job.Schedule }}
+<div id="content" class="uk-container uk-container-expand">
+	<table class="uk-table uk-table-small uk-table-divider">
+		<thead>
+			<tr>
+				<th></th>
+				<th>Job</th>
+				<th>Success Rate</th>
+				<th>P95</th>
+				<th>Schedule</th>
+				<th>Next Run</th>
+				<th>Last Ran</th>
+				<th>Last Result</th>
+				<th>Last Elapsed</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+		{{ range $index, $job := .ViewModel.Jobs }}
+			<tr id="{{ $job.Name }}">
+				<td>
+					<button id="show-{{ $job.Name }}" class="uk-button" uk-toggle="target: #history-{{ $job.Name }},#hide-{{ $job.Name }},#show-{{ $job.Name }}" type="button">+</button>
+					<button id="hide-{{ $job.Name }}" class="uk-button" uk-toggle="target: #history-{{ $job.Name }},#hide-{{ $job.Name }},#show-{{ $job.Name }}" type="button" hidden>-</button>
+				</td>
+				<td> <!-- job name -->
+					<ul class="uk-list uk-list-divider">
+				{{ range $key, $value := $job.Labels }}
+						<li><a href="/search?selector={{ $key | urlencode }}={{ $value | urlencode }}">{{ $key }}={{ $value }}</a></li>
+				{{ end }}
+					</ul>
+				</td>
+				<td> <!-- success rate -->
+					{{ $job.Stats.SuccessRate | format_pct }}
+				</td>
+				<td> <!-- p95 -->
+					{{ $job.Stats.Elapsed95th }}
+				</td>
+				<td> <!-- schedule -->
+				{{ if $job.Schedule }}
+					{{ $job.Schedule }}
+				{{ else }}
+					<span>-</span>
+				{{ end }}
+				</td>
+				<td> <!-- next run-->
+				{{ if $job.Disabled }}
+					<span>-</span>
+				{{ else }}
+					{{ $job.NextRuntime | rfc3339 }}
+				{{ end }}
+				</td>
+				<td> <!-- last run -->
+				{{ if $job.Last }}
+					{{ $job.Last.Started | rfc3339 }}
+				{{ else }}
+					<span class="none">-</span>
+				{{ end }}
+				</td>
+				<td> <!-- last status -->
+				{{ if $job.Last }}
+					{{ if $job.Last.Err }}
+						{{ $job.Last.Err }}
 					{{ else }}
-						<span>-</span>
+					<span class="none">Success</span>
 					{{ end }}
-					</td>
-					<td> <!-- next run-->
-					{{ if $job.Disabled }}
-						<span>-</span>
-					{{ else }}
-						{{ $job.NextRuntime | rfc3339 }}
-					{{ end }}
-					</td>
-					<td> <!-- last run -->
-					{{ if $job.Last }}
-						{{ $job.Last.Started | rfc3339 }}
-					{{ else }}
-						<span class="none">-</span>
-					{{ end }}
-					</td>
-					<td> <!-- last status -->
-					{{ if $job.Last }}
-						{{ if $job.Last.Err }}
-							{{ $job.Last.Err }}
-						{{ else }}
-						<span class="none">Success</span>
-						{{ end }}
-					{{ else }}
-						<span class="none">-</span>
-					{{ end }}
-					</td>
-					<td> <!-- last elapsed -->
-					{{ if $job.Last }}
-						{{ $job.Last.Elapsed }}
-					{{ else }}
-						<span class="none">-</span>
-					{{ end }}
-					</td>
-					<td> <!-- actions -->
-					{{ if $job.Disabled }}
-						<form method="POST" action="/job.enable/{{ $job.Name }}" class="uk-form">
-							<input type="submit" class="uk-button" value="Enable" />
-						</form>
-					{{else}}
-						<form method="POST" action="/job.disable/{{ $job.Name }}" class="uk-form">
-							<input type="submit" class="uk-button" value="Disable" />
-						</form>
-					{{end}}
-					{{ if $job.CanRun }}
-					<form method="POST" action="/job.run/{{ $job.Name }}" class="uk-form">
-						<input type="submit" class="uk-button uk-button-primary" value="Run" />
+				{{ else }}
+					<span class="none">-</span>
+				{{ end }}
+				</td>
+				<td> <!-- last elapsed -->
+				{{ if $job.Last }}
+					{{ $job.Last.Elapsed }}
+				{{ else }}
+					<span class="none">-</span>
+				{{ end }}
+				</td>
+				<td> <!-- actions -->
+				{{ if $job.Disabled }}
+					<form method="POST" action="/job.enable/{{ $job.Name }}" class="uk-form">
+						<input type="submit" class="uk-button" value="Enable" />
 					</form>
-					{{ else }}
-					<button class="uk-button uk-button-disabled" disabled>Running</button>
-					{{ end }}
-					</td>
-				</tr>
-				<tr id="history-{{ $job.Name }}" hidden>
-					<td colspan=9>
-						<table class="uk-table uk-table-small uk-table-striped">
-							<thead>
-								<tr>
-									<th>Invocation</th>
-									<th>Started</th>
-									<th>Finished</th>
-									<th>Timeout</th>
-									<th>Cancelled</th>
-									<th>Elapsed</th>
-									<th>Error</th>
-								</tr>
-							</thead>
-							<tbody>
-							{{ range $key, $ji := $job.Current }}
-								<tr>
-									<td><a href="/job.invocation/{{$ji.JobName}}/{{ $ji.ID }}">{{ $ji.ID }}</a></td>
-									<td>{{ $ji.Started | rfc3339 }}</td>
-									<td>{{ if $ji.Finished.IsZero }}-{{ else }}{{ $ji.Finished | rfc3339 }}{{ end }}</td>
-									<td>{{ if $ji.Timeout.IsZero }}-{{ else }}{{ $ji.Timeout | rfc3339 }}{{ end }}</td>
-									<td>{{ if $ji.Cancelled.IsZero }}-{{ else }}{{ $ji.Cancelled | rfc3339 }}{{ end }}</td>
-									<td>{{ $ji.Elapsed }}</td>
-									<td>{{ if $ji.Err }}<code>{{ $ji.Err }}</code>{{ else }}-{{end}}</td>
-								</tr>
-							{{ end }}
-							{{ range $index, $ji := $job.History | reverse }}
-								<tr>
-									<td><a href="/job.invocation/{{$ji.JobName}}/{{ $ji.ID }}">{{ $ji.ID }}</a></td>
-									<td>{{ $ji.Started | rfc3339 }}</td>
-									<td>{{ if $ji.Finished.IsZero }}-{{ else }}{{ $ji.Finished | rfc3339 }}{{ end }}</td>
-									<td>{{ if $ji.Timeout.IsZero }}-{{ else }}{{ $ji.Timeout | rfc3339 }}{{ end }}</td>
-									<td>{{ if $ji.Cancelled.IsZero }}-{{ else }}{{ $ji.Cancelled | rfc3339 }}{{ end }}</td>
-									<td>{{ $ji.Elapsed }}</td>
-									<td>{{ if $ji.Err }}<code>{{ $ji.Err }}</code>{{ else }}-{{end}}</td>
-								</tr>
-							{{ end }}
-							</tbody>
-						</table>
-					</td>
-				</tr>
-		{{ else }}
-		<tr colspan=8><td>No jobs loaded or matched the search selector.</td></tr>
-		{{ end }}
-			</tbody>
-		</table>
+				{{else}}
+					<form method="POST" action="/job.disable/{{ $job.Name }}" class="uk-form">
+						<input type="submit" class="uk-button" value="Disable" />
+					</form>
+				{{end}}
+				{{ if $job.CanRun }}
+				<form method="POST" action="/job.run/{{ $job.Name }}" class="uk-form">
+					<input type="submit" class="uk-button uk-button-primary" value="Run" />
+				</form>
+				{{ else }}
+				<button class="uk-button uk-button-disabled" disabled>Running</button>
+				{{ end }}
+				</td>
+			</tr>
+			<tr id="history-{{ $job.Name }}" hidden>
+				<td colspan=10>
+					<table class="uk-table uk-table-small uk-table-striped">
+						<thead>
+							<tr>
+								<th>Invocation</th>
+								<th>Started</th>
+								<th>Finished</th>
+								<th>Timeout</th>
+								<th>Cancelled</th>
+								<th>Elapsed</th>
+								<th>Error</th>
+							</tr>
+						</thead>
+						<tbody>
+						{{ range $key, $ji := $job.Current }}
+							<tr>
+								<td><a href="/job.invocation/{{$ji.JobName}}/{{ $ji.ID }}">{{ $ji.ID }}</a></td>
+								<td>{{ $ji.Started | rfc3339 }}</td>
+								<td>{{ if $ji.Finished.IsZero }}-{{ else }}{{ $ji.Finished | rfc3339 }}{{ end }}</td>
+								<td>{{ if $ji.Timeout.IsZero }}-{{ else }}{{ $ji.Timeout | rfc3339 }}{{ end }}</td>
+								<td>{{ if $ji.Cancelled.IsZero }}-{{ else }}{{ $ji.Cancelled | rfc3339 }}{{ end }}</td>
+								<td>{{ $ji.Elapsed }}</td>
+								<td>{{ if $ji.Err }}<code>{{ $ji.Err }}</code>{{ else }}-{{end}}</td>
+							</tr>
+						{{ end }}
+						{{ range $index, $ji := $job.History | reverse }}
+							<tr>
+								<td><a href="/job.invocation/{{$ji.JobName}}/{{ $ji.ID }}">{{ $ji.ID }}</a></td>
+								<td>{{ $ji.Started | rfc3339 }}</td>
+								<td>{{ if $ji.Finished.IsZero }}-{{ else }}{{ $ji.Finished | rfc3339 }}{{ end }}</td>
+								<td>{{ if $ji.Timeout.IsZero }}-{{ else }}{{ $ji.Timeout | rfc3339 }}{{ end }}</td>
+								<td>{{ if $ji.Cancelled.IsZero }}-{{ else }}{{ $ji.Cancelled | rfc3339 }}{{ end }}</td>
+								<td>{{ $ji.Elapsed }}</td>
+								<td>{{ if $ji.Err }}<code>{{ $ji.Err }}</code>{{ else }}-{{end}}</td>
+							</tr>
+						{{ end }}
+						</tbody>
+					</table>
+				</td>
+			</tr>
+			{{ else }}
+			<tr colspan=10><td>No jobs loaded or matched the search selector.</td></tr>
+			{{ end }}
+		</tbody>
+	</table>
 </div>
 {{ template "footer" . }}
 {{ end }}

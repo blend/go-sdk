@@ -53,7 +53,11 @@ func NewServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App 
 		return r.Views.View("index", jm.Status())
 	})
 	app.GET("/search", func(r *web.Ctx) web.Result {
-		sel, err := selector.Parse(web.StringValue(r.QueryValue("selector")))
+		selectorParam := web.StringValue(r.QueryValue("selector"))
+		if selectorParam == "" {
+			return web.RedirectWithMethod("GET", "/")
+		}
+		sel, err := selector.Parse(selectorParam)
 		if err != nil {
 			return r.Views.BadRequest(err)
 		}
@@ -62,7 +66,7 @@ func NewServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App 
 		status.Jobs = cron.FilterJobSchedulers(status.Jobs, func(js *cron.JobScheduler) bool {
 			return sel.Matches(js.Labels())
 		})
-
+		r.State.Set("selector", sel.String())
 		return r.Views.View("index", status)
 	})
 

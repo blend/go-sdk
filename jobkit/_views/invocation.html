@@ -1,6 +1,11 @@
 {{ define "invocation" }}
 {{ template "header" . }}
 <div id="content" class="uk-container uk-container-expand">
+	<ul class="uk-breadcrumb">
+		<li><a href="/">Jobs</a></li>
+		<li><a href="/search?selector=name={{ .ViewModel.JobName }}">{{ .ViewModel.JobName }}</a></li>
+		<li><span>{{ .ViewModel.ID }}</span></li>
+	</ul>
 	<table class="uk-table uk-table-striped">
 		<thead>
 			<tr>
@@ -24,7 +29,7 @@
 		</tbody>
 	</table>
 	{{ if .ViewModel.Err }}
-	<table class="u-full-width">
+	<table class="uk-table uk-table-striped">
 		<thead>
 			<tr>
 				<th>Error</th>
@@ -39,7 +44,7 @@
 		</tbody>
 	</table>
 	{{ end }}
-	<table class="u-full-width">
+	<table class="uk-table">
 		<tbody>
 			<tr>
 				<td class="align-right">
@@ -52,7 +57,7 @@
 		</tbody>
 	</table>
 	{{ if .ViewModel.Output }}
-	<table class="u-full-width">
+	<table class="uk-table">
 		<thead>
 			<tr>
 				<th>Output (Combined)</th>
