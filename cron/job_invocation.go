@@ -6,7 +6,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/blend/go-sdk/bufferutil"
 	"github.com/blend/go-sdk/ex"
 )
 
@@ -17,7 +16,7 @@ func NewJobInvocation(jobName string) *JobInvocation {
 		Started: Now(),
 		Status:  JobStatusRunning,
 		JobName: jobName,
-		Output:  new(bufferutil.LineBuffer),
+		Output:  new(LineBuffer),
 	}
 }
 
@@ -32,7 +31,7 @@ type JobInvocation struct {
 	Err       error
 	Elapsed   time.Duration
 	Status    JobStatus
-	Output    *bufferutil.LineBuffer
+	Output    *LineBuffer
 	State     interface{}
 	Context   context.Context
 	Cancel    context.CancelFunc
@@ -92,7 +91,7 @@ func (ji *JobInvocation) UnmarshalJSON(contents []byte) error {
 	if values.Error != "" {
 		ji.Err = errors.New(values.Error)
 	}
-	ji.Output = new(bufferutil.LineBuffer)
+	ji.Output = new(LineBuffer)
 	if err := json.Unmarshal([]byte(values.Output), ji.Output); err != nil {
 		return ex.New(err)
 	}

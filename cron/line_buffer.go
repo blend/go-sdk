@@ -1,4 +1,4 @@
-package bufferutil
+package cron
 
 import (
 	"bytes"
@@ -22,8 +22,8 @@ type LineBuffer struct {
 	// Current is a temporary holder for the current line.
 	// It is added to the `Lines` slice when a newline is processed.
 	Current Line `json:"current"`
-	// LineHandler is an optional handler when a new line is added.
-	LineHandler LineHandler `json:"-"`
+	// Handlers are listeners for new lines.
+	Handlers *LineHandlers `json:"-"`
 }
 
 // Write writes the contents to the lines buffer.
@@ -76,9 +76,8 @@ func (lw *LineBuffer) String() string {
 // commit line adds the current line to the lines set and resets
 // the current line
 func (lw *LineBuffer) commitLine() {
-	if lw.LineHandler != nil {
-		lw.LineHandler(lw.Current)
-	}
+	lw.Handlers.Handle(lw.Current)
+
 	lw.Lines = append(lw.Lines, lw.Current)
 	lw.Current.Timestamp = time.Time{}
 	lw.Current.Line = nil
