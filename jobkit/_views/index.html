@@ -1,11 +1,11 @@
 {{ define "index" }}
 {{ template "header" . }}
 	<div id="content" class="uk-container uk-container-expand">
-		<table class="uk-table uk-table-striped">
+		<table class="uk-table uk-table-small">
 			<thead>
 				<tr>
 					<th>Expand</th>
-					<th>Job Name</th>
+					<th>Job</th>
 					<th>Success Rate</th>
 					<th>Schedule</th>
 					<th>Next Run</th>
@@ -22,7 +22,9 @@
 						<button class="uk-button" uk-toggle="target: #history-{{ $job.Name }}" type="button">+</button>
 					</td>
 					<td> <!-- job name -->
-						{{ $job.Name }}
+					{{ range $key, $value := $job.Labels }}
+						<pre>{{ $key }}={{ $value }}</pre>
+					{{ end }}
 					</td>
 					<td> <!-- success rate -->
 						{{ $job.Stats.SuccessRate | format_pct }}

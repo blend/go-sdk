@@ -12,6 +12,7 @@ import (
 	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/selector"
 	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/web"
 	"github.com/blend/go-sdk/webutil"
@@ -51,6 +52,20 @@ func NewServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App 
 	app.GET("/", func(r *web.Ctx) web.Result {
 		return r.Views.View("index", jm.Status())
 	})
+	app.POST("/search", func(r *web.Ctx) web.Result {
+		sel, err := selector.Parse(web.StringValue(r.FormValue("query")))
+		if err != nil {
+			return r.Views.BadRequest(err)
+		}
+
+		status := jm.Status()
+		status.Jobs = cron.FilterJobSchedulers(status.Jobs, func(js *cron.JobScheduler) bool {
+			return sel.Matches(js.Labels())
+		})
+
+		return r.Views.View("index", status)
+	})
+
 	app.GET("/static/*filepath", func(r *web.Ctx) web.Result {
 		path, err := r.RouteParam("filepath")
 		if err != nil {
