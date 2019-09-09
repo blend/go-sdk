@@ -22,7 +22,7 @@ export DB_SSLMODE
 
 all: ci
 
-ci: deps vet profanity cover-ci
+ci: deps vet profanity generate cover-ci
 
 new-install: deps dev-deps install-all
 
@@ -79,6 +79,10 @@ vet:
 lint:
 	@echo "$(VERSION)/$(GIT_REF) >> linting code"
 	@golint $(LINTPKGS)
+
+generate:
+	@echo "$(VERSION)/$(GIT_REF) >> generating code"
+	@go generate $(PKGS)
 
 build:
 	@echo "$(VERSION)/$(GIT_REF) >> linting code"
