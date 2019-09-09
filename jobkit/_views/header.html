@@ -46,9 +46,9 @@
 			</div>
 			<div class="uk-navbar-center">
 				<div class="uk-navbar-item uk-visible@s">
-					<form action="/search" class="uk-search uk-search-default">
+					<form method="POST" action="/search" class="uk-search uk-search-default">
 						<span data-uk-search-icon="" class="uk-icon uk-search-icon"><svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" data-svg="search-icon"><circle fill="none" stroke="#000" stroke-width="1.1" cx="9" cy="9" r="7"></circle><path fill="none" stroke="#000" stroke-width="1.1" d="M14,14 L18,18 L14,14 Z"></path></svg></span>
-						<input class="uk-search-input search-field" type="search" placeholder="Search">
+						<input name="query" class="uk-search-input search-field" type="search" placeholder="Search">
 					</form>
 				</div>
 			</div>
