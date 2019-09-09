@@ -23,13 +23,13 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 	if typed, ok := job.(DescriptionProvider); ok {
 		js.DescriptionProvider = typed.Description
 	} else {
-		js.DescriptionProvider = func() string { return "" }
+		js.DescriptionProvider = func() string { return js.Config.Description }
 	}
 
 	if typed, ok := job.(LabelsProvider); ok {
 		js.LabelsProvider = typed.Labels
 	} else {
-		js.LabelsProvider = func() map[string]string { return nil }
+		js.LabelsProvider = func() map[string]string { return js.Config.Labels }
 	}
 
 	if typed, ok := job.(ScheduleProvider); ok {
@@ -39,55 +39,55 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 	if typed, ok := job.(TimeoutProvider); ok {
 		js.TimeoutProvider = typed.Timeout
 	} else {
-		js.TimeoutProvider = func() time.Duration { return 0 }
+		js.TimeoutProvider = func() time.Duration { return js.Config.TimeoutOrDefault() }
 	}
 
 	if typed, ok := job.(ShutdownGracePeriodProvider); ok {
 		js.ShutdownGracePeriodProvider = typed.ShutdownGracePeriod
 	} else {
-		js.ShutdownGracePeriodProvider = func() time.Duration { return 0 }
+		js.ShutdownGracePeriodProvider = func() time.Duration { return js.Config.ShutdownGracePeriodOrDefault() }
 	}
 
 	if typed, ok := job.(EnabledProvider); ok {
 		js.EnabledProvider = typed.Enabled
 	} else {
-		js.EnabledProvider = func() bool { return DefaultEnabled }
+		js.EnabledProvider = func() bool { return js.Config.EnabledOrDefault() }
 	}
 
 	if typed, ok := job.(HistoryEnabledProvider); ok {
 		js.HistoryEnabledProvider = typed.HistoryEnabled
 	} else {
-		js.HistoryEnabledProvider = func() bool { return false }
+		js.HistoryEnabledProvider = func() bool { return js.Config.HistoryEnabledOrDefault() }
 	}
 
 	if typed, ok := job.(HistoryMaxCountProvider); ok {
 		js.HistoryMaxCountProvider = typed.HistoryMaxCount
 	} else {
-		js.HistoryMaxCountProvider = func() int { return 0 }
+		js.HistoryMaxCountProvider = func() int { return js.Config.HistoryMaxCountOrDefault() }
 	}
 
 	if typed, ok := job.(HistoryMaxAgeProvider); ok {
 		js.HistoryMaxAgeProvider = typed.HistoryMaxAge
 	} else {
-		js.HistoryMaxAgeProvider = func() time.Duration { return 0 }
+		js.HistoryMaxAgeProvider = func() time.Duration { return js.Config.HistoryMaxAgeOrDefault() }
 	}
 
 	if typed, ok := job.(SerialProvider); ok {
 		js.SerialProvider = typed.Serial
 	} else {
-		js.SerialProvider = func() bool { return DefaultSerial }
+		js.SerialProvider = func() bool { return js.Config.SerialOrDefault() }
 	}
 
-	if typed, ok := job.(ShouldTriggerListenersProvider); ok {
-		js.ShouldTriggerListenersProvider = typed.ShouldTriggerListeners
+	if typed, ok := job.(ShouldSkipLoggerListenersProvider); ok {
+		js.ShouldSkipLoggerListenersProvider = typed.ShouldSkipLoggerListeners
 	} else {
-		js.ShouldTriggerListenersProvider = func() bool { return DefaultShouldTriggerListeners }
+		js.ShouldSkipLoggerListenersProvider = func() bool { return js.Config.ShouldSkipLoggerListenersOrDefault() }
 	}
 
-	if typed, ok := job.(ShouldWriteOutputProvider); ok {
-		js.ShouldWriteOutputProvider = typed.ShouldWriteOutput
+	if typed, ok := job.(ShouldSkipLoggerOutputProvider); ok {
+		js.ShouldSkipLoggerOutputProvider = typed.ShouldSkipLoggerOutput
 	} else {
-		js.ShouldWriteOutputProvider = func() bool { return DefaultShouldWriteOutput }
+		js.ShouldSkipLoggerOutputProvider = func() bool { return js.Config.ShouldSkipLoggerOutputOrDefault() }
 	}
 
 	if typed, ok := job.(HistoryProvider); ok {
@@ -107,6 +107,7 @@ type JobScheduler struct {
 	*async.Latch `json:"-"`
 
 	Job    Job        `json:"-"`
+	Config JobConfig  `json:"-"`
 	Tracer Tracer     `json:"-"`
 	Log    logger.Log `json:"-"`
 
@@ -118,17 +119,17 @@ type JobScheduler struct {
 	Last        *JobInvocation            `json:"last"`
 	History     []JobInvocation           `json:"history"`
 
-	DescriptionProvider            func() string            `json:"-"`
-	LabelsProvider                 func() map[string]string `json:"-"`
-	EnabledProvider                func() bool              `json:"-"`
-	SerialProvider                 func() bool              `json:"-"`
-	TimeoutProvider                func() time.Duration     `json:"-"`
-	ShutdownGracePeriodProvider    func() time.Duration     `json:"-"`
-	ShouldTriggerListenersProvider func() bool              `json:"-"`
-	ShouldWriteOutputProvider      func() bool              `json:"-"`
-	HistoryEnabledProvider         func() bool              `json:"-"`
-	HistoryMaxCountProvider        func() int               `json:"-"`
-	HistoryMaxAgeProvider          func() time.Duration     `json:"-"`
+	DescriptionProvider               func() string            `json:"-"`
+	LabelsProvider                    func() map[string]string `json:"-"`
+	EnabledProvider                   func() bool              `json:"-"`
+	SerialProvider                    func() bool              `json:"-"`
+	TimeoutProvider                   func() time.Duration     `json:"-"`
+	ShutdownGracePeriodProvider       func() time.Duration     `json:"-"`
+	ShouldSkipLoggerListenersProvider func() bool              `json:"-"`
+	ShouldSkipLoggerOutputProvider    func() bool              `json:"-"`
+	HistoryEnabledProvider            func() bool              `json:"-"`
+	HistoryMaxCountProvider           func() int               `json:"-"`
+	HistoryMaxAgeProvider             func() time.Duration     `json:"-"`
 
 	HistoryRestoreProvider func(context.Context) ([]JobInvocation, error) `json:"-"`
 	HistoryPersistProvider func(context.Context, []JobInvocation) error   `json:"-"`
@@ -204,9 +205,9 @@ func (js *JobScheduler) NotifyStopped() <-chan struct{} {
 // Enable sets the job as enabled.
 func (js *JobScheduler) Enable() {
 	js.Disabled = false
-	if js.Log != nil && js.ShouldTriggerListenersProvider() {
-		event := NewEvent(FlagEnabled, js.Name(), OptEventWritable(js.ShouldWriteOutputProvider()))
-		js.Log.Trigger(context.Background(), event)
+	if js.Log != nil && !js.ShouldSkipLoggerListenersProvider() {
+		event := NewEvent(FlagEnabled, js.Name())
+		js.Log.Trigger(js.loggerEventContext(context.Background()), event)
 	}
 	if typed, ok := js.Job.(OnEnabledReceiver); ok {
 		typed.OnEnabled(context.Background())
@@ -216,9 +217,9 @@ func (js *JobScheduler) Enable() {
 // Disable sets the job as disabled.
 func (js *JobScheduler) Disable() {
 	js.Disabled = true
-	if js.Log != nil && js.ShouldTriggerListenersProvider() {
-		event := NewEvent(FlagDisabled, js.Name(), OptEventWritable(js.ShouldWriteOutputProvider()))
-		js.Log.Trigger(context.Background(), event)
+	if js.Log != nil && !js.ShouldSkipLoggerListenersProvider() {
+		event := NewEvent(FlagDisabled, js.Name())
+		js.Log.Trigger(js.loggerEventContext(context.Background()), event)
 	}
 	if typed, ok := js.Job.(OnDisabledReceiver); ok {
 		typed.OnDisabled(context.Background())
@@ -541,8 +542,8 @@ func (js *JobScheduler) createContextWithTimeout(timeout time.Duration) (context
 }
 
 func (js *JobScheduler) onStart(ctx context.Context, ji *JobInvocation) {
-	if js.Log != nil && js.ShouldTriggerListenersProvider() {
-		js.trigger(ctx, NewEvent(FlagStarted, ji.JobName, OptEventJobInvocation(ji.ID), OptEventWritable(js.ShouldWriteOutputProvider())))
+	if js.Log != nil && !js.ShouldSkipLoggerListenersProvider() {
+		js.trigger(js.loggerEventContext(ctx), NewEvent(FlagStarted, ji.JobName, OptEventJobInvocation(ji.ID)))
 	}
 	if typed, ok := js.Job.(OnStartReceiver); ok {
 		typed.OnStart(ctx)
@@ -552,8 +553,8 @@ func (js *JobScheduler) onStart(ctx context.Context, ji *JobInvocation) {
 func (js *JobScheduler) onCancelled(ctx context.Context, ji *JobInvocation) {
 	ji.Status = JobStatusCancelled
 
-	if js.Log != nil && js.ShouldTriggerListenersProvider() {
-		js.trigger(ctx, NewEvent(FlagCancelled, ji.JobName, OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed), OptEventWritable(js.ShouldWriteOutputProvider())))
+	if js.Log != nil && !js.ShouldSkipLoggerListenersProvider() {
+		js.trigger(js.loggerEventContext(ctx), NewEvent(FlagCancelled, ji.JobName, OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed)))
 	}
 	if typed, ok := js.Job.(OnCancellationReceiver); ok {
 		typed.OnCancellation(ctx)
@@ -563,15 +564,15 @@ func (js *JobScheduler) onCancelled(ctx context.Context, ji *JobInvocation) {
 func (js *JobScheduler) onComplete(ctx context.Context, ji *JobInvocation) {
 	ji.Status = JobStatusComplete
 
-	if js.Log != nil && js.ShouldTriggerListenersProvider() {
-		js.trigger(ctx, NewEvent(FlagComplete, ji.JobName, OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed), OptEventWritable(js.ShouldWriteOutputProvider())))
+	if js.Log != nil && !js.ShouldSkipLoggerListenersProvider() {
+		js.trigger(js.loggerEventContext(ctx), NewEvent(FlagComplete, ji.JobName, OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed)))
 	}
 	if typed, ok := js.Job.(OnCompleteReceiver); ok {
 		typed.OnComplete(ctx)
 	}
 
 	if js.Last != nil && js.Last.Err != nil {
-		js.trigger(ctx, NewEvent(FlagFixed, ji.JobName, OptEventElapsed(ji.Elapsed), OptEventWritable(js.ShouldWriteOutputProvider())))
+		js.trigger(js.loggerEventContext(ctx), NewEvent(FlagFixed, ji.JobName, OptEventElapsed(ji.Elapsed)))
 		if typed, ok := js.Job.(OnFixedReceiver); ok {
 			typed.OnFixed(ctx)
 		}
@@ -581,8 +582,8 @@ func (js *JobScheduler) onComplete(ctx context.Context, ji *JobInvocation) {
 func (js *JobScheduler) onFailure(ctx context.Context, ji *JobInvocation) {
 	ji.Status = JobStatusFailed
 
-	if js.Log != nil && js.ShouldTriggerListenersProvider() {
-		js.trigger(ctx, NewEvent(FlagFailed, ji.JobName, OptEventErr(ji.Err), OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed), OptEventWritable(js.ShouldWriteOutputProvider())))
+	if js.Log != nil && !js.ShouldSkipLoggerListenersProvider() {
+		js.trigger(js.loggerEventContext(ctx), NewEvent(FlagFailed, ji.JobName, OptEventErr(ji.Err), OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed)))
 	}
 	if ji.Err != nil {
 		js.error(ji.Err)
@@ -592,12 +593,19 @@ func (js *JobScheduler) onFailure(ctx context.Context, ji *JobInvocation) {
 	}
 	if js.Last != nil && js.Last.Err == nil {
 		if js.Log != nil {
-			js.trigger(ctx, NewEvent(FlagBroken, ji.JobName, OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed), OptEventWritable(js.ShouldWriteOutputProvider())))
+			js.trigger(js.loggerEventContext(ctx), NewEvent(FlagBroken, ji.JobName, OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed)))
 		}
 		if typed, ok := js.Job.(OnBrokenReceiver); ok {
 			typed.OnBroken(ctx)
 		}
 	}
+}
+
+func (js *JobScheduler) loggerEventContext(parent context.Context) context.Context {
+	if js.ShouldSkipLoggerOutputProvider() {
+		return logger.WithSkipWrite(parent)
+	}
+	return parent
 }
 
 func (js *JobScheduler) addHistory(ji JobInvocation) {

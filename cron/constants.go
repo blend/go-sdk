@@ -22,10 +22,10 @@ const (
 	DefaultEnabled = true
 	// DefaultSerial is a default.
 	DefaultSerial = false
-	// DefaultShouldWriteOutput is a default.
-	DefaultShouldWriteOutput = true
-	// DefaultShouldTriggerListeners is a default.
-	DefaultShouldTriggerListeners = true
+	// DefaultShouldSkipLoggerListeners is a default.
+	DefaultShouldSkipLoggerListeners = false
+	// DefaultShouldSkipLoggerOutput is a default.
+	DefaultShouldSkipLoggerOutput = false
 	// DefaultHistoryEnabled is a default.
 	DefaultHistoryEnabled = true
 	// DefaultHistoryMaxCount is the default number of history items to track.

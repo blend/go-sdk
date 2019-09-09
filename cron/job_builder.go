@@ -7,21 +7,21 @@ import (
 
 // Interface assertions.
 var (
-	_ Job                            = (*JobBuilder)(nil)
-	_ ScheduleProvider               = (*JobBuilder)(nil)
-	_ TimeoutProvider                = (*JobBuilder)(nil)
-	_ ShutdownGracePeriodProvider    = (*JobBuilder)(nil)
-	_ EnabledProvider                = (*JobBuilder)(nil)
-	_ ShouldWriteOutputProvider      = (*JobBuilder)(nil)
-	_ ShouldTriggerListenersProvider = (*JobBuilder)(nil)
-	_ OnStartReceiver                = (*JobBuilder)(nil)
-	_ OnCancellationReceiver         = (*JobBuilder)(nil)
-	_ OnCompleteReceiver             = (*JobBuilder)(nil)
-	_ OnFailureReceiver              = (*JobBuilder)(nil)
-	_ OnBrokenReceiver               = (*JobBuilder)(nil)
-	_ OnFixedReceiver                = (*JobBuilder)(nil)
-	_ OnEnabledReceiver              = (*JobBuilder)(nil)
-	_ OnDisabledReceiver             = (*JobBuilder)(nil)
+	_ Job                               = (*JobBuilder)(nil)
+	_ ScheduleProvider                  = (*JobBuilder)(nil)
+	_ TimeoutProvider                   = (*JobBuilder)(nil)
+	_ ShutdownGracePeriodProvider       = (*JobBuilder)(nil)
+	_ EnabledProvider                   = (*JobBuilder)(nil)
+	_ ShouldSkipLoggerListenersProvider = (*JobBuilder)(nil)
+	_ ShouldSkipLoggerOutputProvider    = (*JobBuilder)(nil)
+	_ OnStartReceiver                   = (*JobBuilder)(nil)
+	_ OnCancellationReceiver            = (*JobBuilder)(nil)
+	_ OnCompleteReceiver                = (*JobBuilder)(nil)
+	_ OnFailureReceiver                 = (*JobBuilder)(nil)
+	_ OnBrokenReceiver                  = (*JobBuilder)(nil)
+	_ OnFixedReceiver                   = (*JobBuilder)(nil)
+	_ OnEnabledReceiver                 = (*JobBuilder)(nil)
+	_ OnDisabledReceiver                = (*JobBuilder)(nil)
 )
 
 // NewJob returns a new job factory.
@@ -104,12 +104,12 @@ type JobBuilder struct {
 	name   string
 	action Action
 
-	ScheduleProvider               func() Schedule
-	TimeoutProvider                func() time.Duration
-	ShutdownGracePeriodProvider    func() time.Duration
-	EnabledProvider                func() bool
-	ShouldTriggerListenersProvider func() bool
-	ShouldWriteOutputProvider      func() bool
+	ScheduleProvider                  func() Schedule
+	TimeoutProvider                   func() time.Duration
+	ShutdownGracePeriodProvider       func() time.Duration
+	EnabledProvider                   func() bool
+	ShouldSkipLoggerListenersProvider func() bool
+	ShouldSkipLoggerOutputProvider    func() bool
 
 	OnStartHandler        func(*JobInvocation)
 	OnCancellationHandler func(*JobInvocation)
@@ -162,20 +162,20 @@ func (jb *JobBuilder) Enabled() bool {
 	return true
 }
 
-// ShouldWriteOutput implements the should write output provider.
-func (jb *JobBuilder) ShouldWriteOutput() bool {
-	if jb.ShouldWriteOutputProvider != nil {
-		return jb.ShouldWriteOutputProvider()
+// ShouldSkipLoggerOutput implements the should write output provider.
+func (jb *JobBuilder) ShouldSkipLoggerOutput() bool {
+	if jb.ShouldSkipLoggerOutputProvider != nil {
+		return jb.ShouldSkipLoggerOutputProvider()
 	}
-	return true
+	return false
 }
 
-// ShouldTriggerListeners implements the should trigger listeners provider.
-func (jb *JobBuilder) ShouldTriggerListeners() bool {
-	if jb.ShouldTriggerListenersProvider != nil {
-		return jb.ShouldTriggerListenersProvider()
+// ShouldSkipLoggerListeners implements the should trigger listeners provider.
+func (jb *JobBuilder) ShouldSkipLoggerListeners() bool {
+	if jb.ShouldSkipLoggerListenersProvider != nil {
+		return jb.ShouldSkipLoggerListenersProvider()
 	}
-	return true
+	return false
 }
 
 // OnStart is a lifecycle hook.

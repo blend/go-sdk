@@ -17,7 +17,7 @@ func TestJobBuilder(t *testing.T) {
 	assert.NotNil(NewJob("test_job", noop))
 	assert.True(NewJob("test_job", noop).Enabled())
 	assert.Zero(NewJob("test_job", noop).Timeout())
-	assert.True(NewJob("test_job", noop).ShouldTriggerListeners())
-	assert.True(NewJob("test_job", noop).ShouldWriteOutput())
+	assert.False(NewJob("test_job", noop).ShouldSkipLoggerListeners())
+	assert.False(NewJob("test_job", noop).ShouldSkipLoggerOutput())
 	assert.Equal("test_job", NewJob("test_job", noop).Name())
 }

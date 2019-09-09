@@ -33,6 +33,7 @@ func NewServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App 
 		"_views/invocation.html",
 	}
 	if cfg.UseViewFilesOrDefault() {
+		app.Views.LiveReload = true
 		app.Views.AddPaths(viewPaths...)
 	} else {
 		for _, viewPath := range viewPaths {

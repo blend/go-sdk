@@ -43,20 +43,6 @@ func NewEvent(flag, jobName string, options ...EventOption) Event {
 // EventOption is an option for an Event.
 type EventOption func(*Event)
 
-// OptEventEnabled sets an enabled provider.
-func OptEventEnabled(enabled bool) EventOption {
-	return func(e *Event) {
-		e.EnabledProvider = func() bool { return enabled }
-	}
-}
-
-// OptEventWritable sets a writable provider.
-func OptEventWritable(enabled bool) EventOption {
-	return func(e *Event) {
-		e.EnabledProvider = func() bool { return enabled }
-	}
-}
-
 // OptEventJobInvocation sets a field.
 func OptEventJobInvocation(jobInvocation string) EventOption {
 	return func(e *Event) { e.JobInvocation = jobInvocation }
@@ -74,11 +60,7 @@ func OptEventElapsed(elapsed time.Duration) EventOption {
 
 // Event is an event.
 type Event struct {
-	Flag string
-
-	EnabledProvider  func() bool
-	WritableProvider func() bool
-
+	Flag          string
 	JobName       string
 	JobInvocation string
 	Err           error
@@ -91,22 +73,6 @@ func (e Event) GetFlag() string { return e.Flag }
 // Complete returns if the event completed.
 func (e Event) Complete() bool {
 	return e.Flag == FlagComplete
-}
-
-// IsEnabled is a
-func (e Event) IsEnabled() bool {
-	if e.EnabledProvider != nil {
-		return e.EnabledProvider()
-	}
-	return true
-}
-
-// IsWritable is a logger interface to disable writing the events.
-func (e Event) IsWritable() bool {
-	if e.WritableProvider != nil {
-		return e.WritableProvider()
-	}
-	return true
 }
 
 // WriteText implements logger.TextWritable.

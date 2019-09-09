@@ -55,14 +55,14 @@ type SerialProvider interface {
 	Serial() bool
 }
 
-// ShouldTriggerListenersProvider is a type that enables or disables logger listeners.
-type ShouldTriggerListenersProvider interface {
-	ShouldTriggerListeners() bool
+// ShouldSkipLoggerListenersProvider is a type that enables or disables logger listeners.
+type ShouldSkipLoggerListenersProvider interface {
+	ShouldSkipLoggerListeners() bool
 }
 
-// ShouldWriteOutputProvider is a type that enables or disables logger output for events.
-type ShouldWriteOutputProvider interface {
-	ShouldWriteOutput() bool
+// ShouldSkipLoggerOutputProvider is a type that enables or disables logger output for events.
+type ShouldSkipLoggerOutputProvider interface {
+	ShouldSkipLoggerOutput() bool
 }
 
 // EnabledProvider is an optional interface that will allow jobs to control if they're enabled.
