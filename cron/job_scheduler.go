@@ -3,7 +3,6 @@ package cron
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/blend/go-sdk/mathutil"
@@ -19,10 +18,6 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 		Latch:   async.NewLatch(),
 		Job:     job,
 		Current: make(map[string]*JobInvocation),
-	}
-
-	for _, option := range options {
-		option(js)
 	}
 
 	if typed, ok := job.(DescriptionProvider); ok {
@@ -95,12 +90,20 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 		js.ShouldWriteOutputProvider = func() bool { return DefaultShouldWriteOutput }
 	}
 
+	if typed, ok := job.(HistoryProvider); ok {
+		js.HistoryPersistProvider = typed.PersistHistory
+		js.HistoryRestoreProvider = typed.RestoreHistory
+	}
+
+	for _, option := range options {
+		option(js)
+	}
+
 	return js
 }
 
 // JobScheduler is a job instance.
 type JobScheduler struct {
-	sync.Mutex   `json:"-"`
 	*async.Latch `json:"-"`
 
 	Job    Job        `json:"-"`
@@ -126,7 +129,9 @@ type JobScheduler struct {
 	HistoryEnabledProvider         func() bool              `json:"-"`
 	HistoryMaxCountProvider        func() int               `json:"-"`
 	HistoryMaxAgeProvider          func() time.Duration     `json:"-"`
-	HistoryProvider                HistoryProvider          `json:"-"`
+
+	HistoryRestoreProvider func(context.Context) ([]JobInvocation, error) `json:"-"`
+	HistoryPersistProvider func(context.Context, []JobInvocation) error   `json:"-"`
 }
 
 // Name returns the job name.
@@ -137,6 +142,20 @@ func (js *JobScheduler) Name() string {
 // Description returns the description.
 func (js *JobScheduler) Description() string {
 	return js.DescriptionProvider()
+}
+
+// Labels returns the job labels, including
+// automatically added ones like `name`.
+func (js *JobScheduler) Labels() map[string]string {
+	output := map[string]string{
+		"name": js.Name(),
+	}
+	if js.LabelsProvider != nil {
+		for key, value := range js.LabelsProvider() {
+			output[key] = value
+		}
+	}
+	return output
 }
 
 // Start starts the scheduler.
@@ -184,9 +203,6 @@ func (js *JobScheduler) NotifyStopped() <-chan struct{} {
 
 // Enable sets the job as enabled.
 func (js *JobScheduler) Enable() {
-	js.Lock()
-	defer js.Unlock()
-
 	js.Disabled = false
 	if js.Log != nil && js.ShouldTriggerListenersProvider() {
 		event := NewEvent(FlagEnabled, js.Name(), OptEventWritable(js.ShouldWriteOutputProvider()))
@@ -199,9 +215,6 @@ func (js *JobScheduler) Enable() {
 
 // Disable sets the job as disabled.
 func (js *JobScheduler) Disable() {
-	js.Lock()
-	defer js.Unlock()
-
 	js.Disabled = true
 	if js.Log != nil && js.ShouldTriggerListenersProvider() {
 		event := NewEvent(FlagDisabled, js.Name(), OptEventWritable(js.ShouldWriteOutputProvider()))
@@ -372,11 +385,23 @@ func (js *JobScheduler) GetInvocationByID(id string) *JobInvocation {
 	return nil
 }
 
+// RestoreHistory calls the persist handler if it's set.
+func (js *JobScheduler) RestoreHistory(ctx context.Context) error {
+	if js.HistoryRestoreProvider != nil {
+		js.debugf("restoring history")
+		var err error
+		if js.History, err = js.HistoryRestoreProvider(ctx); err != nil {
+			return js.error(err)
+		}
+	}
+	return nil
+}
+
 // PersistHistory calls the persist handler if it's set.
 func (js *JobScheduler) PersistHistory(ctx context.Context) error {
-	if js.HistoryProvider != nil {
+	if js.HistoryPersistProvider != nil {
 		js.debugf("persisting history")
-		if err := js.HistoryProvider.PersistHistory(ctx, js.History); err != nil {
+		if err := js.HistoryPersistProvider(ctx, js.History); err != nil {
 			return js.error(err)
 		}
 	}
@@ -582,10 +607,6 @@ func (js *JobScheduler) addHistory(ji JobInvocation) {
 }
 
 func (js *JobScheduler) cullHistory() []JobInvocation {
-	if !js.HistoryEnabledProvider() {
-		return js.History
-	}
-
 	count := len(js.History)
 	maxCount := js.HistoryMaxCountProvider()
 	maxAge := js.HistoryMaxAgeProvider()

@@ -57,15 +57,10 @@ func (jm *JobManager) LoadJobs(jobs ...Job) error {
 			OptJobSchedulerTracer(jm.Tracer),
 			OptJobSchedulerLog(jm.Log),
 		)
-		if typed, ok := job.(HistoryProvider); ok {
-			var err error
-			if jm.Log != nil {
-				jm.Log.WithPath(job.Name()).Debugf("restoring job history")
-			}
-			scheduler.History, err = typed.RestoreHistory(context.Background())
-			if err != nil {
-				logger.MaybeError(jm.Log, err)
-			}
+
+		if err := scheduler.RestoreHistory(context.Background()); err != nil {
+			logger.MaybeError(jm.Log, err)
+			continue
 		}
 		jm.Jobs[jobName] = scheduler
 	}

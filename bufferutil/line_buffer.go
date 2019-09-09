@@ -2,8 +2,6 @@ package bufferutil
 
 import (
 	"bytes"
-	"encoding/json"
-	"sync"
 	"time"
 )
 
@@ -13,6 +11,9 @@ func NewLineBuffer(contents []byte) *LineBuffer {
 	lw.Write(contents)
 	return lw
 }
+
+// LineHandler is a handler for lines.
+type LineHandler func(Line)
 
 // LineBuffer is a writer that accepts binary but splits out onto new lines.
 type LineBuffer struct {
@@ -82,93 +83,4 @@ func (lw *LineBuffer) commitLine() {
 	lw.Current.Timestamp = time.Time{}
 	lw.Current.Line = nil
 	return
-}
-
-var (
-	_ json.Marshaler   = (*Line)(nil)
-	_ json.Unmarshaler = (*Line)(nil)
-)
-
-// LineHandler is a handler for lines.
-type LineHandler func(Line)
-
-// Line is a line of output.
-type Line struct {
-	Timestamp time.Time `json:"_ts"`
-	Line      []byte    `json:"line"`
-}
-
-// MarshalJSON implements json.Marshaler.
-func (l Line) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[string]interface{}{
-		"_ts":  l.Timestamp,
-		"line": string(l.Line),
-	})
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (l *Line) UnmarshalJSON(contents []byte) error {
-	raw := make(map[string]interface{})
-	if err := json.Unmarshal(contents, &raw); err != nil {
-		return err
-	}
-
-	if typed, ok := raw["_ts"].(string); ok {
-		parsed, err := time.Parse(time.RFC3339, typed)
-		if err != nil {
-			return err
-		}
-		l.Timestamp = parsed
-
-	}
-	if typed, ok := raw["line"].(string); ok {
-		l.Line = []byte(typed)
-	}
-	return nil
-}
-
-// LineHandlers is a synchronized map of listeners for new lines to a line buffer.
-type LineHandlers struct {
-	sync.RWMutex
-	Handlers map[string]LineHandler
-}
-
-// Add adds a listener.
-func (lh *LineHandlers) Add(uid string, handler LineHandler) {
-	lh.Lock()
-	if lh.Handlers == nil {
-		lh.Handlers = make(map[string]LineHandler)
-	}
-	lh.Handlers[uid] = handler
-	lh.Unlock()
-}
-
-// Remove removes a listener.
-func (lh *LineHandlers) Remove(uid string) {
-	lh.Lock()
-	if lh.Handlers == nil {
-		lh.Handlers = make(map[string]LineHandler)
-	}
-	delete(lh.Handlers, uid)
-	lh.Unlock()
-}
-
-// Handle calls the handlers.
-func (lh *LineHandlers) Handle(line Line) {
-	lh.RLock()
-	defer lh.RUnlock()
-	for _, handler := range lh.Handlers {
-		handler(line)
-	}
-}
-
-// FilterLines applies a predicate to a set of lines.
-func FilterLines(lines []Line, predicate func(Line) bool) []Line {
-	var output []Line
-	for _, line := range lines {
-		if predicate(line) {
-			output = append(output, line)
-		}
-	}
-	return output
 }

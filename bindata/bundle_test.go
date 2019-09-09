@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"testing"
 
+	"go/parser"
+	"go/token"
+
 	"github.com/blend/go-sdk/assert"
 )
 
@@ -39,4 +42,13 @@ func TestBundle(t *testing.T) {
 	err = bundle.Write(buffer)
 	assert.Nil(err)
 	assert.NotEmpty(buffer.Bytes())
+
+	assert.Contains(buffer.String(), "package bindata")
+	assert.Contains(buffer.String(), "testdata/js/app.js")
+	assert.Contains(buffer.String(), "testdata/css/site.css")
+
+	ast, err := parser.ParseFile(token.NewFileSet(), "bindata.go", buffer.Bytes(), parser.ParseComments|parser.AllErrors)
+	assert.Nil(err)
+	assert.NotNil(ast)
+	assert.Len(ast.Imports, 2)
 }

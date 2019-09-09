@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/blend/go-sdk/bufferutil"
 	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
-	"github.com/blend/go-sdk/stringutil"
 	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/web"
 	"github.com/blend/go-sdk/webutil"
@@ -74,7 +74,7 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 	app.GET("/api/job.stats", func(r *web.Ctx) web.Result {
 		output := make(map[string]cron.JobStats)
 		for _, job := range jm.Jobs {
-			output[job.Name] = job.Stats()
+			output[job.Name()] = job.Stats()
 		}
 		return web.JSON.Result(output)
 	})
@@ -229,7 +229,7 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 		}
 		if afterNanos, _ := web.Int64Value(r.QueryValue("afterNanos")); afterNanos > 0 {
 			afterTS := time.Unix(0, afterNanos)
-			lines = stringutil.FilterLines(lines, func(l stringutil.Line) bool {
+			lines = bufferutil.FilterLines(lines, func(l bufferutil.Line) bool {
 				return l.Timestamp.After(afterTS)
 			})
 		}
@@ -255,7 +255,7 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 
 		listenerID := uuid.V4().String()
 		shouldClose := make(chan struct{})
-		invocation.OutputHandlers.Add(listenerID, func(l stringutil.Line) {
+		invocation.OutputHandlers.Add(listenerID, func(l bufferutil.Line) {
 			io.WriteString(r.Response, "data: ")
 			if _, err := r.Response.Write([]byte(string(l.Line) + "\n\n")); err != nil {
 				logger.MaybeError(app.Log, err)

@@ -312,7 +312,7 @@ func TestJobManagerLoadJob(t *testing.T) {
 	assert.Nil(err)
 	assert.NotNil(meta)
 
-	assert.Equal("load-job-test-minimum", meta.Name)
+	assert.Equal("load-job-test-minimum", meta.Name())
 	assert.NotNil(meta.Job)
 
 	assert.NotNil(meta.EnabledProvider)

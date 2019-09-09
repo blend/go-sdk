@@ -21,6 +21,7 @@ import (
 
 var (
 	_ cron.Job                         = (*Job)(nil)
+	_ cron.LabelsProvider              = (*Job)(nil)
 	_ cron.TimeoutProvider             = (*Job)(nil)
 	_ cron.ShutdownGracePeriodProvider = (*Job)(nil)
 	_ cron.SerialProvider              = (*Job)(nil)
@@ -33,7 +34,7 @@ var (
 	_ cron.OnFixedReceiver             = (*Job)(nil)
 	_ cron.OnDisabledReceiver          = (*Job)(nil)
 	_ cron.OnEnabledReceiver           = (*Job)(nil)
-	_ cron.HistoryPersister            = (*Job)(nil)
+	_ cron.HistoryProvider             = (*Job)(nil)
 )
 
 // NewJob returns a new job.
@@ -197,12 +198,9 @@ func (job Job) OnDisabled(ctx context.Context) {
 	}
 }
 
-// HistoryPersist writes the history to disk.
+// PersistHistory writes the history to disk.
 // It does so completely.
-func (job Job) HistoryPersist(ctx context.Context, log []cron.JobInvocation) error {
-	if !job.Config.HistoryEnabledOrDefault() {
-		return nil
-	}
+func (job Job) PersistHistory(ctx context.Context, log []cron.JobInvocation) error {
 	historyPath := job.Config.HistoryPathOrDefault()
 	historyDirectory := filepath.Dir(historyPath)
 	if _, err := os.Stat(historyDirectory); err != nil {
@@ -218,11 +216,8 @@ func (job Job) HistoryPersist(ctx context.Context, log []cron.JobInvocation) err
 	return json.NewEncoder(f).Encode(log)
 }
 
-// HistoryRestore restores history from disc.
-func (job Job) HistoryRestore(ctx context.Context) (output []cron.JobInvocation, err error) {
-	if !job.Config.HistoryEnabledOrDefault() {
-		return nil, nil
-	}
+// RestoreHistory restores history from disc.
+func (job Job) RestoreHistory(ctx context.Context) (output []cron.JobInvocation, err error) {
 	historyPath := job.Config.HistoryPathOrDefault()
 	if _, statErr := os.Stat(historyPath); statErr != nil {
 		return

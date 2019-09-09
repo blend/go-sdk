@@ -11,23 +11,29 @@ var (
 )
 
 // EverySecond returns a schedule that fires every second.
-func EverySecond() Schedule {
-	return IntervalSchedule{Every: 1 * time.Second}
+func EverySecond() IntervalSchedule {
+	return IntervalSchedule{Every: time.Second}
 }
 
 // EveryMinute returns a schedule that fires every minute.
-func EveryMinute() Schedule {
-	return IntervalSchedule{Every: 1 * time.Minute}
+func EveryMinute() IntervalSchedule {
+	return IntervalSchedule{Every: time.Minute}
 }
 
 // EveryHour returns a schedule that fire every hour.
-func EveryHour() Schedule {
-	return IntervalSchedule{Every: 1 * time.Hour}
+func EveryHour() IntervalSchedule {
+	return IntervalSchedule{Every: time.Hour}
 }
 
 // Every returns a schedule that fires every given interval.
-func Every(interval time.Duration) Schedule {
+func Every(interval time.Duration) IntervalSchedule {
 	return IntervalSchedule{Every: interval}
+}
+
+// EveryDelayed returns a schedule that fires every given interval
+// with a start delay.
+func EveryDelayed(interval, delay time.Duration) IntervalSchedule {
+	return IntervalSchedule{Every: interval, StartDelay: delay}
 }
 
 // IntervalSchedule is as chedule that fires every given interval with an optional start delay.

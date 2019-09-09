@@ -8,21 +8,6 @@ import (
 	"github.com/blend/go-sdk/assert"
 )
 
-func TestIntervalSchedule(t *testing.T) {
-	a := assert.New(t)
-
-	schedule := EveryHour()
-
-	now := time.Now().UTC()
-
-	firstRun := schedule.Next(Zero)
-	firstRunDiff := firstRun.Sub(now)
-	a.InDelta(float64(firstRunDiff), float64(1*time.Hour), float64(1*time.Second))
-
-	next := schedule.Next(now)
-	a.True(next.After(now))
-}
-
 func TestDailyScheduleEveryDay(t *testing.T) {
 	a := assert.New(t)
 	schedule := DailyAtUTC(12, 0, 0) //noon
