@@ -28,7 +28,7 @@ func (w *ByteWriter) Write(p []byte) (n int, err error) {
 	}
 
 	for n = range p {
-		if w.c%12 == 0 {
+		if w.c%96 == 0 {
 			if n > 0 {
 				w.Writer.Write(newline)
 			}

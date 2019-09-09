@@ -1,7 +1,6 @@
 package main
 
 import (
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -20,6 +19,7 @@ import (
 	"github.com/blend/go-sdk/jobkit"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/ref"
+	"github.com/blend/go-sdk/sentry"
 	"github.com/blend/go-sdk/slack"
 	"github.com/blend/go-sdk/stats"
 	"github.com/blend/go-sdk/stringutil"
@@ -28,6 +28,8 @@ import (
 var (
 	flagBind                          *string
 	flagConfigPath                    *string
+	flagDisableServer                 *bool
+	flagUseViewFiles                  *bool
 	flagDefaultJobName                *string
 	flagDefaultJobExec                *string
 	flagDefaultJobSchedule            *string
@@ -40,12 +42,14 @@ var (
 	flagDefaultJobDiscardOutput       *bool
 	flagDefaultJobHistoryEnabled      *bool
 	flagDefaultJobSerial              *bool
-	flagDisableServer                 *bool
 )
 
 func initFlags(cmd *cobra.Command) {
 	flagBind = cmd.Flags().String("bind", "", "The management http server bind address.")
 	flagConfigPath = cmd.Flags().StringP("config", "c", "", "The config path.")
+	flagUseViewFiles = cmd.Flags().Bool("use-view-files", false, "If we should use view files vs. statically linked assets.")
+	flagDisableServer = cmd.Flags().Bool("disable-server", false, "If the management server should be disabled.")
+
 	flagDefaultJobName = cmd.Flags().StringP("name", "n", "", "The job name (will default to a random string of 8 letters).")
 	flagDefaultJobSchedule = cmd.Flags().StringP("schedule", "s", "", "The job schedule in cron format (ex: '*/5 * * * *')")
 	flagDefaultJobHistoryPath = cmd.Flags().String("history-path", "", "The job history path.")
@@ -57,7 +61,6 @@ func initFlags(cmd *cobra.Command) {
 	flagDefaultJobLabels = cmd.Flags().StringSlice("label", nil, "Labels for the job that can be used with filtering or tagging.")
 	flagDefaultJobDiscardOutput = cmd.Flags().Bool("discard-output", false, "If jobs should discard console output from the action.")
 	flagDefaultJobSerial = cmd.Flags().Bool("serial", true, "The job should run serially (that is, only one can be active at a time)")
-	flagDisableServer = cmd.Flags().Bool("disable-server", false, "If the management server should be disabled.")
 }
 
 type config struct {
@@ -70,13 +73,10 @@ func (c *config) Resolve() error {
 	if len(c.Logger.Flags) == 0 {
 		c.Logger.Flags = []string{"all"}
 	}
-	if err := configutil.SetString(&c.Web.BindAddr, configutil.String(*flagBind), configutil.Env("BIND_ADDR"), configutil.String(c.Web.BindAddr)); err != nil {
-		return err
-	}
-	if err := configutil.SetBool(&c.DisableServer, configutil.Bool(flagDisableServer), configutil.Bool(c.DisableServer), configutil.Bool(ref.Bool(false))); err != nil {
-		return err
-	}
-	return nil
+	return configutil.AnyError(
+		configutil.SetString(&c.Web.BindAddr, configutil.String(*flagBind), configutil.Env("BIND_ADDR"), configutil.String(c.Web.BindAddr)),
+		configutil.SetBool(&c.DisableServer, configutil.Bool(flagDisableServer), configutil.Bool(c.DisableServer), configutil.Bool(ref.Bool(false))),
+	)
 }
 
 type jobConfig struct {
@@ -96,18 +96,22 @@ func (jc *jobConfig) DiscardOutputOrDefault() bool {
 	return false
 }
 
-func (jc *jobConfig) Resolve() error {
+type defaultJobConfig struct {
+	jobConfig
+}
+
+func (djc *defaultJobConfig) Resolve() error {
 	return configutil.AnyError(
-		configutil.SetString(&jc.Name, configutil.String(*flagDefaultJobName), configutil.String(env.Env().ServiceName()), configutil.String(jc.Name), configutil.String(stringutil.Letters.Random(8))),
-		configutil.SetBool(&jc.DiscardOutput, configutil.Bool(flagDefaultJobDiscardOutput), configutil.Bool(jc.DiscardOutput), configutil.Bool(ref.Bool(false))),
-		configutil.SetBool(&jc.HistoryEnabled, configutil.Bool(flagDefaultJobHistoryEnabled), configutil.Bool(jc.HistoryEnabled), configutil.Bool(ref.Bool(true))),
-		configutil.SetBool(&jc.Serial, configutil.Bool(flagDefaultJobSerial), configutil.Bool(jc.Serial), configutil.Bool(ref.Bool(true))),
-		configutil.SetString(&jc.Schedule, configutil.String(*flagDefaultJobSchedule), configutil.String(jc.Schedule)),
-		configutil.SetString(&jc.HistoryPath, configutil.String(*flagDefaultJobHistoryPath), configutil.String(jc.HistoryPath)),
-		configutil.SetInt(&jc.HistoryMaxCount, configutil.String(*flagDefaultJobHistoryMaxCount), configutil.String(jc.HistoryMaxCount)),
-		configutil.SetDuration(&jc.HistoryMaxAge, configutil.String(*flagDefaultJobHistoryMaxAge), configutil.String(jc.HistoryMaxAge)),
-		configutil.SetDuration(&jc.Timeout, configutil.Duration(*flagDefaultJobTimeout), configutil.Duration(jc.Timeout)),
-		configutil.SetDuration(&jc.ShutdownGracePeriod, configutil.Duration(*flagDefaultJobShutdownGracePeriod), configutil.Duration(jc.ShutdownGracePeriod)),
+		configutil.SetString(&djc.Name, configutil.String(*flagDefaultJobName), configutil.String(env.Env().ServiceName()), configutil.String(djc.Name), configutil.String(stringutil.Letters.Random(8))),
+		configutil.SetBool(&djc.DiscardOutput, configutil.Bool(flagDefaultJobDiscardOutput), configutil.Bool(djc.DiscardOutput), configutil.Bool(ref.Bool(false))),
+		configutil.SetBool(&djc.Serial, configutil.Bool(flagDefaultJobSerial), configutil.Bool(djc.Serial), configutil.Bool(ref.Bool(true))),
+		configutil.SetString(&djc.Schedule, configutil.String(*flagDefaultJobSchedule), configutil.String(djc.Schedule)),
+		configutil.SetBool(&djc.HistoryEnabled, configutil.Bool(flagDefaultJobHistoryEnabled), configutil.Bool(djc.HistoryEnabled), configutil.Bool(ref.Bool(false))),
+		configutil.SetString(&djc.HistoryPath, configutil.String(*flagDefaultJobHistoryPath), configutil.String(djc.HistoryPath)),
+		configutil.SetInt(&djc.HistoryMaxCount, configutil.Int(*flagDefaultJobHistoryMaxCount), configutil.Int(djc.HistoryMaxCount)),
+		configutil.SetDuration(&djc.HistoryMaxAge, configutil.Duration(*flagDefaultJobHistoryMaxAge), configutil.Duration(djc.HistoryMaxAge)),
+		configutil.SetDuration(&djc.Timeout, configutil.Duration(*flagDefaultJobTimeout), configutil.Duration(djc.Timeout)),
+		configutil.SetDuration(&djc.ShutdownGracePeriod, configutil.Duration(*flagDefaultJobShutdownGracePeriod), configutil.Duration(djc.ShutdownGracePeriod)),
 	)
 }
 
@@ -180,12 +184,13 @@ func run(cmd *cobra.Command, args []string) error {
 
 	log.Debugf("using logger flags: %v", log.Flags.String())
 
-	defaultJobCfg, err := createDefaultJobConfig(args...)
-	if err != nil {
-		return err
-	}
-	if defaultJobCfg != nil {
-		cfg.Jobs = append(cfg.Jobs, *defaultJobCfg)
+	if len(args) > 0 {
+		defaultJobCfg, err := createDefaultJobConfig(args...)
+		if err != nil {
+			return err
+		}
+		log.Debugf("using default job: %s", strings.Join(defaultJobCfg.Exec, " "))
+		cfg.Jobs = append(cfg.Jobs, defaultJobCfg.jobConfig)
 	}
 
 	if len(cfg.Jobs) == 0 {
@@ -202,9 +207,9 @@ func run(cmd *cobra.Command, args []string) error {
 		log.Infof("adding smtp email notifications")
 	}
 
-	if !cfg.EmailDefaults.IsZero() {
-		log.Debugf("using email defaults from: %s", cfg.EmailDefaults.From)
-		log.Debugf("using email defaults to: %s", stringutil.CSV(cfg.EmailDefaults.To))
+	if !cfg.Email.IsZero() {
+		log.Debugf("using email defaults from: %s", cfg.Email.From)
+		log.Debugf("using email defaults to: %s", stringutil.CSV(cfg.Email.To))
 	}
 
 	var slackClient slack.Sender
@@ -220,8 +225,18 @@ func run(cmd *cobra.Command, args []string) error {
 		}
 		log.Infof("adding datadog metrics")
 	}
+	var sentryClient sentry.Sender
+	if !cfg.Sentry.IsZero() {
+		sentryClient, err = sentry.New(cfg.Sentry)
+		if err != nil {
+			return err
+		}
+		log.Listen(logger.Error, "sentry", logger.NewErrorEventListener(sentryClient.Notify))
+		log.Listen(logger.Fatal, "sentry", logger.NewErrorEventListener(sentryClient.Notify))
+		log.Infof("adding sentry error collection")
+	}
 
-	jobs := cron.New(cron.OptConfig(cfg.Config.Cron), cron.OptLog(log.WithPath("cron")))
+	jobs := cron.New(cron.OptLog(log.WithPath("cron")))
 
 	for _, jobCfg := range cfg.Jobs {
 		job, err := createJobFromConfig(cfg, jobCfg)
@@ -233,6 +248,7 @@ func run(cmd *cobra.Command, args []string) error {
 		job.EmailClient = emailClient
 		job.SlackClient = slackClient
 		job.StatsClient = statsClient
+		job.SentryClient = sentryClient
 
 		var serial string
 		if jobCfg.SerialOrDefault() {
@@ -255,7 +271,7 @@ func run(cmd *cobra.Command, args []string) error {
 	hosted := []graceful.Graceful{jobs}
 
 	if !*flagDisableServer {
-		ws := jobkit.NewManagementServer(jobs, cfg.Config)
+		ws := jobkit.NewServer(jobs, cfg.Config)
 		ws.Log = log.WithPath("management server")
 		hosted = append(hosted, ws)
 	} else {
@@ -264,15 +280,12 @@ func run(cmd *cobra.Command, args []string) error {
 	return graceful.Shutdown(hosted...)
 }
 
-func createDefaultJobConfig(args ...string) (*jobConfig, error) {
-	cfg := new(jobConfig)
+func createDefaultJobConfig(args ...string) (*defaultJobConfig, error) {
+	cfg := new(defaultJobConfig)
 	if err := cfg.Resolve(); err != nil {
 		return nil, err
 	}
 	cfg.Exec = args
-	if len(cfg.Exec) == 0 {
-		return nil, nil
-	}
 	return cfg, nil
 }
 
@@ -288,9 +301,6 @@ func createJobFromConfig(base config, cfg jobConfig) (*jobkit.Job, error) {
 	if job.Config.Description == "" {
 		job.Config.Description = strings.Join(cfg.Exec, " ")
 	}
-	if job.Config.HistoryPath == "" && base.HistoryPath != "" {
-		job.Config.HistoryPath = filepath.Join(base.HistoryPath, stringutil.Slugify(job.Name())+".json")
-	}
-	job.EmailDefaults = email.MergeMessages(base.EmailDefaults, cfg.EmailDefaults)
+	job.Email = email.MergeMessages(base.Email, cfg.Email)
 	return job, nil
 }

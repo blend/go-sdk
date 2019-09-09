@@ -1,15 +1,13 @@
-package jobkit
-
-var headerTemplate = `
 {{ define "header" }}
 <!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.2.0/css/uikit.min.css" />
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.2.0/js/uikit.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.2.0/js/uikit-icons.min.js"></script>
+	<link rel="stylesheet" href="/static/css/uikit.min.css" />
+	<script src="/static/js/uikit.min.js"></script>
+	<script src="/static/js/uikit-icons.min.js"></script>
+	<script src="/static/js/zepto.min.js"></script>
 	<style>
 	#top-head {
 		z-index: 9;
@@ -29,7 +27,6 @@ var headerTemplate = `
 	#content {
 		margin-top: 52px;
 		padding: 30px 0 0 0;
-		background-color: #f7f7f7;
 		margin-left: 0;
 		transition: margin 0.2s cubic-bezier(.4,0,.2,1);
 	}
@@ -64,4 +61,3 @@ var headerTemplate = `
 	</div>
 </header>
 {{ end }}
-`

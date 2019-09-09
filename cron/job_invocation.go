@@ -11,12 +11,16 @@ import (
 
 // NewJobInvocation returns a new job invocation.
 func NewJobInvocation(jobName string) *JobInvocation {
+	output := new(OutputBuffer)
+	listeners := new(OutputListeners)
+	output.Listener = listeners.Trigger
 	return &JobInvocation{
-		ID:      NewJobInvocationID(),
-		Started: Now(),
-		Status:  JobStatusRunning,
-		JobName: jobName,
-		Output:  new(OutputBuffer),
+		ID:              NewJobInvocationID(),
+		Started:         Now(),
+		Status:          JobStatusRunning,
+		JobName:         jobName,
+		Output:          output,
+		OutputListeners: listeners,
 	}
 }
 

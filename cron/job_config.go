@@ -14,8 +14,6 @@ type JobConfig struct {
 	Serial *bool `json:"serial" yaml:"serial"`
 	// HistoryEnabled sets if we should save invocation history and restore it.
 	HistoryEnabled *bool `json:"historyEnabled" yaml:"historyEnabled"`
-	// HistoryPath is the path to write history to.
-	HistoryPath string `json:"historyPath" yaml:"historyPath"`
 	// HistoryMaxCount is the maximum number of history items to keep.
 	HistoryMaxCount int `json:"historyMaxCount" yaml:"historyMaxCount"`
 	// HistoryMaxAge is the maximum age of history items to keep.
@@ -48,8 +46,8 @@ func (jc JobConfig) SerialOrDefault() bool {
 
 // HistoryEnabledOrDefault returns a value or a default.
 func (jc JobConfig) HistoryEnabledOrDefault() bool {
-	if jc.Serial != nil {
-		return *jc.Serial
+	if jc.HistoryEnabled != nil {
+		return *jc.HistoryEnabled
 	}
 	return DefaultHistoryEnabled
 }

@@ -23,7 +23,7 @@ func TestManagementServer(t *testing.T) {
 		cron.NewJob("test1", func(_ context.Context) error { return nil }),
 	)
 
-	app := NewManagementServer(jm, Config{
+	app := NewServer(jm, Config{
 		Web: web.Config{
 			Port: 5000,
 		},
@@ -49,7 +49,7 @@ func TestManagementServerHealthz(t *testing.T) {
 		cron.NewJob("test1", func(_ context.Context) error { return nil }),
 	)
 	jm.StartAsync()
-	app := NewManagementServer(jm, Config{
+	app := NewServer(jm, Config{
 		Web: web.Config{
 			Port: 5000,
 		},
@@ -87,7 +87,7 @@ func TestManagementServerIndex(t *testing.T) {
 		},
 	}
 
-	app := NewManagementServer(jm, Config{
+	app := NewServer(jm, Config{
 		Web: web.Config{
 			Port: 5000,
 		},

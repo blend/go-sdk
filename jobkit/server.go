@@ -1,9 +1,12 @@
 package jobkit
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/blend/go-sdk/cron"
@@ -12,25 +15,53 @@ import (
 	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/web"
 	"github.com/blend/go-sdk/webutil"
+
+	"github.com/blend/go-sdk/jobkit/static"
+	"github.com/blend/go-sdk/jobkit/views"
 )
 
-// NewManagementServer returns a new management server that lets you
+// NewServer returns a new management server that lets you
 // trigger jobs or look at job statuses via. a json api.
-func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App {
+func NewServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App {
 	options = append([]web.Option{web.OptConfig(cfg.Web)}, options...)
 	app := web.MustNew(options...)
 
-	app.Views.AddLiterals(
-		headerTemplate,
-		footerTemplate,
-		indexTemplate,
-		invocationTemplate,
-	)
+	viewPaths := []string{
+		"_views/header.html",
+		"_views/footer.html",
+		"_views/index.html",
+		"_views/invocation.html",
+	}
+	if cfg.UseViewFilesOrDefault() {
+		app.Views.AddPaths(viewPaths...)
+	} else {
+		for _, viewPath := range viewPaths {
+			vf, err := views.GetBinaryAsset(viewPath)
+			if err != nil {
+				panic(err)
+			}
+			app.Views.AddLiterals(string(vf.Contents))
+		}
+	}
+
 	app.PanicAction = func(r *web.Ctx, err interface{}) web.Result {
 		return r.Views.InternalError(ex.New(err))
 	}
 	app.GET("/", func(r *web.Ctx) web.Result {
 		return r.Views.View("index", jm.Status())
+	})
+	app.GET("/static/*filepath", func(r *web.Ctx) web.Result {
+		path, err := r.RouteParam("filepath")
+		if err != nil {
+			web.Text.NotFound()
+		}
+		path = filepath.Join("_static", path)
+		file, err := static.GetBinaryAsset(path)
+		if err == os.ErrNotExist {
+			return web.Text.NotFound()
+		}
+		http.ServeContent(r.Response, r.Request, path, time.Unix(file.ModTime, 0), bytes.NewReader(file.Contents))
+		return nil
 	})
 	app.GET("/status.json", func(r *web.Ctx) web.Result {
 		return web.JSON.Result(jm.Status())

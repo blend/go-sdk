@@ -12,6 +12,10 @@ import (
 	"github.com/blend/go-sdk/logger"
 )
 
+var (
+	_ Sender = (*Client)(nil)
+)
+
 // MustNew returns a new client and panics on error.
 func MustNew(cfg Config) *Client {
 	c, err := New(cfg)

@@ -1,7 +1,9 @@
 package bindata
 
 import (
+	"bytes"
 	"crypto/md5"
+	"io"
 	"io/ioutil"
 	"os"
 
@@ -26,12 +28,15 @@ func ReadFile(path string) (*File, error) {
 		return nil, ex.New(err)
 	}
 
-	md5Hash := md5.New().Sum(contents)
+	hasher := md5.New()
+	if _, err := io.Copy(hasher, bytes.NewReader(contents)); err != nil {
+		return nil, ex.New(err)
+	}
 
 	return &File{
 		Name:     path,
 		Modtime:  stat.ModTime(),
-		MD5:      md5Hash,
+		MD5:      hasher.Sum(nil),
 		Contents: contents,
 	}, nil
 }

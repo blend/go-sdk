@@ -22,6 +22,8 @@ type OutputBuffer struct {
 	// Working is a temporary holder for the current line.
 	// It is added to the `Lines` slice when a newline is processed.
 	Working OutputLine `json:"working"`
+	// Listener is an optional listener for new line events.
+	Listener OutputListener `json:"-"`
 }
 
 // Write writes the contents to the lines buffer.
@@ -55,11 +57,6 @@ func (lw *OutputBuffer) Write(contents []byte) (written int, err error) {
 	return
 }
 
-// Read readds into a given buffer.
-func (lw *OutputBuffer) Read(contents []byte) (int, error) {
-	return 0, nil
-}
-
 // Bytes rerturns the bytes written to the writer.
 func (lw *OutputBuffer) Bytes() []byte {
 	buffer := new(bytes.Buffer)
@@ -79,6 +76,9 @@ func (lw *OutputBuffer) String() string {
 // AddWorkingLine adds the current line to the lines set and resets
 // the current line
 func (lw *OutputBuffer) AddWorkingLine() {
+	if lw.Listener != nil {
+		lw.Listener(lw.Working)
+	}
 	lw.Lines = append(lw.Lines, lw.Working)
 	lw.Working.Timestamp = time.Time{}
 	lw.Working.Data = nil

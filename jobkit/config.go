@@ -6,12 +6,15 @@ import (
 	"github.com/blend/go-sdk/datadog"
 	"github.com/blend/go-sdk/email"
 	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/sentry"
 	"github.com/blend/go-sdk/slack"
 	"github.com/blend/go-sdk/web"
 )
 
 // Config is the jobkit config.
 type Config struct {
+	// UseViewFiles indicates if we should use local view files from the disk.
+	UseViewFiles *bool `yaml:"useViewFiles"`
 	// Cron is the cron manager config.
 	Cron JobConfig `yaml:"cron"`
 	// Email sets email defaults.
@@ -26,8 +29,10 @@ type Config struct {
 	SMTP email.SMTPSender `yaml:"smtp"`
 	// Datadog configures the datadog client.
 	Datadog datadog.Config `yaml:"datadog"`
-	// Slack configues the slack webhook sender.
+	// Slack configures the slack webhook sender.
 	Slack slack.Config `yaml:"slack"`
+	// Sentry confgures the sentry error collector.
+	Sentry sentry.Config `yaml:"sentry"`
 }
 
 // Resolve applies resolution steps to the config.
@@ -39,5 +44,14 @@ func (c *Config) Resolve() error {
 		c.Email.Resolve(),
 		c.Datadog.Resolve(),
 		c.Slack.Resolve(),
+		c.Sentry.Resolve(),
 	)
+}
+
+// UseViewFilesOrDefault returns a value or a default.
+func (c Config) UseViewFilesOrDefault() bool {
+	if c.UseViewFiles != nil {
+		return *c.UseViewFiles
+	}
+	return false
 }

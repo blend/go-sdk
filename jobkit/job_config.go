@@ -1,11 +1,8 @@
 package jobkit
 
 import (
-	"path/filepath"
-
 	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/email"
-	"github.com/blend/go-sdk/stringutil"
 )
 
 // JobConfig is something you can use to give your jobs some knobs to turn
@@ -19,6 +16,9 @@ type JobConfig struct {
 	Description string `yaml:"description"`
 	// Schedule returns the job schedule.
 	Schedule string `yaml:"schedule"`
+	// HistoryPath is the base path we should write job history to.
+	// The files for each job will always be $HISTORY_PATH/$NAME.json
+	HistoryPath string `yaml:"historyPath"`
 
 	// NotifyOnStart governs if we should send notifications job start.
 	NotifyOnStart *bool `yaml:"notifyOnStart"`
@@ -54,7 +54,7 @@ func (jc JobConfig) HistoryPathOrDefault() string {
 	if jc.HistoryPath != "" {
 		return jc.HistoryPath
 	}
-	return filepath.Join("_history", stringutil.Slugify(jc.Name)+".json")
+	return DefaultHistoryPath
 }
 
 // NotifyOnStartOrDefault returns a value or a default.

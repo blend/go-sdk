@@ -1,6 +1,3 @@
-package jobkit
-
-var indexTemplate = `
 {{ define "index" }}
 {{ template "header" . }}
 	<div id="content" class="uk-container uk-container-expand">
@@ -18,7 +15,7 @@ var indexTemplate = `
 				</tr>
 			</thead>
 			<tbody>
-		{{ range $index, $job := .ViewModel.Jobs }}
+			{{ range $index, $job := .ViewModel.Jobs }}
 				<tr class="job-details">
 					<td> <!-- job name -->
 						{{ $job.Name }}
@@ -92,4 +89,3 @@ var indexTemplate = `
 </div>
 {{ template "footer" . }}
 {{ end }}
-`

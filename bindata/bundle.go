@@ -49,13 +49,13 @@ func (b *Bundle) Write(output io.Writer) error {
 	if err := b.writeHeader(output); err != nil {
 		return err
 	}
+	if err := b.writeHelpers(output); err != nil {
+		return err
+	}
 	if err := b.writeTypeFile(output); err != nil {
 		return err
 	}
 	if err := b.writeAssets(output); err != nil {
-		return err
-	}
-	if err := b.writeHelpers(output); err != nil {
 		return err
 	}
 	return nil
@@ -94,8 +94,24 @@ func (b *Bundle) writeHeader(output io.Writer) error {
 	return nil
 }
 
+func (b *Bundle) writeHelpers(output io.Writer) error {
+	return b.writeLines(output,
+		"",
+		"// GetBinaryAsset returns a binary asset file or",
+		"// os.ErrNotExist if it is not found.",
+		"func GetBinaryAsset(path string) (*BinaryFile, error) {",
+		"\tfile, ok := BinaryAssets[filepath.Clean(path)]",
+		"\tif !ok {",
+		"\t\treturn nil, os.ErrNotExist",
+		"\t}",
+		"\treturn file, nil",
+		"}",
+	)
+}
+
 func (b *Bundle) writeTypeFile(output io.Writer) error {
 	return b.writeLines(output,
+		"",
 		"// BinaryFile represents a statically managed binary asset.",
 		"type BinaryFile struct {",
 		"\tName     string",
@@ -103,12 +119,12 @@ func (b *Bundle) writeTypeFile(output io.Writer) error {
 		"\tMD5      []byte",
 		"\tContents []byte",
 		"}",
-		"",
 	)
 }
 
 func (b *Bundle) writeAssets(output io.Writer) error {
 	if err := b.writeLines(output,
+		"",
 		"// BinaryAssets are a map from relative filepath to the binary file contents.",
 		"// The binary file contents include the file name, md5, modtime, and binary contents.",
 		"var BinaryAssets = map[string]*BinaryFile{",
@@ -157,21 +173,6 @@ func (b *Bundle) writeFile(output io.Writer, file *File) error {
 		return err
 	}
 	return nil
-}
-
-func (b *Bundle) writeHelpers(output io.Writer) error {
-	return b.writeLines(output,
-		"",
-		"// GetBinaryAsset returns a binary asset file or",
-		"// os.ErrNotExist if it is not found.",
-		"func GetBinaryAsset(path string) (*BinaryFile, error) {",
-		"\tfile, ok := BinaryAssets[filepath.Clean(path)]",
-		"\tif !ok {",
-		"\t\treturn nil, os.ErrNotExist",
-		"\t}",
-		"\treturn file, nil",
-		"}",
-	)
 }
 
 func (b *Bundle) writeLines(output io.Writer, lines ...string) error {

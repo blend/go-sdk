@@ -1,4 +1,4 @@
-all: generate-protos
+all: generate
 
 init:
 	@go get -u github.com/golang/protobuf/protoc-gen-go
