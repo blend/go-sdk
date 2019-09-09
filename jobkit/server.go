@@ -52,8 +52,8 @@ func NewServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App 
 	app.GET("/", func(r *web.Ctx) web.Result {
 		return r.Views.View("index", jm.Status())
 	})
-	app.POST("/search", func(r *web.Ctx) web.Result {
-		sel, err := selector.Parse(web.StringValue(r.FormValue("query")))
+	app.GET("/search", func(r *web.Ctx) web.Result {
+		sel, err := selector.Parse(web.StringValue(r.QueryValue("selector")))
 		if err != nil {
 			return r.Views.BadRequest(err)
 		}

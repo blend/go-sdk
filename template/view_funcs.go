@@ -127,6 +127,7 @@ func (vf ViewFuncs) FuncMap() map[string]interface{} {
 		"csv":      vf.CSV,
 		"tsv":      vf.TSV,
 		/* urls */
+		"urlencode":          vf.URLEncode,
 		"url_scheme":         vf.URLScheme,
 		"with_url_scheme":    vf.WithURLScheme,
 		"url_host":           vf.URLHost,
@@ -640,6 +641,11 @@ func (vf ViewFuncs) StripQuotes(v string) string {
 // ParseURL parses a url.
 func (vf ViewFuncs) ParseURL(v string) (*url.URL, error) {
 	return url.Parse(v)
+}
+
+// URLEncode encodes a value as a url token.
+func (vf ViewFuncs) URLEncode(value string) string {
+	return url.QueryEscape(value)
 }
 
 // URLScheme returns the scheme of a url.

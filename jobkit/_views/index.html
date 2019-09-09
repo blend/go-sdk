@@ -22,9 +22,11 @@
 						<button class="uk-button" uk-toggle="target: #history-{{ $job.Name }}" type="button">+</button>
 					</td>
 					<td> <!-- job name -->
+						<ul class="uk-list uk-list-divider">
 					{{ range $key, $value := $job.Labels }}
-						<pre>{{ $key }}={{ $value }}</pre>
+							<li><a href="/search?selector={{ $key | urlencode }}={{ $value | urlencode }}">{{ $key }}={{ $value }}</a></li>
 					{{ end }}
+						</ul>
 					</td>
 					<td> <!-- success rate -->
 						{{ $job.Stats.SuccessRate | format_pct }}

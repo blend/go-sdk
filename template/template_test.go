@@ -945,6 +945,15 @@ func TestViewfuncRandomLettersWithNumbersAndSymbols(t *testing.T) {
 	assert.Len(buffer.String(), 10)
 }
 
+func TestViewfuncURLEncode(t *testing.T) {
+	assert := assert.New(t)
+
+	tmp := New().WithBody(`{{ "foo bar" | urlencode }}`)
+	buffer := new(bytes.Buffer)
+	assert.Nil(tmp.Process(buffer))
+	assert.Equal(`foo+bar`, buffer.String())
+}
+
 func TestViewfuncURLScheme(t *testing.T) {
 	assert := assert.New(t)
 
