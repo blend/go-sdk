@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/assert"
-	"github.com/blend/go-sdk/bufferutil"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/uuid"
 )
@@ -24,7 +23,6 @@ func TestJobInvocationJSON(t *testing.T) {
 		Status:    JobStatusComplete,
 		Elapsed:   time.Second,
 		Err:       ex.New("this is a test"),
-		Output:    bufferutil.NewLineBuffer([]byte("this\nis\na\ntest")),
 	}
 
 	contents, err := json.Marshal(test)
@@ -44,8 +42,4 @@ func TestJobInvocationJSON(t *testing.T) {
 
 	assert.NotNil(verify.Err)
 	assert.Contains(verify.Err.Error(), "this is a test")
-
-	assert.NotNil(verify.Output)
-	assert.Len(verify.Output.Lines, 3)
-	assert.NotEmpty(verify.Output.Current.Line)
 }

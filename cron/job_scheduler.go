@@ -471,7 +471,6 @@ func (js *JobScheduler) Stats() JobStats {
 		if ji.Elapsed > 0 {
 			elapsedTimes = append(elapsedTimes, ji.Elapsed)
 		}
-		output.OutputBytes += len(ji.Output.Bytes())
 	}
 	if output.RunsTotal > 0 {
 		output.SuccessRate = float64(output.RunsSuccessful) / float64(output.RunsTotal)
