@@ -6,13 +6,13 @@ import (
 )
 
 var (
-	_ json.Marshaler   = (*Line)(nil)
-	_ json.Unmarshaler = (*Line)(nil)
+	_ json.Marshaler   = (*OutputLine)(nil)
+	_ json.Unmarshaler = (*OutputLine)(nil)
 )
 
-// FilterLines applies a predicate to a set of lines.
-func FilterLines(lines []Line, predicate func(Line) bool) []Line {
-	var output []Line
+// FilterOutputLines applies a predicate to a set of lines.
+func FilterOutputLines(lines []OutputLine, predicate func(OutputLine) bool) []OutputLine {
+	var output []OutputLine
 	for _, line := range lines {
 		if predicate(line) {
 			output = append(output, line)
@@ -21,22 +21,22 @@ func FilterLines(lines []Line, predicate func(Line) bool) []Line {
 	return output
 }
 
-// Line is a line of output.
-type Line struct {
+// OutputLine is a line of output.
+type OutputLine struct {
 	Timestamp time.Time `json:"_ts"`
-	Line      []byte    `json:"line"`
+	Data      []byte    `json:"data"`
 }
 
 // MarshalJSON implements json.Marshaler.
-func (l Line) MarshalJSON() ([]byte, error) {
+func (l OutputLine) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
 		"_ts":  l.Timestamp,
-		"line": string(l.Line),
+		"data": string(l.Data),
 	})
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (l *Line) UnmarshalJSON(contents []byte) error {
+func (l *OutputLine) UnmarshalJSON(contents []byte) error {
 	raw := make(map[string]interface{})
 	if err := json.Unmarshal(contents, &raw); err != nil {
 		return err
@@ -49,8 +49,8 @@ func (l *Line) UnmarshalJSON(contents []byte) error {
 		}
 		l.Timestamp = parsed
 	}
-	if typed, ok := raw["line"].(string); ok {
-		l.Line = []byte(typed)
+	if typed, ok := raw["data"].(string); ok {
+		l.Data = []byte(typed)
 	}
 	return nil
 }

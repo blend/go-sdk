@@ -11,10 +11,10 @@ func justError(_ interface{}, err error) error {
 	return err
 }
 
-func TestLineBuffer(t *testing.T) {
+func TestOutputBuffer(t *testing.T) {
 	assert := assert.New(t)
 
-	lw := new(LineBuffer)
+	lw := new(OutputBuffer)
 
 	assert.Nil(justError(io.WriteString(lw, "this is a test\n")))
 	assert.Nil(justError(io.WriteString(lw, "this is another test\n")))
@@ -24,35 +24,35 @@ func TestLineBuffer(t *testing.T) {
 	assert.Len(lw.Lines, 6)
 }
 
-func TestLineBufferWritten(t *testing.T) {
+func TestOutputBufferWritten(t *testing.T) {
 	assert := assert.New(t)
 
-	lw := new(LineBuffer)
+	lw := new(OutputBuffer)
 
 	written, err := lw.Write([]byte("this is just a test"))
 	assert.Nil(err)
 	assert.Equal(19, written)
-	assert.Len(lw.Current.Line, 19)
+	assert.Len(lw.Working.Data, 19)
 	assert.Empty(lw.Lines)
 
 	written, err = lw.Write([]byte("this is just a test\n"))
 	assert.Nil(err)
 	assert.Equal(20, written)
-	assert.True(lw.Current.Timestamp.IsZero())
-	assert.Empty(lw.Current.Line)
+	assert.True(lw.Working.Timestamp.IsZero())
+	assert.Empty(lw.Working.Data)
 	assert.Len(lw.Lines, 1)
-	assert.Equal("this is just a testthis is just a test", string(lw.Lines[0].Line))
+	assert.Equal("this is just a testthis is just a test", string(lw.Lines[0].Data))
 
 	written, err = lw.Write([]byte("this is another test"))
 	assert.Nil(err)
 	assert.Equal(20, written)
-	assert.Len(lw.Current.Line, 20)
+	assert.Len(lw.Working.Data, 20)
 
 	written, err = lw.Write([]byte("this is another test\n"))
 	assert.Nil(err)
 	assert.Equal(21, written)
-	assert.Empty(lw.Current.Line)
+	assert.Empty(lw.Working.Data)
 	assert.Len(lw.Lines, 2)
-	assert.Equal("this is just a testthis is just a test", string(lw.Lines[0].Line))
-	assert.Equal("this is another testthis is another test", string(lw.Lines[1].Line))
+	assert.Equal("this is just a testthis is just a test", string(lw.Lines[0].Data))
+	assert.Equal("this is another testthis is another test", string(lw.Lines[1].Data))
 }

@@ -1,0 +1,3 @@
+// go:generate bindata -o=static.go -p=jobkit ./_static/...
+
+package jobkit

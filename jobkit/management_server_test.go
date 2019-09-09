@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
-	"github.com/blend/go-sdk/bufferutil"
 	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/web"
@@ -84,7 +83,7 @@ func TestManagementServerIndex(t *testing.T) {
 		{
 			ID:      invocationID,
 			JobName: jobName,
-			Output:  bufferutil.NewLineBuffer(bytes.NewBufferString(output + errorOutput).Bytes()),
+			Output:  cron.NewOutputBuffer(bytes.NewBufferString(output + errorOutput).Bytes()),
 		},
 	}
 

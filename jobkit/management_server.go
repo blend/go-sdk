@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/blend/go-sdk/bufferutil"
 	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
@@ -18,10 +17,8 @@ import (
 // NewManagementServer returns a new management server that lets you
 // trigger jobs or look at job statuses via. a json api.
 func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App {
-	app := web.MustNew(
-		append([]web.Option{
-			web.OptConfig(cfg.Web),
-		}, options...)...)
+	options = append([]web.Option{web.OptConfig(cfg.Web)}, options...)
+	app := web.MustNew(options...)
 
 	app.Views.AddLiterals(
 		headerTemplate,
@@ -224,12 +221,12 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 			return result
 		}
 		lines := append(invocation.Output.Lines)
-		if !invocation.Output.Current.Timestamp.IsZero() {
-			lines = append(lines, invocation.Output.Current)
+		if !invocation.Output.Working.Timestamp.IsZero() {
+			lines = append(lines, invocation.Output.Working)
 		}
 		if afterNanos, _ := web.Int64Value(r.QueryValue("afterNanos")); afterNanos > 0 {
 			afterTS := time.Unix(0, afterNanos)
-			lines = bufferutil.FilterLines(lines, func(l bufferutil.Line) bool {
+			lines = cron.FilterOutputLines(lines, func(l cron.OutputLine) bool {
 				return l.Timestamp.After(afterTS)
 			})
 		}
@@ -238,6 +235,7 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 			"lines":           lines,
 		})
 	})
+
 	app.GET("/api/job.invocation.output.stream/:jobName/:invocation", func(r *web.Ctx) web.Result {
 		invocation, result := getJobInvocation(r, web.JSON)
 		if result != nil {
@@ -254,10 +252,11 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 		io.WriteString(r.Response, "event: ping\n")
 
 		listenerID := uuid.V4().String()
+
 		shouldClose := make(chan struct{})
-		invocation.OutputHandlers.Add(listenerID, func(l bufferutil.Line) {
+		invocation.OutputListeners.Add(listenerID, func(l cron.OutputLine) {
 			io.WriteString(r.Response, "data: ")
-			if _, err := r.Response.Write([]byte(string(l.Line) + "\n\n")); err != nil {
+			if _, err := r.Response.Write([]byte(string(l.Data) + "\n\n")); err != nil {
 				logger.MaybeError(app.Log, err)
 				if shouldClose != nil {
 					close(shouldClose)
@@ -266,7 +265,7 @@ func NewManagementServer(jm *cron.JobManager, cfg Config, options ...web.Option)
 			}
 			r.Response.Flush()
 		})
-		defer func() { invocation.OutputHandlers.Remove(listenerID) }()
+		defer func() { invocation.OutputListeners.Remove(listenerID) }()
 
 		alarm := time.Tick(500 * time.Millisecond)
 		for {

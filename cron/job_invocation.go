@@ -16,25 +16,26 @@ func NewJobInvocation(jobName string) *JobInvocation {
 		Started: Now(),
 		Status:  JobStatusRunning,
 		JobName: jobName,
-		Output:  new(LineBuffer),
+		Output:  new(OutputBuffer),
 	}
 }
 
 // JobInvocation is metadata for a job invocation (or instance of a job running).
 type JobInvocation struct {
-	ID        string
-	JobName   string
-	Started   time.Time
-	Finished  time.Time
-	Cancelled time.Time
-	Timeout   time.Time
-	Err       error
-	Elapsed   time.Duration
-	Status    JobStatus
-	Output    *LineBuffer
-	State     interface{}
-	Context   context.Context
-	Cancel    context.CancelFunc
+	ID              string
+	JobName         string
+	Started         time.Time
+	Finished        time.Time
+	Cancelled       time.Time
+	Timeout         time.Time
+	Err             error
+	Elapsed         time.Duration
+	Status          JobStatus
+	Output          *OutputBuffer
+	OutputListeners *OutputListeners
+	State           interface{}
+	Context         context.Context
+	Cancel          context.CancelFunc
 }
 
 // MarshalJSON marshals the invocation as json.
@@ -91,7 +92,7 @@ func (ji *JobInvocation) UnmarshalJSON(contents []byte) error {
 	if values.Error != "" {
 		ji.Err = errors.New(values.Error)
 	}
-	ji.Output = new(LineBuffer)
+	ji.Output = new(OutputBuffer)
 	if err := json.Unmarshal([]byte(values.Output), ji.Output); err != nil {
 		return ex.New(err)
 	}
