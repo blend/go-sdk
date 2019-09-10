@@ -28,5 +28,5 @@ func TestBundle(t *testing.T) {
 	ast, err := parser.ParseFile(token.NewFileSet(), "bindata.go", buffer.Bytes(), parser.ParseComments|parser.AllErrors)
 	assert.Nil(err)
 	assert.NotNil(ast)
-	assert.Len(ast.Imports, 2)
+	assert.Len(ast.Imports, 5)
 }

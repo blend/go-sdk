@@ -17,8 +17,8 @@ func TestJobConfig(t *testing.T) {
 	assert.Equal(DefaultShutdownGracePeriod, jc.ShutdownGracePeriodOrDefault())
 	assert.Equal(DefaultSerial, jc.SerialOrDefault())
 	assert.Equal(DefaultHistoryEnabled, jc.HistoryEnabledOrDefault())
-	assert.Equal(DefaultHistoryMaxCount, jc.HistoryMaxCountOrDefault())
-	assert.Equal(DefaultHistoryMaxAge, jc.HistoryMaxAgeOrDefault())
+	assert.Equal(0, jc.HistoryMaxCountOrDefault())
+	assert.Equal(0, jc.HistoryMaxAgeOrDefault())
 
 	jc.Timeout = time.Second
 	jc.ShutdownGracePeriod = time.Minute

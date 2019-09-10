@@ -33,11 +33,12 @@ func TestManagementServer(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 
-	var jobs cron.Status
+	var jobs []*cron.JobScheduler
 	meta, err = web.MockGet(app, "/api/jobs").JSON(&jobs)
+
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
-	assert.Len(jobs.Jobs, 2)
+	assert.Len(jobs, 2)
 }
 
 func TestManagementServerHealthz(t *testing.T) {
@@ -55,15 +56,18 @@ func TestManagementServerHealthz(t *testing.T) {
 		},
 	})
 
-	meta, err := web.MockGet(app, "/healthz").Discard()
+	var status cron.Status
+	meta, err := web.MockGet(app, "/status.json").JSON(&status)
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.Equal(cron.JobManagerStatusRunning, status.Status)
 
 	jm.Stop()
 
-	meta, err = web.MockGet(app, "/healthz").Discard()
+	meta, err = web.MockGet(app, "/status.json").JSON(&status)
 	assert.Nil(err)
-	assert.Equal(http.StatusInternalServerError, meta.StatusCode)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.Equal(cron.JobManagerStatusStopped, status.Status)
 }
 
 func TestManagementServerIndex(t *testing.T) {
