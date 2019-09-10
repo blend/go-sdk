@@ -166,6 +166,9 @@ func (js *JobScheduler) Labels() map[string]string {
 	output := map[string]string{
 		"name": js.Name(),
 	}
+	if js.Last != nil {
+		output["last"] = string(js.Last.Status)
+	}
 	if js.LabelsProvider != nil {
 		for key, value := range js.LabelsProvider() {
 			output[key] = value
@@ -408,6 +411,9 @@ func (js *JobScheduler) RestoreHistory(ctx context.Context) error {
 		var err error
 		if js.History, err = js.HistoryRestoreProvider(ctx); err != nil {
 			return js.error(err)
+		}
+		if len(js.History) > 0 {
+			js.Last = &js.History[len(js.History)-1]
 		}
 	}
 	return nil
