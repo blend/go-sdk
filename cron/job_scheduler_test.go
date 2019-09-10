@@ -136,6 +136,9 @@ func TestJobSchedulerLabels(t *testing.T) {
 	assert := assert.New(t)
 
 	js := NewJobScheduler(NewJob("test", noop))
+	js.Last = &JobInvocation{
+		Status: JobStatusComplete,
+	}
 	labels := js.Labels()
 	assert.Equal("test", labels["name"])
 
@@ -151,4 +154,5 @@ func TestJobSchedulerLabels(t *testing.T) {
 	assert.Equal("not-test", labels["name"])
 	assert.Equal("bar", labels["foo"])
 	assert.Equal("wuzz", labels["fuzz"])
+	assert.Equal(JobStatusComplete, labels["last"])
 }

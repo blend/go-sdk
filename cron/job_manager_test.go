@@ -32,8 +32,10 @@ func TestRunJobBySchedule(t *testing.T) {
 
 	didRun := make(chan struct{})
 
+	interval := 50 * time.Millisecond
+
 	jm := New()
-	runAt := Now().Add(DefaultHeartbeatInterval)
+	runAt := Now().Add(interval)
 	err := jm.LoadJobs(&runAtJob{
 		RunAt: runAt,
 		RunDelegate: func(ctx context.Context) error {
@@ -49,7 +51,7 @@ func TestRunJobBySchedule(t *testing.T) {
 	before := Now()
 	<-didRun
 
-	a.True(Since(before) < 2*DefaultHeartbeatInterval)
+	a.True(Since(before) < 2*interval)
 }
 
 func TestDisableJob(t *testing.T) {

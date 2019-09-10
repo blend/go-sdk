@@ -4,17 +4,11 @@ import (
 	"time"
 )
 
-const (
-	// EnvVarHeartbeatInterval is an environment variable name.
-	EnvVarHeartbeatInterval = "CRON_HEARTBEAT_INTERVAL"
-)
-
 // Constats and defaults
 const (
 	DefaultTimeout               time.Duration = 0
 	DefaultHistoryRestoreTimeout               = 5 * time.Second
 	DefaultShutdownGracePeriod   time.Duration = 0
-	DefaultHeartbeatInterval                   = 50 * time.Millisecond
 )
 
 const (
