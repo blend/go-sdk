@@ -5,6 +5,7 @@
 		<thead>
 			<tr>
 				<th></th>
+				<th>Status</th>
 				<th>Job</th>
 				<th>Success Rate</th>
 				<th>P95</th>
@@ -20,8 +21,21 @@
 		{{ range $index, $job := .ViewModel.Jobs }}
 			<tr id="{{ $job.Name }}">
 				<td>
-					<button id="show-{{ $job.Name }}" class="uk-button" uk-toggle="target: #history-{{ $job.Name }},#hide-{{ $job.Name }},#show-{{ $job.Name }}" type="button">+</button>
-					<button id="hide-{{ $job.Name }}" class="uk-button" uk-toggle="target: #history-{{ $job.Name }},#hide-{{ $job.Name }},#show-{{ $job.Name }}" type="button" hidden>-</button>
+					<button id="show-{{ $job.Name }}" class="uk-button" uk-toggle="target: #history-{{ $job.Name }},#hide-{{ $job.Name }},#show-{{ $job.Name }}" type="button" uk-icon="plus-circle"></button>
+					<button id="hide-{{ $job.Name }}" class="uk-button" uk-toggle="target: #history-{{ $job.Name }},#hide-{{ $job.Name }},#show-{{ $job.Name }}" type="button" uk-icon="minus-circle" hidden></button>
+				</td>
+				<td> <!-- status -->
+					{{ if $job.Current }}
+					<div uk-tooltip="Job is currently running" uk-spinner="ration: 0.5"></div>
+					{{ else if $job.Last }}
+						{{ if $job.Last.Status | eq "cancelled" }}
+						<span class="uk-text-warning" uk-icon="warning" uk-tooltip="Job was last cancelled"></span>
+						{{ else if $job.Last.Status | eq "failed" }}
+						<span class="uk-text-danger" uk-icon="warning" uk-tooltip="Job had a failure"></span>
+						{{ else if $job.Last.Status | eq "complete" }}
+						<span class="uk-text-success" uk-icon="check" uk-tooltip="Last invocation was a success"></span>
+						{{ end }}
+					{{ end }}
 				</td>
 				<td> <!-- job name -->
 					<ul class="uk-list uk-list-divider">
@@ -64,7 +78,7 @@
 				</td>
 				<td> <!-- last run -->
 				{{ if $job.Last }}
-					{{ $job.Last.Started | rfc3339 }}
+					{{ $job.Last.Finished | since_utc }} ago
 				{{ else }}
 					<span class="none">-</span>
 				{{ end }}
@@ -107,7 +121,7 @@
 				</td>
 			</tr>
 			<tr id="history-{{ $job.Name }}" hidden>
-				<td colspan=10>
+				<td colspan=11>
 					<table class="uk-table">
 						<thead>
 							<tr>
@@ -157,7 +171,7 @@
 				</td>
 			</tr>
 			{{ else }}
-			<tr colspan=10><td>No jobs loaded or matched the search selector.</td></tr>
+			<tr><td colspan=11>No jobs loaded or matched the search selector.</td></tr>
 			{{ end }}
 		</tbody>
 	</table>
