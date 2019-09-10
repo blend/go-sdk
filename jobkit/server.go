@@ -300,7 +300,7 @@ func NewServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App 
 		r.Response.Header().Set(webutil.HeaderVary, "Content-Type")
 		r.Response.WriteHeader(http.StatusOK)
 
-		io.WriteString(r.Response, "event: ping\n")
+		io.WriteString(r.Response, "event: ping\n\n")
 
 		listenerID := uuid.V4().String()
 
@@ -327,7 +327,7 @@ func NewServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App 
 				if !jm.IsJobInvocationRunning(invocation.JobName, invocation.ID) {
 					return nil
 				}
-				io.WriteString(r.Response, "event: ping\n")
+				io.WriteString(r.Response, "event: ping\n\n")
 				r.Response.Flush()
 			}
 		}

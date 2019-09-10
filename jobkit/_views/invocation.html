@@ -1,35 +1,50 @@
 {{ define "invocation" }}
 {{ template "header" . }}
 <div id="content" class="uk-container uk-container-expand">
-	<ul class="uk-breadcrumb">
-		<li><a href="/">Jobs</a></li>
-		<li><a href="/search?selector=name={{ .ViewModel.JobName }}">{{ .ViewModel.JobName }}</a></li>
-		<li><span>{{ .ViewModel.ID }}</span></li>
-	</ul>
-	<table class="uk-table uk-table-striped">
+	<div class="uk-child-width-expand@s" uk-grid>
+		<div>
+			<ul class="uk-breadcrumb">
+				<li><a href="/">Jobs</a></li>
+				<li><a href="/search?selector=name={{ .ViewModel.JobName }}">{{ .ViewModel.JobName }}</a></li>
+				<li><span>{{ .ViewModel.ID }}</span></li>
+			</ul>
+		</div>
+		<div class="uk-flex-right uk-text-right">
+			<a class="uk-button" href="/api/job.invocation.output/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}">JSON</a>
+			<a class="uk-button" href="/job.invocation.output/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}">Raw</a>
+			<a class="uk-button" href="/api/job.invocation.output.stream/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}">Stream</a>
+		</div>
+	</div>
+	<table class="uk-table">
 		<thead>
 			<tr>
-				<th>Invocation</th>
+				<th>Status</th>
 				<th>Started</th>
 				<th>Finished</th>
-				<th>Timeout</th>
-				<th>Cancelled</th>
 				<th>Elapsed</th>
 			</tr>
 		</thead>
 		<tbody>
 			<tr>
-				<td>{{ .ViewModel.ID }}</td>
+				<td>
+					{{ if .ViewModel.Status | eq "running" }}
+					<div uk-tooltip="Job is currently running" uk-spinner="ration: 0.5"></div>
+					{{ else if .ViewModel.Status | eq "cancelled" }}
+					<span class="uk-text-warning" uk-icon="warning" uk-tooltip="Job was last cancelled"></span>
+					{{ else if.ViewModel.Status | eq "failed" }}
+					<span class="uk-text-danger" uk-icon="warning" uk-tooltip="Job had a failure"></span>
+					{{ else if .ViewModel.Status | eq "complete" }}
+					<span class="uk-text-success" uk-icon="check" uk-tooltip="Last invocation was a success"></span>
+					{{ end }}
+				</td>
 				<td>{{ .ViewModel.Started | rfc3339 }}</td>
 				<td>{{ if .ViewModel.Finished.IsZero }}-{{ else }}{{ .ViewModel.Finished | rfc3339 }}{{ end }}</td>
-				<td>{{ if .ViewModel.Timeout.IsZero }}-{{ else }}{{ .ViewModel.Timeout | rfc3339 }}{{ end }}</td>
-				<td>{{ if .ViewModel.Cancelled.IsZero }}-{{ else }}{{ .ViewModel.Cancelled | rfc3339 }}{{ end }}</td>
 				<td>{{ if .ViewModel.Finished.IsZero }}{{ .ViewModel.Started | since_utc }}{{ else }}{{ .ViewModel.Elapsed }}{{ end }}</td>
 			</tr>
 		</tbody>
 	</table>
 	{{ if .ViewModel.Err }}
-	<table class="uk-table uk-table-striped">
+	<table class="uk-table">
 		<thead>
 			<tr>
 				<th>Error</th>
@@ -38,24 +53,12 @@
 		<tbody>
 			<tr>
 				<td>
-					<pre>{{ .ViewModel.Err }}</pre>
+					<code>{{ .ViewModel.Err }}</code>
 				</td>
 			</tr>
 		</tbody>
 	</table>
 	{{ end }}
-	<table class="uk-table">
-		<tbody>
-			<tr>
-				<td class="uk-align-right">
-					<span>Output</span>
-					<a href="/api/job.invocation.output/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}">JSON</a>
-					<a href="/job.invocation.output/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}">Raw</a>
-					<a href="/api/job.invocation.output.stream/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}">Stream</a>
-				</td>
-			</tr>
-		</tbody>
-	</table>
 	{{ if .ViewModel.Output }}
 	<table class="uk-table">
 		<thead>
@@ -66,16 +69,12 @@
 		<tbody>
 			<tr>
 				<td>
-				<div id="terminal">
-					<pre>{{ .ViewModel.Output }}</pre>
-				</div>
+				<pre id="terminal">{{ .ViewModel.Output }}</pre>
 				<script>
 					var es = new EventSource("/api/job.invocation.output.stream/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}");
 					var terminal = document.getElementById('terminal')
 					es.onmessage = (e) => {
-						var line = document.createElement('pre');
-						line.textContent = e.data;
-						terminal.appendChild(line);
+						terminal.textContent += (e.data + "\n")
 					};
 				</script>
 				</td>
