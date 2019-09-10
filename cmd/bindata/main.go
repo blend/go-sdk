@@ -32,9 +32,6 @@ func main() {
 			}
 			bundle.Ignores = append(bundle.Ignores, ignore)
 		}
-		for _, path := range args {
-			bundle.Process(parsePathConfig(path))
-		}
 
 		var dst io.Writer
 		if *output != "" {
@@ -48,8 +45,10 @@ func main() {
 			dst = os.Stdout
 		}
 
-		if err := bundle.Write(dst); err != nil {
-			fatal(err)
+		for _, path := range args {
+			if err := bundle.Process(dst, parsePathConfig(path)); err != nil {
+				fatal(err)
+			}
 		}
 	}
 	fatal(cmd.Execute())

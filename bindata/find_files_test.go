@@ -7,12 +7,13 @@ import (
 	"github.com/blend/go-sdk/assert"
 )
 
-func TestFindFiles(t *testing.T) {
+func TestBundleFindFiles(t *testing.T) {
 	assert := assert.New(t)
 
 	var files []*File
-	err := FindFiles("./testdata", nil, func(f *File) {
+	err := (&Bundle{}).findFiles("./testdata", nil, func(f *File) error {
 		files = append(files, f)
+		return nil
 	})
 	assert.Nil(err)
 	assert.Len(files, 2)
@@ -20,14 +21,15 @@ func TestFindFiles(t *testing.T) {
 	assert.Equal("testdata/js/app.js", files[1].Name)
 }
 
-func TestFindFilesIgnores(t *testing.T) {
+func TestBundleFindFilesIgnores(t *testing.T) {
 	assert := assert.New(t)
 
 	ignoreCSS := regexp.MustCompile(".css$")
 
 	var files []*File
-	err := FindFiles("./testdata", []*regexp.Regexp{ignoreCSS}, func(f *File) {
+	err := (&Bundle{}).findFiles("./testdata", []*regexp.Regexp{ignoreCSS}, func(f *File) error {
 		files = append(files, f)
+		return nil
 	})
 	assert.Nil(err)
 	assert.Len(files, 1)

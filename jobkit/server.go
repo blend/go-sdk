@@ -42,7 +42,11 @@ func NewServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App 
 			if err != nil {
 				panic(err)
 			}
-			app.Views.AddLiterals(string(vf.Contents))
+			contents, err := vf.Contents()
+			if err != nil {
+				panic(err)
+			}
+			app.Views.AddLiterals(string(contents))
 		}
 	}
 
@@ -80,7 +84,11 @@ func NewServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App 
 		if err == os.ErrNotExist {
 			return web.Text.NotFound()
 		}
-		http.ServeContent(r.Response, r.Request, path, time.Unix(file.ModTime, 0), bytes.NewReader(file.Contents))
+		contents, err := file.Contents()
+		if err != nil {
+			return web.Text.InternalError(err)
+		}
+		http.ServeContent(r.Response, r.Request, path, time.Unix(file.ModTime, 0), bytes.NewReader(contents))
 		return nil
 	})
 	app.GET("/status.json", func(r *web.Ctx) web.Result {
