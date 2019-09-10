@@ -108,39 +108,48 @@
 			</tr>
 			<tr id="history-{{ $job.Name }}" hidden>
 				<td colspan=10>
+					<table class="uk-table">
+						<thead>
+							<tr>
+								<th>Exec</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><pre>{{ $job.Description }}</pre></td>
+							</tr>
+						</tbody>
+					</div>
 					<table class="uk-table uk-table-small uk-table-striped">
 						<thead>
 							<tr>
-								<th>Invocation</th>
 								<th>Started</th>
 								<th>Finished</th>
-								<th>Timeout</th>
-								<th>Cancelled</th>
+								<th>Result</th>
 								<th>Elapsed</th>
 								<th>Error</th>
+								<th></th>
 							</tr>
 						</thead>
 						<tbody>
 						{{ range $key, $ji := $job.Current }}
 							<tr>
-								<td><a href="/job.invocation/{{$ji.JobName}}/{{ $ji.ID }}">{{ $ji.ID }}</a></td>
 								<td>{{ $ji.Started | rfc3339 }}</td>
 								<td>{{ if $ji.Finished.IsZero }}-{{ else }}{{ $ji.Finished | rfc3339 }}{{ end }}</td>
-								<td>{{ if $ji.Timeout.IsZero }}-{{ else }}{{ $ji.Timeout | rfc3339 }}{{ end }}</td>
-								<td>{{ if $ji.Cancelled.IsZero }}-{{ else }}{{ $ji.Cancelled | rfc3339 }}{{ end }}</td>
+								<td>{{ $ji.Status }}</td>
 								<td>{{ $ji.Elapsed }}</td>
 								<td>{{ if $ji.Err }}<code>{{ $ji.Err }}</code>{{ else }}-{{end}}</td>
+								<td><a class="uk-button"href="/job.invocation/{{$ji.JobName}}/{{ $ji.ID }}">View Output</td>
 							</tr>
 						{{ end }}
 						{{ range $index, $ji := $job.History | reverse }}
 							<tr>
-								<td><a href="/job.invocation/{{$ji.JobName}}/{{ $ji.ID }}">{{ $ji.ID }}</a></td>
 								<td>{{ $ji.Started | rfc3339 }}</td>
 								<td>{{ if $ji.Finished.IsZero }}-{{ else }}{{ $ji.Finished | rfc3339 }}{{ end }}</td>
-								<td>{{ if $ji.Timeout.IsZero }}-{{ else }}{{ $ji.Timeout | rfc3339 }}{{ end }}</td>
-								<td>{{ if $ji.Cancelled.IsZero }}-{{ else }}{{ $ji.Cancelled | rfc3339 }}{{ end }}</td>
+								<td>{{ $ji.Status }}</td>
 								<td>{{ $ji.Elapsed }}</td>
 								<td>{{ if $ji.Err }}<code>{{ $ji.Err }}</code>{{ else }}-{{end}}</td>
+								<td><a class="uk-button"href="/job.invocation/{{$ji.JobName}}/{{ $ji.ID }}">View Output</td>
 							</tr>
 						{{ end }}
 						</tbody>
