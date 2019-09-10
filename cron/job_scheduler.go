@@ -20,6 +20,14 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 		Current: make(map[string]*JobInvocation),
 	}
 
+	if typed, ok := job.(JobConfigProvider); ok {
+		js.Config = typed.JobConfig()
+	}
+
+	if typed, ok := job.(ScheduleProvider); ok {
+		js.Schedule = typed.Schedule()
+	}
+
 	if typed, ok := job.(DescriptionProvider); ok {
 		js.DescriptionProvider = typed.Description
 	} else {
@@ -30,10 +38,6 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 		js.LabelsProvider = typed.Labels
 	} else {
 		js.LabelsProvider = func() map[string]string { return js.Config.Labels }
-	}
-
-	if typed, ok := job.(ScheduleProvider); ok {
-		js.Schedule = typed.Schedule()
 	}
 
 	if typed, ok := job.(TimeoutProvider); ok {

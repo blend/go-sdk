@@ -17,6 +17,11 @@ MethodName[Receiver|Provider] is the general pattern.
 They're mostly the same except
 */
 
+// JobConfigProvider is a type that returns a job config.
+type JobConfigProvider interface {
+	JobConfig() JobConfig
+}
+
 // DescriptionProvider is a type that provides a description.
 type DescriptionProvider interface {
 	Description() string

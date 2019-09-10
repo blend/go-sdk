@@ -31,7 +31,19 @@
 					</ul>
 				</td>
 				<td> <!-- success rate -->
-					{{ $job.Stats.SuccessRate | format_pct }}
+					{{ if gt $job.Stats.SuccessRate 0.9 }}
+					<span class="uk-text-success">
+						{{ $job.Stats.SuccessRate | format_pct }}
+					</span>
+					{{ else if gt $job.Stats.SuccessRate 0.7 }}
+					<span class="uk-text-warning">
+						{{ $job.Stats.SuccessRate | format_pct }}
+					</span>
+					{{ else }}
+					<span class="uk-text-danger">
+						{{ $job.Stats.SuccessRate | format_pct }}
+					</span>
+					{{ end }}
 				</td>
 				<td> <!-- p95 -->
 					{{ $job.Stats.Elapsed95th }}
@@ -60,7 +72,7 @@
 				<td> <!-- last status -->
 				{{ if $job.Last }}
 					{{ if $job.Last.Err }}
-						{{ $job.Last.Err }}
+						<code>{{ $job.Last.Err }}</code>
 					{{ else }}
 					<span class="none">Success</span>
 					{{ end }}

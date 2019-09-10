@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/cron"
@@ -28,10 +27,6 @@ func TestJobProperties(t *testing.T) {
 	assert.Nil(job.Schedule())
 	job.CompiledSchedule = cron.EverySecond()
 	assert.NotNil(job.Schedule())
-
-	assert.Zero(job.Timeout())
-	job.Config.Timeout = time.Second
-	assert.Equal(time.Second, job.Timeout())
 }
 
 func TestJobLifecycleHooksNotificationsUnset(t *testing.T) {

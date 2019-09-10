@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -261,13 +262,30 @@ func run(cmd *cobra.Command, args []string) error {
 			serial = "parallel execution"
 		}
 
+		enabled := ansi.ColorGreen.Apply("enabled")
+		disabled := ansi.ColorRed.Apply("disabled")
+
 		log.Infof("loading job `%s` with schedule: %s with %v", jobCfg.Name, ansi.ColorLightWhite.Apply(jobCfg.ScheduleOrDefault()), serial)
 		if jobCfg.HistoryEnabledOrDefault() && jobCfg.HistoryPersistedOrDefault() {
-			log.Infof("loading job `%s` with history: %v and persisted to output path: %s", jobCfg.Name, ansi.ColorGreen.Apply("enabled"), ansi.ColorLightWhite.Apply(jobCfg.HistoryPathOrDefault()))
+			log.Infof("loading job `%s` with history: %v and persistence: %v to output path: %s", jobCfg.Name, enabled, enabled, ansi.ColorLightWhite.Apply(jobCfg.HistoryPathOrDefault()))
 		} else if jobCfg.HistoryEnabledOrDefault() {
-			log.Infof("loading job `%s` with history: %v", jobCfg.Name, ansi.ColorGreen.Apply("enabled"))
+			log.Infof("loading job `%s` with history: %v and pesitence: %v", jobCfg.Name, enabled, disabled)
 		} else {
-			log.Infof("loading job `%s` with history: %v", jobCfg.Name, ansi.ColorRed.Apply("disabled"))
+			log.Infof("loading job `%s` with history: %v", jobCfg.Name, disabled)
+		}
+		if jobCfg.HistoryEnabledOrDefault() {
+			if jobCfg.HistoryMaxCountOrDefault() > 0 {
+				maxCount := ansi.ColorLightWhite.Apply(fmt.Sprint(jobCfg.HistoryMaxCountOrDefault()))
+				log.Infof("loading job `%s` with history max count: %s", jobCfg.Name, maxCount)
+			} else {
+				log.Infof("loading job `%s` with history max count: %s", jobCfg.Name, disabled)
+			}
+			if jobCfg.HistoryMaxAgeOrDefault() > 0 {
+				maxAge := ansi.ColorLightWhite.Apply(fmt.Sprint(jobCfg.HistoryMaxAgeOrDefault()))
+				log.Infof("loading job `%s` with history max age: %s", jobCfg.Name, maxAge)
+			} else {
+				log.Infof("loading job `%s` with history max age: %s", jobCfg.Name, disabled)
+			}
 		}
 		if err = jobs.LoadJobs(job); err != nil {
 			log.Error(err)

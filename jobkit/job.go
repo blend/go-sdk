@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/email"
@@ -19,24 +18,19 @@ import (
 )
 
 var (
-	_ cron.Job                               = (*Job)(nil)
-	_ cron.LabelsProvider                    = (*Job)(nil)
-	_ cron.TimeoutProvider                   = (*Job)(nil)
-	_ cron.ShutdownGracePeriodProvider       = (*Job)(nil)
-	_ cron.SerialProvider                    = (*Job)(nil)
-	_ cron.ShouldSkipLoggerListenersProvider = (*Job)(nil)
-	_ cron.ShouldSkipLoggerOutputProvider    = (*Job)(nil)
-	_ cron.ScheduleProvider                  = (*Job)(nil)
-	_ cron.OnStartReceiver                   = (*Job)(nil)
-	_ cron.OnCompleteReceiver                = (*Job)(nil)
-	_ cron.OnFailureReceiver                 = (*Job)(nil)
-	_ cron.OnCancellationReceiver            = (*Job)(nil)
-	_ cron.OnBrokenReceiver                  = (*Job)(nil)
-	_ cron.OnFixedReceiver                   = (*Job)(nil)
-	_ cron.OnDisabledReceiver                = (*Job)(nil)
-	_ cron.OnEnabledReceiver                 = (*Job)(nil)
-	_ cron.HistoryEnabledProvider            = (*Job)(nil)
-	_ cron.HistoryProvider                   = (*Job)(nil)
+	_ cron.Job                    = (*Job)(nil)
+	_ cron.LabelsProvider         = (*Job)(nil)
+	_ cron.JobConfigProvider      = (*Job)(nil)
+	_ cron.ScheduleProvider       = (*Job)(nil)
+	_ cron.OnStartReceiver        = (*Job)(nil)
+	_ cron.OnCompleteReceiver     = (*Job)(nil)
+	_ cron.OnFailureReceiver      = (*Job)(nil)
+	_ cron.OnCancellationReceiver = (*Job)(nil)
+	_ cron.OnBrokenReceiver       = (*Job)(nil)
+	_ cron.OnFixedReceiver        = (*Job)(nil)
+	_ cron.OnDisabledReceiver     = (*Job)(nil)
+	_ cron.OnEnabledReceiver      = (*Job)(nil)
+	_ cron.HistoryProvider        = (*Job)(nil)
 )
 
 // NewJob returns a new job.
@@ -108,11 +102,6 @@ func (job Job) Name() string {
 	return job.Config.Name
 }
 
-// Description returns the job description.
-func (job Job) Description() string {
-	return job.Config.Description
-}
-
 // Labels returns the job labels.
 func (job Job) Labels() map[string]string {
 	return job.Config.Labels
@@ -123,34 +112,9 @@ func (job Job) Schedule() cron.Schedule {
 	return job.CompiledSchedule
 }
 
-// Timeout implements cron.TimeoutProvider.
-func (job Job) Timeout() time.Duration {
-	return job.Config.TimeoutOrDefault()
-}
-
-// ShutdownGracePeriod implements cron.ShutdownGracePeriodProvider.
-func (job Job) ShutdownGracePeriod() time.Duration {
-	return job.Config.ShutdownGracePeriodOrDefault()
-}
-
-// Serial implements cron.SerialProvider.
-func (job Job) Serial() bool {
-	return job.Config.SerialOrDefault()
-}
-
-// HistoryEnabled implements cron.HistoryEnabledProvider.
-func (job Job) HistoryEnabled() bool {
-	return job.Config.HistoryEnabledOrDefault()
-}
-
-// ShouldSkipLoggerListeners implements a cron job interface.
-func (job Job) ShouldSkipLoggerListeners() bool {
-	return job.Config.ShouldSkipLoggerListenersOrDefault()
-}
-
-// ShouldSkipLoggerOutput implements a cron job interface.
-func (job Job) ShouldSkipLoggerOutput() bool {
-	return job.Config.ShouldSkipLoggerOutputOrDefault()
+// JobConfig returns the underlying job config.
+func (job Job) JobConfig() cron.JobConfig {
+	return job.Config.JobConfig
 }
 
 // OnStart is a lifecycle event handler.
@@ -218,7 +182,7 @@ func (job Job) OnDisabled(ctx context.Context) {
 // PersistHistory writes the history to disk.
 // It does so completely.
 func (job Job) PersistHistory(ctx context.Context, log []cron.JobInvocation) error {
-	if !job.HistoryEnabled() {
+	if !job.Config.HistoryEnabledOrDefault() {
 		return nil
 	}
 	if !job.Config.HistoryPersistedOrDefault() {
@@ -241,7 +205,7 @@ func (job Job) PersistHistory(ctx context.Context, log []cron.JobInvocation) err
 
 // RestoreHistory restores history from disc.
 func (job Job) RestoreHistory(ctx context.Context) (output []cron.JobInvocation, err error) {
-	if !job.HistoryEnabled() {
+	if !job.Config.HistoryEnabledOrDefault() {
 		return nil, nil
 	}
 	if !job.Config.HistoryPersistedOrDefault() {

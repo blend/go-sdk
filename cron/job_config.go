@@ -74,7 +74,7 @@ func (jc JobConfig) HistoryMaxCountOrDefault() int {
 	if jc.HistoryMaxCount > 0 {
 		return jc.HistoryMaxCount
 	}
-	return DefaultHistoryMaxCount
+	return 0
 }
 
 // HistoryMaxAgeOrDefault returns a value or a default.
@@ -82,7 +82,7 @@ func (jc JobConfig) HistoryMaxAgeOrDefault() time.Duration {
 	if jc.HistoryMaxAge > 0 {
 		return jc.HistoryMaxAge
 	}
-	return DefaultHistoryMaxAge
+	return 0
 }
 
 // ShouldSkipLoggerListenersOrDefault returns a value or a default.
