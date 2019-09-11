@@ -1,6 +1,7 @@
 package jobkit
 
 import (
+	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/email"
 )
 
@@ -8,6 +9,7 @@ import (
 // from configuration.
 // You can use this job config by embedding it into your larger job config struct.
 type JobConfig struct {
+	cron.JobConfig `yaml:",inline"`
 	// Schedule returns the job schedule.
 	Schedule string `yaml:"schedule"`
 	// HistoryPersisted determines if we should save history to disk.

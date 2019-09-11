@@ -34,7 +34,7 @@ var (
 	flagDefaultJobName                *string
 	flagDefaultJobExec                *string
 	flagDefaultJobSchedule            *string
-	flagDefaultJobHistoryEnabled      *bool
+	flagDefaultJobHistoryDisabled     *bool
 	flagDefaultJobHistoryPersisted    *bool
 	flagDefaultJobHistoryPath         *string
 	flagDefaultJobHistoryMaxCount     *int
@@ -56,7 +56,7 @@ func initFlags(cmd *cobra.Command) {
 	flagDefaultJobSchedule = cmd.Flags().StringP("schedule", "s", "", "The job schedule in cron format (ex: '*/5 * * * *')")
 	flagDefaultJobHistoryPath = cmd.Flags().String("history-path", "", "The job history path.")
 	flagDefaultJobHistoryPersisted = cmd.Flags().Bool("history-persisted", false, "If job history should be saved to disk.")
-	flagDefaultJobHistoryEnabled = cmd.Flags().Bool("history-enabled", true, "If job history should be tracked in memory.")
+	flagDefaultJobHistoryDisabled = cmd.Flags().Bool("history-disabled", false, "If job history should be tracked in memory.")
 	flagDefaultJobHistoryMaxCount = cmd.Flags().Int("history-max-count", 0, "Maximum number of history items to maintain (defaults unbounded).")
 	flagDefaultJobHistoryMaxAge = cmd.Flags().Duration("history-max-age", 0, "Maximum age of history items to maintain (defaults unbounded).")
 	flagDefaultJobTimeout = cmd.Flags().Duration("timeout", 0, "The job execution timeout as a duration (ex: 5s)")
@@ -110,7 +110,7 @@ func (djc *defaultJobConfig) Resolve() error {
 		configutil.SetBool(&djc.DiscardOutput, configutil.Bool(flagDefaultJobDiscardOutput), configutil.Bool(djc.DiscardOutput), configutil.Bool(ref.Bool(false))),
 		configutil.SetBool(&djc.Serial, configutil.Bool(flagDefaultJobSerial), configutil.Bool(djc.Serial), configutil.Bool(ref.Bool(true))),
 		configutil.SetString(&djc.Schedule, configutil.String(*flagDefaultJobSchedule), configutil.String(djc.Schedule)),
-		configutil.SetBool(&djc.HistoryEnabled, configutil.Bool(flagDefaultJobHistoryEnabled), configutil.Bool(djc.HistoryEnabled), configutil.Bool(ref.Bool(true))),
+		configutil.SetBool(&djc.HistoryDisabled, configutil.Bool(flagDefaultJobHistoryDisabled), configutil.Bool(djc.HistoryDisabled), configutil.Bool(ref.Bool(false))),
 		configutil.SetBool(&djc.HistoryPersisted, configutil.Bool(flagDefaultJobHistoryPersisted), configutil.Bool(djc.HistoryPersisted), configutil.Bool(ref.Bool(false))),
 		configutil.SetString(&djc.HistoryPath, configutil.String(*flagDefaultJobHistoryPath), configutil.String(djc.HistoryPath)),
 		configutil.SetInt(&djc.HistoryMaxCount, configutil.Int(*flagDefaultJobHistoryMaxCount), configutil.Int(djc.HistoryMaxCount)),
@@ -266,14 +266,14 @@ func run(cmd *cobra.Command, args []string) error {
 		disabled := ansi.ColorRed.Apply("disabled")
 
 		log.Infof("loading job `%s` with schedule: %s with %v", jobCfg.Name, ansi.ColorLightWhite.Apply(jobCfg.ScheduleOrDefault()), serial)
-		if jobCfg.HistoryEnabledOrDefault() && jobCfg.HistoryPersistedOrDefault() {
+		if !jobCfg.HistoryDisabledOrDefault() && jobCfg.HistoryPersistedOrDefault() {
 			log.Infof("loading job `%s` with history: %v and persistence: %v to output path: %s", jobCfg.Name, enabled, enabled, ansi.ColorLightWhite.Apply(jobCfg.HistoryPathOrDefault()))
-		} else if jobCfg.HistoryEnabledOrDefault() {
+		} else if !jobCfg.HistoryDisabledOrDefault() {
 			log.Infof("loading job `%s` with history: %v and pesitence: %v", jobCfg.Name, enabled, disabled)
 		} else {
 			log.Infof("loading job `%s` with history: %v", jobCfg.Name, disabled)
 		}
-		if jobCfg.HistoryEnabledOrDefault() {
+		if !jobCfg.HistoryDisabledOrDefault() {
 			if jobCfg.HistoryMaxCountOrDefault() > 0 {
 				maxCount := ansi.ColorLightWhite.Apply(fmt.Sprint(jobCfg.HistoryMaxCountOrDefault()))
 				log.Infof("loading job `%s` with history max count: %s", jobCfg.Name, maxCount)

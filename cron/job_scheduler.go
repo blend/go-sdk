@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/blend/go-sdk/mathutil"
-
 	"github.com/blend/go-sdk/async"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/mathutil"
 )
 
 // NewJobScheduler returns a job scheduler for a given job.
@@ -52,16 +51,16 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 		js.ShutdownGracePeriodProvider = func() time.Duration { return js.Config.ShutdownGracePeriodOrDefault() }
 	}
 
-	if typed, ok := job.(EnabledProvider); ok {
-		js.EnabledProvider = typed.Enabled
+	if typed, ok := job.(DisabledProvider); ok {
+		js.DisabledProvider = typed.Disabled
 	} else {
-		js.EnabledProvider = func() bool { return js.Config.EnabledOrDefault() }
+		js.DisabledProvider = func() bool { return js.Config.DisabledOrDefault() }
 	}
 
-	if typed, ok := job.(HistoryEnabledProvider); ok {
-		js.HistoryEnabledProvider = typed.HistoryEnabled
+	if typed, ok := job.(HistoryDisabledProvider); ok {
+		js.HistoryDisabledProvider = typed.HistoryDisabled
 	} else {
-		js.HistoryEnabledProvider = func() bool { return js.Config.HistoryEnabledOrDefault() }
+		js.HistoryDisabledProvider = func() bool { return js.Config.HistoryDisabledOrDefault() }
 	}
 
 	if typed, ok := job.(HistoryMaxCountProvider); ok {
@@ -106,17 +105,6 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 	return js
 }
 
-// FilterJobSchedulers filters job schedulers.
-func FilterJobSchedulers(schedulers []*JobScheduler, predicate func(*JobScheduler) bool) []*JobScheduler {
-	var output []*JobScheduler
-	for _, js := range schedulers {
-		if predicate(js) {
-			output = append(output, js)
-		}
-	}
-	return output
-}
-
 // JobScheduler is a job instance.
 type JobScheduler struct {
 	*async.Latch `json:"-"`
@@ -140,13 +128,13 @@ type JobScheduler struct {
 
 	DescriptionProvider               func() string            `json:"-"`
 	LabelsProvider                    func() map[string]string `json:"-"`
-	EnabledProvider                   func() bool              `json:"-"`
+	DisabledProvider                  func() bool              `json:"-"`
 	SerialProvider                    func() bool              `json:"-"`
 	TimeoutProvider                   func() time.Duration     `json:"-"`
 	ShutdownGracePeriodProvider       func() time.Duration     `json:"-"`
 	ShouldSkipLoggerListenersProvider func() bool              `json:"-"`
 	ShouldSkipLoggerOutputProvider    func() bool              `json:"-"`
-	HistoryEnabledProvider            func() bool              `json:"-"`
+	HistoryDisabledProvider           func() bool              `json:"-"`
 	HistoryMaxCountProvider           func() int               `json:"-"`
 	HistoryMaxAgeProvider             func() time.Duration     `json:"-"`
 
@@ -455,8 +443,8 @@ func (js *JobScheduler) Enabled() bool {
 		return false
 	}
 
-	if js.EnabledProvider != nil {
-		if !js.EnabledProvider() {
+	if js.DisabledProvider != nil {
+		if js.DisabledProvider() {
 			return false
 		}
 	}
@@ -634,7 +622,7 @@ func (js *JobScheduler) loggerEventContext(parent context.Context) context.Conte
 }
 
 func (js *JobScheduler) addHistory(ji JobInvocation) {
-	if js.HistoryEnabledProvider() {
+	if !js.HistoryDisabledProvider() {
 		js.History = append(js.cullHistory(), ji)
 	}
 }

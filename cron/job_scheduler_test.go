@@ -96,7 +96,7 @@ func TestJobSchedulerPersistHistory(t *testing.T) {
 	js := NewJobScheduler(
 		NewJob(OptJobName("foo")),
 	)
-	js.HistoryEnabledProvider = func() bool { return true }
+	js.HistoryDisabledProvider = func() bool { return false }
 
 	assert.Nil(js.RestoreHistory(context.Background()))
 	assert.Nil(js.PersistHistory(context.Background()))
@@ -111,7 +111,7 @@ func TestJobSchedulerPersistHistory(t *testing.T) {
 	js.Run()
 	assert.Len(history, 2)
 
-	js.HistoryEnabledProvider = func() bool { return false }
+	js.HistoryDisabledProvider = func() bool { return true }
 	js.Run()
 	assert.Len(history, 2)
 

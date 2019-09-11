@@ -70,9 +70,9 @@ type ShouldSkipLoggerOutputProvider interface {
 	ShouldSkipLoggerOutput() bool
 }
 
-// EnabledProvider is an optional interface that will allow jobs to control if they're enabled.
-type EnabledProvider interface {
-	Enabled() bool
+// DisabledProvider is an optional interface that will allow jobs to control if they're disabled.
+type DisabledProvider interface {
+	Disabled() bool
 }
 
 // OnStartReceiver is an interface that allows a task to be signaled when it has started.
@@ -117,9 +117,9 @@ type OnEnabledReceiver interface {
 	OnEnabled(context.Context)
 }
 
-// HistoryEnabledProvider is an optional interface that will allow jobs to control if it should track history.
-type HistoryEnabledProvider interface {
-	HistoryEnabled() bool
+// HistoryDisabledProvider is an optional interface that will allow jobs to control if it should track history.
+type HistoryDisabledProvider interface {
+	HistoryDisabled() bool
 }
 
 // HistoryMaxCountProvider is an optional interface that will allow jobs to control how many history items are tracked.

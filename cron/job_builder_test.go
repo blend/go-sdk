@@ -15,7 +15,7 @@ func TestJobBuilder(t *testing.T) {
 	assert := assert.New(t)
 
 	assert.NotNil(NewJob())
-	assert.True(NewJob().Enabled())
+	assert.False(NewJob().Disabled())
 	assert.Zero(NewJob().Timeout())
 	assert.False(NewJob().ShouldSkipLoggerListeners())
 	assert.False(NewJob().ShouldSkipLoggerOutput())

@@ -317,8 +317,8 @@ func TestJobManagerLoadJob(t *testing.T) {
 	assert.Equal("load-job-test-minimum", meta.Name())
 	assert.NotNil(meta.Job)
 
-	assert.NotNil(meta.EnabledProvider)
-	assert.Equal(DefaultEnabled, meta.EnabledProvider())
+	assert.NotNil(meta.DisabledProvider)
+	assert.Equal(DefaultDisabled, meta.DisabledProvider())
 	assert.NotNil(meta.TimeoutProvider)
 	assert.Zero(meta.TimeoutProvider())
 	assert.NotNil(meta.SerialProvider)

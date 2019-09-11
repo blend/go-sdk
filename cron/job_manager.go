@@ -124,8 +124,8 @@ func (jm *JobManager) IsJobDisabled(jobName string) (value bool) {
 
 	if job, hasJob := jm.Jobs[jobName]; hasJob {
 		value = job.Disabled
-		if job.EnabledProvider != nil {
-			value = value || !job.EnabledProvider()
+		if job.DisabledProvider != nil {
+			value = value || job.DisabledProvider()
 		}
 	}
 	return

@@ -14,7 +14,7 @@ var (
 	_ ScheduleProvider                  = (*JobBuilder)(nil)
 	_ TimeoutProvider                   = (*JobBuilder)(nil)
 	_ ShutdownGracePeriodProvider       = (*JobBuilder)(nil)
-	_ EnabledProvider                   = (*JobBuilder)(nil)
+	_ DisabledProvider                  = (*JobBuilder)(nil)
 	_ ShouldSkipLoggerListenersProvider = (*JobBuilder)(nil)
 	_ ShouldSkipLoggerOutputProvider    = (*JobBuilder)(nil)
 	_ OnStartReceiver                   = (*JobBuilder)(nil)
@@ -25,7 +25,7 @@ var (
 	_ OnFixedReceiver                   = (*JobBuilder)(nil)
 	_ OnEnabledReceiver                 = (*JobBuilder)(nil)
 	_ OnDisabledReceiver                = (*JobBuilder)(nil)
-	_ HistoryEnabledProvider            = (*JobBuilder)(nil)
+	_ HistoryDisabledProvider           = (*JobBuilder)(nil)
 	_ HistoryMaxCountProvider           = (*JobBuilder)(nil)
 	_ HistoryMaxAgeProvider             = (*JobBuilder)(nil)
 	_ HistoryProvider                   = (*JobBuilder)(nil)
@@ -56,6 +56,11 @@ func OptJobAction(action func(context.Context) error) JobBuilderOption {
 	return func(jb *JobBuilder) { jb.Action = action }
 }
 
+// OptJobLabels is a job builder sets the job labels.
+func OptJobLabels(labels map[string]string) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.LabelsProvider = func() map[string]string { return labels } }
+}
+
 // OptJobSchedule is a job builder sets the job schedule provder.
 func OptJobSchedule(schedule Schedule) JobBuilderOption {
 	return func(jb *JobBuilder) { jb.ScheduleProvider = func() Schedule { return schedule } }
@@ -71,9 +76,9 @@ func OptJobShutdownGracePeriod(d time.Duration) JobBuilderOption {
 	return func(jb *JobBuilder) { jb.ShutdownGracePeriodProvider = func() time.Duration { return d } }
 }
 
-// OptJobEnabled is a job builder sets the job timeout provder.
-func OptJobEnabled(provider func() bool) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.EnabledProvider = provider }
+// OptJobDisabled is a job builder sets the job timeout provder.
+func OptJobDisabled(provider func() bool) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.DisabledProvider = provider }
 }
 
 // OptJobOnStart is a job builder option implementation.
@@ -116,9 +121,9 @@ func OptJobOnDisabled(handler func(context.Context)) JobBuilderOption {
 	return func(jb *JobBuilder) { jb.OnDisabledHandler = handler }
 }
 
-// OptJobHistoryEnabled is a job builder option implementation.
-func OptJobHistoryEnabled(provider func() bool) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.HistoryEnabledProvider = provider }
+// OptJobHistoryDisabled is a job builder option implementation.
+func OptJobHistoryDisabled(provider func() bool) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.HistoryDisabledProvider = provider }
 }
 
 // OptJobHistoryMaxCount is a job builder option implementation.
@@ -136,13 +141,14 @@ type JobBuilder struct {
 	Action Action
 	Config JobConfig
 
+	LabelsProvider                    func() map[string]string
 	ScheduleProvider                  func() Schedule
 	TimeoutProvider                   func() time.Duration
 	ShutdownGracePeriodProvider       func() time.Duration
-	EnabledProvider                   func() bool
+	DisabledProvider                  func() bool
 	ShouldSkipLoggerListenersProvider func() bool
 	ShouldSkipLoggerOutputProvider    func() bool
-	HistoryEnabledProvider            func() bool
+	HistoryDisabledProvider           func() bool
 	HistoryMaxCountProvider           func() int
 	HistoryMaxAgeProvider             func() time.Duration
 
@@ -170,6 +176,9 @@ func (jb *JobBuilder) Name() string {
 
 // Labels returns the job labels.
 func (jb *JobBuilder) Labels() map[string]string {
+	if jb.LabelsProvider != nil {
+		return jb.LabelsProvider()
+	}
 	return jb.Config.Labels
 }
 
@@ -197,12 +206,12 @@ func (jb *JobBuilder) ShutdownGracePeriod() time.Duration {
 	return jb.Config.ShutdownGracePeriodOrDefault()
 }
 
-// Enabled returns if the job is enabled.
-func (jb *JobBuilder) Enabled() bool {
-	if jb.EnabledProvider != nil {
-		return jb.EnabledProvider()
+// Disabled returns if the job is enabled.
+func (jb *JobBuilder) Disabled() bool {
+	if jb.DisabledProvider != nil {
+		return jb.DisabledProvider()
 	}
-	return jb.Config.EnabledOrDefault()
+	return jb.Config.DisabledOrDefault()
 }
 
 // ShouldSkipLoggerListeners implements the should skip logger listeners provider.
@@ -221,12 +230,12 @@ func (jb *JobBuilder) ShouldSkipLoggerOutput() bool {
 	return jb.Config.ShouldSkipLoggerOutputOrDefault()
 }
 
-// HistoryEnabled implements the history enabled provider.
-func (jb *JobBuilder) HistoryEnabled() bool {
-	if jb.HistoryEnabledProvider != nil {
-		return jb.HistoryEnabledProvider()
+// HistoryDisabled implements the history disabled provider.
+func (jb *JobBuilder) HistoryDisabled() bool {
+	if jb.HistoryDisabledProvider != nil {
+		return jb.HistoryDisabledProvider()
 	}
-	return jb.Config.HistoryEnabledOrDefault()
+	return jb.Config.HistoryDisabledOrDefault()
 }
 
 // HistoryMaxCount implements the history max count provider.

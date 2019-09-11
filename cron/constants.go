@@ -12,16 +12,16 @@ const (
 )
 
 const (
-	// DefaultEnabled is a default.
-	DefaultEnabled = true
+	// DefaultDisabled is a default.
+	DefaultDisabled = false
 	// DefaultSerial is a default.
 	DefaultSerial = false
 	// DefaultShouldSkipLoggerListeners is a default.
 	DefaultShouldSkipLoggerListeners = false
 	// DefaultShouldSkipLoggerOutput is a default.
 	DefaultShouldSkipLoggerOutput = false
-	// DefaultHistoryEnabled is a default.
-	DefaultHistoryEnabled = true
+	// DefaultHistoryDisabled is a default.
+	DefaultHistoryDisabled = false
 	// DefaultHistoryMaxCount is the default number of history items to track.
 	DefaultHistoryMaxCount = 10
 	// DefaultHistoryMaxAge is the default maximum age of history items.

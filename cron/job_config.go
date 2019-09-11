@@ -6,8 +6,8 @@ import "time"
 type JobConfig struct {
 	// Name sets the job name.
 	Name string `json:"name" yaml:"name"`
-	// Enabled determines if the job should be automatically scheduled or not.
-	Enabled *bool `json:"enabled" yaml:"enabled"`
+	// Disabled determines if the job should be automatically scheduled or not.
+	Disabled *bool `json:"disabled" yaml:"disabled"`
 	// Description is an optional string to describe what the job does.
 	Description string `json:"description" yaml:"description"`
 	// Labels define extra metadata that can be used to filter jobs.
@@ -18,8 +18,8 @@ type JobConfig struct {
 	ShutdownGracePeriod time.Duration `json:"shutdownGracePeriod" yaml:"shutdownGracePeriod"`
 	// Serial indicates if job executions cannot overlap.
 	Serial *bool `json:"serial" yaml:"serial"`
-	// HistoryEnabled sets if we should save invocation history and restore it.
-	HistoryEnabled *bool `json:"historyEnabled" yaml:"historyEnabled"`
+	// HistoryDisabled sets if we should save invocation history and restore it.
+	HistoryDisabled *bool `json:"historyDisabled" yaml:"historyDisabled"`
 	// HistoryMaxCount is the maximum number of history items to keep.
 	HistoryMaxCount int `json:"historyMaxCount" yaml:"historyMaxCount"`
 	// HistoryMaxAge is the maximum age of history items to keep.
@@ -31,12 +31,12 @@ type JobConfig struct {
 	ShouldSkipLoggerOutput *bool `json:"shouldSkipLoggerOutput" yaml:"shouldSkipLoggerOutput"`
 }
 
-// EnabledOrDefault returns a value or a default.
-func (jc JobConfig) EnabledOrDefault() bool {
-	if jc.Enabled != nil {
-		return *jc.Enabled
+// DisabledOrDefault returns a value or a default.
+func (jc JobConfig) DisabledOrDefault() bool {
+	if jc.Disabled != nil {
+		return *jc.Disabled
 	}
-	return DefaultEnabled
+	return DefaultDisabled
 }
 
 // TimeoutOrDefault returns a value or a default.
@@ -63,12 +63,12 @@ func (jc JobConfig) SerialOrDefault() bool {
 	return DefaultSerial
 }
 
-// HistoryEnabledOrDefault returns a value or a default.
-func (jc JobConfig) HistoryEnabledOrDefault() bool {
-	if jc.HistoryEnabled != nil {
-		return *jc.HistoryEnabled
+// HistoryDisabledOrDefault returns a value or a default.
+func (jc JobConfig) HistoryDisabledOrDefault() bool {
+	if jc.HistoryDisabled != nil {
+		return *jc.HistoryDisabled
 	}
-	return DefaultHistoryEnabled
+	return DefaultHistoryDisabled
 }
 
 // HistoryMaxCountOrDefault returns a value or a default.
