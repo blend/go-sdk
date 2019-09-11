@@ -16,7 +16,7 @@ func TestContextWithTimestamp(t *testing.T) {
 	assert.True(GetTimestamp(context.Background()).IsZero())
 }
 
-func TestContextWithScopePath(t *testing.T) {
+func TestContextWithPath(t *testing.T) {
 	assert := assert.New(t)
 
 	path := []string{"one", "two"}
