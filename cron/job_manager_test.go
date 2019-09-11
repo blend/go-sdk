@@ -89,16 +89,16 @@ func TestEnabledProvider(t *testing.T) {
 	defer a.EndTimeout()
 
 	manager := New()
-	job := &testWithEnabled{
-		isEnabled: true,
-		action:    func() {},
+	job := &testWithDisabled{
+		disabled: false,
+		action:   func() {},
 	}
 
 	manager.LoadJobs(job)
 	a.False(manager.IsJobDisabled("testWithEnabled"))
 	manager.DisableJobs("testWithEnabled")
 	a.True(manager.IsJobDisabled("testWithEnabled"))
-	job.isEnabled = false
+	job.disabled = true
 	a.True(manager.IsJobDisabled("testWithEnabled"))
 	manager.EnableJobs("testWithEnabled")
 	a.True(manager.IsJobDisabled("testWithEnabled"))

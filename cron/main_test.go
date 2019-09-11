@@ -95,24 +95,29 @@ func (tj *testJobInterval) Execute(ctx context.Context) error {
 	return tj.RunDelegate(ctx)
 }
 
-type testWithEnabled struct {
-	isEnabled bool
-	action    func()
+var (
+	_ Job              = (*testWithDisabled)(nil)
+	_ DisabledProvider = (*testWithDisabled)(nil)
+)
+
+type testWithDisabled struct {
+	disabled bool
+	action   func()
 }
 
-func (twe testWithEnabled) Name() string {
+func (twe testWithDisabled) Name() string {
 	return "testWithEnabled"
 }
 
-func (twe testWithEnabled) Schedule() Schedule {
+func (twe testWithDisabled) Schedule() Schedule {
 	return nil
 }
 
-func (twe testWithEnabled) Enabled() bool {
-	return twe.isEnabled
+func (twe testWithDisabled) Disabled() bool {
+	return twe.disabled
 }
 
-func (twe testWithEnabled) Execute(ctx context.Context) error {
+func (twe testWithDisabled) Execute(ctx context.Context) error {
 	twe.action()
 	return nil
 }
