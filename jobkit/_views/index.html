@@ -123,6 +123,7 @@
 			</tr>
 			<tr id="history-{{ $job.Name }}" {{ if $singleResult | not }}hidden{{end}}>
 				<td colspan=11>
+					{{ if $job.Description }}
 					<table class="uk-table">
 						<tbody>
 							<tr>
@@ -130,6 +131,7 @@
 							</tr>
 						</tbody>
 					</table>
+					{{ end }}
 					<table class="uk-table uk-table-small uk-table-striped">
 						<thead>
 							<tr>
