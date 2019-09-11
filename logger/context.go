@@ -40,16 +40,16 @@ func GetTimestamp(ctx context.Context) time.Time {
 	return time.Time{}
 }
 
-type scopePathKey struct{}
+type pathKey struct{}
 
-// WithScopePath returns a new context with a given additional path segment(s).
-func WithScopePath(ctx context.Context, path ...string) context.Context {
-	return context.WithValue(ctx, scopePathKey{}, path)
+// WithPath returns a new context with a given additional path segment(s).
+func WithPath(ctx context.Context, path ...string) context.Context {
+	return context.WithValue(ctx, pathKey{}, path)
 }
 
-// GetScopePath gets a scope path off a context.
-func GetScopePath(ctx context.Context) []string {
-	if raw := ctx.Value(scopePathKey{}); raw != nil {
+// GetPath gets a path off a context.
+func GetPath(ctx context.Context) []string {
+	if raw := ctx.Value(pathKey{}); raw != nil {
 		if typed, ok := raw.([]string); ok {
 			return typed
 		}

@@ -121,7 +121,7 @@ func (jw JSONOutputFormatter) GetScopeFields(ctx context.Context, e Event) map[s
 		FieldFlag:      e.GetFlag(),
 		FieldTimestamp: GetEventTimestamp(ctx, e),
 	}
-	if path := GetScopePath(ctx); len(path) > 0 {
+	if path := GetPath(ctx); len(path) > 0 {
 		output[FieldScopePath] = path
 	}
 	if labels := GetLabels(ctx); len(labels) > 0 {

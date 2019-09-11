@@ -103,10 +103,10 @@ func TestScopeApplyContext(t *testing.T) {
 	sc.Labels = Labels{"foo": "bar"}
 
 	ctx := WithLabels(context.Background(), Labels{"moo": "loo"})
-	ctx = WithScopePath(ctx, "three", "four")
+	ctx = WithPath(ctx, "three", "four")
 
 	final := sc.ApplyContext(ctx)
-	assert.Equal([]string{"one", "two", "three", "four"}, GetScopePath(final))
+	assert.Equal([]string{"one", "two", "three", "four"}, GetPath(final))
 	assert.Equal("bar", GetLabels(final)["foo"])
 	assert.Equal("loo", GetLabels(final)["moo"])
 }

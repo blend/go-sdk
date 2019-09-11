@@ -130,7 +130,7 @@ func (tf TextOutputFormatter) WriteFormat(ctx context.Context, output io.Writer,
 		buffer.WriteString(Space)
 	}
 
-	scopePath := GetScopePath(ctx)
+	scopePath := GetPath(ctx)
 	if scopePath != nil {
 		buffer.WriteString(tf.FormatPath(scopePath...))
 		buffer.WriteString(Space)

@@ -186,7 +186,7 @@ func (sc Scope) Fatal(err error, opts ...ErrorEventOption) error {
 // ApplyContext applies the scope context to a given context.
 func (sc Scope) ApplyContext(ctx context.Context) context.Context {
 	ctx = WithTriggerTimestamp(ctx, time.Now().UTC())
-	ctx = WithScopePath(ctx, append(sc.Path, GetScopePath(ctx)...)...)
+	ctx = WithPath(ctx, append(sc.Path, GetPath(ctx)...)...)
 	ctx = WithLabels(ctx, CombineLabels(sc.Labels, GetLabels(ctx)))
 	ctx = WithAnnotations(ctx, CombineAnnotations(sc.Annotations, GetAnnotations(ctx)))
 	return ctx
