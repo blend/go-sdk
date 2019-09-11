@@ -18,11 +18,12 @@
 			</tr>
 		</thead>
 		<tbody>
+		{{ $singleResult := .ViewModel.Jobs | len | eq 1 }}
 		{{ range $index, $job := .ViewModel.Jobs }}
 			<tr id="{{ $job.Name }}">
 				<td>
-					<button id="show-{{ $job.Name }}" class="uk-button" uk-toggle="target: #history-{{ $job.Name }},#hide-{{ $job.Name }},#show-{{ $job.Name }}" type="button" uk-icon="plus-circle"></button>
-					<button id="hide-{{ $job.Name }}" class="uk-button" uk-toggle="target: #history-{{ $job.Name }},#hide-{{ $job.Name }},#show-{{ $job.Name }}" type="button" uk-icon="minus-circle" hidden></button>
+					<button id="show-{{ $job.Name }}" class="uk-button" uk-toggle="target: #history-{{ $job.Name }},#hide-{{ $job.Name }},#show-{{ $job.Name }}" type="button" uk-icon="plus-circle" {{ if $singleResult }}hidden{{ end }}></button>
+					<button id="hide-{{ $job.Name }}" class="uk-button" uk-toggle="target: #history-{{ $job.Name }},#hide-{{ $job.Name }},#show-{{ $job.Name }}" type="button" uk-icon="minus-circle" {{ if $singleResult | not }}hidden{{ end }}></button>
 				</td>
 				<td> <!-- status -->
 					{{ if $job.Current }}
@@ -120,20 +121,15 @@
 				{{ end }}
 				</td>
 			</tr>
-			<tr id="history-{{ $job.Name }}" hidden>
+			<tr id="history-{{ $job.Name }}" {{ if $singleResult | not }}hidden{{end}}>
 				<td colspan=11>
 					<table class="uk-table">
-						<thead>
-							<tr>
-								<th>Exec</th>
-							</tr>
-						</thead>
 						<tbody>
 							<tr>
 								<td><pre>{{ $job.Description }}</pre></td>
 							</tr>
 						</tbody>
-					</div>
+					</table>
 					<table class="uk-table uk-table-small uk-table-striped">
 						<thead>
 							<tr>
