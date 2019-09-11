@@ -2,14 +2,10 @@ package jobkit
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
 
 	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/email"
-	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/sentry"
 	"github.com/blend/go-sdk/slack"
@@ -19,9 +15,6 @@ import (
 
 var (
 	_ cron.Job                    = (*Job)(nil)
-	_ cron.LabelsProvider         = (*Job)(nil)
-	_ cron.JobConfigProvider      = (*Job)(nil)
-	_ cron.ScheduleProvider       = (*Job)(nil)
 	_ cron.OnStartReceiver        = (*Job)(nil)
 	_ cron.OnCompleteReceiver     = (*Job)(nil)
 	_ cron.OnFailureReceiver      = (*Job)(nil)
@@ -30,53 +23,20 @@ var (
 	_ cron.OnFixedReceiver        = (*Job)(nil)
 	_ cron.OnDisabledReceiver     = (*Job)(nil)
 	_ cron.OnEnabledReceiver      = (*Job)(nil)
-	_ cron.HistoryProvider        = (*Job)(nil)
 )
 
 // NewJob returns a new job.
-func NewJob(cfg JobConfig, action func(context.Context) error, options ...JobOption) (*Job, error) {
-	options = append([]JobOption{
-		OptConfig(cfg),
-		OptAction(action),
-		OptParsedSchedule(cfg.ScheduleOrDefault()),
-	}, options...)
-
-	var job Job
+func NewJob(job cron.Job, options ...JobOption) (*Job, error) {
+	j := Job{
+		Job: job,
+	}
 	var err error
 	for _, opt := range options {
-		if err = opt(&job); err != nil {
+		if err = opt(&j); err != nil {
 			return nil, err
 		}
 	}
-	return &job, nil
-}
-
-// OptAction sets the job action.
-func OptAction(action func(context.Context) error) JobOption {
-	return func(job *Job) error {
-		job.Action = action
-		return nil
-	}
-}
-
-// OptConfig sets the job config.
-func OptConfig(cfg JobConfig) JobOption {
-	return func(job *Job) error {
-		job.Config = cfg
-		return nil
-	}
-}
-
-// OptParsedSchedule sets the job's compiled schedule from a schedule string.
-func OptParsedSchedule(schedule string) JobOption {
-	return func(job *Job) error {
-		schedule, err := cron.ParseString(schedule)
-		if err != nil {
-			return err
-		}
-		job.CompiledSchedule = schedule
-		return nil
-	}
+	return &j, nil
 }
 
 // JobOption is an option for jobs.
@@ -84,37 +44,14 @@ type JobOption func(*Job) error
 
 // Job is the main job body.
 type Job struct {
-	Config JobConfig
-
-	CompiledSchedule cron.Schedule
-	Email            email.Message
-	Action           func(context.Context) error
-
+	cron.Job
+	Config       JobConfig
+	Email        email.Message
 	Log          logger.Log
 	StatsClient  stats.Collector
 	SlackClient  slack.Sender
 	SentryClient sentry.Sender
 	EmailClient  email.Sender
-}
-
-// Name returns the job name.
-func (job Job) Name() string {
-	return job.Config.Name
-}
-
-// Labels returns the job labels.
-func (job Job) Labels() map[string]string {
-	return job.Config.Labels
-}
-
-// Schedule returns the job schedule.
-func (job Job) Schedule() cron.Schedule {
-	return job.CompiledSchedule
-}
-
-// JobConfig returns the underlying job config.
-func (job Job) JobConfig() cron.JobConfig {
-	return job.Config.JobConfig
 }
 
 // OnStart is a lifecycle event handler.
@@ -177,57 +114,6 @@ func (job Job) OnDisabled(ctx context.Context) {
 	if job.Config.NotifyOnDisabledOrDefault() {
 		job.notify(ctx, cron.FlagDisabled)
 	}
-}
-
-// PersistHistory writes the history to disk.
-// It does so completely.
-func (job Job) PersistHistory(ctx context.Context, log []cron.JobInvocation) error {
-	if !job.Config.HistoryEnabledOrDefault() {
-		return nil
-	}
-	if !job.Config.HistoryPersistedOrDefault() {
-		return nil
-	}
-	historyDirectory := job.Config.HistoryPathOrDefault()
-	if _, err := os.Stat(historyDirectory); err != nil {
-		if err := os.MkdirAll(historyDirectory, 0755); err != nil {
-			return ex.New(err)
-		}
-	}
-	historyPath := filepath.Join(historyDirectory, stringutil.Slugify(job.Name())+".json")
-	f, err := os.Create(historyPath)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	return json.NewEncoder(f).Encode(log)
-}
-
-// RestoreHistory restores history from disc.
-func (job Job) RestoreHistory(ctx context.Context) (output []cron.JobInvocation, err error) {
-	if !job.Config.HistoryEnabledOrDefault() {
-		return nil, nil
-	}
-	if !job.Config.HistoryPersistedOrDefault() {
-		return nil, nil
-	}
-	historyPath := filepath.Join(job.Config.HistoryPathOrDefault(), stringutil.Slugify(job.Name())+".json")
-	if _, statErr := os.Stat(historyPath); statErr != nil {
-		return
-	}
-	var f *os.File
-	f, err = os.Open(historyPath)
-	if err != nil {
-		return
-	}
-	defer f.Close()
-	err = json.NewDecoder(f).Decode(&output)
-	return
-}
-
-// Execute is the job body.
-func (job Job) Execute(ctx context.Context) error {
-	return job.Action(ctx)
 }
 
 //

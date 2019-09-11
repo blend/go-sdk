@@ -4,6 +4,8 @@ import "time"
 
 // JobConfig is a configuration set for a job.
 type JobConfig struct {
+	// Name sets the job name.
+	Name string `json:"name" yaml:"name"`
 	// Enabled determines if the job should be automatically scheduled or not.
 	Enabled *bool `json:"enabled" yaml:"enabled"`
 	// Description is an optional string to describe what the job does.

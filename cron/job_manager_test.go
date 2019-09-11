@@ -77,7 +77,7 @@ func TestJobManagerJobPanicHandling(t *testing.T) {
 		defer waitGroup.Done()
 		panic("this is only a test")
 	}
-	manager.LoadJobs(NewJob("panic-test", action))
+	manager.LoadJobs(NewJob(OptJobName("panic-test"), OptJobAction(action)))
 	manager.RunJob("panic-test")
 	waitGroup.Wait()
 	assert.True(true, "should complete")
@@ -130,10 +130,10 @@ func TestFiresErrorOnTaskError(t *testing.T) {
 		}
 	})
 
-	manager.LoadJobs(NewJob("error_test", func(ctx context.Context) error {
+	manager.LoadJobs(NewJob(OptJobName("error_test"), OptJobAction(func(ctx context.Context) error {
 		defer wg.Done()
 		return fmt.Errorf("this is only a test")
-	}))
+	})))
 	manager.RunJob("error_test")
 	wg.Wait()
 
@@ -162,7 +162,7 @@ func TestManagerTracer(t *testing.T) {
 		},
 	}))
 
-	manager.LoadJobs(NewJob("tracer-test", noop))
+	manager.LoadJobs(NewJob(OptJobName("tracer-test")))
 	manager.RunJob("tracer-test")
 	wg.Wait()
 	assert.True(didCallStart)
@@ -189,21 +189,21 @@ func TestJobManagerRunJobs(t *testing.T) {
 
 	wg := sync.WaitGroup{}
 	wg.Add(2)
-	assert.Nil(jm.LoadJobs(NewJob(job0, func(_ context.Context) error {
+	assert.Nil(jm.LoadJobs(NewJob(OptJobName(job0), OptJobAction(func(_ context.Context) error {
 		defer wg.Done()
 		job0ran = true
 		return nil
-	})))
-	assert.Nil(jm.LoadJobs(NewJob(job1, func(_ context.Context) error {
+	}))))
+	assert.Nil(jm.LoadJobs(NewJob(OptJobName(job1), OptJobAction(func(_ context.Context) error {
 		defer wg.Done()
 		job1ran = true
 		return nil
-	})))
-	assert.Nil(jm.LoadJobs(NewJob(job2, func(_ context.Context) error {
+	}))))
+	assert.Nil(jm.LoadJobs(NewJob(OptJobName(job2), OptJobAction(func(_ context.Context) error {
 		defer wg.Done()
 		job2ran = true
 		return nil
-	})))
+	}))))
 
 	assert.Nil(jm.RunJobs(job0, job2))
 	wg.Wait()
@@ -230,21 +230,21 @@ func TestJobManagerRunAllJobs(t *testing.T) {
 
 	wg := sync.WaitGroup{}
 	wg.Add(3)
-	assert.Nil(jm.LoadJobs(NewJob(job0, func(_ context.Context) error {
+	assert.Nil(jm.LoadJobs(NewJob(OptJobName(job0), OptJobAction(func(_ context.Context) error {
 		defer wg.Done()
 		job0ran = true
 		return nil
-	})))
-	assert.Nil(jm.LoadJobs(NewJob(job1, func(_ context.Context) error {
+	}))))
+	assert.Nil(jm.LoadJobs(NewJob(OptJobName(job1), OptJobAction(func(_ context.Context) error {
 		defer wg.Done()
 		job1ran = true
 		return nil
-	})))
-	assert.Nil(jm.LoadJobs(NewJob(job2, func(_ context.Context) error {
+	}))))
+	assert.Nil(jm.LoadJobs(NewJob(OptJobName(job2), OptJobAction(func(_ context.Context) error {
 		defer wg.Done()
 		job2ran = true
 		return nil
-	})))
+	}))))
 
 	jm.RunAllJobs()
 	wg.Wait()
@@ -340,10 +340,10 @@ func TestJobManagerLoadJobs(t *testing.T) {
 	assert := assert.New(t)
 
 	jm := New()
-	assert.Nil(jm.LoadJobs(NewJob("test-0", noop), NewJob("test-1", noop)))
+	assert.Nil(jm.LoadJobs(NewJob(OptJobName("test-0")), NewJob(OptJobName("test-1"))))
 	assert.Len(jm.Jobs, 2)
 
-	assert.NotNil(jm.LoadJobs(NewJob("test-0", noop), NewJob("test-0", noop)))
+	assert.NotNil(jm.LoadJobs(NewJob(OptJobName("test-0")), NewJob(OptJobName("test-1"))))
 }
 
 func TestJobManagerIsRunning(t *testing.T) {
@@ -353,11 +353,11 @@ func TestJobManagerIsRunning(t *testing.T) {
 
 	checked := make(chan struct{})
 	proceed := make(chan struct{})
-	jm.LoadJobs(NewJob("is-running-test", func(_ context.Context) error {
+	jm.LoadJobs(NewJob(OptJobName("is-running-test"), OptJobAction(func(_ context.Context) error {
 		close(proceed)
 		<-checked
 		return nil
-	}))
+	})))
 
 	jm.RunJob("is-running-test")
 	<-proceed
@@ -372,16 +372,16 @@ func TestJobManagerStatus(t *testing.T) {
 
 	jm := New()
 
-	jm.LoadJobs(NewJob("test-0", noop))
-	jm.LoadJobs(NewJob("test-1", noop))
+	jm.LoadJobs(NewJob(OptJobName("test-0")))
+	jm.LoadJobs(NewJob(OptJobName("test-1")))
 
 	checked := make(chan struct{})
 	proceed := make(chan struct{})
-	jm.LoadJobs(NewJob("is-running-test", func(_ context.Context) error {
+	jm.LoadJobs(NewJob(OptJobName("is-running-test"), OptJobAction(func(_ context.Context) error {
 		close(proceed)
 		<-checked
 		return nil
-	}))
+	})))
 
 	jm.RunJob("is-running-test")
 	<-proceed
@@ -400,13 +400,13 @@ func TestJobManagerCancelJob(t *testing.T) {
 
 	proceed := make(chan struct{})
 	cancelled := make(chan struct{})
-	jm.LoadJobs(NewJob("is-running-test", func(ctx context.Context) error {
+	jm.LoadJobs(NewJob(OptJobName("is-running-test"), OptJobAction(func(ctx context.Context) error {
 		close(proceed)
 		select {
 		case <-ctx.Done():
 			return nil
 		}
-	}, OptJobBuilderOnCancellation(func(_ *JobInvocation) {
+	}), OptJobOnCancellation(func(_ *JobInvocation) {
 		close(cancelled)
 	})))
 
@@ -424,12 +424,12 @@ func TestJobManagerStatusRunning(t *testing.T) {
 	jobStarted := make(chan struct{})
 	jobShouldProceed := make(chan struct{})
 	jm := New()
-	jm.LoadJobs(NewJob("status-running-test", func(_ context.Context) error {
+	jm.LoadJobs(NewJob(OptJobName("status-running-test"), OptJobAction(func(_ context.Context) error {
 		defer close(jobDidRun)
 		close(jobStarted)
 		<-jobShouldProceed
 		return nil
-	}))
+	})))
 
 	status := jm.Status()
 	assert.Empty(status.Running)
@@ -446,7 +446,7 @@ func TestJobManagerEnableDisableJob(t *testing.T) {
 
 	name := "enable-disable-test"
 	jm := New()
-	jm.LoadJobs(NewJob(name, noop))
+	jm.LoadJobs(NewJob(OptJobName(name)))
 
 	j, err := jm.Job(name)
 	assert.Nil(err)

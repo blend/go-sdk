@@ -12,21 +12,10 @@ import (
 	"github.com/blend/go-sdk/uuid"
 )
 
-func TestJobProperties(t *testing.T) {
-	assert := assert.New(t)
-
-	job := (&Job{Action: func(_ context.Context) error {
-		return nil
-	}})
-	assert.NotNil(job.Action)
-
-	assert.Empty(job.Name())
-	job.Config.Name = "foo"
-	assert.Equal("foo", job.Name())
-
-	assert.Nil(job.Schedule())
-	job.CompiledSchedule = cron.EverySecond()
-	assert.NotNil(job.Schedule())
+func scheduleProvider(schedule cron.Schedule) func() cron.Schedule {
+	return func() cron.Schedule {
+		return schedule
+	}
 }
 
 func TestJobLifecycleHooksNotificationsUnset(t *testing.T) {

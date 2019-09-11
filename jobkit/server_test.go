@@ -2,7 +2,6 @@ package jobkit
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -19,8 +18,8 @@ func TestManagementServer(t *testing.T) {
 	jm := cron.New()
 
 	jm.LoadJobs(
-		cron.NewJob("test0", func(_ context.Context) error { return nil }),
-		cron.NewJob("test1", func(_ context.Context) error { return nil }),
+		cron.NewJob(cron.OptJobName("test0")),
+		cron.NewJob(cron.OptJobName("test1")),
 	)
 
 	app := NewServer(jm, Config{
@@ -46,8 +45,8 @@ func TestManagementServerHealthz(t *testing.T) {
 
 	jm := cron.New()
 	jm.LoadJobs(
-		cron.NewJob("test0", func(_ context.Context) error { return nil }),
-		cron.NewJob("test1", func(_ context.Context) error { return nil }),
+		cron.NewJob(cron.OptJobName("test0")),
+		cron.NewJob(cron.OptJobName("test1")),
 	)
 	jm.StartAsync()
 	app := NewServer(jm, Config{
@@ -79,7 +78,7 @@ func TestManagementServerIndex(t *testing.T) {
 	errorOutput := uuid.V4().String()
 
 	jm := cron.New()
-	jm.LoadJobs(cron.NewJob(jobName, func(_ context.Context) error { return nil }))
+	jm.LoadJobs(cron.NewJob(cron.OptJobName(jobName)))
 
 	js, err := jm.Job(jobName)
 	assert.Nil(err)

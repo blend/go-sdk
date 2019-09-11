@@ -126,9 +126,13 @@ type JobScheduler struct {
 	Tracer Tracer     `json:"-"`
 	Log    logger.Log `json:"-"`
 
-	Schedule    Schedule                  `json:"-"`
-	Disabled    bool                      `json:"disabled"`
-	Parallel    bool                      `json:"parallel"`
+	// Schedule is the source of next run times for the scheduler.
+	Schedule Schedule `json:"-"`
+	// Disabled is an explicit override for the EnabledProvider.
+	Disabled bool `json:"disabled"`
+	// Parallel is an explicit override for the SerialProvider.
+	Parallel bool `json:"parallel"`
+
 	NextRuntime time.Time                 `json:"nextRuntime"`
 	Current     map[string]*JobInvocation `json:"current"`
 	Last        *JobInvocation            `json:"last"`
