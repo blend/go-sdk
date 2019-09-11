@@ -11,6 +11,7 @@ import (
 	"github.com/blend/go-sdk/email"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/ref"
 	"github.com/blend/go-sdk/sentry"
 	"github.com/blend/go-sdk/slack"
 	"github.com/blend/go-sdk/stats"
@@ -49,6 +50,53 @@ func NewJob(cfg JobConfig, action func(context.Context) error, options ...JobOpt
 		}
 	}
 	return &job, nil
+}
+
+// Wrap wraps a cron job with the jobkit notifications.
+func Wrap(job cron.Job) *Job {
+	j := &Job{
+		Config: JobConfig{
+			JobConfig: cron.JobConfig{
+				Name: job.Name(),
+			},
+		},
+		Action: job.Execute,
+	}
+
+	if typed, ok := job.(cron.ScheduleProvider); ok {
+		j.CompiledSchedule = typed.Schedule()
+	}
+	if typed, ok := job.(cron.DescriptionProvider); ok {
+		j.Config.Description = typed.Description()
+	}
+	if typed, ok := job.(cron.LabelsProvider); ok {
+		j.Config.Labels = typed.Labels()
+	}
+	if typed, ok := job.(cron.TimeoutProvider); ok {
+		j.Config.Timeout = typed.Timeout()
+	}
+	if typed, ok := job.(cron.ShutdownGracePeriodProvider); ok {
+		j.Config.ShutdownGracePeriod = typed.ShutdownGracePeriod()
+	}
+	if typed, ok := job.(cron.HistoryDisabledProvider); ok {
+		j.Config.HistoryDisabled = ref.Bool(typed.HistoryDisabled())
+	}
+	if typed, ok := job.(cron.HistoryMaxCountProvider); ok {
+		j.Config.HistoryMaxCount = typed.HistoryMaxCount()
+	}
+	if typed, ok := job.(cron.HistoryMaxAgeProvider); ok {
+		j.Config.HistoryMaxAge = typed.HistoryMaxAge()
+	}
+	if typed, ok := job.(cron.SerialProvider); ok {
+		j.Config.Serial = ref.Bool(typed.Serial())
+	}
+	if typed, ok := job.(cron.ShouldSkipLoggerListenersProvider); ok {
+		j.Config.ShouldSkipLoggerListeners = ref.Bool(typed.ShouldSkipLoggerListeners())
+	}
+	if typed, ok := job.(cron.ShouldSkipLoggerOutputProvider); ok {
+		j.Config.ShouldSkipLoggerOutput = ref.Bool(typed.ShouldSkipLoggerOutput())
+	}
+	return j
 }
 
 // OptAction sets the job action.

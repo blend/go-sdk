@@ -49,11 +49,6 @@ type ShutdownGracePeriodProvider interface {
 	ShutdownGracePeriod() time.Duration
 }
 
-// StatusProvider is an interface that allows a task to report its status.
-type StatusProvider interface {
-	Status() string
-}
-
 // SerialProvider is an optional interface that prohibits
 // a task from running if another instance of the task is currently running.
 type SerialProvider interface {
