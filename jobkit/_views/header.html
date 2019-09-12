@@ -7,8 +7,6 @@
 	<link rel="stylesheet" href="/static/css/uikit.min.css" />
 	<script src="/static/js/uikit.min.js"></script>
 	<script src="/static/js/uikit-icons.min.js"></script>
-	<link rel="stylesheet" href="/static/css/xterm.css" />
-	<script src="/static/js/xterm.js"></script>
 	<style>
 	#top-head {
 		z-index: 9;
@@ -47,7 +45,7 @@
 		<nav class="uk-navbar uk-light" data-uk-navbar="mode:click; duration: 250" uk-navbar>
 			<div class="uk-navbar-left">
 				<span class="uk-icon" uk-icon="icon: home; ratio: 1.5"></span>
-				<a href="/" class="uk-navbar-item uk-logo">Jobkit</a>
+				<a href="/" class="uk-navbar-item uk-logo">{{ (.Ctx.State.Get "Config").TitleOrDefault }}</a>
 			</div>
 			<div class="uk-navbar-center">
 				<div class="uk-navbar-item uk-visible@s">

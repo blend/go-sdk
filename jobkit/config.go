@@ -13,6 +13,9 @@ import (
 
 // Config is the jobkit config.
 type Config struct {
+	// Title is a descriptive title for the jobkit instance.
+	// It defaults to `Jobkit`
+	Title string `yaml:"title"`
 	// UseViewFiles indicates if we should use local view files from the disk.
 	UseViewFiles *bool `yaml:"useViewFiles"`
 	// Cron is the cron manager config.
@@ -46,6 +49,14 @@ func (c *Config) Resolve() error {
 		c.Slack.Resolve(),
 		c.Sentry.Resolve(),
 	)
+}
+
+// TitleOrDefault returns a property or a default.
+func (c Config) TitleOrDefault() string {
+	if c.Title != "" {
+		return c.Title
+	}
+	return "Jobkit"
 }
 
 // UseViewFilesOrDefault returns a value or a default.

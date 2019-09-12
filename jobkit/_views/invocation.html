@@ -73,13 +73,18 @@
 				<script src="/static/js/fit.js"></script>
 				<script src="/static/js/webLinks.js"></script>
 
-				<div id="term-window">{{ .ViewModel.Output }}</div>
+				<div id="term-window"></div>
 				<script>
+					Terminal.applyAddon(fit);
 					var term = new Terminal();
+					term.fontWeight = "100";
 					term.open(document.getElementById('term-window'));
+					{{ range $index, $line := .ViewModel.Output.Lines }}
+					term.writeln("{{ $line.Data | as_string }}");
+					{{ end }}
 					var es = new EventSource("/api/job.invocation.output.stream/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}");
 					es.onmessage = (e) => {
-						term.write(e.data);
+						term.writeln(e.data);
 					};
 				</script>
 				</td>

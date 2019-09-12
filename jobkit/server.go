@@ -50,6 +50,14 @@ func NewServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App 
 		}
 	}
 
+	addConfigState := func(action web.Action) web.Action {
+		return func(r *web.Ctx) web.Result {
+			r.State.Set("Config", cfg)
+			return action(r)
+		}
+	}
+	app.DefaultMiddleware = append(app.DefaultMiddleware, addConfigState)
+
 	app.PanicAction = func(r *web.Ctx, err interface{}) web.Result {
 		return r.Views.InternalError(ex.New(err))
 	}

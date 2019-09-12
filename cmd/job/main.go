@@ -27,6 +27,7 @@ import (
 )
 
 var (
+	flagTitle                         *string
 	flagBind                          *string
 	flagConfigPath                    *string
 	flagDisableServer                 *bool
@@ -47,6 +48,7 @@ var (
 )
 
 func initFlags(cmd *cobra.Command) {
+	flagTitle = cmd.Flags().String("title", "", "The title for the jobkit instance.")
 	flagBind = cmd.Flags().String("bind", "", "The management http server bind address.")
 	flagConfigPath = cmd.Flags().StringP("config", "c", "", "The config path.")
 	flagUseViewFiles = cmd.Flags().Bool("use-view-files", false, "If we should use view files vs. statically linked assets.")
@@ -77,6 +79,7 @@ func (c *config) Resolve() error {
 		c.Logger.Flags = []string{"all"}
 	}
 	return configutil.AnyError(
+		configutil.SetString(&c.Title, configutil.String(*flagTitle), configutil.Env("HOSTNAME"), configutil.String(c.Title)),
 		configutil.SetString(&c.Web.BindAddr, configutil.String(*flagBind), configutil.Env("BIND_ADDR"), configutil.String(c.Web.BindAddr)),
 		configutil.SetBool(&c.DisableServer, configutil.Bool(flagDisableServer), configutil.Bool(c.DisableServer), configutil.Bool(ref.Bool(false))),
 		configutil.SetBool(&c.UseViewFiles, configutil.Bool(flagUseViewFiles), configutil.Bool(c.UseViewFiles), configutil.Bool(ref.Bool(false))),
@@ -182,7 +185,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	log, err := logger.New(logger.OptConfig(cfg.Logger))
+	log, err := logger.New(logger.OptConfig(cfg.Logger), logger.OptPath(cfg.TitleOrDefault()))
 	if err != nil {
 		return err
 	}

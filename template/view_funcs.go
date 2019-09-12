@@ -193,7 +193,14 @@ func (vf ViewFuncs) Process(vm Viewmodel, contents string) (string, error) {
 
 // ToString attempts to return a string representation of a value.
 func (vf ViewFuncs) ToString(v interface{}) string {
-	return fmt.Sprintf("%v", v)
+	switch c := v.(type) {
+	case []byte:
+		return string(c)
+	case string:
+		return c
+	default:
+		return fmt.Sprintf("%v", v)
+	}
 }
 
 // ToBytes attempts to return a bytes representation of a value.
