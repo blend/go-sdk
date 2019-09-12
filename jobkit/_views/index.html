@@ -6,7 +6,8 @@
 			<tr>
 				<th></th>
 				<th>Status</th>
-				<th>Job</th>
+                <th>Name</th>
+				<th>Labels</th>
 				<th>Success Rate</th>
 				<th>P95</th>
 				<th>Schedule</th>
@@ -38,7 +39,10 @@
 						{{ end }}
 					{{ end }}
 				</td>
-				<td> <!-- job name -->
+                <td>
+                    {{ $job.Name }}
+                </td>
+				<td> <!-- job labels-->
 					<ul class="uk-list uk-list-divider">
 				{{ range $key, $value := $job.Labels }}
 						<li><a href="/search?selector={{ $key | urlencode }}={{ $value | urlencode }}">{{ $key }}={{ $value }}</a></li>
@@ -122,7 +126,7 @@
 				</td>
 			</tr>
 			<tr id="history-{{ $job.Name }}" {{ if $singleResult | not }}hidden{{end}}>
-				<td colspan=11>
+				<td colspan=12>
 					{{ if $job.Description }}
 					<table class="uk-table">
 						<tbody>
@@ -169,7 +173,7 @@
 				</td>
 			</tr>
 			{{ else }}
-			<tr><td colspan=11>No jobs loaded or matched the search selector.</td></tr>
+			<tr><td colspan=12>No jobs loaded or matched the search selector.</td></tr>
 			{{ end }}
 		</tbody>
 	</table>
