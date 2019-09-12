@@ -78,14 +78,18 @@
 					Terminal.applyAddon(fit);
 					var term = new Terminal();
 					term.open(document.getElementById('term-window'));
+					term.cols = 240;
 					term.resize();
+					term.markers = [];
 					{{ range $index, $line := .ViewModel.Output.Lines }}
 					term.writeln("{{ $line.Data | as_string }}");
 					{{ end }}
+					{{ if .ViewModel.Status | eq "running" }}
 					var es = new EventSource("/api/job.invocation.output.stream/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}");
 					es.onmessage = (e) => {
 						term.writeln(e.data);
 					};
+					{{ end }}
 				</script>
 				</td>
 			</tr>
