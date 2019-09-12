@@ -77,8 +77,8 @@
 				<script>
 					Terminal.applyAddon(fit);
 					var term = new Terminal();
-					term.fontWeight = "100";
 					term.open(document.getElementById('term-window'));
+					term.resize();
 					{{ range $index, $line := .ViewModel.Output.Lines }}
 					term.writeln("{{ $line.Data | as_string }}");
 					{{ end }}
