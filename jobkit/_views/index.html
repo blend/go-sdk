@@ -165,7 +165,7 @@
 								<td>{{ $ji.Status }}</td>
 								<td>{{ $ji.Elapsed }}</td>
 								<td>{{ if $ji.Err }}<code>{{ $ji.Err }}</code>{{ else }}-{{end}}</td>
-								<td><a class="uk-button"href="/job.invocation/{{$ji.JobName}}/{{ $ji.ID }}">View Output</td>
+								<td><a class="uk-button uk-button-primary" href="/job.invocation/{{$ji.JobName}}/{{ $ji.ID }}">Output</td>
 							</tr>
 						{{ end }}
 						</tbody>
