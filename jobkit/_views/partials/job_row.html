@@ -67,12 +67,12 @@
 	</td>
 	<td> <!-- actions -->
 	{{ if .Disabled }}
-		<a class="uk-button" href="/job.enable/{{ .Name }}">Enable</a>
+		<a class="uk-button uk-button-secondary" href="/job.enable/{{ .Name }}">Enable</a>
 	{{else}}
-		<a class="uk-button" href="/job.disable/{{ .Name }}">Disable</a>
+		<a class="uk-button uk-button-danger" href="/job.disable/{{ .Name }}">Disable</a>
 	{{end}}
 	{{ if .CanRun }}
-		<a class="uk-button" href="/job.run/{{ .Name }}">Run</a>
+		<a class="uk-button uk-button-primary" href="/job.run/{{ .Name }}">Run</a>
 	{{ else }}
 	<button class="uk-button uk-button-primary">Running</button>
 	{{ end }}
