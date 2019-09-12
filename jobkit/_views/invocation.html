@@ -81,15 +81,15 @@
 					term.cols = 240;
 					term.resize();
 					term.markers = [];
-					{{ range $index, $line := .ViewModel.Output.Lines }}
+					/* code {{ range $index, $line := .ViewModel.Output.Lines }} */
 					term.writeln("{{ $line.Data | as_string }}");
-					{{ end }}
-					{{ if .ViewModel.Status | eq "running" }}
+					/*{{ end }}*/
+					/* {{ if .ViewModel.Status | eq "running" }} */
 					var es = new EventSource("/api/job.invocation.output.stream/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}");
 					es.onmessage = (e) => {
 						term.writeln(e.data);
 					};
-					{{ end }}
+					/*{{ end }}*/
 				</script>
 				</td>
 			</tr>

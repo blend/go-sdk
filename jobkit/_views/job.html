@@ -1,0 +1,99 @@
+{{ define "job" }}
+{{ template "header" . }}
+<div id="content" class="uk-container uk-container-expand">
+	<div class="uk-child-width-expand@s" uk-grid>
+		<div>
+			<ul class="uk-breadcrumb">
+				<li><a href="/">Jobs</a></li>
+				<li><a href="/search?selector=name={{ .ViewModel.Name }}">{{ .ViewModel.Name }}</a></li>
+			</ul>
+		</div>
+	</div>
+	{{ template "partials/job_table_header" }}
+	{{ template "partials/job_row" .ViewModel }}
+	{{ template "partials/job_table_footer" }}
+	{{ if .ViewModel.Description }}
+	<table class="uk-table">
+		<thead>
+			<tr>
+				<th>Success Rate</th>
+				<th>P95</th>
+				<th>P50</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td> <!-- success rate -->
+					{{ if gt .ViewModel.Stats.SuccessRate 0.9 }}
+					<span class="uk-text-success">
+						{{ .ViewModel.Stats.SuccessRate | format_pct }}
+					</span>
+					{{ else if gt .ViewModel.Stats.SuccessRate 0.7 }}
+					<span class="uk-text-warning">
+						{{ .ViewModel.Stats.SuccessRate | format_pct }}
+					</span>
+					{{ else }}
+					<span class="uk-text-danger">
+						{{ .ViewModel.Stats.SuccessRate | format_pct }}
+					</span>
+					{{ end }}
+				</td>
+				<td> <!-- p95 -->
+					{{ .ViewModel.Stats.Elapsed95th }}
+				</td>
+				<td> <!-- p50 -->
+					{{ .ViewModel.Stats.Elapsed50th }}
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<table class="uk-table">
+		<thead>
+			<tr>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td><pre>{{ .ViewModel.Description }}</pre></td>
+			</tr>
+		</tbody>
+	</table>
+	{{ end }}
+	<table class="uk-table uk-table-small uk-table-striped">
+		<thead>
+			<tr>
+				<th>Started</th>
+				<th>Finished</th>
+				<th>Result</th>
+				<th>Elapsed</th>
+				<th>Error</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+		{{ range $key, $ji := .ViewModel.Current }}
+			<tr>
+				<td>{{ $ji.Started | rfc3339 }}</td>
+				<td>{{ if $ji.Finished.IsZero }}-{{ else }}{{ $ji.Finished | rfc3339 }}{{ end }}</td>
+				<td>{{ $ji.Status }}</td>
+				<td>{{ $ji.Elapsed }}</td>
+				<td>{{ if $ji.Err }}<code>{{ $ji.Err }}</code>{{ else }}-{{end}}</td>
+				<td><a class="uk-button uk-button-primary"href="/job.invocation/{{$ji.JobName}}/{{ $ji.ID }}">Output</td>
+			</tr>
+		{{ end }}
+		{{ range $index, $ji := .ViewModel.History | reverse }}
+			<tr>
+				<td>{{ $ji.Started | rfc3339 }}</td>
+				<td>{{ if $ji.Finished.IsZero }}-{{ else }}{{ $ji.Finished | rfc3339 }}{{ end }}</td>
+				<td>{{ $ji.Status }}</td>
+				<td>{{ $ji.Elapsed }}</td>
+				<td>{{ if $ji.Err }}<code>{{ $ji.Err }}</code>{{ else }}-{{end}}</td>
+				<td><a class="uk-button uk-button-secondary" href="/job.invocation/{{$ji.JobName}}/{{ $ji.ID }}">Output</td>
+			</tr>
+		{{ end }}
+		</tbody>
+	</table>
+</div>
+{{ template "footer" . }}
+{{ end }}

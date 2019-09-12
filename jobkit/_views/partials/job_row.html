@@ -1,0 +1,81 @@
+{{ define "partials/job_row" }}
+<tr id="{{ .Name }}">
+	<td> <!-- status -->
+		{{ if .Current }}
+		<div uk-tooltip="Job is currently running" uk-spinner="ration: 0.5"></div>
+		{{ else if .Last }}
+			{{ if .Last.Status | eq "cancelled" }}
+			<span class="uk-text-warning" uk-icon="warning" uk-tooltip="Job was last cancelled"></span>
+			{{ else if .Last.Status | eq "failed" }}
+			<span class="uk-text-danger" uk-icon="warning" uk-tooltip="Job had a failure"></span>
+			{{ else if .Last.Status | eq "complete" }}
+			<span class="uk-text-success" uk-icon="check" uk-tooltip="Last invocation was a success"></span>
+			{{ end }}
+		{{ end }}
+	</td>
+	<td>
+		<a class="uk-button uk-button-link" href="/job/{{ .Name | slugify }}">{{ .Name }}</a>
+	</td>
+	<td> <!-- job labels-->
+		<ul class="uk-list uk-list-divider">
+	{{ range $key, $value := .Labels}}
+			<li><a href="/search?selector={{ $key | urlencode }}={{ $value | urlencode }}">{{ $key }}={{ $value }}</a></li>
+	{{ end }}
+		</ul>
+	</td>
+	<td> <!-- schedule -->
+	{{ if .Schedule }}
+		{{ .Schedule }}
+	{{ else }}
+		<span>-</span>
+	{{ end }}
+	</td>
+	<td> <!-- next run-->
+	{{ if .Disabled }}
+		<span>-</span>
+	{{ else }}
+		{{ .NextRuntime | rfc3339 }}
+	{{ end }}
+	</td>
+	<td> <!-- last run -->
+	{{ if .Last }}
+		{{ .Last.Finished | since_utc }} ago
+	{{ else }}
+		<span class="none">-</span>
+	{{ end }}
+	</td>
+	<td> <!-- last status -->
+	{{ if .Last }}
+		{{ if .Last.Err }}
+			<code>{{ .Last.Err }}</code>
+		{{ else }}
+		<span class="none">Success</span>
+		{{ end }}
+	{{ else }}
+		<span class="none">-</span>
+	{{ end }}
+	</td>
+	<td> <!-- last elapsed -->
+	{{ if .Last }}
+		{{ .Last.Elapsed }}
+	{{ else }}
+		<span class="none">-</span>
+	{{ end }}
+	</td>
+	<td> <!-- job links -->
+		<a class="uk-button" href="/job/{{ .Name }}">History</a>
+	</td>
+	<td> <!-- actions -->
+	{{ if .Disabled }}
+		<a class="uk-button" href="/job.enable/{{ .Name }}">Enable</a>
+	{{else}}
+		<a class="uk-button" href="/job.disable/{{ .Name }}">Disable</a>
+	{{end}}
+	{{ if .CanRun }}
+		<a class="uk-button" href="/job.run/{{ .Name }}">Run</a>
+	{{ else }}
+	<button class="uk-button uk-button-primary">Running</button>
+	{{ end }}
+	</td>
+</tr>
+{{ end }}

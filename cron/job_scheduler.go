@@ -3,6 +3,7 @@ package cron
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/blend/go-sdk/async"
@@ -107,6 +108,7 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 
 // JobScheduler is a job instance.
 type JobScheduler struct {
+	sync.Mutex
 	*async.Latch `json:"-"`
 
 	Job    Job        `json:"-"`
@@ -358,9 +360,7 @@ func (js *JobScheduler) Run() {
 			js.onComplete(ji.Context, ji)
 		}
 
-		js.addHistory(*ji)
-		js.removeCurrent(ji)
-		js.setLast(ji)
+		js.finishCurrent(ji)
 		js.PersistHistory(ji.Context)
 	}()
 
@@ -498,6 +498,15 @@ func (js *JobScheduler) Stats() JobStats {
 //
 // utility functions
 //
+
+func (js *JobScheduler) finishCurrent(ji *JobInvocation) {
+	js.Lock()
+	js.Unlock()
+
+	js.addHistory(*ji)
+	js.removeCurrent(ji)
+	js.setLast(ji)
+}
 
 func (js *JobScheduler) addCurrent(ji *JobInvocation) {
 	js.Current[ji.ID] = ji
