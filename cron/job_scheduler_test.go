@@ -155,3 +155,32 @@ func TestJobSchedulerLabels(t *testing.T) {
 	assert.Equal("wuzz", labels["fuzz"])
 	assert.Equal(JobStatusComplete, labels["last"])
 }
+
+func TestJobSchedulerStats(t *testing.T) {
+	assert := assert.New(t)
+
+	js := NewJobScheduler(NewJob(OptJobName("test"), OptJobAction(noop)))
+	js.History = []JobInvocation{
+		{Status: JobStatusComplete, Elapsed: 2 * time.Second},
+		{Status: JobStatusComplete, Elapsed: 4 * time.Second},
+		{Status: JobStatusComplete, Elapsed: 6 * time.Second},
+		{Status: JobStatusComplete, Elapsed: 8 * time.Second},
+		{Status: JobStatusFailed, Elapsed: 10 * time.Second},
+		{Status: JobStatusFailed, Elapsed: 12 * time.Second},
+		{Status: JobStatusCancelled, Elapsed: 14 * time.Second},
+		{Status: JobStatusCancelled, Timeout: time.Now().UTC(), Elapsed: 16 * time.Second},
+	}
+
+	stats := js.Stats()
+	assert.NotNil(stats)
+	assert.Equal(0.5, stats.SuccessRate)
+	assert.Equal(8, stats.RunsTotal)
+	assert.Equal(4, stats.RunsSuccessful)
+	assert.Equal(2, stats.RunsFailed)
+	assert.Equal(1, stats.RunsCancelled)
+	assert.Equal(1, stats.RunsTimedOut)
+
+	assert.Equal(16*time.Second, stats.ElapsedMax)
+	assert.Equal(16*time.Second, stats.Elapsed95th)
+	assert.Equal(9*time.Second, stats.Elapsed50th)
+}

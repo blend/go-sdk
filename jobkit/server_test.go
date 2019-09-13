@@ -40,7 +40,7 @@ func TestManagementServer(t *testing.T) {
 	assert.Len(jobs, 2)
 }
 
-func TestManagementServerHealthz(t *testing.T) {
+func TestManagementServerStatus(t *testing.T) {
 	assert := assert.New(t)
 
 	jm := cron.New()
@@ -100,13 +100,10 @@ func TestManagementServerIndex(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.Contains(string(contents), jobName)
-	assert.Contains(string(contents), invocationID)
 
 	contents, meta, err = web.MockGet(app, fmt.Sprintf("/job.invocation/%s/%s", jobName, invocationID)).Bytes()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.Contains(string(contents), jobName)
 	assert.Contains(string(contents), invocationID)
-	assert.Contains(string(contents), output)
-	assert.Contains(string(contents), errorOutput)
 }

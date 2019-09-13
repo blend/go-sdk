@@ -8,9 +8,9 @@ type JobStats struct {
 	OutputBytes    int           `json:"outputBytes"`
 	RunsTotal      int           `json:"runsTotal"`
 	RunsSuccessful int           `json:"runsSuccessful"`
+	RunsFailed     int           `json:"runsFailed"`
 	RunsCancelled  int           `json:"runsCancelled"`
 	RunsTimedOut   int           `json:"runsTimedOut"`
-	RunsErrored    int           `json:"runsErrored"`
 	ElapsedMax     time.Duration `json:"elapsedMax"`
 	Elapsed50th    time.Duration `json:"elapsed50th"`
 	Elapsed95th    time.Duration `json:"elapsed95th"`

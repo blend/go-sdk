@@ -202,12 +202,37 @@ func TestEnvUnion(t *testing.T) {
 }
 
 type readInto struct {
-	Test1 string        `env:"test1"`
-	Test2 int           `env:"test2"`
-	Test3 float64       `env:"test3"`
-	Dur   time.Duration `env:"dur"`
-	Sub   readIntoSub
-	Alias alias `env:"alias"`
+	Test1   string        `env:"test1"`
+	Test2   int           `env:"test2"`
+	Test3   float64       `env:"test3"`
+	Dur     time.Duration `env:"dur"`
+	Sub     readIntoSub
+	Alias   alias   `env:"alias"`
+	Uint    uint    `env:"uint"`
+	Uint8   uint    `env:"uint8"`
+	Uint16  uint16  `env:"uint16"`
+	Uint32  uint32  `env:"uint32"`
+	Uint64  uint64  `env:"uint64"`
+	Int     int     `env:"int"`
+	Int8    int     `env:"int8"`
+	Int16   int16   `env:"int16"`
+	Int32   int32   `env:"int32"`
+	Int64   int64   `env:"int64"`
+	Float32 float32 `env:"float32"`
+	Float64 float32 `env:"float64"`
+
+	EmptyUint    uint    `env:"emptyuint"`
+	EmptyUint8   uint    `env:"emptyuint8"`
+	EmptyUint16  uint16  `env:"emptyuint16"`
+	EmptyUint32  uint32  `env:"emptyuint32"`
+	EmptyUint64  uint64  `env:"emptyuint64"`
+	EmptyInt     int     `env:"emptyint"`
+	EmptyInt8    int     `env:"emptyint8"`
+	EmptyInt16   int16   `env:"emptyint16"`
+	EmptyInt32   int32   `env:"emptyint32"`
+	EmptyInt64   int64   `env:"emptyint64"`
+	EmptyFloat32 float32 `env:"emptyfloat32"`
+	EmptyFloat64 float32 `env:"emptyfloat64"`
 }
 
 type readIntoSub struct {
@@ -224,16 +249,41 @@ func TestEnvReadInto(t *testing.T) {
 	assert := assert.New(t)
 
 	vars1 := Vars{
-		"test1": "foo",
-		"test2": "1",
-		"test3": "2.0",
-		"test4": "bar",
-		"dur":   "4s",
-		"test5": "bar0,bar1,bar2",
-		"test6": string(base64.StdEncoding.EncodeToString([]byte("base64encoded"))),
-		"test7": "alsoBytes",
-		"test8": "true",
-		"alias": "hello",
+		"test1":   "foo",
+		"test2":   "1",
+		"test3":   "2.0",
+		"test4":   "bar",
+		"dur":     "4s",
+		"test5":   "bar0,bar1,bar2",
+		"test6":   string(base64.StdEncoding.EncodeToString([]byte("base64encoded"))),
+		"test7":   "alsoBytes",
+		"test8":   "true",
+		"alias":   "hello",
+		"uint":    "1",
+		"uint8":   "1",
+		"uint16":  "1",
+		"uint32":  "1",
+		"uint64":  "1",
+		"int":     "1",
+		"int8":    "1",
+		"int16":   "1",
+		"int32":   "1",
+		"int64":   "1",
+		"float32": "1",
+		"float64": "1",
+
+		"emptyuint":    "",
+		"emptyuint8":   "",
+		"emptyuint16":  "",
+		"emptyuint32":  "",
+		"emptyuint64":  "",
+		"emptyint":     "",
+		"emptyint8":    "",
+		"emptyint16":   "",
+		"emptyint32":   "",
+		"emptyint64":   "",
+		"emptyfloat32": "",
+		"emptyfloat64": "",
 	}
 
 	var obj readInto
@@ -251,6 +301,32 @@ func TestEnvReadInto(t *testing.T) {
 	assert.NotEmpty(obj.Sub.Test6)
 	assert.NotEmpty(obj.Sub.Test7)
 	assert.Equal(obj.Alias, vars1["alias"])
+
+	assert.NotZero(obj.Uint)
+	assert.NotZero(obj.Uint8)
+	assert.NotZero(obj.Uint16)
+	assert.NotZero(obj.Uint32)
+	assert.NotZero(obj.Uint64)
+	assert.NotZero(obj.Int)
+	assert.NotZero(obj.Int8)
+	assert.NotZero(obj.Int16)
+	assert.NotZero(obj.Int32)
+	assert.NotZero(obj.Int64)
+	assert.NotZero(obj.Float32)
+	assert.NotZero(obj.Float64)
+
+	assert.Zero(obj.EmptyUint)
+	assert.Zero(obj.EmptyUint8)
+	assert.Zero(obj.EmptyUint16)
+	assert.Zero(obj.EmptyUint32)
+	assert.Zero(obj.EmptyUint64)
+	assert.Zero(obj.EmptyInt)
+	assert.Zero(obj.EmptyInt8)
+	assert.Zero(obj.EmptyInt16)
+	assert.Zero(obj.EmptyInt32)
+	assert.Zero(obj.EmptyInt64)
+	assert.Zero(obj.EmptyFloat32)
+	assert.Zero(obj.EmptyFloat64)
 }
 
 func TestEnvDelete(t *testing.T) {

@@ -471,19 +471,27 @@ func (js *JobScheduler) Stats() JobStats {
 
 	output.RunsTotal = len(js.History)
 	for _, ji := range js.History {
-		if ji.Err != nil {
-			output.RunsErrored++
-		} else if !ji.Timeout.IsZero() {
-			output.RunsTimedOut++
-		} else if !ji.Cancelled.IsZero() {
-			output.RunsCancelled++
-		} else if !ji.Finished.IsZero() {
+		switch ji.Status {
+		case JobStatusComplete:
 			output.RunsSuccessful++
+		case JobStatusFailed:
+			output.RunsFailed++
+		case JobStatusCancelled:
+			if !ji.Timeout.IsZero() {
+				output.RunsTimedOut++
+			} else {
+				output.RunsCancelled++
+			}
 		}
 		if ji.Elapsed > 0 {
 			elapsedTimes = append(elapsedTimes, ji.Elapsed)
 		}
-		output.OutputBytes += len(ji.Output.Bytes())
+		if ji.Elapsed > output.ElapsedMax {
+			output.ElapsedMax = ji.Elapsed
+		}
+		if ji.Output != nil {
+			output.OutputBytes += len(ji.Output.Bytes())
+		}
 	}
 	if output.RunsTotal > 0 {
 		output.SuccessRate = float64(output.RunsSuccessful) / float64(output.RunsTotal)
