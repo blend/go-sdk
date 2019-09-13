@@ -125,70 +125,106 @@ func PatchStrings(tagName string, data map[string]string, obj interface{}) (err 
 							continue
 						}
 					case reflect.Float32:
+						if dataValue == "" {
+							continue
+						}
 						dataFieldValue, err = strconv.ParseFloat(dataValue, 32)
 						if err != nil {
 							err = ex.New(err)
 							return
 						}
 					case reflect.Float64:
+						if dataValue == "" {
+							continue
+						}
 						dataFieldValue, err = strconv.ParseFloat(dataValue, 64)
 						if err != nil {
 							err = ex.New(err)
 							return
 						}
 					case reflect.Int8:
+						if dataValue == "" {
+							continue
+						}
 						dataFieldValue, err = strconv.ParseInt(dataValue, 10, 8)
 						if err != nil {
 							err = ex.New(err)
 							return
 						}
 					case reflect.Int16:
+						if dataValue == "" {
+							continue
+						}
 						dataFieldValue, err = strconv.ParseInt(dataValue, 10, 16)
 						if err != nil {
 							return ex.New(err)
 						}
 					case reflect.Int32:
+						if dataValue == "" {
+							continue
+						}
 						dataFieldValue, err = strconv.ParseInt(dataValue, 10, 32)
 						if err != nil {
 							err = ex.New(err)
 							return
 						}
 					case reflect.Int:
+						if dataValue == "" {
+							continue
+						}
 						dataFieldValue, err = strconv.ParseInt(dataValue, 10, 64)
 						if err != nil {
 							err = ex.New(err)
 							return
 						}
 					case reflect.Int64:
+						if dataValue == "" {
+							continue
+						}
 						dataFieldValue, err = strconv.ParseInt(dataValue, 10, 64)
 						if err != nil {
 							return ex.New(err)
 						}
 					case reflect.Uint8:
+						if dataValue == "" {
+							continue
+						}
 						dataFieldValue, err = strconv.ParseUint(dataValue, 10, 8)
 						if err != nil {
 							err = ex.New(err)
 							return
 						}
 					case reflect.Uint16:
+						if dataValue == "" {
+							continue
+						}
 						dataFieldValue, err = strconv.ParseUint(dataValue, 10, 8)
 						if err != nil {
 							err = ex.New(err)
 							return
 						}
 					case reflect.Uint32:
+						if dataValue == "" {
+							continue
+						}
 						dataFieldValue, err = strconv.ParseUint(dataValue, 10, 32)
 						if err != nil {
 							err = ex.New(err)
 							return
 						}
 					case reflect.Uint64:
+						if dataValue == "" {
+							continue
+						}
 						dataFieldValue, err = strconv.ParseUint(dataValue, 10, 64)
 						if err != nil {
 							err = ex.New(err)
 							return
 						}
 					case reflect.Uint, reflect.Uintptr:
+						if dataValue == "" {
+							continue
+						}
 						dataFieldValue, err = strconv.ParseUint(dataValue, 10, 64)
 						if err != nil {
 							err = ex.New(err)
