@@ -22,23 +22,33 @@ export DB_SSLMODE
 
 all: ci
 
-ci: vet profanity cover-ci
+ci: deps vet profanity generate cover-ci
 
-new-install: deps install-all
+new-install: deps dev-deps install-all
+
+list-deps:
+	@go list -f '{{ join .Imports "\n" }}' ./... | egrep "github.com|golang.org" | grep -v "github.com/blend/go-sdk" | sort | uniq
 
 deps:
 	@go get ./...
 
 dev-deps:
+	@go get -u golang.org/x/lint/golint
 	@go get -d github.com/goreleaser/goreleaser
 
-install-all: install-ask install-coverage install-profanity install-reverseproxy install-recover install-semver install-shamir install-template
+install-all: install-ask install-bindata install-coverage install-profanity install-reverseproxy install-recover install-semver install-shamir install-template
 
 install-ask:
 	@go install github.com/blend/go-sdk/cmd/ask
 
+install-bindata:
+	@go install github.com/blend/go-sdk/cmd/bindata
+
 install-coverage:
 	@go install github.com/blend/go-sdk/cmd/coverage
+
+install-job:
+	@go install github.com/blend/go-sdk/cmd/job
 
 install-profanity:
 	@go install github.com/blend/go-sdk/cmd/profanity
@@ -69,6 +79,10 @@ vet:
 lint:
 	@echo "$(VERSION)/$(GIT_REF) >> linting code"
 	@golint $(LINTPKGS)
+
+generate:
+	@echo "$(VERSION)/$(GIT_REF) >> generating code"
+	@go generate $(PKGS)
 
 build:
 	@echo "$(VERSION)/$(GIT_REF) >> linting code"
@@ -146,10 +160,13 @@ push-tag:
 	@echo "Pushing v$(VERSION) tag to remote"
 	@git push -f origin v$(VERSION)
 
-release-all: clean-dist release-ask release-coverage release-job release-profanity release-proxy release-recover release-semver release-shamir release-template
+release-all: clean-dist release-ask release-bindata release-coverage release-job release-profanity release-proxy release-recover release-semver release-shamir release-template
 
 release-ask:
 	@goreleaser release -f .goreleaser/ask.yml
+
+release-bindata:
+	@goreleaser release -f .goreleaser/bindata.yml
 
 release-coverage:
 	@goreleaser release -f .goreleaser/coverage.yml
