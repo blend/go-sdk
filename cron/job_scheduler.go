@@ -399,7 +399,6 @@ func (js *JobScheduler) GetInvocationByID(id string) *JobInvocation {
 // RestoreHistory calls the persist handler if it's set.
 func (js *JobScheduler) RestoreHistory(ctx context.Context) error {
 	if js.HistoryRestoreProvider != nil {
-		js.debugf("restoring history")
 		var err error
 		if js.History, err = js.HistoryRestoreProvider(ctx); err != nil {
 			return js.error(err)
@@ -414,7 +413,6 @@ func (js *JobScheduler) RestoreHistory(ctx context.Context) error {
 // PersistHistory calls the persist handler if it's set.
 func (js *JobScheduler) PersistHistory(ctx context.Context) error {
 	if js.HistoryPersistProvider != nil {
-		js.debugf("persisting history")
 		if err := js.HistoryPersistProvider(ctx, js.History); err != nil {
 			return js.error(err)
 		}
