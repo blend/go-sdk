@@ -22,7 +22,7 @@ export DB_SSLMODE
 
 all: ci
 
-ci: deps vet profanity generate cover-ci
+ci: deps vet profanity cover-ci
 
 new-install: deps dev-deps install-all
 
