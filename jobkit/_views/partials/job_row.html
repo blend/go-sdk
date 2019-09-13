@@ -63,6 +63,11 @@
 	{{ end }}
 	</td>
 	<td> <!-- job links -->
+		{{ if .Last }}
+		<a class="uk-button" href="/job.invocation/{{ .Name }}/{{ .Last.ID }}">Last</a>
+		{{ else }}
+		<a class="uk-button" disabled>Last</a>
+		{{ end }}
 		<a class="uk-button" href="/job/{{ .Name }}">History</a>
 	</td>
 	<td> <!-- actions -->

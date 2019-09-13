@@ -501,23 +501,19 @@ func (js *JobScheduler) Stats() JobStats {
 
 func (js *JobScheduler) finishCurrent(ji *JobInvocation) {
 	js.Lock()
-	js.Unlock()
 
-	js.addHistory(*ji)
-	js.removeCurrent(ji)
-	js.setLast(ji)
+	if !js.HistoryDisabledProvider() {
+		js.History = append(js.cullHistory(), *ji)
+	}
+	delete(js.Current, ji.ID)
+	js.Last = ji
+	js.Unlock()
 }
 
 func (js *JobScheduler) addCurrent(ji *JobInvocation) {
+	js.Lock()
 	js.Current[ji.ID] = ji
-}
-
-func (js *JobScheduler) removeCurrent(ji *JobInvocation) {
-	delete(js.Current, ji.ID)
-}
-
-func (js *JobScheduler) setLast(ji *JobInvocation) {
-	js.Last = ji
+	js.Unlock()
 }
 
 // Cancel stops an execution in process.
@@ -628,12 +624,6 @@ func (js *JobScheduler) loggerEventContext(parent context.Context) context.Conte
 		return logger.WithSkipWrite(parent)
 	}
 	return parent
-}
-
-func (js *JobScheduler) addHistory(ji JobInvocation) {
-	if !js.HistoryDisabledProvider() {
-		js.History = append(js.cullHistory(), ji)
-	}
 }
 
 func (js *JobScheduler) cullHistory() []JobInvocation {

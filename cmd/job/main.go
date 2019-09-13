@@ -268,6 +268,7 @@ func run(cmd *cobra.Command, args []string) error {
 		enabled := ansi.ColorGreen.Apply("enabled")
 		disabled := ansi.ColorRed.Apply("disabled")
 
+		log.Infof("loading job `%s` with exec: %s", jobCfg.Name, ansi.ColorLightWhite.Apply(strings.Join(jobCfg.Exec, " ")))
 		log.Infof("loading job `%s` with schedule: %s with %v", jobCfg.Name, ansi.ColorLightWhite.Apply(jobCfg.ScheduleOrDefault()), serial)
 		if !jobCfg.HistoryDisabledOrDefault() && jobCfg.HistoryPersistedOrDefault() {
 			log.Infof("loading job `%s` with history: %v and persistence: %v to output path: %s", jobCfg.Name, enabled, enabled, ansi.ColorLightWhite.Apply(jobCfg.HistoryPathOrDefault()))
@@ -325,7 +326,7 @@ func createJobFromConfig(base config, cfg jobConfig) (*jobkit.Job, error) {
 	if len(cfg.Exec) == 0 {
 		return nil, ex.New("job exec and command unset", ex.OptMessagef("job: %s", cfg.Name))
 	}
-	action := jobkit.CreateShellAction(cfg.Exec, jobkit.OptShellActionDiscardOutput(cfg.DiscardOutputOrDefault()))
+	action := jobkit.ShellAction(cfg.Exec, jobkit.OptShellActionDiscardOutput(cfg.DiscardOutputOrDefault()))
 	job, err := jobkit.NewJob(cfg.JobConfig, action)
 	if err != nil {
 		return nil, err
