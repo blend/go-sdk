@@ -22,7 +22,11 @@ export DB_SSLMODE
 
 all: ci
 
+<<<<<<< HEAD
 ci: deps vet profanity generate cover-ci
+=======
+ci: deps vet profanity cover-ci
+>>>>>>> wcharczuk/bindata
 
 new-install: deps dev-deps install-all
 
@@ -34,7 +38,10 @@ deps:
 
 dev-deps:
 	@go get -u golang.org/x/lint/golint
+<<<<<<< HEAD
 	@go get -d github.com/goreleaser/goreleaser
+=======
+>>>>>>> wcharczuk/bindata
 
 install-all: install-ask install-bindata install-coverage install-profanity install-reverseproxy install-recover install-semver install-shamir install-template
 

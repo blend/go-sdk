@@ -45,10 +45,17 @@ func main() {
 			dst = os.Stdout
 		}
 
+		if err := bundle.Start(dst); err != nil {
+			fatal(err)
+		}
+
 		for _, path := range args {
-			if err := bundle.Process(dst, parsePathConfig(path)); err != nil {
+			if err := bundle.ProcessPath(dst, parsePathConfig(path)); err != nil {
 				fatal(err)
 			}
+		}
+		if err := bundle.Finish(dst); err != nil {
+			fatal(err)
 		}
 	}
 	fatal(cmd.Execute())
@@ -56,7 +63,7 @@ func main() {
 
 func fatal(err error) {
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n\n", err)
+		fmt.Fprintf(os.Stderr, "%+v\n\n", err)
 		os.Exit(1)
 	}
 }
