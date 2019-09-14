@@ -38,7 +38,7 @@ func (fc *FileCompressor) WriteTo(dst io.Writer) (written int64, err error) {
 			if em != nil {
 				err = ex.New(em)
 			}
-			nw, ew := gzw.Write(buf[0:nr])
+			nw, ew := gzw.Write(sanitize(buf[0:nr]))
 			if nw > 0 {
 				written += int64(nw)
 			}
