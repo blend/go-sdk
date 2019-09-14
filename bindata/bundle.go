@@ -24,16 +24,18 @@ func (b *Bundle) PackageNameOrDefault() string {
 	return "static"
 }
 
-// Process processes a path with a given config.
-func (b *Bundle) Process(output io.Writer, pc PathConfig) error {
-	if err := b.anyError(
+// Start writes the file preamble.
+func (b *Bundle) Start(output io.Writer) error {
+	return b.anyError(
 		b.writeHeader(output),
 		b.writeHelpers(output),
 		b.writeTypeFile(output),
 		b.writeAssetsHeader(output),
-	); err != nil {
-		return err
-	}
+	)
+}
+
+// ProcessPath processes a path with a given config.
+func (b *Bundle) ProcessPath(output io.Writer, pc PathConfig) error {
 	if !pc.Recursive {
 		f, err := b.readFile(pc.Path)
 		if err != nil {
@@ -49,10 +51,12 @@ func (b *Bundle) Process(output io.Writer, pc PathConfig) error {
 			return err
 		}
 	}
-	if err := b.writeAssetsFooter(output); err != nil {
-		return err
-	}
 	return nil
+}
+
+// Finish closes out the output file
+func (b *Bundle) Finish(output io.Writer) error {
+	return b.writeAssetsFooter(output)
 }
 
 func (b *Bundle) writeHeader(output io.Writer) error {

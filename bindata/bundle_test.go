@@ -16,7 +16,12 @@ func TestBundle(t *testing.T) {
 	buffer := new(bytes.Buffer)
 	bundle := new(Bundle)
 	bundle.PackageName = "bindata"
-	err := bundle.Process(buffer, PathConfig{Path: "./testdata", Recursive: true})
+	err := bundle.Start(buffer)
+	assert.Nil(err)
+	err = bundle.ProcessPath(buffer, PathConfig{Path: "./testdata/css", Recursive: true})
+	err = bundle.ProcessPath(buffer, PathConfig{Path: "./testdata/js/app.js", Recursive: false})
+	assert.Nil(err)
+	err = bundle.Finish(buffer)
 	assert.Nil(err)
 
 	assert.NotEmpty(buffer.Bytes())
