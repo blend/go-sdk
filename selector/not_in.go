@@ -7,8 +7,9 @@ import (
 
 // NotIn returns if a key does not match a set of values.
 type NotIn struct {
-	Key    string
-	Values []string
+	Key             string
+	Values          []string
+	PermittedValues map[rune]bool
 }
 
 // Matches returns the selector result.
@@ -32,7 +33,7 @@ func (ni NotIn) Validate() (err error) {
 		return
 	}
 	for _, v := range ni.Values {
-		err = CheckValue(v)
+		err = CheckValue(v, ni.PermittedValues)
 		if err != nil {
 			return
 		}

@@ -7,3 +7,16 @@ type Option func(p *Parser)
 func SkipValidation(p *Parser) {
 	p.skipValidation = true
 }
+
+// OptPermittedValues is an option to extend the set of symbols that are valid in name values
+func OptPermittedValues(permitted []rune) Option {
+	return func(p *Parser) {
+		if p.permittedValues == nil {
+			p.permittedValues = map[rune]bool{}
+		}
+
+		for _, r := range permitted {
+			p.permittedValues[r] = true
+		}
+	}
+}

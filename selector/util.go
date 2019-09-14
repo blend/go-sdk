@@ -48,6 +48,8 @@ const (
 	CarriageReturn = rune('\r')
 	// NewLine is a common rune.
 	NewLine = rune('\n')
+	// Asterisk is a common rune.
+	Asterisk = rune('*')
 )
 
 const (
@@ -89,13 +91,17 @@ var (
 )
 
 // CheckLabels validates all the keys and values for the label set.
-func CheckLabels(labels Labels) (err error) {
+func CheckLabels(labels Labels, permittedValues ...rune) (err error) {
 	for key, value := range labels {
 		err = CheckKey(key)
 		if err != nil {
 			return
 		}
-		err = CheckValue(value)
+		permitted := map[rune]bool{}
+		for _, p := range permittedValues {
+			permitted[p] = true
+		}
+		err = CheckValue(value, permitted)
 		if err != nil {
 			return
 		}
@@ -144,18 +150,18 @@ func CheckKey(key string) (err error) {
 		return ErrKeyTooLong
 	}
 
-	return checkName(string(working))
+	return checkName(string(working), nil)
 }
 
 // CheckValue returns if the value is valid.
-func CheckValue(value string) error {
+func CheckValue(value string, permitted ...map[rune]bool) error {
 	if len(value) > MaxValueLen {
 		return ErrValueTooLong
 	}
-	return checkName(value)
+	return checkName(value, permitted...)
 }
 
-func checkName(value string) (err error) {
+func checkName(value string, permitted ...map[rune]bool) (err error) {
 	valueLen := len(value)
 	var state int
 	var ch rune
@@ -164,14 +170,14 @@ func checkName(value string) (err error) {
 		ch, width = utf8.DecodeRuneInString(value[pos:])
 		switch state {
 		case 0: //check prefix/suffix
-			if !isAlpha(ch) {
+			if !isAlpha(ch) && !isPermitted(ch, permitted...) {
 				err = ErrKeyInvalidCharacter
 				return
 			}
 			state = 1
 			continue
 		case 1:
-			if !(isNameSymbol(ch) || ch == BackSlash || isAlpha(ch)) {
+			if !(isNameSymbol(ch) || ch == BackSlash || isAlpha(ch) || isPermitted(ch, permitted...)) {
 				err = ErrKeyInvalidCharacter
 				return
 			}
@@ -274,4 +280,19 @@ func isLowerAlpha(ch rune) bool {
 
 func isAlpha(ch rune) bool {
 	return !isWhitespace(ch) && !unicode.IsControl(ch) && !isSymbol(ch)
+}
+
+// isPermitted returns true if ch is a member of any set of permitted runes provided
+func isPermitted(ch rune, permitted ...map[rune]bool) bool {
+	for _, m := range permitted {
+		if m == nil {
+			continue
+		}
+
+		p, ok := m[ch]
+		if ok && p {
+			return true
+		}
+	}
+	return false
 }

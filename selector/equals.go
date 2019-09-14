@@ -4,7 +4,8 @@ import "fmt"
 
 // Equals returns if a key strictly equals a value.
 type Equals struct {
-	Key, Value string
+	Key, Value      string
+	PermittedValues map[rune]bool
 }
 
 // Matches returns the selector result.
@@ -21,7 +22,7 @@ func (e Equals) Validate() (err error) {
 	if err != nil {
 		return
 	}
-	err = CheckValue(e.Value)
+	err = CheckValue(e.Value, e.PermittedValues)
 	return
 }
 

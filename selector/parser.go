@@ -27,7 +27,8 @@ type Parser struct {
 	// m is an optional mark
 	m int
 
-	skipValidation bool
+	skipValidation  bool
+	permittedValues map[rune]bool
 }
 
 // Parse does the actual parsing.
