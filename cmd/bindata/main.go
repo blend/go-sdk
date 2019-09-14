@@ -50,7 +50,7 @@ func main() {
 		}
 
 		for _, path := range args {
-			if err := bundle.ProcessFile(dst, parsePathConfig(path)); err != nil {
+			if err := bundle.ProcessPath(dst, parsePathConfig(path)); err != nil {
 				fatal(err)
 			}
 		}
@@ -63,7 +63,7 @@ func main() {
 
 func fatal(err error) {
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n\n", err)
+		fmt.Fprintf(os.Stderr, "%+v\n\n", err)
 		os.Exit(1)
 	}
 }

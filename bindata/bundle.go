@@ -193,11 +193,11 @@ func (b *Bundle) writeLines(output io.Writer, lines ...string) error {
 }
 
 func (b *Bundle) ignoreBigCount(_ int64, err error) error {
-	return err
+	return ex.New(err)
 }
 
 func (b *Bundle) ignoreCount(_ int, err error) error {
-	return err
+	return ex.New(err)
 }
 
 // FindFiles traverses a root recursively, ignoring files that match the optional ignore
@@ -205,7 +205,7 @@ func (b *Bundle) ignoreCount(_ int, err error) error {
 func (b *Bundle) findFiles(root string, ignores []*regexp.Regexp, handler func(*File) error) error {
 	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return err
+			return ex.New(err)
 		}
 		for _, ignore := range ignores {
 			if ignore.MatchString(path) {
