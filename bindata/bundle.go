@@ -24,15 +24,6 @@ func (b *Bundle) PackageNameOrDefault() string {
 	return "static"
 }
 
-func (b *Bundle) anyError(errs ...error) error {
-	for _, err := range errs {
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // Process processes a path with a given config.
 func (b *Bundle) Process(output io.Writer, pc PathConfig) error {
 	if err := b.anyError(
@@ -171,6 +162,15 @@ func (b *Bundle) writeAssetsFooter(output io.Writer) error {
 		"}",
 		"",
 	)
+}
+
+func (b *Bundle) anyError(errs ...error) error {
+	for _, err := range errs {
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (b *Bundle) write(output io.Writer, text string) error {
