@@ -149,9 +149,6 @@ func (b *Bundle) writeAssetsFile(output io.Writer, file *File) error {
 	if err := b.writeAssetsFileContents(output, file); err != nil {
 		return err
 	}
-	if _, err := io.WriteString(output, "\t},\n"); err != nil {
-		return ex.New(err)
-	}
 	return nil
 }
 
@@ -181,6 +178,7 @@ func (b *Bundle) writeAssetsFileContents(output io.Writer, file *File) error {
 	if err := b.writeLines(output,
 		"",
 		"\t\t},",
+		"\t},",
 	); err != nil {
 		return err
 	}
