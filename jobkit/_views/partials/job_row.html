@@ -22,9 +22,11 @@
 	</td>
 	<td> <!-- job labels-->
 	{{ range $key, $value := .ViewModel.Labels}}
-		<span class="uk-label">
-			<a href="/search?selector={{ $key | urlencode }}={{ $value | slugify }}">{{ $key }}={{ $value | slugify }}</a>
-		</span>
+		<div>
+			<span class="uk-label">
+				<a href="/search?selector={{ $key | urlencode }}={{ $value | slugify }}">{{ $key }}={{ $value | slugify }}</a>
+			</span>
+		</div>
 	{{ end }}
 	</td>
 	<td> <!-- schedule -->
@@ -43,14 +45,14 @@
 	</td>
 	<td> <!-- last run -->
 	{{ if .ViewModel.Last }}
-		{{ .ViewModel.Last.Finished | since_utc }} ago
+		{{ .ViewModel.Last.Finished | since_utc | duration_round_seconds }} ago
 	{{ else }}
 		<span class="none">-</span>
 	{{ end }}
 	</td>
 	<td> <!-- last elapsed -->
 	{{ if .ViewModel.Last }}
-		{{ .ViewModel.Last.Elapsed }}
+		{{ .ViewModel.Last.Elapsed | duration_round_millis }}
 	{{ else }}
 		<span class="none">-</span>
 	{{ end }}
