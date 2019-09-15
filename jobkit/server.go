@@ -321,41 +321,110 @@ func NewServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App 
 			return nil
 		}
 
-		r.Response.Header().Set(webutil.HeaderContentType, "text/event-stream")
-		r.Response.Header().Set(webutil.HeaderVary, "Content-Type")
-		r.Response.WriteHeader(http.StatusOK)
-
-		io.WriteString(r.Response, "event: ping\n\n")
-
+		es := EventSource{Output: r.Response}
+		if err := es.StartSession(); err != nil {
+			logger.MaybeError(app.Log, err)
+			return nil
+		}
 		listenerID := uuid.V4().String()
 
 		shouldClose := make(chan struct{})
 		invocation.OutputListeners.Add(listenerID, func(l cron.OutputLine) {
-			io.WriteString(r.Response, "data: ")
-			if _, err := r.Response.Write([]byte(string(l.Data) + "\n\n")); err != nil {
+			if err := es.Data(string(l.Data)); err != nil {
 				logger.MaybeError(app.Log, err)
 				if shouldClose != nil {
 					close(shouldClose)
 					shouldClose = nil
 				}
 			}
-			r.Response.Flush()
 		})
 		defer func() { invocation.OutputListeners.Remove(listenerID) }()
 
-		alarm := time.Tick(500 * time.Millisecond)
+		updateTick := time.Tick(500 * time.Millisecond)
 		for {
 			select {
 			case <-shouldClose:
-				return nil
-			case <-alarm:
-				if !jm.IsJobInvocationRunning(invocation.JobName, invocation.ID) {
+				if err := es.EventData("complete", string(invocation.State)); err != nil {
+					logger.MaybeError(app.Log, err)
 					return nil
 				}
-				io.WriteString(r.Response, "event: ping\n\n")
-				r.Response.Flush()
+				return nil
+			case <-updateTick:
+				if !jm.IsJobInvocationRunning(invocation.JobName, invocation.ID) {
+					if err := es.EventData("complete", string(invocation.State)); err != nil {
+						logger.MaybeError(app.Log, err)
+						return nil
+					}
+					return nil
+				}
+				if err := es.Ping(); err != nil {
+					logger.MaybeError(app.Log, err)
+					return nil
+				}
+				if err := es.EventData("elapsed", fmt.Sprintf("%v", time.Now().UTC().Sub(invocation.Started).Round(time.Millisecond))); err != nil {
+					logger.MaybeError(app.Log, err)
+					return nil
+				}
 			}
 		}
 	})
 	return app
+}
+
+// EventSource is a helper for writing event source info.
+type EventSource struct {
+	Output http.ResponseWriter
+}
+
+// StartSession starts an event source session.
+func (es EventSource) StartSession() error {
+	es.Output.Header().Set(webutil.HeaderContentType, "text/event-stream")
+	es.Output.Header().Set(webutil.HeaderVary, "Content-Type")
+	es.Output.WriteHeader(http.StatusOK)
+	return es.Ping()
+}
+
+// Ping sends the ping heartbeat event.
+func (es EventSource) Ping() error {
+	return es.Event("ping")
+}
+
+// Event writes an event.
+func (es EventSource) Event(name string) error {
+	_, err := io.WriteString(es.Output, "event: "+name+"\n\n")
+	if err != nil {
+		return ex.New(err)
+	}
+	if typed, ok := es.Output.(http.Flusher); ok {
+		typed.Flush()
+	}
+	return nil
+}
+
+// Data writes a data event.
+func (es EventSource) Data(data string) error {
+	_, err := io.WriteString(es.Output, "data: "+data+"\n\n")
+	if err != nil {
+		return ex.New(err)
+	}
+	if typed, ok := es.Output.(http.Flusher); ok {
+		typed.Flush()
+	}
+	return nil
+}
+
+// EventData sends an event with a given set of data.
+func (es EventSource) EventData(name, data string) error {
+	_, err := io.WriteString(es.Output, "event: "+name+"\n")
+	if err != nil {
+		return ex.New(err)
+	}
+	_, err = io.WriteString(es.Output, "data: "+data+"\n\n")
+	if err != nil {
+		return ex.New(err)
+	}
+	if typed, ok := es.Output.(http.Flusher); ok {
+		typed.Flush()
+	}
+	return nil
 }

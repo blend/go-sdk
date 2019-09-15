@@ -40,7 +40,7 @@
 		</div>
 		<div>
 			<div class="uk-text-small uk-margin-small-bottom"><span class="uk-icon uk-text-primary uk-margin-small-right" uk-icon="clock"></span>Elapsed</div>
-			<div>{{ if .ViewModel.Finished.IsZero }}{{ .ViewModel.Started | since_utc }}{{ else }}{{ .ViewModel.Elapsed }}{{ end }}</div>
+			<div id="elapsed">{{ if .ViewModel.Finished.IsZero }}{{ .ViewModel.Started | since_utc }}{{ else }}{{ .ViewModel.Elapsed }}{{ end }}</div>
 		</div>
 	</div>
 	<hr/>
@@ -77,6 +77,13 @@
 				es.onmessage = (e) => {
 					term.writeln(e.data);
 				};
+				es.addEventListener("elapsed", (e) => {
+					document.getElementById("elapsed").textContent = e.data;
+				});
+				es.addEventListener("complete", (e) => {
+					es.close();
+					window.location.reload();
+				});
 				/*{{ end }}*/
 			</script>
 		</div>
