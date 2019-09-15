@@ -191,6 +191,25 @@ func (jm *JobManager) RunAllJobs() {
 	}
 }
 
+// WaitJobScheduled waits for a job to be scheduled after calling `.Run()`
+func (jm *JobManager) WaitJobScheduled(ctx context.Context, jobName string) (*JobInvocation, error) {
+	scheduler, err := jm.Job(jobName)
+	if err != nil {
+		return nil, err
+	}
+	tick := time.Tick(50 * time.Millisecond)
+	for {
+		if scheduler.Current != nil {
+			return scheduler.Current, nil
+		}
+		select {
+		case <-ctx.Done():
+			return nil, ex.New(context.Canceled)
+		case <-tick:
+		}
+	}
+}
+
 // CancelJob cancels (sends the cancellation signal) to a running job.
 func (jm *JobManager) CancelJob(jobName string) (err error) {
 	jm.Lock()

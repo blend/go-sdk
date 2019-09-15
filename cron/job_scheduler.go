@@ -303,8 +303,8 @@ func (js *JobScheduler) RunLoop() {
 }
 
 // Run forces the job to run.
+// This call will block.
 // It checks if the job should be allowed to execute.
-// It blocks on the job execution to enforce or clear timeouts.
 func (js *JobScheduler) Run() {
 	// check if the job can run
 	if !js.CanRun() {

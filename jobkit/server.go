@@ -153,7 +153,11 @@ func NewServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App 
 		if err := jm.RunJob(jobName); err != nil {
 			return r.Views.BadRequest(err)
 		}
-		return web.RedirectWithMethod("GET", "/")
+		ji, err := jm.WaitJobScheduled(r.Context(), jobName)
+		if err != nil {
+			return r.Views.InternalError(err)
+		}
+		return web.RedirectWithMethodf("GET", "/job.invocation/%s/%s", jobName, ji.ID)
 	})
 	app.GET("/job.enable/:jobName", func(r *web.Ctx) web.Result {
 		jobName, err := r.RouteParam("jobName")
@@ -245,7 +249,11 @@ func NewServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App 
 		if err := jm.RunJob(jobName); err != nil {
 			return web.JSON.BadRequest(err)
 		}
-		return web.JSON.OK()
+		ji, err := jm.WaitJobScheduled(r.Context(), jobName)
+		if err != nil {
+			return r.Views.InternalError(err)
+		}
+		return web.JSON.Result(ji)
 	})
 	app.POST("/api/job.cancel/:jobName", func(r *web.Ctx) web.Result {
 		jobName, err := r.RouteParam("jobName")
