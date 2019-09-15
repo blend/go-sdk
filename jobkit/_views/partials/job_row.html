@@ -20,7 +20,7 @@
 	<td>
 		<a class="uk-button uk-button-link" href="/job/{{ .ViewModel.Name }}">{{ .ViewModel.Name }}</a>
 	</td>
-	<td> <!-- job labels-->
+	<td class="uk-width-1-6"> <!-- job labels-->
 	{{ range $key, $value := .ViewModel.Labels}}
 		<span class="uk-label">
 			<a href="/search?selector={{ $key | urlencode }}={{ $value | slugify }}">{{ $key }}={{ $value | slugify }}</a>

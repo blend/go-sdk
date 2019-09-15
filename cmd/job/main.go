@@ -106,6 +106,21 @@ type defaultJobConfig struct {
 }
 
 func (djc *defaultJobConfig) Resolve() error {
+	if *flagDefaultJobLabels != nil && len(*flagDefaultJobLabels) > 0 {
+		if djc.Labels == nil {
+			djc.Labels = map[string]string{}
+		}
+		for _, label := range *flagDefaultJobLabels {
+			println("label: ", strings.TrimSpace(label))
+			vars, err := env.Parse(strings.TrimSpace(label))
+			if err != nil {
+				return err
+			}
+			for key, value := range vars {
+				djc.Labels[key] = value
+			}
+		}
+	}
 	return configutil.AnyError(
 		configutil.SetString(&djc.Name, configutil.String(*flagDefaultJobName), configutil.String(env.Env().ServiceName()), configutil.String(djc.Name), configutil.String(stringutil.Letters.Random(8))),
 		configutil.SetBool(&djc.DiscardOutput, configutil.Bool(flagDefaultJobDiscardOutput), configutil.Bool(djc.DiscardOutput), configutil.Bool(ref.Bool(false))),

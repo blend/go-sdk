@@ -27,7 +27,7 @@ func TestParseGoodInputs(t *testing.T) {
 
 	// Empty string, which is valid
 	input := ""
-	res, err := Parse(input, PairDelimiterSemicolon)
+	res, err := ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.Equal(nil, err)
 
 	groundTruth := make(Vars)
@@ -35,7 +35,7 @@ func TestParseGoodInputs(t *testing.T) {
 
 	// Single valid key-val pair
 	input = "var_1=val_1;"
-	res, err = Parse(input, PairDelimiterSemicolon)
+	res, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.Equal(nil, err)
 
 	groundTruth = make(Vars)
@@ -44,7 +44,7 @@ func TestParseGoodInputs(t *testing.T) {
 
 	// Single valid key-val pair with no trailing delimiter
 	input = "var_1=val_1"
-	res, err = Parse(input, PairDelimiterSemicolon)
+	res, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.Equal(nil, err)
 
 	groundTruth = make(Vars)
@@ -53,7 +53,7 @@ func TestParseGoodInputs(t *testing.T) {
 
 	// Two valid key-val pairs
 	input = "var_1=val_1;var_2=val_2;"
-	res, err = Parse(input, PairDelimiterSemicolon)
+	res, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.Equal(nil, err)
 
 	groundTruth = make(Vars)
@@ -63,7 +63,7 @@ func TestParseGoodInputs(t *testing.T) {
 
 	// Two valid key-val pairs with arbitrary whitespace
 	input = " var_1   = val_1 ;  var_2 =    val_2; "
-	res, err = Parse(input, PairDelimiterSemicolon)
+	res, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.Equal(nil, err)
 	groundTruth = make(Vars)
 	groundTruth["var_1"] = "val_1"
@@ -72,7 +72,7 @@ func TestParseGoodInputs(t *testing.T) {
 
 	// Two valid key-val pairs with a quoted string and arbitrary whitespace
 	input = "var_1 = val_1; var_2 = \" val_2 \";"
-	res, err = Parse(input, PairDelimiterSemicolon)
+	res, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.Equal(nil, err)
 
 	groundTruth = make(Vars)
@@ -83,7 +83,7 @@ func TestParseGoodInputs(t *testing.T) {
 	// Two valid key-val pairs with a quoted string and arbitrary whitespace
 	// and no trailing separator
 	input = `var_1 = val_1; var_2 = " val_2 "`
-	res, err = Parse(input, PairDelimiterSemicolon)
+	res, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.Equal(nil, err)
 
 	groundTruth = make(Vars)
@@ -94,7 +94,7 @@ func TestParseGoodInputs(t *testing.T) {
 	// Two valid key-val pairs with an escaped quote and arbitrary whitespace
 	// and no trailing separator
 	input = `  var_1     = val_1  ; var_2 =   \" val_2  `
-	res, err = Parse(input, PairDelimiterSemicolon)
+	res, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.Equal(nil, err)
 
 	groundTruth = make(Vars)
@@ -105,7 +105,7 @@ func TestParseGoodInputs(t *testing.T) {
 	// Two valid key-val pairs with an escaped quote and arbitrary whitespace
 	// and no trailing separator
 	input = `var_1 = \=val_1; var_2 = \" val_2 \;  `
-	res, err = Parse(input, PairDelimiterSemicolon)
+	res, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.Equal(nil, err)
 
 	groundTruth = make(Vars)
@@ -117,7 +117,7 @@ func TestParseGoodInputs(t *testing.T) {
 	// enclosed in quotes
 	input = `"var_1"="val_1";"var_2"="val_2";`
 	input = `var_1=val_1;var_2=val_2;`
-	res, err = Parse(input, PairDelimiterSemicolon)
+	res, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.Equal(nil, err)
 
 	groundTruth = make(Vars)
@@ -127,7 +127,7 @@ func TestParseGoodInputs(t *testing.T) {
 
 	// A valid key-val pair consisting of a single quote inside a quoted block
 	input = `var_1 = "\""`
-	res, err = Parse(input, PairDelimiterSemicolon)
+	res, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.Equal(nil, err)
 
 	groundTruth = make(Vars)
@@ -139,80 +139,80 @@ func TestParseBadInputs(t *testing.T) {
 	assert := assert.New(t)
 
 	input := "="
-	_, err := Parse(input, PairDelimiterSemicolon)
+	_, err := ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.NotEqual(nil, err)
 
 	input = ";"
-	_, err = Parse(input, PairDelimiterSemicolon)
+	_, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.NotEqual(nil, err)
 
 	input = `\;`
-	_, err = Parse(input, PairDelimiterSemicolon)
+	_, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.NotEqual(nil, err)
 
 	input = "=;"
-	_, err = Parse(input, PairDelimiterSemicolon)
+	_, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.NotEqual(nil, err)
 
 	input = "=some_val;"
-	_, err = Parse(input, PairDelimiterSemicolon)
+	_, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.NotEqual(nil, err)
 
 	input = ";=some_val;"
-	_, err = Parse(input, PairDelimiterSemicolon)
+	_, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.NotEqual(nil, err)
 
 	input = `;\=some_val;`
-	_, err = Parse(input, PairDelimiterSemicolon)
+	_, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.NotEqual(nil, err)
 
 	input = "some"
-	res, err := Parse(input, PairDelimiterSemicolon)
+	res, err := ParsePairDelimiter(input, PairDelimiterSemicolon)
 	t.Log(res)
 	assert.NotEqual(nil, err)
 
 	input = `some\=val`
-	_, err = Parse(input, PairDelimiterSemicolon)
+	_, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.NotEqual(nil, err)
 
 	input = `key = "`
-	_, err = Parse(input, PairDelimiterSemicolon)
+	_, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.NotEqual(nil, err)
 
 	input = `key "= "`
-	_, err = Parse(input, PairDelimiterSemicolon)
+	_, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.NotEqual(nil, err)
 
 	input = `key \"= "`
-	_, err = Parse(input, PairDelimiterSemicolon)
+	_, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.NotEqual(nil, err)
 
 	input = `key "= \""`
-	_, err = Parse(input, PairDelimiterSemicolon)
+	_, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.NotEqual(nil, err)
 
 	input = `var_1 = =val_1; var_2 = \" val_2 \;  `
-	_, err = Parse(input, PairDelimiterSemicolon)
+	_, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.NotEqual(nil, err)
 
 	input = `var_1 \= val_1; var_2 = " val_2 ";`
-	_, err = Parse(input, PairDelimiterSemicolon)
+	_, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.NotEqual(nil, err)
 
 	input = `var_1 = val_1; var_2 = \" val_2 ";`
-	_, err = Parse(input, PairDelimiterSemicolon)
+	_, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.NotEqual(nil, err)
 
 	input = `var_1 = =val_1; var_1 = \" val_2 \;  `
-	_, err = Parse(input, PairDelimiterSemicolon)
+	_, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.NotEqual(nil, err)
 
 	input = `var_1 \= val_1; var_1 = " val_2 ";`
-	_, err = Parse(input, PairDelimiterSemicolon)
+	_, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.NotEqual(nil, err)
 
 	input = `var_1 = val_1; var_1 = \" val_2 ";`
-	_, err = Parse(input, PairDelimiterSemicolon)
+	_, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.NotEqual(nil, err)
 }
 
@@ -227,7 +227,7 @@ func TestParseAndBack(t *testing.T) {
 	groundTruth := make(Vars)
 	groundTruth["var_1"] = "val_1"
 	serialized := groundTruth.DelimitedString(delimiter)
-	res, err := Parse(serialized, PairDelimiterSemicolon)
+	res, err := ParsePairDelimiter(serialized, PairDelimiterSemicolon)
 	assert.Equal(nil, err)
 	assert.Equal(groundTruth, res)
 
@@ -236,7 +236,7 @@ func TestParseAndBack(t *testing.T) {
 	groundTruth["var_1"] = "val_1"
 	groundTruth["var_2"] = "val_2"
 	serialized = groundTruth.DelimitedString(delimiter)
-	res, _ = Parse(serialized, PairDelimiterSemicolon)
+	res, _ = ParsePairDelimiter(serialized, PairDelimiterSemicolon)
 	assert.Equal(groundTruth, res)
 
 	// Single valid key-val pair with no trailing delimiter
@@ -244,7 +244,7 @@ func TestParseAndBack(t *testing.T) {
 	groundTruth[`"`] = "val_1"
 	groundTruth[`=`] = "val_2"
 	serialized = groundTruth.DelimitedString(delimiter)
-	res, _ = Parse(serialized, PairDelimiterSemicolon)
+	res, _ = ParsePairDelimiter(serialized, PairDelimiterSemicolon)
 	assert.Equal(groundTruth, res)
 
 	// More special characters
@@ -252,14 +252,14 @@ func TestParseAndBack(t *testing.T) {
 	groundTruth[`\"`] = "val_1"
 	groundTruth[`=`] = "val_2"
 	serialized = groundTruth.DelimitedString(delimiter)
-	res, _ = Parse(serialized, PairDelimiterSemicolon)
+	res, _ = ParsePairDelimiter(serialized, PairDelimiterSemicolon)
 	assert.Equal(groundTruth, res)
 
 	groundTruth = make(Vars)
 	groundTruth[`"val_1"="val_2";`] = `"what;a\tricky=value!`
 	groundTruth[`=`] = "val_2"
 	serialized = groundTruth.DelimitedString(delimiter)
-	res, _ = Parse(serialized, PairDelimiterSemicolon)
+	res, _ = ParsePairDelimiter(serialized, PairDelimiterSemicolon)
 	assert.Equal(groundTruth, res)
 }
 

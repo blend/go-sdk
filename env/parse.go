@@ -10,6 +10,12 @@ import (
 )
 
 // Parse uses a state machine to parse an input string into the `Vars` type.
+// It uses a default pair delimiter of ';'.
+func Parse(s string) (Vars, error) {
+	return ParsePairDelimiter(s, PairDelimiterSemicolon)
+}
+
+// ParsePairDelimiter uses a state machine to parse an input string into the `Vars` type.
 // The user can choose which delimiter to use between key-value pairs.
 //
 // An example of this format:
@@ -26,7 +32,7 @@ import (
 // <literal> ::= [-A-Za-z_0-9]+
 // <space> ::= ' '
 // <escape_quote> ::= '\"'
-func Parse(s string, separator PairDelimiter) (Vars, error) {
+func ParsePairDelimiter(s string, pairDelimiter PairDelimiter) (Vars, error) {
 	ret := make(Vars)
 	var key string
 	var buffer []rune
@@ -40,10 +46,10 @@ func Parse(s string, separator PairDelimiter) (Vars, error) {
 		// DFA are found in the comments for each enum
 		switch state {
 		case rootState:
-			// In the case where we have a key-value pair, we want to add that
+			// In the case where we have a key=value pair, we want to add that
 			// to the map and clear out our buffers
 			switch c {
-			case separator:
+			case pairDelimiter:
 				if _, exists = ret[key]; exists {
 					return ret, ex.New(fmt.Sprintf("Duplicate keys are not allowed (%s)", key))
 				}
