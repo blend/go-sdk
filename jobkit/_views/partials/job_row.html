@@ -67,8 +67,10 @@
 	{{ end }}
 	</td>
 	<td> <!-- job links -->
-		{{ if .ViewModel.Last }}
-		<a class="uk-button uk-button-default" href="/job.invocation/{{ .ViewModel.Name }}/{{ .ViewModel.Last.ID }}" uk-icon="reply" uk-tooltip="Show the last job invocation output"></a>
+		{{ if .ViewModel.Current }}
+		<a class="uk-button uk-button-secondary" href="/job.invocation/{{ .ViewModel.Name }}/current" uk-icon="reply" uk-tooltip="Show the current invocation output"></a>
+		{{ else if .ViewModel.Last }}
+		<a class="uk-button uk-button-default" href="/job.invocation/{{ .ViewModel.Name }}/{{ .ViewModel.Last.ID }}" uk-icon="reply" uk-tooltip="Show the last invocation output"></a>
 		{{ else }}
 		<a class="uk-button uk-button-default uk-button-disabled" uk-icon="history" uk-tooltip="Job has no history" disabled></a>
 		{{ end }}
