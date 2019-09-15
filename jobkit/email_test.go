@@ -22,7 +22,7 @@ func TestNewEmailMessage(t *testing.T) {
 		email.OptCC("baileydog@blend.com"),
 	)
 	assert.Nil(err)
-	assert.Equal("test :: Complete", message.Subject)
+	assert.Equal("test :: complete", message.Subject)
 	assert.NotEmpty(message.From)
 	assert.Equal("jobkit@blend.com", message.From)
 	assert.NotEmpty(message.To)

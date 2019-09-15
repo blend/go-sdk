@@ -132,7 +132,7 @@ type Job struct {
 	Config JobConfig
 
 	CompiledSchedule cron.Schedule
-	Email            email.Message
+	EmailDefaults    email.Message
 	Action           func(context.Context) error
 
 	Log          logger.Log
@@ -309,7 +309,7 @@ func (job Job) notify(ctx context.Context, flag string) {
 
 	if job.EmailClient != nil {
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
-			message, err := NewEmailMessage(job.Email, ji)
+			message, err := NewEmailMessage(job.EmailDefaults, ji)
 			if err != nil {
 				job.Error(ctx, err)
 			}

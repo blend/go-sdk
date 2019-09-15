@@ -212,9 +212,9 @@ func run(cmd *cobra.Command, args []string) error {
 		log.Infof("adding smtp email notifications")
 	}
 
-	if !cfg.Email.IsZero() {
-		log.Debugf("using email defaults from: %s", cfg.Email.From)
-		log.Debugf("using email defaults to: %s", stringutil.CSV(cfg.Email.To))
+	if !cfg.EmailDefaults.IsZero() {
+		log.Debugf("using email defaults from: %s", cfg.EmailDefaults.From)
+		log.Debugf("using email defaults to: %s", stringutil.CSV(cfg.EmailDefaults.To))
 	}
 
 	var slackClient slack.Sender
@@ -324,6 +324,6 @@ func createJobFromConfig(base config, cfg jobConfig) (*jobkit.Job, error) {
 	if job.Config.Description == "" {
 		job.Config.Description = strings.Join(cfg.Exec, " ")
 	}
-	job.Email = email.MergeMessages(base.Email, cfg.Email)
+	job.EmailDefaults = email.MergeMessages(base.EmailDefaults, cfg.EmailDefaults)
 	return job, nil
 }

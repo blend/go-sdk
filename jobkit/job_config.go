@@ -16,8 +16,8 @@ type JobConfig struct {
 	// The files for each job will always be $HISTORY_PATH/$NAME.json
 	HistoryPath string `yaml:"historyPath"`
 
-	// Email holds the message defaults for email notifications.
-	Email email.Message `yaml:"email"`
+	// EmailDefaults holds the message defaults for email notifications.
+	EmailDefaults email.Message `yaml:"emailDefaults"`
 
 	// NotifyOnStart governs if we should send notifications job start.
 	NotifyOnStart *bool `yaml:"notifyOnStart"`

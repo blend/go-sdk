@@ -21,7 +21,7 @@ type Config struct {
 	// Cron is the cron manager config.
 	Cron JobConfig `yaml:"cron"`
 	// Email sets email defaults.
-	Email email.Message `yaml:"email"`
+	EmailDefaults email.Message `yaml:"emailDefaults"`
 	// Logger is the logger config.
 	Logger logger.Config `yaml:"logger"`
 	// Web is the web config used for the management server.
@@ -44,7 +44,7 @@ func (c *Config) Resolve() error {
 		c.Logger.Resolve(),
 		c.Web.Resolve(),
 		c.AWS.Resolve(),
-		c.Email.Resolve(),
+		c.EmailDefaults.Resolve(),
 		c.Datadog.Resolve(),
 		c.Slack.Resolve(),
 		c.Sentry.Resolve(),
