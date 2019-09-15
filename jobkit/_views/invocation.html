@@ -18,15 +18,15 @@
 			<div class="uk-text-small uk-margin-small-bottom"><span class="uk-icon uk-text-primary uk-margin-small-right" uk-icon="info"></span>State</div>
 			<div>
 			{{ if .ViewModel.State | eq "running" }}
-			<div uk-tooltip="Job is currently running" uk-spinner="ration: 0.5"></div>
+			<div uk-tooltip="Job is currently running" uk-spinner="ration: 0.5" uk-tooltip="Invocation is running"></div>
 			{{ else if .ViewModel.State | eq "cancelled" }}
-			<span class="uk-text-warning" uk-icon="warning" uk-tooltip="Job was last cancelled"></span>
+			<span class="uk-text-warning" uk-icon="warning" uk-tooltip="Invocation was cancelled"></span>
 			{{ else if.ViewModel.State | eq "failed" }}
-			<span class="uk-text-danger" uk-icon="warning" uk-tooltip="Job had a failure"></span>
+			<span class="uk-text-danger" uk-icon="warning" uk-tooltip="Invocation failed"></span>
 			{{ else if .ViewModel.State | eq "complete" }}
-			<span class="uk-text-success" uk-icon="check" uk-tooltip="Last invocation was a success"></span>
+			<span class="uk-text-success" uk-icon="check" uk-tooltip="Invocation complete"></span>
 			{{ else }}
-			<span class="uk-text-primary" uk-icon="question" uk-tooltip="Job has no history"></span>
+			<span class="uk-text-primary" uk-icon="question" uk-tooltip="Invocation status unknown"></span>
 			{{ end }}
 			</div>
 		</div>

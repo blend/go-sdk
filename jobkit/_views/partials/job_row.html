@@ -4,15 +4,17 @@
 		{{ if .ViewModel.Current }}
 		<div uk-tooltip="Job is currently running" uk-spinner="ration: 0.5"></div>
 		{{ else if .ViewModel.Last }}
-			{{ if .ViewModel.Last.State | eq "cancelled" }}
-			<span class="uk-text-warning" uk-icon="warning" uk-tooltip="Job was last cancelled"></span>
-			{{ else if .ViewModel.Last.State | eq "failed" }}
-			<span class="uk-text-danger" uk-icon="warning" uk-tooltip="Job had a failure"></span>
-			{{ else if .ViewModel.Last.State | eq "complete" }}
-			<span class="uk-text-success" uk-icon="check" uk-tooltip="Last invocation was a success"></span>
-			{{ else }}
-			<span class="uk-text-primary" uk-icon="question" uk-tooltip="Job has no history"></span>
-			{{ end }}
+		{{ if .ViewModel.Last.State | eq "cancelled" }}
+		<span class="uk-text-warning" uk-icon="warning" uk-tooltip="Last invocation cancelled"></span>
+		{{ else if .ViewModel.Last.State | eq "failed" }}
+		<span class="uk-text-danger" uk-icon="warning" uk-tooltip="Last invocation failed"></span>
+		{{ else if .ViewModel.Last.State | eq "complete" }}
+		<span class="uk-text-success" uk-icon="check" uk-tooltip="Last invocation completed successfully"></span>
+		{{ else }}
+		<span class="uk-text-primary" uk-icon="question" uk-tooltip="Last invocation state is unknown"></span>
+		{{ end }}
+		{{ else }}
+		<span class="uk-text-primary" uk-icon="question" uk-tooltip="Job has no history"></span>
 		{{ end }}
 	</td>
 	<td>
