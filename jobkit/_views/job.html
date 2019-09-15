@@ -5,7 +5,7 @@
 		<div>
 			<ul class="uk-breadcrumb">
 				<li><a href="/">Jobs</a></li>
-				<li><a href="/search?selector=name={{ .ViewModel.Name }}">{{ .ViewModel.Name }}</a></li>
+				<li><a href="/job/{{ .ViewModel.Name }}">{{ .ViewModel.Name }}</a></li>
 			</ul>
 		</div>
 	</div>
@@ -13,7 +13,7 @@
 	{{ template "partials/job_row" . }}
 	{{ template "partials/job_table_footer" }}
 	<hr/>
-	<div class="uk-grid uk-grid-divider uk-grid-medium uk-child-width-1-6">
+	<div class="uk-grid uk-grid-divider uk-grid-small uk-child-width-1-5">
 		{{ $stats := .ViewModel.Stats }}
 		<div class="uk-first-column">
 			<span class="uk-text-small"><span class="uk-text-primary uk-margin-small-right" uk-icon="social"></span>Success Rate</span>
@@ -37,12 +37,6 @@
 			<span class="uk-text-small"><span class="uk-text-primary uk-margin-small-right" uk-icon="hashtag"></span>Failed Runs</span>
 			<h1 class="{{ if $stats.RunsFailed | eq 0 }}uk-text-primary{{else}}uk-text-danger{{end}}">
 				{{ $stats.RunsFailed }}
-			</h1>
-		</div>
-		<div>
-			<span class="uk-text-small"><span class="uk-text-primary uk-margin-small-right" uk-icon="clock"></span>Max Elapsed Time</span>
-			<h1 class="uk-text-primary">
-				{{ $stats.ElapsedMax | duration_round_millis }}
 			</h1>
 		</div>
 		<div>
@@ -87,22 +81,22 @@
 		<tbody>
 		{{ if .ViewModel.Current }}
 			<tr>
-				<td>{{ .ViewModel.Current.Started | rfc3339 }}</td>
-				<td>{{ if .ViewModel.Current.Finished.IsZero }}-{{ else }}{{ .ViewModel.Current.Finished | rfc3339 }}{{ end }}</td>
-				<td>{{ .ViewModel.Current.State }}</td>
-				<td>{{ .ViewModel.Current.Elapsed }}</td>
-				<td>{{ if .ViewModel.Current.Err }}<code>{{ .ViewModel.Current.Err }}</code>{{ else }}-{{end}}</td>
-				<td><a class="uk-button uk-button-primary"href="/job.invocation/{{.ViewModel.Current.JobName}}/{{ .ViewModel.Current.ID }}">Output</td>
+				<td class="uk-table-shrink">{{ .ViewModel.Current.Started | rfc3339 }}</td>
+				<td class="uk-table-shrink">{{ if .ViewModel.Current.Finished.IsZero }}-{{ else }}{{ .ViewModel.Current.Finished | rfc3339 }}{{ end }}</td>
+				<td class="uk-table-shrink">{{ .ViewModel.Current.State }}</td>
+				<td class="uk-table-shrink">{{ .ViewModel.Current.Elapsed }}</td>
+				<td class="uk-table-expand uk-text-truncate">{{ if .ViewModel.Current.Err }}<code>{{ .ViewModel.Current.Err }}</code>{{ else }}-{{end}}</td>
+				<td class="uk-table-shrink"><a class="uk-button uk-button-primary"href="/job.invocation/{{.ViewModel.Current.JobName}}/{{ .ViewModel.Current.ID }}">Output</td>
 			</tr>
 		{{ end }}
 		{{ range $index, $ji := .ViewModel.History | reverse }}
 			<tr>
-				<td>{{ $ji.Started | rfc3339 }}</td>
-				<td>{{ if $ji.Finished.IsZero }}-{{ else }}{{ $ji.Finished | rfc3339 }}{{ end }}</td>
-				<td>{{ $ji.State }}</td>
-				<td>{{ $ji.Elapsed }}</td>
-				<td>{{ if $ji.Err }}<code>{{ $ji.Err }}</code>{{ else }}-{{end}}</td>
-				<td><a class="uk-button uk-button-secondary" href="/job.invocation/{{$ji.JobName}}/{{ $ji.ID }}">Output</td>
+				<td class="uk-table-shrink">{{ $ji.Started | rfc3339 }}</td>
+				<td class="uk-table-shrink">{{ if $ji.Finished.IsZero }}-{{ else }}{{ $ji.Finished | rfc3339 }}{{ end }}</td>
+				<td class="uk-table-shrink">{{ $ji.State }}</td>
+				<td class="uk-table-shrink">{{ $ji.Elapsed }}</td>
+				<td class="uk-table-expand uk-text-truncate">{{ if $ji.Err }}{{ $ji.Err }}{{ else }}-{{end}}</td>
+				<td class="uk-table-shrink"><a class="uk-button uk-button-secondary" href="/job.invocation/{{$ji.JobName}}/{{ $ji.ID }}">Output</td>
 			</tr>
 		{{ end }}
 		</tbody>

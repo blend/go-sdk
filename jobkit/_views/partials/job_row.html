@@ -1,5 +1,7 @@
 {{ define "partials/job_row" }}
 <tr id="{{ .ViewModel.Name }}">
+	{{ $historyMaxCount := call .ViewModel.HistoryMaxCountProvider }}
+	{{ $historyMaxAge := call .ViewModel.HistoryMaxAgeProvider }}
 	<td> <!-- status -->
 		{{ if .ViewModel.Current }}
 		<div uk-tooltip="Job is currently running" uk-spinner="ration: 0.5"></div>
@@ -54,6 +56,14 @@
 	{{ else }}
 		<span class="none">-</span>
 	{{ end }}
+	</td>
+	<td><!-- job history -->
+			{{ if call .ViewModel.HistoryDisabledProvider }}
+			<span class="uk-label uk-label-danger">Disabled</span>
+			{{ else }}
+			<span class="uk-label uk-label-success" uk-tooltip="{{ $historyMaxCount}} items or {{ $historyMaxAge}}">Enabled</span>
+			{{ end }}
+		</div>
 	</td>
 	<td> <!-- job links -->
 		{{ if .ViewModel.Current }}
