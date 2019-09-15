@@ -27,6 +27,30 @@
 		</span>
 	{{ end }}
 	</td>
+	<td><!-- job history -->
+		{{ if call .ViewModel.HistoryDisabledProvider }}
+		<span class="uk-label uk-label-danger">Disabled</span>
+		{{ else }}
+
+		{{ $historyMaxCount := call .ViewModel.HistoryMaxCountProvider }}
+		{{ $historyMaxAge := call .ViewModel.HistoryMaxAgeProvider }}
+		{{ $historyDescription := "is unlimited" }}
+		{{ if ( and ($historyMaxCount) ($historyMaxAge ) ) }}
+		{{ $historyDescription = (printf "is limited to %d items or %v age" $historyMaxCount $historyMaxAge) }}
+		{{ else if ($historyMaxCount) }}
+		{{ $historyDescription = (printf "is limited to %d items" $historyMaxCount) }}
+		{{ else if ($historyMaxAge) }}
+		{{ $historyDescription = (printf "is limited to %v age" $historyMaxAge) }}
+		{{ end }}
+
+		<span class="uk-label uk-label-success" uk-tooltip="History {{ $historyDescription }}">Enabled</span>
+		{{ end }}
+		{{ if call .ViewModel.HistoryPersistenceDisabledProvider }}
+		<span class="uk-label uk-label-warning" uk-tooltip="History is not persisted">Ephemeral</span>
+		{{ else }}
+		<span class="uk-label uk-label-success" uk-tooltip="History is persisted">Persisted</span>
+		{{ end }}
+	</td>
 	<td> <!-- schedule -->
 	{{ if .ViewModel.Schedule }}
 		{{ .ViewModel.Schedule }}
@@ -55,30 +79,6 @@
 		<span class="none">-</span>
 	{{ end }}
 	</td>
-	<td><!-- job history -->
-		{{ if call .ViewModel.HistoryDisabledProvider }}
-		<span class="uk-label uk-label-danger">Disabled</span>
-		{{ else }}
-
-		{{ $historyMaxCount := call .ViewModel.HistoryMaxCountProvider }}
-		{{ $historyMaxAge := call .ViewModel.HistoryMaxAgeProvider }}
-		{{ $historyDescription := "is unlimited" }}
-		{{ if ( and ($historyMaxCount) ($historyMaxAge ) ) }}
-		{{ $historyDescription = (printf "is limited to %d items or %v age" $historyMaxCount $historyMaxAge) }}
-		{{ else if ($historyMaxCount) }}
-		{{ $historyDescription = (printf "is limited to %d items" $historyMaxCount) }}
-		{{ else if ($historyMaxAge) }}
-		{{ $historyDescription = (printf "is limited to %v age" $historyMaxAge) }}
-		{{ end }}
-
-		<span class="uk-label uk-label-success" uk-tooltip="History {{ $historyDescription }}">Enabled</span>
-		{{ end }}
-		{{ if call .ViewModel.HistoryPersistenceDisabledProvider }}
-		<span class="uk-label uk-label-warning" uk-tooltip="History is not persisted">Ephemeral</span>
-		{{ else }}
-		<span class="uk-label uk-label-success" uk-tooltip="History is persisted">Persisted</span>
-		{{ end }}
-	</td>
 	<td> <!-- job links -->
 		{{ if .ViewModel.Current }}
 		<a class="uk-button uk-button-secondary" href="/job.invocation/{{ .ViewModel.Name }}/{{ .ViewModel.Current.ID }}" uk-icon="reply" uk-tooltip="Show the current invocation output"></a>
@@ -91,7 +91,7 @@
 	</td>
 	<td> <!-- actions -->
 	{{ if .ViewModel.Disabled }}
-		<a class="uk-button uk-button-secondary" href="/job.enable/{{ .ViewModel.Name }}" uk-icon="future" uk-tooltip="Enable the job"></a>
+		<a class="uk-button uk-button-default" href="/job.enable/{{ .ViewModel.Name }}" uk-icon="future" uk-tooltip="Enable the job"></a>
 	{{else}}
 		<a class="uk-button uk-button-secondary" href="/job.disable/{{ .ViewModel.Name }}" uk-icon="ban" uk-tooltip="Disable the job"></a>
 	{{end}}
