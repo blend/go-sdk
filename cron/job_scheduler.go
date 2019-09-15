@@ -65,6 +65,12 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 		js.HistoryDisabledProvider = func() bool { return js.Config.HistoryDisabledOrDefault() }
 	}
 
+	if typed, ok := job.(HistoryPersistenceDisabledProvider); ok {
+		js.HistoryPersistenceDisabledProvider = typed.HistoryPersistenceDisabled
+	} else {
+		js.HistoryPersistenceDisabledProvider = func() bool { return js.Config.HistoryPersistenceDisabledOrDefault() }
+	}
+
 	if typed, ok := job.(HistoryMaxCountProvider); ok {
 		js.HistoryMaxCountProvider = typed.HistoryMaxCount
 	} else {
@@ -121,16 +127,17 @@ type JobScheduler struct {
 	Last        *JobInvocation  `json:"last"`
 	History     []JobInvocation `json:"history"`
 
-	DescriptionProvider               func() string            `json:"-"`
-	LabelsProvider                    func() map[string]string `json:"-"`
-	DisabledProvider                  func() bool              `json:"-"`
-	TimeoutProvider                   func() time.Duration     `json:"-"`
-	ShutdownGracePeriodProvider       func() time.Duration     `json:"-"`
-	ShouldSkipLoggerListenersProvider func() bool              `json:"-"`
-	ShouldSkipLoggerOutputProvider    func() bool              `json:"-"`
-	HistoryDisabledProvider           func() bool              `json:"-"`
-	HistoryMaxCountProvider           func() int               `json:"-"`
-	HistoryMaxAgeProvider             func() time.Duration     `json:"-"`
+	DescriptionProvider                func() string            `json:"-"`
+	LabelsProvider                     func() map[string]string `json:"-"`
+	DisabledProvider                   func() bool              `json:"-"`
+	TimeoutProvider                    func() time.Duration     `json:"-"`
+	ShutdownGracePeriodProvider        func() time.Duration     `json:"-"`
+	ShouldSkipLoggerListenersProvider  func() bool              `json:"-"`
+	ShouldSkipLoggerOutputProvider     func() bool              `json:"-"`
+	HistoryDisabledProvider            func() bool              `json:"-"`
+	HistoryPersistenceDisabledProvider func() bool              `json:"-"`
+	HistoryMaxCountProvider            func() int               `json:"-"`
+	HistoryMaxAgeProvider              func() time.Duration     `json:"-"`
 
 	HistoryRestoreProvider func(context.Context) ([]JobInvocation, error) `json:"-"`
 	HistoryPersistProvider func(context.Context, []JobInvocation) error   `json:"-"`
@@ -395,6 +402,9 @@ func (js *JobScheduler) GetInvocationByID(id string) *JobInvocation {
 
 // RestoreHistory calls the persist handler if it's set.
 func (js *JobScheduler) RestoreHistory(ctx context.Context) error {
+	if js.HistoryPersistenceDisabledProvider() {
+		return nil
+	}
 	if js.HistoryRestoreProvider != nil {
 		var err error
 		if js.History, err = js.HistoryRestoreProvider(ctx); err != nil {
@@ -409,6 +419,9 @@ func (js *JobScheduler) RestoreHistory(ctx context.Context) error {
 
 // PersistHistory calls the persist handler if it's set.
 func (js *JobScheduler) PersistHistory(ctx context.Context) error {
+	if js.HistoryPersistenceDisabledProvider() {
+		return nil
+	}
 	if js.HistoryPersistProvider != nil {
 		if err := js.HistoryPersistProvider(ctx, js.History); err != nil {
 			return js.error(err)

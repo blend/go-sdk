@@ -227,12 +227,6 @@ func (job Job) OnDisabled(ctx context.Context) {
 // PersistHistory writes the history to disk.
 // It does so completely.
 func (job Job) PersistHistory(ctx context.Context, log []cron.JobInvocation) error {
-	if job.Config.HistoryDisabledOrDefault() {
-		return nil
-	}
-	if !job.Config.HistoryPersistedOrDefault() {
-		return nil
-	}
 	historyDirectory := job.Config.HistoryPathOrDefault()
 	if _, err := os.Stat(historyDirectory); err != nil {
 		if err := os.MkdirAll(historyDirectory, 0755); err != nil {
@@ -250,12 +244,6 @@ func (job Job) PersistHistory(ctx context.Context, log []cron.JobInvocation) err
 
 // RestoreHistory restores history from disc.
 func (job Job) RestoreHistory(ctx context.Context) (output []cron.JobInvocation, err error) {
-	if job.Config.HistoryDisabledOrDefault() {
-		return nil, nil
-	}
-	if !job.Config.HistoryPersistedOrDefault() {
-		return nil, nil
-	}
 	historyPath := filepath.Join(job.Config.HistoryPathOrDefault(), stringutil.Slugify(job.Name())+".json")
 	if _, statErr := os.Stat(historyPath); statErr != nil {
 		return

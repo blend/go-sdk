@@ -12,8 +12,6 @@ type JobConfig struct {
 	cron.JobConfig `yaml:",inline"`
 	// Schedule returns the job schedule.
 	Schedule string `yaml:"schedule"`
-	// HistoryPersisted determines if we should save history to disk.
-	HistoryPersisted *bool `yaml:"historyPersisted"`
 	// HistoryPath is the base path we should write job history to.
 	// The files for each job will always be $HISTORY_PATH/$NAME.json
 	HistoryPath string `yaml:"historyPath"`
@@ -45,14 +43,6 @@ func (jc JobConfig) ScheduleOrDefault() string {
 		return jc.Schedule
 	}
 	return "* */5 * * * * *"
-}
-
-// HistoryPersistedOrDefault returns a value or a default.
-func (jc JobConfig) HistoryPersistedOrDefault() bool {
-	if jc.HistoryPersisted != nil {
-		return *jc.HistoryPersisted
-	}
-	return false
 }
 
 // HistoryPathOrDefault returns a value or a default.

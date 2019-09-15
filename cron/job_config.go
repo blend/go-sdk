@@ -18,6 +18,8 @@ type JobConfig struct {
 	ShutdownGracePeriod time.Duration `json:"shutdownGracePeriod" yaml:"shutdownGracePeriod"`
 	// HistoryDisabled sets if we should save invocation history and restore it.
 	HistoryDisabled *bool `json:"historyDisabled" yaml:"historyDisabled"`
+	// HistoryPersistenceDisabled determines if we should save history to disk.
+	HistoryPersistenceDisabled *bool `json:"historyPersistenceDisabled" yaml:"historyPersistenceDisabled"`
 	// HistoryMaxCount is the maximum number of history items to keep.
 	HistoryMaxCount int `json:"historyMaxCount" yaml:"historyMaxCount"`
 	// HistoryMaxAge is the maximum age of history items to keep.
@@ -75,6 +77,14 @@ func (jc JobConfig) HistoryMaxAgeOrDefault() time.Duration {
 		return jc.HistoryMaxAge
 	}
 	return 0
+}
+
+// HistoryPersistenceDisabledOrDefault returns a value or a default.
+func (jc JobConfig) HistoryPersistenceDisabledOrDefault() bool {
+	if jc.HistoryPersistenceDisabled != nil {
+		return *jc.HistoryPersistenceDisabled
+	}
+	return DefaultHistoryPersistenceDisabled
 }
 
 // ShouldSkipLoggerListenersOrDefault returns a value or a default.

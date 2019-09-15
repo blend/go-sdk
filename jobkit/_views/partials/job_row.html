@@ -1,7 +1,5 @@
 {{ define "partials/job_row" }}
 <tr id="{{ .ViewModel.Name }}">
-	{{ $historyMaxCount := call .ViewModel.HistoryMaxCountProvider }}
-	{{ $historyMaxAge := call .ViewModel.HistoryMaxAgeProvider }}
 	<td> <!-- status -->
 		{{ if .ViewModel.Current }}
 		<div uk-tooltip="Job is currently running" uk-spinner="ration: 0.5"></div>
@@ -58,12 +56,28 @@
 	{{ end }}
 	</td>
 	<td><!-- job history -->
-			{{ if call .ViewModel.HistoryDisabledProvider }}
-			<span class="uk-label uk-label-danger">Disabled</span>
-			{{ else }}
-			<span class="uk-label uk-label-success" uk-tooltip="{{ $historyMaxCount}} items or {{ $historyMaxAge}}">Enabled</span>
-			{{ end }}
-		</div>
+		{{ if call .ViewModel.HistoryDisabledProvider }}
+		<span class="uk-label uk-label-danger">Disabled</span>
+		{{ else }}
+
+		{{ $historyMaxCount := call .ViewModel.HistoryMaxCountProvider }}
+		{{ $historyMaxAge := call .ViewModel.HistoryMaxAgeProvider }}
+		{{ $historyDescription := "is unlimited" }}
+		{{ if ( and ($historyMaxCount) ($historyMaxAge ) ) }}
+		{{ $historyDescription = (printf "is limited to %d items or %v age" $historyMaxCount $historyMaxAge) }}
+		{{ else if ($historyMaxCount) }}
+		{{ $historyDescription = (printf "is limited to %d items" $historyMaxCount) }}
+		{{ else if ($historyMaxAge) }}
+		{{ $historyDescription = (printf "is limited to %v age" $historyMaxAge) }}
+		{{ end }}
+
+		<span class="uk-label uk-label-success" uk-tooltip="History {{ $historyDescription }}">Enabled</span>
+		{{ end }}
+		{{ if call .ViewModel.HistoryPersistenceDisabledProvider }}
+		<span class="uk-label uk-label-warning" uk-tooltip="History is not persisted">Ephemeral</span>
+		{{ else }}
+		<span class="uk-label uk-label-success" uk-toolip="History is persisted">Persisted</span>
+		{{ end }}
 	</td>
 	<td> <!-- job links -->
 		{{ if .ViewModel.Current }}

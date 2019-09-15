@@ -27,23 +27,23 @@ import (
 )
 
 var (
-	flagTitle                         *string
-	flagBind                          *string
-	flagConfigPath                    *string
-	flagDisableServer                 *bool
-	flagUseViewFiles                  *bool
-	flagDefaultJobName                *string
-	flagDefaultJobExec                *string
-	flagDefaultJobSchedule            *string
-	flagDefaultJobHistoryDisabled     *bool
-	flagDefaultJobHistoryPersisted    *bool
-	flagDefaultJobHistoryPath         *string
-	flagDefaultJobHistoryMaxCount     *int
-	flagDefaultJobHistoryMaxAge       *time.Duration
-	flagDefaultJobTimeout             *time.Duration
-	flagDefaultJobShutdownGracePeriod *time.Duration
-	flagDefaultJobLabels              *[]string
-	flagDefaultJobDiscardOutput       *bool
+	flagTitle                                *string
+	flagBind                                 *string
+	flagConfigPath                           *string
+	flagDisableServer                        *bool
+	flagUseViewFiles                         *bool
+	flagDefaultJobName                       *string
+	flagDefaultJobExec                       *string
+	flagDefaultJobSchedule                   *string
+	flagDefaultJobHistoryDisabled            *bool
+	flagDefaultJobHistoryPersistenceDisabled *bool
+	flagDefaultJobHistoryPath                *string
+	flagDefaultJobHistoryMaxCount            *int
+	flagDefaultJobHistoryMaxAge              *time.Duration
+	flagDefaultJobTimeout                    *time.Duration
+	flagDefaultJobShutdownGracePeriod        *time.Duration
+	flagDefaultJobLabels                     *[]string
+	flagDefaultJobDiscardOutput              *bool
 )
 
 func initFlags(cmd *cobra.Command) {
@@ -56,7 +56,7 @@ func initFlags(cmd *cobra.Command) {
 	flagDefaultJobName = cmd.Flags().StringP("name", "n", "", "The job name (will default to a random string of 8 letters).")
 	flagDefaultJobSchedule = cmd.Flags().StringP("schedule", "s", "", "The job schedule in cron format (ex: '*/5 * * * *')")
 	flagDefaultJobHistoryPath = cmd.Flags().String("history-path", "", "The job history path.")
-	flagDefaultJobHistoryPersisted = cmd.Flags().Bool("history-persisted", false, "If job history should be saved to disk.")
+	flagDefaultJobHistoryPersistenceDisabled = cmd.Flags().Bool("history-persistence-disabled", true, "If job history should not be saved to disk.")
 	flagDefaultJobHistoryDisabled = cmd.Flags().Bool("history-disabled", false, "If job history should be tracked in memory.")
 	flagDefaultJobHistoryMaxCount = cmd.Flags().Int("history-max-count", 0, "Maximum number of history items to maintain (defaults unbounded).")
 	flagDefaultJobHistoryMaxAge = cmd.Flags().Duration("history-max-age", 0, "Maximum age of history items to maintain (defaults unbounded).")
@@ -111,7 +111,7 @@ func (djc *defaultJobConfig) Resolve() error {
 		configutil.SetBool(&djc.DiscardOutput, configutil.Bool(flagDefaultJobDiscardOutput), configutil.Bool(djc.DiscardOutput), configutil.Bool(ref.Bool(false))),
 		configutil.SetString(&djc.Schedule, configutil.String(*flagDefaultJobSchedule), configutil.String(djc.Schedule)),
 		configutil.SetBool(&djc.HistoryDisabled, configutil.Bool(flagDefaultJobHistoryDisabled), configutil.Bool(djc.HistoryDisabled), configutil.Bool(ref.Bool(false))),
-		configutil.SetBool(&djc.HistoryPersisted, configutil.Bool(flagDefaultJobHistoryPersisted), configutil.Bool(djc.HistoryPersisted), configutil.Bool(ref.Bool(false))),
+		configutil.SetBool(&djc.HistoryPersistenceDisabled, configutil.Bool(flagDefaultJobHistoryPersistenceDisabled), configutil.Bool(djc.HistoryPersistenceDisabled), configutil.Bool(ref.Bool(true))),
 		configutil.SetString(&djc.HistoryPath, configutil.String(*flagDefaultJobHistoryPath), configutil.String(djc.HistoryPath)),
 		configutil.SetInt(&djc.HistoryMaxCount, configutil.Int(*flagDefaultJobHistoryMaxCount), configutil.Int(djc.HistoryMaxCount)),
 		configutil.SetDuration(&djc.HistoryMaxAge, configutil.Duration(*flagDefaultJobHistoryMaxAge), configutil.Duration(djc.HistoryMaxAge)),
@@ -260,10 +260,10 @@ func run(cmd *cobra.Command, args []string) error {
 
 		log.Infof("loading job `%s` with exec: %s", jobCfg.Name, ansi.ColorLightWhite.Apply(strings.Join(jobCfg.Exec, " ")))
 		log.Infof("loading job `%s` with schedule: %s", jobCfg.Name, ansi.ColorLightWhite.Apply(jobCfg.ScheduleOrDefault()))
-		if !jobCfg.HistoryDisabledOrDefault() && jobCfg.HistoryPersistedOrDefault() {
+		if !jobCfg.HistoryDisabledOrDefault() && !jobCfg.HistoryPersistenceDisabledOrDefault() {
 			log.Infof("loading job `%s` with history: %v and persistence: %v to output path: %s", jobCfg.Name, enabled, enabled, ansi.ColorLightWhite.Apply(jobCfg.HistoryPathOrDefault()))
 		} else if !jobCfg.HistoryDisabledOrDefault() {
-			log.Infof("loading job `%s` with history: %v and pesitence: %v", jobCfg.Name, enabled, disabled)
+			log.Infof("loading job `%s` with history: %v and persistence: %v", jobCfg.Name, enabled, disabled)
 		} else {
 			log.Infof("loading job `%s` with history: %v", jobCfg.Name, disabled)
 		}
