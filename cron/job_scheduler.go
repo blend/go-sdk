@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/blend/go-sdk/stringutil"
+
 	"github.com/blend/go-sdk/async"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
@@ -148,14 +150,14 @@ func (js *JobScheduler) Description() string {
 // automatically added ones like `name`.
 func (js *JobScheduler) Labels() map[string]string {
 	output := map[string]string{
-		"name": js.Name(),
+		"name": stringutil.Slugify(js.Name()),
 	}
 	if js.Last != nil {
-		output["last"] = string(js.Last.State)
+		output["last"] = stringutil.Slugify(string(js.Last.State))
 	}
 	if js.LabelsProvider != nil {
 		for key, value := range js.LabelsProvider() {
-			output[key] = value
+			output[key] = stringutil.Slugify(value)
 		}
 	}
 	return output

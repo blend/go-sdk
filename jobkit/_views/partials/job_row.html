@@ -18,12 +18,12 @@
 		{{ end }}
 	</td>
 	<td>
-		<a class="uk-button uk-button-link" href="/job/{{ .ViewModel.Name | slugify }}">{{ .ViewModel.Name }}</a>
+		<a class="uk-button uk-button-link" href="/job/{{ .ViewModel.Name }}">{{ .ViewModel.Name }}</a>
 	</td>
 	<td> <!-- job labels-->
 	{{ range $key, $value := .ViewModel.Labels}}
 		<span class="uk-label">
-			<a href="/search?selector={{ $key | urlencode }}={{ $value | urlencode }}">{{ $key }}={{ $value }}</a>
+			<a href="/search?selector={{ $key | urlencode }}={{ $value | slugify }}">{{ $key }}={{ $value | slugify }}</a>
 		</span>
 	{{ end }}
 	</td>
