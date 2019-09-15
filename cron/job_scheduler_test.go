@@ -136,7 +136,7 @@ func TestJobSchedulerLabels(t *testing.T) {
 
 	js := NewJobScheduler(NewJob(OptJobName("test"), OptJobAction(noop)))
 	js.Last = &JobInvocation{
-		Status: JobStatusComplete,
+		State: JobInvocationStateComplete,
 	}
 	labels := js.Labels()
 	assert.Equal("test", labels["name"])
@@ -153,7 +153,7 @@ func TestJobSchedulerLabels(t *testing.T) {
 	assert.Equal("not-test", labels["name"])
 	assert.Equal("bar", labels["foo"])
 	assert.Equal("wuzz", labels["fuzz"])
-	assert.Equal(JobStatusComplete, labels["last"])
+	assert.Equal(JobInvocationStateComplete, labels["last"])
 }
 
 func TestJobSchedulerStats(t *testing.T) {
@@ -161,14 +161,14 @@ func TestJobSchedulerStats(t *testing.T) {
 
 	js := NewJobScheduler(NewJob(OptJobName("test"), OptJobAction(noop)))
 	js.History = []JobInvocation{
-		{Status: JobStatusComplete, Elapsed: 2 * time.Second},
-		{Status: JobStatusComplete, Elapsed: 4 * time.Second},
-		{Status: JobStatusComplete, Elapsed: 6 * time.Second},
-		{Status: JobStatusComplete, Elapsed: 8 * time.Second},
-		{Status: JobStatusFailed, Elapsed: 10 * time.Second},
-		{Status: JobStatusFailed, Elapsed: 12 * time.Second},
-		{Status: JobStatusCancelled, Elapsed: 14 * time.Second},
-		{Status: JobStatusCancelled, Timeout: time.Now().UTC(), Elapsed: 16 * time.Second},
+		{State: JobInvocationStateComplete, Elapsed: 2 * time.Second},
+		{State: JobInvocationStateComplete, Elapsed: 4 * time.Second},
+		{State: JobInvocationStateComplete, Elapsed: 6 * time.Second},
+		{State: JobInvocationStateComplete, Elapsed: 8 * time.Second},
+		{State: JobInvocationStateFailed, Elapsed: 10 * time.Second},
+		{State: JobInvocationStateFailed, Elapsed: 12 * time.Second},
+		{State: JobInvocationStateCancelled, Elapsed: 14 * time.Second},
+		{State: JobInvocationStateCancelled, Timeout: time.Now().UTC(), Elapsed: 16 * time.Second},
 	}
 
 	stats := js.Stats()

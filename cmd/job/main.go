@@ -44,7 +44,6 @@ var (
 	flagDefaultJobShutdownGracePeriod *time.Duration
 	flagDefaultJobLabels              *[]string
 	flagDefaultJobDiscardOutput       *bool
-	flagDefaultJobSerial              *bool
 )
 
 func initFlags(cmd *cobra.Command) {
@@ -65,7 +64,6 @@ func initFlags(cmd *cobra.Command) {
 	flagDefaultJobShutdownGracePeriod = cmd.Flags().Duration("shutdown-grace-period", 0, "The grace period to wait for the job to complete on stop (ex: 5s)")
 	flagDefaultJobLabels = cmd.Flags().StringSlice("label", nil, "Labels for the job that can be used with filtering or tagging.")
 	flagDefaultJobDiscardOutput = cmd.Flags().Bool("discard-output", false, "If jobs should discard console output from the action.")
-	flagDefaultJobSerial = cmd.Flags().Bool("serial", true, "The job should run serially (that is, only one can be active at a time)")
 }
 
 type config struct {
@@ -111,7 +109,6 @@ func (djc *defaultJobConfig) Resolve() error {
 	return configutil.AnyError(
 		configutil.SetString(&djc.Name, configutil.String(*flagDefaultJobName), configutil.String(env.Env().ServiceName()), configutil.String(djc.Name), configutil.String(stringutil.Letters.Random(8))),
 		configutil.SetBool(&djc.DiscardOutput, configutil.Bool(flagDefaultJobDiscardOutput), configutil.Bool(djc.DiscardOutput), configutil.Bool(ref.Bool(false))),
-		configutil.SetBool(&djc.Serial, configutil.Bool(flagDefaultJobSerial), configutil.Bool(djc.Serial), configutil.Bool(ref.Bool(true))),
 		configutil.SetString(&djc.Schedule, configutil.String(*flagDefaultJobSchedule), configutil.String(djc.Schedule)),
 		configutil.SetBool(&djc.HistoryDisabled, configutil.Bool(flagDefaultJobHistoryDisabled), configutil.Bool(djc.HistoryDisabled), configutil.Bool(ref.Bool(false))),
 		configutil.SetBool(&djc.HistoryPersisted, configutil.Bool(flagDefaultJobHistoryPersisted), configutil.Bool(djc.HistoryPersisted), configutil.Bool(ref.Bool(false))),
@@ -258,18 +255,11 @@ func run(cmd *cobra.Command, args []string) error {
 		job.StatsClient = statsClient
 		job.SentryClient = sentryClient
 
-		var serial string
-		if jobCfg.SerialOrDefault() {
-			serial = "serial execution"
-		} else {
-			serial = "parallel execution"
-		}
-
 		enabled := ansi.ColorGreen.Apply("enabled")
 		disabled := ansi.ColorRed.Apply("disabled")
 
 		log.Infof("loading job `%s` with exec: %s", jobCfg.Name, ansi.ColorLightWhite.Apply(strings.Join(jobCfg.Exec, " ")))
-		log.Infof("loading job `%s` with schedule: %s with %v", jobCfg.Name, ansi.ColorLightWhite.Apply(jobCfg.ScheduleOrDefault()), serial)
+		log.Infof("loading job `%s` with schedule: %s", jobCfg.Name, ansi.ColorLightWhite.Apply(jobCfg.ScheduleOrDefault()))
 		if !jobCfg.HistoryDisabledOrDefault() && jobCfg.HistoryPersistedOrDefault() {
 			log.Infof("loading job `%s` with history: %v and persistence: %v to output path: %s", jobCfg.Name, enabled, enabled, ansi.ColorLightWhite.Apply(jobCfg.HistoryPathOrDefault()))
 		} else if !jobCfg.HistoryDisabledOrDefault() {

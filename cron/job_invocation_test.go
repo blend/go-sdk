@@ -20,7 +20,7 @@ func TestJobInvocationJSON(t *testing.T) {
 		Finished:  time.Date(2019, 9, 6, 12, 11, 10, 9, time.UTC),
 		Cancelled: time.Date(2019, 9, 7, 12, 11, 10, 9, time.UTC),
 		Timeout:   time.Date(2019, 9, 8, 12, 11, 10, 9, time.UTC),
-		Status:    JobStatusComplete,
+		State:     JobInvocationStateComplete,
 		Elapsed:   time.Second,
 		Err:       ex.New("this is a test"),
 	}
@@ -37,7 +37,7 @@ func TestJobInvocationJSON(t *testing.T) {
 	assert.Equal(test.Finished, verify.Finished)
 	assert.Equal(test.Cancelled, verify.Cancelled)
 	assert.Equal(test.Timeout, verify.Timeout)
-	assert.Equal(test.Status, verify.Status)
+	assert.Equal(test.State, verify.State)
 	assert.Equal(test.Elapsed, verify.Elapsed)
 
 	assert.NotNil(verify.Err)

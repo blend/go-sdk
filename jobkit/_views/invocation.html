@@ -5,96 +5,82 @@
 		<div>
 			<ul class="uk-breadcrumb">
 				<li><a href="/">Jobs</a></li>
-				<li><a href="/search?selector=name={{ .ViewModel.JobName }}">{{ .ViewModel.JobName }}</a></li>
+				<li><a href="/job/{{ .ViewModel.JobName }}">{{ .ViewModel.JobName }}</a></li>
 				<li><span>{{ .ViewModel.ID }}</span></li>
 			</ul>
 		</div>
 		<div class="uk-flex-right uk-text-right">
-			<a class="uk-button" href="/api/job.invocation.output/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}">JSON</a>
-			<a class="uk-button" href="/job.invocation.output/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}">Raw</a>
-			<a class="uk-button" href="/api/job.invocation.output.stream/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}">Stream</a>
+			<a class="uk-button" href="/job.invocation.output/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}" uk-icon="download" uk-tooltip="Download Job Output"></a>
 		</div>
 	</div>
-	<table class="uk-table">
-		<thead>
-			<tr>
-				<th>Status</th>
-				<th>Started</th>
-				<th>Finished</th>
-				<th>Elapsed</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr>
-				<td>
-					{{ if .ViewModel.Status | eq "running" }}
-					<div uk-tooltip="Job is currently running" uk-spinner="ration: 0.5"></div>
-					{{ else if .ViewModel.Status | eq "cancelled" }}
-					<span class="uk-text-warning" uk-icon="warning" uk-tooltip="Job was last cancelled"></span>
-					{{ else if.ViewModel.Status | eq "failed" }}
-					<span class="uk-text-danger" uk-icon="warning" uk-tooltip="Job had a failure"></span>
-					{{ else if .ViewModel.Status | eq "complete" }}
-					<span class="uk-text-success" uk-icon="check" uk-tooltip="Last invocation was a success"></span>
-					{{ end }}
-				</td>
-				<td>{{ .ViewModel.Started | rfc3339 }}</td>
-				<td>{{ if .ViewModel.Finished.IsZero }}-{{ else }}{{ .ViewModel.Finished | rfc3339 }}{{ end }}</td>
-				<td>{{ if .ViewModel.Finished.IsZero }}{{ .ViewModel.Started | since_utc }}{{ else }}{{ .ViewModel.Elapsed }}{{ end }}</td>
-			</tr>
-		</tbody>
-	</table>
+	<div class="uk-grid uk-grid-divider uk-grid-medium uk-child-width-1-4">
+		<div class="uk-first-child">
+			<div class="uk-text-small uk-margin-small-bottom"><span class="uk-icon uk-text-primary uk-margin-small-right" uk-icon="info"></span>State</div>
+			<div>
+			{{ if .ViewModel.State | eq "running" }}
+			<div uk-tooltip="Job is currently running" uk-spinner="ration: 0.5"></div>
+			{{ else if .ViewModel.State | eq "cancelled" }}
+			<span class="uk-text-warning" uk-icon="warning" uk-tooltip="Job was last cancelled"></span>
+			{{ else if.ViewModel.State | eq "failed" }}
+			<span class="uk-text-danger" uk-icon="warning" uk-tooltip="Job had a failure"></span>
+			{{ else if .ViewModel.State | eq "complete" }}
+			<span class="uk-text-success" uk-icon="check" uk-tooltip="Last invocation was a success"></span>
+			{{ else }}
+			<span class="uk-text-primary" uk-icon="question" uk-tooltip="Job has no history"></span>
+			{{ end }}
+			</div>
+		</div>
+		<div>
+			<div class="uk-text-small uk-margin-small-bottom"><span class="uk-icon uk-text-primary uk-margin-small-right" uk-icon="history"></span>Started</div>
+			<div>{{ .ViewModel.Started | rfc3339 }}</div>
+		</div>
+		<div>
+			<div class="uk-text-small uk-margin-small-bottom"><span class="uk-icon uk-text-primary uk-margin-small-right" uk-icon="history"></span>Finished</div>
+			<div>{{ if .ViewModel.Finished.IsZero }}-{{ else }}{{ .ViewModel.Finished | rfc3339 }}{{ end }}</div>
+		</div>
+		<div>
+			<div class="uk-text-small uk-margin-small-bottom"><span class="uk-icon uk-text-primary uk-margin-small-right" uk-icon="clock"></span>Elapsed</div>
+			<div>{{ if .ViewModel.Finished.IsZero }}{{ .ViewModel.Started | since_utc }}{{ else }}{{ .ViewModel.Elapsed }}{{ end }}</div>
+		</div>
+	</div>
+	<hr/>
 	{{ if .ViewModel.Err }}
-	<table class="uk-table">
-		<thead>
-			<tr>
-				<th>Error</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr>
-				<td>
-					<code>{{ .ViewModel.Err }}</code>
-				</td>
-			</tr>
-		</tbody>
-	</table>
+	<div class="uk-grid uk-grid-divider uk-grid-medium uk-child-width-1-1">
+		<div>
+			<span class="uk-text-small">
+				Error
+			</span>
+			<pre>{{ .ViewModel.Err }}</pre>
+		</div>
+	</div>
+	<hr/>
 	{{ end }}
-	<table class="uk-table">
-		<thead>
-			<tr>
-				<th>Output (Combined)</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr>
-				<td>
-				<link rel="stylesheet" href="/static/css/xterm.css" />
-				<script src="/static/js/xterm.js"></script>
-				<script src="/static/js/fit.js"></script>
-				<script src="/static/js/webLinks.js"></script>
-
-				<div id="term-window"></div>
-				<script>
-					Terminal.applyAddon(fit);
-					var term = new Terminal();
-					term.open(document.getElementById('term-window'));
-					term.cols = 240;
-					term.resize();
-					term.markers = [];
-					/* code {{ range $index, $line := .ViewModel.Output.Lines }} */
-					term.writeln("{{ $line.Data | as_string }}");
-					/*{{ end }}*/
-					/* {{ if .ViewModel.Status | eq "running" }} */
-					var es = new EventSource("/api/job.invocation.output.stream/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}");
-					es.onmessage = (e) => {
-						term.writeln(e.data);
-					};
-					/*{{ end }}*/
-				</script>
-				</td>
-			</tr>
-		</tbody>
-	</table>
+	<div class="uk-grid uk-grid-divider uk-grid-medium uk-child-width-1-1">
+		<div>
+			<link rel="stylesheet" href="/static/css/xterm.css" />
+			<script src="/static/js/xterm.js"></script>
+			<script src="/static/js/fit.js"></script>
+			<script src="/static/js/webLinks.js"></script>
+			<div id="term-window"></div>
+			<script>
+				Terminal.applyAddon(fit);
+				var term = new Terminal();
+				term.open(document.getElementById('term-window'));
+				term.cols = 240;
+				term.resize();
+				term.markers = [];
+				/* code {{ range $index, $line := .ViewModel.Output.Lines }} */
+				term.writeln("{{ $line.Data | as_string }}");
+				/*{{ end }}*/
+				/* {{ if .ViewModel.State | eq "running" }} */
+				var es = new EventSource("/api/job.invocation.output.stream/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}");
+				es.onmessage = (e) => {
+					term.writeln(e.data);
+				};
+				/*{{ end }}*/
+			</script>
+		</div>
+	</div>
 </div>
 {{ template "footer" . }}
 {{ end }}

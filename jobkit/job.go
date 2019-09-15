@@ -87,9 +87,6 @@ func Wrap(job cron.Job) *Job {
 	if typed, ok := job.(cron.HistoryMaxAgeProvider); ok {
 		j.Config.HistoryMaxAge = typed.HistoryMaxAge()
 	}
-	if typed, ok := job.(cron.SerialProvider); ok {
-		j.Config.Serial = ref.Bool(typed.Serial())
-	}
 	if typed, ok := job.(cron.ShouldSkipLoggerListenersProvider); ok {
 		j.Config.ShouldSkipLoggerListeners = ref.Bool(typed.ShouldSkipLoggerListeners())
 	}

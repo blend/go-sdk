@@ -321,8 +321,6 @@ func TestJobManagerLoadJob(t *testing.T) {
 	assert.Equal(DefaultDisabled, meta.DisabledProvider())
 	assert.NotNil(meta.TimeoutProvider)
 	assert.Zero(meta.TimeoutProvider())
-	assert.NotNil(meta.SerialProvider)
-	assert.Equal(DefaultSerial, meta.SerialProvider())
 	assert.NotNil(meta.ShouldSkipLoggerListenersProvider)
 	assert.Equal(DefaultShouldSkipLoggerListeners, meta.ShouldSkipLoggerListenersProvider())
 	assert.NotNil(meta.ShouldSkipLoggerOutputProvider)

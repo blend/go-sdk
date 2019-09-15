@@ -15,7 +15,7 @@ func TestNewEmailMessage(t *testing.T) {
 	message, err := NewEmailMessage(email.Message{}, &cron.JobInvocation{
 		JobName: "test",
 		Elapsed: time.Millisecond,
-		Status:  "Complete",
+		State:   cron.JobInvocationStateComplete,
 	},
 		email.OptFrom("jobkit@blend.com"),
 		email.OptTo("foo@bar.com"),

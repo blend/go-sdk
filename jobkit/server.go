@@ -36,16 +36,11 @@ func NewServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App 
 		}
 
 		var invocation *cron.JobInvocation
-		if invocationID == "current" && len(job.Current) > 0 {
-			for _, invocation = range job.Current {
-				break
-			}
-		} else if current, ok := job.Current[invocationID]; ok {
-			invocation = current
-		} else {
-			invocation = job.GetInvocationByID(invocationID)
+		if invocationID == "current" && job.Current != nil {
+			return job.Current, nil
 		}
 
+		invocation = job.GetInvocationByID(invocationID)
 		if invocation == nil {
 			return nil, resultProvider.NotFound()
 		}
@@ -185,7 +180,8 @@ func NewServer(jm *cron.JobManager, cfg Config, options ...web.Option) *web.App 
 		if err != nil {
 			return r.Views.BadRequest(err)
 		}
-		if err := jm.CancelJob(jobName); err != nil {
+		err = jm.CancelJob(jobName)
+		if err != nil {
 			return r.Views.BadRequest(err)
 		}
 		return web.RedirectWithMethod("GET", "/")

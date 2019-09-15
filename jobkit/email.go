@@ -15,7 +15,7 @@ func NewEmailMessage(emailDefaults email.Message, ji *cron.JobInvocation, option
 
 	vars := map[string]interface{}{
 		"jobName": ji.JobName,
-		"status":  ji.Status,
+		"state":   ji.State,
 		"elapsed": ji.Elapsed,
 		"err":     ji.Err,
 	}
@@ -41,13 +41,13 @@ const (
 	DefaultEmailMimeType = "text/plain"
 
 	// DefaultEmailSubjectTemplate is the default subject template.
-	DefaultEmailSubjectTemplate = `{{.Var "jobName" }} :: {{ .Var "status" }}`
+	DefaultEmailSubjectTemplate = `{{.Var "jobName" }} :: {{ .Var "state" }}`
 
 	// DefaultEmailHTMLBodyTemplate is the default email html body template.
 	DefaultEmailHTMLBodyTemplate = `
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>{{ .Var "jobName" }} {{ .Var "status" "unknown" }}</title>
+<title>{{ .Var "jobName" }} {{ .Var "state" "unknown" }}</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0 " />
@@ -61,7 +61,7 @@ const (
 </style>
 </head>
 <body class="email-body">
-	<h2>{{ .Var "jobName" }} {{ .Var "status" "Unknown" }}</h2>
+	<h2>{{ .Var "jobName" }} {{ .Var "state" "Unknown" }}</h2>
 	<div class="email-details">
 	{{ if .Var "err" }}
 	<pre>{{ .Var "err" }}</pre>
@@ -72,7 +72,7 @@ const (
 `
 
 	// DefaultEmailTextBodyTemplate is the default body template.
-	DefaultEmailTextBodyTemplate = `{{ .Var "jobName" }} {{ .Var "status" }}
+	DefaultEmailTextBodyTemplate = `{{ .Var "jobName" }} {{ .Var "state" }}
 Elapsed: {{ .Var "elapsed" }}
 {{ if .HasVar "err" }}Error: {{ .Var "err" }}{{end}}`
 )

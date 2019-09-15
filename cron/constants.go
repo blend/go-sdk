@@ -14,8 +14,6 @@ const (
 const (
 	// DefaultDisabled is a default.
 	DefaultDisabled = false
-	// DefaultSerial is a default.
-	DefaultSerial = false
 	// DefaultShouldSkipLoggerListeners is a default.
 	DefaultShouldSkipLoggerListeners = false
 	// DefaultShouldSkipLoggerOutput is a default.
@@ -47,27 +45,24 @@ const (
 	FlagDisabled = "cron.disabled"
 )
 
-// JobManagerStatus is a job manager status.
-type JobManagerStatus string
+// JobManagerState is a job manager status.
+type JobManagerState string
 
+// JobManagerState values.
 const (
-	// JobManagerStatusRunning is a job manager status.
-	JobManagerStatusRunning JobManagerStatus = "started"
-	// JobManagerStatusPaused is a job manager status.
-	JobManagerStatusPaused JobManagerStatus = "paused"
-	// JobManagerStatusResuming is a job manager status.
-	JobManagerStatusResuming JobManagerStatus = "resuming"
-	// JobManagerStatusStopped is a job manager status.
-	JobManagerStatusStopped JobManagerStatus = "stopped"
+	JobManagerStateRunning  JobManagerState = "started"
+	JobManagerStatePaused   JobManagerState = "paused"
+	JobManagerStateResuming JobManagerState = "resuming"
+	JobManagerStateStopped  JobManagerState = "stopped"
 )
 
-// JobStatus is a job status.
-type JobStatus string
+// JobInvocationState is a job status.
+type JobInvocationState string
 
-// JobStatus values.
+// JobInvocationState values.
 const (
-	JobStatusRunning   JobStatus = "running"
-	JobStatusCancelled JobStatus = "cancelled"
-	JobStatusFailed    JobStatus = "failed"
-	JobStatusComplete  JobStatus = "complete"
+	JobInvocationStateRunning   JobInvocationState = "running"
+	JobInvocationStateCancelled JobInvocationState = "cancelled"
+	JobInvocationStateFailed    JobInvocationState = "failed"
+	JobInvocationStateComplete  JobInvocationState = "complete"
 )

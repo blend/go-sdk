@@ -15,9 +15,8 @@ import (
 // NewJobScheduler returns a job scheduler for a given job.
 func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 	js := &JobScheduler{
-		Latch:   async.NewLatch(),
-		Job:     job,
-		Current: make(map[string]*JobInvocation),
+		Latch: async.NewLatch(),
+		Job:   job,
 	}
 
 	if typed, ok := job.(JobConfigProvider); ok {
@@ -76,12 +75,6 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 		js.HistoryMaxAgeProvider = func() time.Duration { return js.Config.HistoryMaxAgeOrDefault() }
 	}
 
-	if typed, ok := job.(SerialProvider); ok {
-		js.SerialProvider = typed.Serial
-	} else {
-		js.SerialProvider = func() bool { return js.Config.SerialOrDefault() }
-	}
-
 	if typed, ok := job.(ShouldSkipLoggerListenersProvider); ok {
 		js.ShouldSkipLoggerListenersProvider = typed.ShouldSkipLoggerListeners
 	} else {
@@ -120,18 +113,15 @@ type JobScheduler struct {
 	Schedule Schedule `json:"-"`
 	// Disabled is an explicit override for the EnabledProvider.
 	Disabled bool `json:"disabled"`
-	// Parallel is an explicit override for the SerialProvider.
-	Parallel bool `json:"parallel"`
 
-	NextRuntime time.Time                 `json:"nextRuntime"`
-	Current     map[string]*JobInvocation `json:"current"`
-	Last        *JobInvocation            `json:"last"`
-	History     []JobInvocation           `json:"history"`
+	NextRuntime time.Time       `json:"nextRuntime"`
+	Current     *JobInvocation  `json:"current"`
+	Last        *JobInvocation  `json:"last"`
+	History     []JobInvocation `json:"history"`
 
 	DescriptionProvider               func() string            `json:"-"`
 	LabelsProvider                    func() map[string]string `json:"-"`
 	DisabledProvider                  func() bool              `json:"-"`
-	SerialProvider                    func() bool              `json:"-"`
 	TimeoutProvider                   func() time.Duration     `json:"-"`
 	ShutdownGracePeriodProvider       func() time.Duration     `json:"-"`
 	ShouldSkipLoggerListenersProvider func() bool              `json:"-"`
@@ -161,7 +151,7 @@ func (js *JobScheduler) Labels() map[string]string {
 		"name": js.Name(),
 	}
 	if js.Last != nil {
-		output["last"] = string(js.Last.Status)
+		output["last"] = string(js.Last.State)
 	}
 	if js.LabelsProvider != nil {
 		for key, value := range js.LabelsProvider() {
@@ -196,7 +186,7 @@ func (js *JobScheduler) Stop() error {
 
 	ctx, cancel := js.createContextWithTimeout(js.ShutdownGracePeriodProvider())
 	defer cancel()
-	js.cancel(ctx)
+	js.cancelInvocation(ctx, js.Current)
 	js.PersistHistory(ctx)
 
 	<-js.Latch.NotifyStopped()
@@ -238,10 +228,10 @@ func (js *JobScheduler) Disable() {
 	}
 }
 
-// Cancel stops an execution in process.
+// Cancel stops all running invocations.
 func (js *JobScheduler) Cancel() error {
-	if len(js.Current) == 0 {
-		js.debugf("job cancellation, job not active")
+	if js.Current == nil {
+		js.debugf("job cancellation; not running")
 		return nil
 	}
 	gracePeriod := js.ShutdownGracePeriodProvider()
@@ -249,12 +239,11 @@ func (js *JobScheduler) Cancel() error {
 		js.debugf("job cancellation; cancelling with %v grace period", gracePeriod)
 		ctx, cancel := js.createContextWithTimeout(js.ShutdownGracePeriodProvider())
 		defer cancel()
-		return js.cancel(ctx)
+
+		js.cancelInvocation(ctx, js.Current)
 	}
 	js.debugf("job cancellation; cancelling immediately")
-	for _, ji := range js.Current {
-		ji.Cancel()
-	}
+	js.Current.Cancel()
 	return nil
 }
 
@@ -388,6 +377,12 @@ func (js *JobScheduler) Run() {
 
 // GetInvocationByID returns an invocation by id.
 func (js *JobScheduler) GetInvocationByID(id string) *JobInvocation {
+	js.Lock()
+	defer js.Unlock()
+
+	if js.Current != nil && js.Current.ID == id {
+		return js.Current
+	}
 	for _, ji := range js.History {
 		if ji.ID == id {
 			return &ji
@@ -453,15 +448,9 @@ func (js *JobScheduler) Enabled() bool {
 // CanRun returns if the job can be triggered
 // with a call to Run.
 func (js *JobScheduler) CanRun() bool {
-	if js.Parallel {
-		return false
-	}
-	if js.SerialProvider != nil && js.SerialProvider() {
-		if len(js.Current) > 0 {
-			return false
-		}
-	}
-	return true
+	js.Lock()
+	defer js.Unlock()
+	return js.Current == nil
 }
 
 // Stats returns job stats.
@@ -471,12 +460,12 @@ func (js *JobScheduler) Stats() JobStats {
 
 	output.RunsTotal = len(js.History)
 	for _, ji := range js.History {
-		switch ji.Status {
-		case JobStatusComplete:
+		switch ji.State {
+		case JobInvocationStateComplete:
 			output.RunsSuccessful++
-		case JobStatusFailed:
+		case JobInvocationStateFailed:
 			output.RunsFailed++
-		case JobStatusCancelled:
+		case JobInvocationStateCancelled:
 			if !ji.Timeout.IsZero() {
 				output.RunsTimedOut++
 			} else {
@@ -507,38 +496,32 @@ func (js *JobScheduler) Stats() JobStats {
 
 func (js *JobScheduler) finishCurrent(ji *JobInvocation) {
 	js.Lock()
-
 	if !js.HistoryDisabledProvider() {
 		js.History = append(js.cullHistory(), *ji)
 	}
-	delete(js.Current, ji.ID)
+	js.Current = nil
 	js.Last = ji
 	js.Unlock()
 }
 
 func (js *JobScheduler) addCurrent(ji *JobInvocation) {
 	js.Lock()
-	js.Current[ji.ID] = ji
+	js.Current = ji
 	js.Unlock()
 }
 
 // Cancel stops an execution in process.
-func (js *JobScheduler) cancel(ctx context.Context) error {
+func (js *JobScheduler) cancelInvocation(ctx context.Context, ji *JobInvocation) {
 	deadlinePoll := time.Tick(500 * time.Millisecond)
 	for {
-		if len(js.Current) == 0 {
-			return nil
+		if ji == nil || ji.State != JobInvocationStateRunning {
+			return
 		}
-		js.debugf("job cancellation; waiting for cancellation")
+		js.debugf("job cancellation; waiting for cancellation for invocation `%s`", ji.ID)
 		select {
 		case <-ctx.Done():
-			if len(js.Current) > 0 {
-				js.debugf("job cancellation; signaling for cancellation")
-				for _, ji := range js.Current {
-					ji.Cancel()
-				}
-			}
-			return nil
+			ji.Cancel()
+			return
 		case <-deadlinePoll:
 		}
 	}
@@ -575,7 +558,7 @@ func (js *JobScheduler) onStart(ctx context.Context, ji *JobInvocation) {
 }
 
 func (js *JobScheduler) onCancelled(ctx context.Context, ji *JobInvocation) {
-	ji.Status = JobStatusCancelled
+	ji.State = JobInvocationStateCancelled
 
 	if js.Log != nil && !js.ShouldSkipLoggerListenersProvider() {
 		js.trigger(js.loggerEventContext(ctx), NewEvent(FlagCancelled, ji.JobName, OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed)))
@@ -586,7 +569,7 @@ func (js *JobScheduler) onCancelled(ctx context.Context, ji *JobInvocation) {
 }
 
 func (js *JobScheduler) onComplete(ctx context.Context, ji *JobInvocation) {
-	ji.Status = JobStatusComplete
+	ji.State = JobInvocationStateComplete
 
 	if js.Log != nil && !js.ShouldSkipLoggerListenersProvider() {
 		js.trigger(js.loggerEventContext(ctx), NewEvent(FlagComplete, ji.JobName, OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed)))
@@ -604,7 +587,7 @@ func (js *JobScheduler) onComplete(ctx context.Context, ji *JobInvocation) {
 }
 
 func (js *JobScheduler) onFailure(ctx context.Context, ji *JobInvocation) {
-	ji.Status = JobStatusFailed
+	ji.State = JobInvocationStateFailed
 
 	if js.Log != nil && !js.ShouldSkipLoggerListenersProvider() {
 		js.trigger(js.loggerEventContext(ctx), NewEvent(FlagFailed, ji.JobName, OptEventErr(ji.Err), OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed)))

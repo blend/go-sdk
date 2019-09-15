@@ -1,10 +1,18 @@
 {{ define "index" }}
 {{ template "header" . }}
 <div id="content" class="uk-container uk-container-expand">
+	<div class="uk-child-width-expand@s" uk-grid>
+		<div>
+			<ul class="uk-breadcrumb">
+				<li><a href="/">Jobs</a></li>
+			</ul>
+		</div>
+	</div>
 	{{ template "partials/job_table_header" }}
 		{{ $singleResult := .ViewModel.Jobs | len | eq 1 }}
+		{{ $vm := . }}
 		{{ range $index, $job := .ViewModel.Jobs }}
-			{{ template "partials/job_row" $job }}
+			{{ template "partials/job_row" ( $vm.Wrap $job ) }}
 			{{ else }}
 			<tr><td colspan=11>No jobs loaded or matched the search selector.</td></tr>
 			{{ end }}

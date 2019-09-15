@@ -49,12 +49,6 @@ type ShutdownGracePeriodProvider interface {
 	ShutdownGracePeriod() time.Duration
 }
 
-// SerialProvider is an optional interface that prohibits
-// a task from running if another instance of the task is currently running.
-type SerialProvider interface {
-	Serial() bool
-}
-
 // ShouldSkipLoggerListenersProvider is a type that enables or disables logger listeners.
 type ShouldSkipLoggerListenersProvider interface {
 	ShouldSkipLoggerListeners() bool

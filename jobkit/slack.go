@@ -13,7 +13,7 @@ func NewSlackMessage(ji *cron.JobInvocation, options ...slack.MessageOption) sla
 	if ji.Err != nil {
 		message.Attachments = append(message.Attachments,
 			slack.MessageAttachment{
-				Text:  fmt.Sprintf("%s %s", ji.JobName, ji.Status),
+				Text:  fmt.Sprintf("%s %s", ji.JobName, ji.State),
 				Color: "#ff0000",
 			},
 			slack.MessageAttachment{
@@ -24,7 +24,7 @@ func NewSlackMessage(ji *cron.JobInvocation, options ...slack.MessageOption) sla
 	} else {
 		message.Attachments = append(message.Attachments,
 			slack.MessageAttachment{
-				Text:  fmt.Sprintf("%s %s", ji.JobName, ji.Status),
+				Text:  fmt.Sprintf("%s %s", ji.JobName, ji.State),
 				Color: "#00ff00",
 			},
 		)

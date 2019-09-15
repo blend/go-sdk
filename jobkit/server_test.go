@@ -55,18 +55,18 @@ func TestManagementServerStatus(t *testing.T) {
 		},
 	})
 
-	var status cron.Status
+	var status cron.JobManagerStatus
 	meta, err := web.MockGet(app, "/status.json").JSON(&status)
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
-	assert.Equal(cron.JobManagerStatusRunning, status.Status)
+	assert.Equal(cron.JobManagerStateRunning, status.State)
 
 	jm.Stop()
 
 	meta, err = web.MockGet(app, "/status.json").JSON(&status)
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
-	assert.Equal(cron.JobManagerStatusStopped, status.Status)
+	assert.Equal(cron.JobManagerStateStopped, status.State)
 }
 
 func TestManagementServerIndex(t *testing.T) {

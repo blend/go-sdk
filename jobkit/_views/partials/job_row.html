@@ -1,53 +1,55 @@
 {{ define "partials/job_row" }}
-<tr id="{{ .Name }}">
+<tr id="{{ .ViewModel.Name }}">
 	<td> <!-- status -->
-		{{ if .Current }}
+		{{ if .ViewModel.Current }}
 		<div uk-tooltip="Job is currently running" uk-spinner="ration: 0.5"></div>
-		{{ else if .Last }}
-			{{ if .Last.Status | eq "cancelled" }}
+		{{ else if .ViewModel.Last }}
+			{{ if .ViewModel.Last.State | eq "cancelled" }}
 			<span class="uk-text-warning" uk-icon="warning" uk-tooltip="Job was last cancelled"></span>
-			{{ else if .Last.Status | eq "failed" }}
+			{{ else if .ViewModel.Last.State | eq "failed" }}
 			<span class="uk-text-danger" uk-icon="warning" uk-tooltip="Job had a failure"></span>
-			{{ else if .Last.Status | eq "complete" }}
+			{{ else if .ViewModel.Last.State | eq "complete" }}
 			<span class="uk-text-success" uk-icon="check" uk-tooltip="Last invocation was a success"></span>
+			{{ else }}
+			<span class="uk-text-primary" uk-icon="question" uk-tooltip="Job has no history"></span>
 			{{ end }}
 		{{ end }}
 	</td>
 	<td>
-		<a class="uk-button uk-button-link" href="/job/{{ .Name | slugify }}">{{ .Name }}</a>
+		<a class="uk-button uk-button-link" href="/job/{{ .ViewModel.Name | slugify }}">{{ .ViewModel.Name }}</a>
 	</td>
 	<td> <!-- job labels-->
-		<ul class="uk-list uk-list-divider">
-	{{ range $key, $value := .Labels}}
-			<li><a href="/search?selector={{ $key | urlencode }}={{ $value | urlencode }}">{{ $key }}={{ $value }}</a></li>
+	{{ range $key, $value := .ViewModel.Labels}}
+		<span class="uk-label">
+			<a href="/search?selector={{ $key | urlencode }}={{ $value | urlencode }}">{{ $key }}={{ $value }}</a>
+		</span>
 	{{ end }}
-		</ul>
 	</td>
 	<td> <!-- schedule -->
-	{{ if .Schedule }}
-		{{ .Schedule }}
+	{{ if .ViewModel.Schedule }}
+		{{ .ViewModel.Schedule }}
 	{{ else }}
 		<span>-</span>
 	{{ end }}
 	</td>
 	<td> <!-- next run-->
-	{{ if .Disabled }}
+	{{ if .ViewModel.Disabled }}
 		<span>-</span>
 	{{ else }}
-		{{ .NextRuntime | rfc3339 }}
+		{{ .ViewModel.NextRuntime | rfc3339 }}
 	{{ end }}
 	</td>
 	<td> <!-- last run -->
-	{{ if .Last }}
-		{{ .Last.Finished | since_utc }} ago
+	{{ if .ViewModel.Last }}
+		{{ .ViewModel.Last.Finished | since_utc }} ago
 	{{ else }}
 		<span class="none">-</span>
 	{{ end }}
 	</td>
 	<td> <!-- last status -->
-	{{ if .Last }}
-		{{ if .Last.Err }}
-			<code>{{ .Last.Err }}</code>
+	{{ if .ViewModel.Last }}
+		{{ if .ViewModel.Last.Err }}
+			<code>{{ .ViewModel.Last.Err }}</code>
 		{{ else }}
 		<span class="none">Success</span>
 		{{ end }}
@@ -56,30 +58,30 @@
 	{{ end }}
 	</td>
 	<td> <!-- last elapsed -->
-	{{ if .Last }}
-		{{ .Last.Elapsed }}
+	{{ if .ViewModel.Last }}
+		{{ .ViewModel.Last.Elapsed }}
 	{{ else }}
 		<span class="none">-</span>
 	{{ end }}
 	</td>
 	<td> <!-- job links -->
-		{{ if .Last }}
-		<a class="uk-button uk-button-default" href="/job.invocation/{{ .Name }}/{{ .Last.ID }}">Last</a>
+		{{ if .ViewModel.Last }}
+		<a class="uk-button uk-button-default" href="/job.invocation/{{ .ViewModel.Name }}/{{ .ViewModel.Last.ID }}" uk-icon="reply" uk-tooltip="Show the last job invocation output"></a>
 		{{ else }}
-		<a class="uk-button uk-button-default" disabled>Last</a>
+		<a class="uk-button uk-button-default uk-button-disabled" uk-icon="history" uk-tooltip="Job has no history" disabled></a>
 		{{ end }}
-		<a class="uk-button uk-button-default" href="/job/{{ .Name }}">History</a>
+		<a class="uk-button uk-button-default" href="/job/{{ .ViewModel.Name }}" uk-icon="history" uk-tooltip="Show job stats and history"></a>
 	</td>
 	<td> <!-- actions -->
-	{{ if .Disabled }}
-		<a class="uk-button uk-button-secondary" href="/job.enable/{{ .Name }}">Enable</a>
+	{{ if .ViewModel.Disabled }}
+		<a class="uk-button uk-button-secondary" href="/job.enable/{{ .ViewModel.Name }}" uk-icon="future" uk-tooltip="Enable the job"></a>
 	{{else}}
-		<a class="uk-button uk-button-danger" href="/job.disable/{{ .Name }}">Disable</a>
+		<a class="uk-button uk-button-secondary" href="/job.disable/{{ .ViewModel.Name }}" uk-icon="ban" uk-tooltip="Disable the job"></a>
 	{{end}}
-	{{ if .CanRun }}
-		<a class="uk-button uk-button-primary" href="/job.run/{{ .Name }}">Run</a>
+	{{ if .ViewModel.CanRun }}
+		<a class="uk-button uk-button-primary" href="/job.run/{{ .ViewModel.Name }}" uk-icon="play" uk-tooltip="Force the job to run"></a>
 	{{ else }}
-	<button class="uk-button uk-button-primary">Running</button>
+		<a class="uk-button uk-button-danger" href="/job.cancel/{{ .ViewModel.Name }}" uk-icon="close" uk-tooltip="Cancel the running job"></a>
 	{{ end }}
 	</td>
 </tr>

@@ -137,7 +137,7 @@ func (jm *JobManager) IsJobRunning(jobName string) (isRunning bool) {
 	defer jm.Unlock()
 
 	if job, ok := jm.Jobs[jobName]; ok {
-		isRunning = len(job.Current) > 0
+		isRunning = job.Current != nil
 	}
 	return
 }
@@ -148,7 +148,7 @@ func (jm *JobManager) IsJobInvocationRunning(jobName, invocationID string) (isRu
 	defer jm.Unlock()
 
 	if job, ok := jm.Jobs[jobName]; ok {
-		_, isRunning = job.Current[invocationID]
+		isRunning = job.Current != nil
 	}
 	return
 }
@@ -206,26 +206,26 @@ func (jm *JobManager) CancelJob(jobName string) (err error) {
 }
 
 // Status returns a status object.
-func (jm *JobManager) Status() *Status {
+func (jm *JobManager) Status() *JobManagerStatus {
 	jm.Lock()
 	defer jm.Unlock()
 
-	var jobManagerStatus JobManagerStatus
+	var jobManagerState JobManagerState
 	if jm.Latch.IsStarted() {
-		jobManagerStatus = JobManagerStatusRunning
+		jobManagerState = JobManagerStateRunning
 	} else if jm.Latch.IsPaused() {
-		jobManagerStatus = JobManagerStatusPaused
+		jobManagerState = JobManagerStatePaused
 	} else if jm.Latch.IsResuming() {
-		jobManagerStatus = JobManagerStatusResuming
+		jobManagerState = JobManagerStateResuming
 	} else {
-		jobManagerStatus = JobManagerStatusStopped
+		jobManagerState = JobManagerStateStopped
 	}
 
-	status := Status{
-		Status:  jobManagerStatus,
+	status := JobManagerStatus{
+		State:   jobManagerState,
 		Started: jm.Started,
 		Stopped: jm.Stopped,
-		Running: map[string][]*JobInvocation{},
+		Running: map[string]*JobInvocation{},
 	}
 
 	for _, job := range jm.Jobs {
@@ -235,8 +235,8 @@ func (jm *JobManager) Status() *Status {
 				status.JobLastStarted = job.Last.Started
 			}
 		}
-		for _, ji := range job.Current {
-			status.Running[job.Name()] = append(status.Running[job.Name()], ji)
+		if job.Current != nil {
+			status.Running[job.Name()] = job.Current
 		}
 	}
 	sort.Sort(JobSchedulersByJobNameAsc(status.Jobs))

@@ -17,7 +17,7 @@ func NewJobInvocation(jobName string) *JobInvocation {
 	return &JobInvocation{
 		ID:              NewJobInvocationID(),
 		Started:         Now(),
-		Status:          JobStatusRunning,
+		State:           JobInvocationStateRunning,
 		JobName:         jobName,
 		Output:          output,
 		OutputListeners: listeners,
@@ -34,10 +34,9 @@ type JobInvocation struct {
 	Timeout         time.Time
 	Err             error
 	Elapsed         time.Duration
-	Status          JobStatus
+	State           JobInvocationState
 	Output          *OutputBuffer
 	OutputListeners *OutputListeners
-	State           interface{}
 	Context         context.Context
 	Cancel          context.CancelFunc
 }
@@ -49,7 +48,7 @@ func (ji JobInvocation) MarshalJSON() ([]byte, error) {
 		"jobName": ji.JobName,
 		"started": ji.Started,
 		"elapsed": ji.Elapsed,
-		"status":  ji.Status,
+		"state":   ji.State,
 		"output":  ji.Output,
 	}
 	if !ji.Finished.IsZero() {
@@ -71,16 +70,16 @@ func (ji JobInvocation) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON unmarhsals
 func (ji *JobInvocation) UnmarshalJSON(contents []byte) error {
 	var values struct {
-		ID        string          `json:"id"`
-		JobName   string          `json:"jobName"`
-		Started   time.Time       `json:"started"`
-		Finished  time.Time       `json:"finished"`
-		Cancelled time.Time       `json:"cancelled"`
-		Timeout   time.Time       `json:"timeout"`
-		Elapsed   time.Duration   `json:"elapsed"`
-		Status    JobStatus       `json:"status"`
-		Error     string          `json:"err"`
-		Output    json.RawMessage `json:"output"`
+		ID        string             `json:"id"`
+		JobName   string             `json:"jobName"`
+		Started   time.Time          `json:"started"`
+		Finished  time.Time          `json:"finished"`
+		Cancelled time.Time          `json:"cancelled"`
+		Timeout   time.Time          `json:"timeout"`
+		Elapsed   time.Duration      `json:"elapsed"`
+		State     JobInvocationState `json:"state"`
+		Error     string             `json:"err"`
+		Output    json.RawMessage    `json:"output"`
 	}
 	if err := json.Unmarshal(contents, &values); err != nil {
 		return ex.New(err)
@@ -92,7 +91,7 @@ func (ji *JobInvocation) UnmarshalJSON(contents []byte) error {
 	ji.Cancelled = values.Cancelled
 	ji.Timeout = values.Timeout
 	ji.Elapsed = values.Elapsed
-	ji.Status = values.Status
+	ji.State = values.State
 	if values.Error != "" {
 		ji.Err = errors.New(values.Error)
 	}

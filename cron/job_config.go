@@ -16,8 +16,6 @@ type JobConfig struct {
 	Timeout time.Duration `json:"timeout" yaml:"timeout"`
 	// ShutdownGracePeriod represents the time a job is given to clean itself up.
 	ShutdownGracePeriod time.Duration `json:"shutdownGracePeriod" yaml:"shutdownGracePeriod"`
-	// Serial indicates if job executions cannot overlap.
-	Serial *bool `json:"serial" yaml:"serial"`
 	// HistoryDisabled sets if we should save invocation history and restore it.
 	HistoryDisabled *bool `json:"historyDisabled" yaml:"historyDisabled"`
 	// HistoryMaxCount is the maximum number of history items to keep.
@@ -53,14 +51,6 @@ func (jc JobConfig) ShutdownGracePeriodOrDefault() time.Duration {
 		return jc.ShutdownGracePeriod
 	}
 	return DefaultShutdownGracePeriod
-}
-
-// SerialOrDefault returns a value or a default.
-func (jc JobConfig) SerialOrDefault() bool {
-	if jc.Serial != nil {
-		return *jc.Serial
-	}
-	return DefaultSerial
 }
 
 // HistoryDisabledOrDefault returns a value or a default.
