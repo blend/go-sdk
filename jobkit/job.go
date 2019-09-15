@@ -276,7 +276,7 @@ func (job Job) Debugf(ctx context.Context, format string, args ...interface{}) {
 
 // Error logs an error if the logger i set.
 func (job Job) Error(ctx context.Context, err error) error {
-	if job.Log != nil {
+	if job.Log != nil && err != nil {
 		job.Log.WithPath(job.Name(), cron.GetJobInvocation(ctx).ID).WithContext(ctx).Error(err)
 	}
 	return err
