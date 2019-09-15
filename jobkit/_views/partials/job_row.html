@@ -48,17 +48,6 @@
 		<span class="none">-</span>
 	{{ end }}
 	</td>
-	<td> <!-- last status -->
-	{{ if .ViewModel.Last }}
-		{{ if .ViewModel.Last.Err }}
-			<code>{{ .ViewModel.Last.Err }}</code>
-		{{ else }}
-		<span class="none">Success</span>
-		{{ end }}
-	{{ else }}
-		<span class="none">-</span>
-	{{ end }}
-	</td>
 	<td> <!-- last elapsed -->
 	{{ if .ViewModel.Last }}
 		{{ .ViewModel.Last.Elapsed }}

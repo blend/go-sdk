@@ -13,34 +13,36 @@
 			<a class="uk-button" href="/job.invocation.output/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}" uk-icon="download" uk-tooltip="Download Job Output"></a>
 		</div>
 	</div>
-	<div class="uk-grid uk-grid-divider uk-grid-medium uk-child-width-1-4">
+	<div class="uk-grid uk-grid-match uk-grid-divider uk-grid-medium uk-child-width-1-4">
 		<div class="uk-first-child">
-			<div class="uk-text-small uk-margin-small-bottom"><span class="uk-icon uk-text-primary uk-margin-small-right" uk-icon="info"></span>State</div>
-			<div>
+			<div class="uk-text-small"><span class="uk-icon uk-text-primary uk-margin-small-right" uk-icon="info"></span>State</div>
+			<h1>
 			{{ if .ViewModel.State | eq "running" }}
-			<div uk-tooltip="Job is currently running" uk-spinner="ration: 0.5" uk-tooltip="Invocation is running"></div>
+			<div uk-tooltip="Job is currently running" uk-spinner="ratio: 2" uk-tooltip="Invocation is running"></div>
 			{{ else if .ViewModel.State | eq "cancelled" }}
-			<span class="uk-text-warning" uk-icon="warning" uk-tooltip="Invocation was cancelled"></span>
+			<span class="uk-text-warning" uk-icon="icon:warning; ratio:2" uk-tooltip="Invocation was cancelled"></span>
 			{{ else if.ViewModel.State | eq "failed" }}
-			<span class="uk-text-danger" uk-icon="warning" uk-tooltip="Invocation failed"></span>
+			<span class="uk-text-danger" uk-icon="icon:warning; ratio:2" uk-tooltip="Invocation failed"></span>
 			{{ else if .ViewModel.State | eq "complete" }}
-			<span class="uk-text-success" uk-icon="check" uk-tooltip="Invocation complete"></span>
+			<span class="uk-text-success" uk-icon="icon:check; ratio:2" uk-tooltip="Invocation complete"></span>
 			{{ else }}
-			<span class="uk-text-primary" uk-icon="question" uk-tooltip="Invocation status unknown"></span>
+			<span class="uk-text-primary" uk-icon="icon:question; ratio:2" uk-tooltip="Invocation status unknown"></span>
 			{{ end }}
-			</div>
+			</h1>
 		</div>
 		<div>
-			<div class="uk-text-small uk-margin-small-bottom"><span class="uk-icon uk-text-primary uk-margin-small-right" uk-icon="history"></span>Started</div>
-			<div>{{ .ViewModel.Started | rfc3339 }}</div>
+			<div class="uk-text-small"><span class="uk-icon uk-text-primary uk-margin-small-right" uk-icon="history"></span>Started</div>
+			<h4>{{ .ViewModel.Started | rfc3339 }}</h4>
 		</div>
 		<div>
-			<div class="uk-text-small uk-margin-small-bottom"><span class="uk-icon uk-text-primary uk-margin-small-right" uk-icon="history"></span>Finished</div>
-			<div>{{ if .ViewModel.Finished.IsZero }}-{{ else }}{{ .ViewModel.Finished | rfc3339 }}{{ end }}</div>
+			<div class="uk-text-small"><span class="uk-icon uk-text-primary uk-margin-small-right" uk-icon="history"></span>Finished</div>
+			<h4>{{ if .ViewModel.Finished.IsZero }}-{{ else }}{{ .ViewModel.Finished | rfc3339 }}{{ end }}</h4>
 		</div>
 		<div>
-			<div class="uk-text-small uk-margin-small-bottom"><span class="uk-icon uk-text-primary uk-margin-small-right" uk-icon="clock"></span>Elapsed</div>
-			<div id="elapsed">{{ if .ViewModel.Finished.IsZero }}{{ .ViewModel.Started | since_utc }}{{ else }}{{ .ViewModel.Elapsed }}{{ end }}</div>
+			<div class="uk-text-small"><span class="uk-icon uk-text-primary uk-margin-small-right" uk-icon="clock"></span>Elapsed</div>
+			<h1 id="elapsed" class="uk-text-primary">
+			{{ if .ViewModel.Finished.IsZero }}{{ .ViewModel.Started | since_utc }}{{ else }}{{ .ViewModel.Elapsed }}{{ end }}</div>
+			</h1>
 		</div>
 	</div>
 	<hr/>
@@ -56,37 +58,35 @@
 	<hr/>
 	{{ end }}
 	<div class="uk-grid uk-grid-divider uk-grid-medium uk-child-width-1-1">
-		<div>
-			<link rel="stylesheet" href="/static/css/xterm.css" />
-			<script src="/static/js/xterm.js"></script>
-			<script src="/static/js/fit.js"></script>
-			<script src="/static/js/webLinks.js"></script>
-			<div id="term-window"></div>
-			<script>
-				Terminal.applyAddon(fit);
-				var term = new Terminal();
-				term.open(document.getElementById('term-window'));
-				term.cols = 240;
-				term.resize();
-				term.markers = [];
-				/* code {{ range $index, $line := .ViewModel.Output.Lines }} */
-				term.writeln("{{ $line.Data | as_string }}");
-				/*{{ end }}*/
-				/* {{ if .ViewModel.State | eq "running" }} */
-				var es = new EventSource("/api/job.invocation.output.stream/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}");
-				es.onmessage = (e) => {
-					term.writeln(e.data);
-				};
-				es.addEventListener("elapsed", (e) => {
-					document.getElementById("elapsed").textContent = e.data;
-				});
-				es.addEventListener("complete", (e) => {
-					es.close();
-					window.location.reload();
-				});
-				/*{{ end }}*/
-			</script>
-		</div>
+		<div id="uk-first-child term-window"></div>
+		<link rel="stylesheet" href="/static/css/xterm.css" />
+		<script src="/static/js/xterm.js"></script>
+		<script src="/static/js/fit.js"></script>
+		<script src="/static/js/webLinks.js"></script>
+		<script>
+			Terminal.applyAddon(fit);
+			Terminal.applyAddon(webLinks);
+			var term = new Terminal();
+			term.open(document.getElementById('term-window'));
+			term.markers = [];
+			term.fit();
+			/* code {{ range $index, $line := .ViewModel.Output.Lines }} */
+			term.writeln("{{ $line.Data | as_string }}");
+			/*{{ end }}*/
+			/* {{ if .ViewModel.State | eq "running" }} */
+			var es = new EventSource("/api/job.invocation.output.stream/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}");
+			es.onmessage = (e) => {
+				term.writeln(e.data);
+			};
+			es.addEventListener("elapsed", (e) => {
+				document.getElementById("elapsed").textContent = e.data;
+			});
+			es.addEventListener("complete", (e) => {
+				es.close();
+				window.location.reload();
+			});
+			/*{{ end }}*/
+		</script>
 	</div>
 </div>
 {{ template "footer" . }}
