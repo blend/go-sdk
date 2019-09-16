@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/cron"
@@ -16,6 +17,41 @@ func scheduleProvider(schedule cron.Schedule) func() cron.Schedule {
 	return func() cron.Schedule {
 		return schedule
 	}
+}
+
+func TestNewJob(t *testing.T) {
+	assert := assert.New(t)
+
+	cfg := JobConfig{
+		JobConfig: cron.JobConfig{
+			Name:    "test",
+			Timeout: 2 * time.Second,
+		},
+		Schedule: "@every 1s",
+	}
+	var didCallAction bool
+	action := func(_ context.Context) error {
+		didCallAction = true
+		return nil
+	}
+
+	job, err := NewJob(cfg, action, OptParsedSchedule("@every 2s"))
+	assert.Nil(err)
+	assert.NotNil(job)
+	assert.Equal(2*time.Second, job.CompiledSchedule.(cron.IntervalSchedule).Every)
+	assert.Nil(job.Action(context.Background()))
+	assert.True(didCallAction)
+}
+
+func TestJobWrap(t *testing.T) {
+	assert := assert.New(t)
+
+	job := cron.NewJob(cron.OptJobName("test"), cron.OptJobAction(func(_ context.Context) error {
+		return nil
+	}))
+	wrapped := Wrap(job)
+	assert.Equal(wrapped.Name(), job.Name())
+	assert.NotNil(job.Action)
 }
 
 func TestJobLifecycleHooksNotificationsUnset(t *testing.T) {

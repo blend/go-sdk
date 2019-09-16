@@ -81,6 +81,9 @@ func Wrap(job cron.Job) *Job {
 	if typed, ok := job.(cron.HistoryDisabledProvider); ok {
 		j.Config.HistoryDisabled = ref.Bool(typed.HistoryDisabled())
 	}
+	if typed, ok := job.(cron.HistoryPersistenceDisabledProvider); ok {
+		j.Config.HistoryPersistenceDisabled = ref.Bool(typed.HistoryPersistenceDisabled())
+	}
 	if typed, ok := job.(cron.HistoryMaxCountProvider); ok {
 		j.Config.HistoryMaxCount = typed.HistoryMaxCount()
 	}
