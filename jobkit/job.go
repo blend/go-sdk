@@ -111,6 +111,8 @@ func OptAction(action func(context.Context) error) JobOption {
 func OptConfig(cfg JobConfig) JobOption {
 	return func(job *Job) error {
 		job.Config = cfg
+		job.EmailDefaults = cfg.EmailDefaults
+		job.Webhook = cfg.Webhook
 		return nil
 	}
 }
@@ -135,8 +137,10 @@ type Job struct {
 	Config JobConfig
 
 	CompiledSchedule cron.Schedule
-	EmailDefaults    email.Message
 	Action           func(context.Context) error
+
+	EmailDefaults email.Message
+	Webhook       Webhook
 
 	Log          logger.Log
 	StatsClient  stats.Collector
@@ -294,6 +298,7 @@ func (job Job) stats(ctx context.Context, flag string) {
 	if job.StatsClient != nil {
 		job.StatsClient.Increment(string(flag), fmt.Sprintf("%s:%s", stats.TagJob, job.Name()))
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
+			job.Debugf(ctx, "notify (email); sending email notification")
 			job.Error(ctx, job.StatsClient.TimeInMilliseconds(string(flag), ji.Elapsed, fmt.Sprintf("%s:%s", stats.TagJob, job.Name())))
 		}
 	} else {
@@ -304,6 +309,7 @@ func (job Job) stats(ctx context.Context, flag string) {
 func (job Job) notify(ctx context.Context, flag string) {
 	if job.SlackClient != nil {
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
+			job.Debugf(ctx, "notify (slack); sending slack notification")
 			job.Error(ctx, job.SlackClient.Send(context.Background(), NewSlackMessage(ji)))
 		}
 	} else {
@@ -323,5 +329,13 @@ func (job Job) notify(ctx context.Context, flag string) {
 		}
 	} else {
 		job.Debugf(ctx, "notify (email); email sender unset, skipping sending email notification")
+	}
+
+	if !job.Webhook.IsZero() {
+		job.Debugf(ctx, "notify (webhook); sending webhook notification")
+		_, err := job.Config.Webhook.Request().Discard()
+		if err != nil {
+			job.Error(ctx, err)
+		}
 	}
 }

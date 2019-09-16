@@ -19,6 +19,9 @@ type JobConfig struct {
 	// EmailDefaults holds the message defaults for email notifications.
 	EmailDefaults email.Message `yaml:"emailDefaults"`
 
+	// Webhook set a webhook target for notifications.
+	Webhook Webhook `yaml:"webhook"`
+
 	// NotifyOnStart governs if we should send notifications job start.
 	NotifyOnStart *bool `yaml:"notifyOnStart"`
 	// NotifyOnSuccess governs if we should send notifications on any success.
