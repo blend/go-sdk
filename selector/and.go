@@ -16,9 +16,9 @@ func (a And) Matches(labels Labels) bool {
 }
 
 // Validate validates all the selectors in the clause.
-func (a And) Validate() (err error) {
+func (a And) Validate(permittedValues ...map[rune]bool) (err error) {
 	for _, s := range a {
-		err = s.Validate()
+		err = s.Validate(permittedValues...)
 		if err != nil {
 			return
 		}

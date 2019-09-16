@@ -9,7 +9,7 @@ func (a Any) Matches(labels Labels) bool {
 }
 
 // Validate validates the selector
-func (a Any) Validate() (err error) {
+func (a Any) Validate(permittedValues ...map[rune]bool) (err error) {
 	return nil
 }
 

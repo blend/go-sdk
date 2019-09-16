@@ -4,8 +4,7 @@ import "fmt"
 
 // NotEquals returns if a key strictly equals a value.
 type NotEquals struct {
-	Key, Value      string
-	PermittedValues map[rune]bool
+	Key, Value string
 }
 
 // Matches returns the selector result.
@@ -17,12 +16,12 @@ func (ne NotEquals) Matches(labels Labels) bool {
 }
 
 // Validate validates the selector.
-func (ne NotEquals) Validate() (err error) {
+func (ne NotEquals) Validate(permittedValues ...map[rune]bool) (err error) {
 	err = CheckKey(ne.Key)
 	if err != nil {
 		return
 	}
-	err = CheckValue(ne.Value, ne.PermittedValues)
+	err = CheckValue(ne.Value, permittedValues...)
 	return
 }
 

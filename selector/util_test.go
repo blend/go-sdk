@@ -127,5 +127,5 @@ func TestCheckLabels(t *testing.T) {
 
 	optionallyGoodLabels := Labels{"foo": "bar", "hello": "_baz.com&"}
 	assert.NotNil(optionallyGoodLabels)
-	assert.Nil(CheckLabels(optionallyGoodLabels, '_', '&'))
+	assert.Nil(CheckLabels(optionallyGoodLabels, map[rune]bool{'_': true, '&': true}))
 }

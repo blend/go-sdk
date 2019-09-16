@@ -91,17 +91,13 @@ var (
 )
 
 // CheckLabels validates all the keys and values for the label set.
-func CheckLabels(labels Labels, permittedValues ...rune) (err error) {
+func CheckLabels(labels Labels, permittedValues ...map[rune]bool) (err error) {
 	for key, value := range labels {
 		err = CheckKey(key)
 		if err != nil {
 			return
 		}
-		permitted := map[rune]bool{}
-		for _, p := range permittedValues {
-			permitted[p] = true
-		}
-		err = CheckValue(value, permitted)
+		err = CheckValue(value, permittedValues...)
 		if err != nil {
 			return
 		}

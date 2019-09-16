@@ -7,9 +7,8 @@ import (
 
 // In returns if a key matches a set of values.
 type In struct {
-	Key             string
-	Values          []string
-	PermittedValues map[rune]bool
+	Key    string
+	Values []string
 }
 
 // Matches returns the selector result.
@@ -29,13 +28,13 @@ func (i In) Matches(labels Labels) bool {
 }
 
 // Validate validates the selector.
-func (i In) Validate() (err error) {
+func (i In) Validate(permittedValues ...map[rune]bool) (err error) {
 	err = CheckKey(i.Key)
 	if err != nil {
 		return
 	}
 	for _, v := range i.Values {
-		err = CheckValue(v, i.PermittedValues)
+		err = CheckValue(v, permittedValues...)
 		if err != nil {
 			return
 		}

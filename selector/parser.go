@@ -130,7 +130,7 @@ func (p *Parser) Parse() (Selector, error) {
 	}
 
 	if !p.skipValidation {
-		err = selector.Validate()
+		err = selector.Validate(p.permittedValues)
 		if err != nil {
 			return nil, err
 		}
@@ -267,7 +267,7 @@ func (p *Parser) readOp() (string, error) {
 			}
 			return "", ErrInvalidOperator
 		case 1: // =
-			if p.isWhitespace(ch) || p.isAlpha(ch) || ch == Comma {
+			if p.isWhitespace(ch) || p.isAlpha(ch) || ch == Comma || isPermitted(ch, p.permittedValues) {
 				return string(op), nil
 			}
 			if ch == Equal {

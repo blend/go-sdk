@@ -14,7 +14,7 @@ func (nhk NotHasKey) Matches(labels Labels) bool {
 }
 
 // Validate validates the selector.
-func (nhk NotHasKey) Validate() (err error) {
+func (nhk NotHasKey) Validate(permittedValues ...map[rune]bool) (err error) {
 	err = CheckKey(string(nhk))
 	return
 }

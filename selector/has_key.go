@@ -10,7 +10,7 @@ func (hk HasKey) Matches(labels Labels) bool {
 }
 
 // Validate validates the selector.
-func (hk HasKey) Validate() (err error) {
+func (hk HasKey) Validate(permittedValues ...map[rune]bool) (err error) {
 	err = CheckKey(string(hk))
 	return
 }
