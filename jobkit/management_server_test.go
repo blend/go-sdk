@@ -8,7 +8,6 @@ import (
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/cron"
-	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/web"
 )
@@ -29,6 +28,7 @@ func createTestManagementServer() (*cron.JobManager, *web.App) {
 			Finished: time.Now().UTC().Add(time.Second),
 			State:    cron.JobInvocationStateComplete,
 			Elapsed:  time.Second,
+			Output:   new(cron.OutputBuffer),
 		},
 		{
 			ID:       uuid.V4().String(),
@@ -37,6 +37,7 @@ func createTestManagementServer() (*cron.JobManager, *web.App) {
 			Finished: time.Now().UTC().Add(time.Second),
 			State:    cron.JobInvocationStateComplete,
 			Elapsed:  time.Second,
+			Output:   new(cron.OutputBuffer),
 		},
 	}
 	jm.Jobs["test1"].History = []cron.JobInvocation{
@@ -47,6 +48,7 @@ func createTestManagementServer() (*cron.JobManager, *web.App) {
 			Finished: time.Now().UTC().Add(time.Second),
 			State:    cron.JobInvocationStateComplete,
 			Elapsed:  time.Second,
+			Output:   new(cron.OutputBuffer),
 		},
 		{
 			ID:       uuid.V4().String(),
@@ -55,6 +57,7 @@ func createTestManagementServer() (*cron.JobManager, *web.App) {
 			Finished: time.Now().UTC().Add(time.Second),
 			State:    cron.JobInvocationStateComplete,
 			Elapsed:  time.Second,
+			Output:   new(cron.OutputBuffer),
 		},
 	}
 
@@ -62,7 +65,7 @@ func createTestManagementServer() (*cron.JobManager, *web.App) {
 		Web: web.Config{
 			Port: 5000,
 		},
-	}, web.OptLog(logger.All()))
+	})
 }
 
 func jobs(jm *cron.JobManager) []*cron.JobScheduler {
@@ -130,7 +133,7 @@ func TestManagementServerJobInvocation(t *testing.T) {
 
 	contents, meta, err := web.MockGet(app, fmt.Sprintf("/job.invocation/%s/%s", jobName, invocationID)).Bytes()
 	assert.Nil(err)
-	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.Equal(http.StatusOK, meta.StatusCode, string(contents))
 	assert.Contains(string(contents), jobName)
 	assert.Contains(string(contents), invocationID)
 }
@@ -139,6 +142,8 @@ func TestManagementServerPause(t *testing.T) {
 	assert := assert.New(t)
 
 	jm, app := createTestManagementServer()
+	jm.StartAsync()
+	defer jm.Stop()
 
 	meta, err := web.MockGet(app, "/pause").Discard()
 	assert.Nil(err)
