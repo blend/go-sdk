@@ -37,7 +37,6 @@ type ManagementServer struct {
 
 // Register registers the management server.
 func (ms ManagementServer) Register(app *web.App) {
-
 	if ms.Config.UseViewFilesOrDefault() {
 		app.Views.LiveReload = true
 		app.Views.AddPaths(ms.ViewPaths()...)
@@ -472,7 +471,7 @@ func (ms ManagementServer) getRequestJobInvocation(r *web.Ctx, resultProvider we
 	if err != nil {
 		return nil, resultProvider.BadRequest(err)
 	}
-	invocationID, err := r.RouteParam("invocation")
+	invocationID, err := r.RouteParam("id")
 	if err != nil {
 		return nil, resultProvider.BadRequest(err)
 	}
