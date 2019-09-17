@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/cron"
@@ -12,75 +11,12 @@ import (
 	"github.com/blend/go-sdk/web"
 )
 
-func createTestManagementServer() (*cron.JobManager, *web.App) {
-
-	test0 := cron.NewJob(cron.OptJobName("test0"))
-	test1 := cron.NewJob(cron.OptJobName("test1"))
-
-	jm := cron.New()
-	jm.LoadJobs(test0, test1)
-
-	jm.Jobs["test0"].History = []cron.JobInvocation{
-		{
-			ID:       uuid.V4().String(),
-			JobName:  "test0",
-			Started:  time.Now().UTC(),
-			Finished: time.Now().UTC().Add(time.Second),
-			State:    cron.JobInvocationStateComplete,
-			Elapsed:  time.Second,
-			Output:   new(cron.OutputBuffer),
-		},
-		{
-			ID:       uuid.V4().String(),
-			JobName:  "test0",
-			Started:  time.Now().UTC(),
-			Finished: time.Now().UTC().Add(time.Second),
-			State:    cron.JobInvocationStateComplete,
-			Elapsed:  time.Second,
-			Output:   new(cron.OutputBuffer),
-		},
-	}
-	jm.Jobs["test1"].History = []cron.JobInvocation{
-		{
-			ID:       uuid.V4().String(),
-			JobName:  "test1",
-			Started:  time.Now().UTC(),
-			Finished: time.Now().UTC().Add(time.Second),
-			State:    cron.JobInvocationStateComplete,
-			Elapsed:  time.Second,
-			Output:   new(cron.OutputBuffer),
-		},
-		{
-			ID:       uuid.V4().String(),
-			JobName:  "test1",
-			Started:  time.Now().UTC(),
-			Finished: time.Now().UTC().Add(time.Second),
-			State:    cron.JobInvocationStateComplete,
-			Elapsed:  time.Second,
-			Output:   new(cron.OutputBuffer),
-		},
-	}
-
-	return jm, NewServer(jm, Config{
-		Web: web.Config{
-			Port: 5000,
-		},
-	})
-}
-
-func jobs(jm *cron.JobManager) []*cron.JobScheduler {
-	var output []*cron.JobScheduler
-	for _, js := range jm.Jobs {
-		output = append(output, js)
-	}
-	return output
-}
-
 func TestManagementServerStatus(t *testing.T) {
 	assert := assert.New(t)
 
 	jm, app := createTestManagementServer()
 	jm.StartAsync()
+	defer jm.Stop()
 
 	var status cron.JobManagerStatus
 	meta, err := web.MockGet(app, "/status.json").JSON(&status)
@@ -99,11 +35,11 @@ func TestManagementServerStatus(t *testing.T) {
 func TestManagementServerIndex(t *testing.T) {
 	assert := assert.New(t)
 
-	_, app := createTestManagementServer()
-
-	meta, err := web.MockGet(app, "/").Discard()
+	jm, app := createTestManagementServer()
+	contents, meta, err := web.MockGet(app, "/").Bytes()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.Contains(string(contents), firstJob(jm).Name())
 }
 
 func TestManagementServerJob(t *testing.T) {
@@ -111,7 +47,8 @@ func TestManagementServerJob(t *testing.T) {
 
 	jm, app := createTestManagementServer()
 
-	job := jobs(jm)[0]
+	job := firstJob(jm)
+	assert.NotNil(job)
 	jobName := job.Name()
 	invocationID := job.History[0].ID
 
@@ -122,12 +59,24 @@ func TestManagementServerJob(t *testing.T) {
 	assert.Contains(string(contents), invocationID)
 }
 
+func TestManagementServerJobNotFound(t *testing.T) {
+	assert := assert.New(t)
+
+	_, app := createTestManagementServer()
+
+	meta, err := web.MockGet(app, fmt.Sprintf("/job/%s", uuid.V4().String())).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusNotFound, meta.StatusCode)
+}
+
 func TestManagementServerJobInvocation(t *testing.T) {
 	assert := assert.New(t)
 
 	jm, app := createTestManagementServer()
 
-	job := jobs(jm)[0]
+	job := firstJob(jm)
+	assert.NotNil(job)
+
 	jobName := job.Name()
 	invocationID := job.History[0].ID
 
@@ -136,6 +85,42 @@ func TestManagementServerJobInvocation(t *testing.T) {
 	assert.Equal(http.StatusOK, meta.StatusCode, string(contents))
 	assert.Contains(string(contents), jobName)
 	assert.Contains(string(contents), invocationID)
+}
+
+func TestManagementServerJobInvocationCurrent(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job := firstJob(jm)
+	assert.NotNil(job)
+
+	jobName := job.Name()
+	invocationID := job.Current.ID
+
+	contents, meta, err := web.MockGet(app, fmt.Sprintf("/job.invocation/%s/current", jobName)).Bytes()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode, string(contents))
+	assert.Contains(string(contents), jobName)
+	assert.Contains(string(contents), invocationID)
+}
+
+func TestManagementServerJobInvocationNotFound(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	meta, err := web.MockGet(app, fmt.Sprintf("/job.invocation/%s/%s", uuid.V4().String(), uuid.V4().String())).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusNotFound, meta.StatusCode)
+
+	job := firstJob(jm)
+	assert.NotNil(job)
+	jobName := job.Name()
+
+	meta, err = web.MockGet(app, fmt.Sprintf("/job.invocation/%s/%s", jobName, uuid.V4().String())).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusNotFound, meta.StatusCode)
 }
 
 func TestManagementServerPause(t *testing.T) {

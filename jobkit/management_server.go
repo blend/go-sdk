@@ -467,9 +467,13 @@ func (ms ManagementServer) addContextStateConfig(action web.Action) web.Action {
 
 // getRequestJobInvocation pulls a job invocation off a request context.
 func (ms ManagementServer) getRequestJobInvocation(r *web.Ctx, resultProvider web.ResultProvider) (*cron.JobInvocation, web.Result) {
-	job, err := ms.Cron.Job(web.StringValue(r.RouteParam("jobName")))
+	jobName, err := r.RouteParam("jobName")
 	if err != nil {
 		return nil, resultProvider.BadRequest(err)
+	}
+	job, err := ms.Cron.Job(jobName)
+	if err != nil {
+		return nil, resultProvider.NotFound()
 	}
 	invocationID, err := r.RouteParam("id")
 	if err != nil {
