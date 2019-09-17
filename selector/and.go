@@ -20,8 +20,9 @@ func (a And) Matches(labels Labels) bool {
 
 // Validate validates all the selectors in the clause.
 func (a And) Validate(options ...SelectorOption) (err error) {
+	merged := append(a.options, options...)
 	for _, s := range a.selectors {
-		err = s.Validate(append(a.options, options...)...)
+		err = s.Validate(merged...)
 		if err != nil {
 			return
 		}
