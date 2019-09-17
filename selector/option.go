@@ -18,5 +18,7 @@ func OptPermittedValues(permitted []rune) Option {
 		for _, r := range permitted {
 			p.permittedValues[r] = true
 		}
+
+		p.selectorOptions = append(p.selectorOptions, SelectorOptPermittedValues(permitted...))
 	}
 }

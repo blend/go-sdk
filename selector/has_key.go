@@ -10,8 +10,14 @@ func (hk HasKey) Matches(labels Labels) bool {
 }
 
 // Validate validates the selector.
-func (hk HasKey) Validate(permittedValues ...map[rune]bool) (err error) {
+func (hk HasKey) Validate(options ...SelectorOption) (err error) {
 	err = CheckKey(string(hk))
+	return
+}
+
+// AddPermittedValues satisfies the Selector interface
+func (hk HasKey) AddPermittedValues(permitted map[rune]bool) {
+	// since this selector only deals with keys, this method does nothing
 	return
 }
 

@@ -4,7 +4,8 @@ import "fmt"
 
 // Equals returns if a key strictly equals a value.
 type Equals struct {
-	Key, Value string
+	Key, Value      string
+	PermittedValues []map[rune]bool
 }
 
 // Matches returns the selector result.
@@ -16,13 +17,27 @@ func (e Equals) Matches(labels Labels) bool {
 }
 
 // Validate validates the selector.
-func (e Equals) Validate(permittedValues ...map[rune]bool) (err error) {
+func (e *Equals) Validate(options ...SelectorOption) (err error) {
+	var selector Selector = e
+	for _, option := range options {
+		option(selector)
+	}
+
 	err = CheckKey(e.Key)
 	if err != nil {
 		return
 	}
-	err = CheckValue(e.Value, permittedValues...)
+	err = CheckValue(e.Value, e.PermittedValues...)
 	return
+}
+
+// AddPermittedValues adds runes to be accepted in values
+func (e *Equals) AddPermittedValues(permitted map[rune]bool) {
+	if e.PermittedValues == nil {
+		e.PermittedValues = []map[rune]bool{}
+	}
+
+	e.PermittedValues = append(e.PermittedValues, permitted)
 }
 
 // String returns the string representation of the selector.

@@ -14,11 +14,11 @@ func TestMustParse(t *testing.T) {
 
 	var err error
 	func() {
-	defer func() {
-		if r := recover(); r != nil {
-			err = exception.New(r)
-		}
-	}()
+		defer func() {
+			if r := recover(); r != nil {
+				err = exception.New(r)
+			}
+		}()
 		MustParse("x!!")
 	}()
 	assert.NotNil(err)
@@ -188,7 +188,7 @@ func TestParseEqualsOperators(t *testing.T) {
 	selector, err := Parse("notin=in")
 	assert.Nil(err)
 
-	typed, isTyped := selector.(Equals)
+	typed, isTyped := selector.(*Equals)
 	assert.True(isTyped)
 	assert.Equal("notin", typed.Key)
 	assert.Equal("in", typed.Value)
@@ -232,9 +232,9 @@ func TestParseMultiByte(t *testing.T) {
 	assert.Nil(err)
 	assert.NotNil(selector)
 
-	typed, isTyped := selector.(And)
+	typed, isTyped := selector.(*And)
 	assert.True(isTyped)
-	assert.Len(typed, 2)
+	assert.Len(typed.selectors, 2)
 }
 
 func TestParseOptions(t *testing.T) {

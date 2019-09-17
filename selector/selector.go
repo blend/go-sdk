@@ -6,6 +6,7 @@ type Labels = map[string]string
 // Selector is the common interface for selector types.
 type Selector interface {
 	Matches(labels Labels) bool
-	Validate(permittedValues ...map[rune]bool) error
+	Validate(options ...SelectorOption) error
+	AddPermittedValues(permittedValues map[rune]bool)
 	String() string
 }

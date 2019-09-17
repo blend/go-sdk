@@ -18,7 +18,7 @@ func TestAnd(t *testing.T) {
 		"moo": "bar",
 	}
 
-	selector := And([]Selector{Equals{Key: "foo", Value: "far"}, Equals{Key: "moo", Value: "lar"}})
+	selector := &And{selectors: []Selector{&Equals{Key: "foo", Value: "far"}, &Equals{Key: "moo", Value: "lar"}}}
 	assert.True(selector.Matches(valid))
 	assert.False(selector.Matches(invalid))
 
