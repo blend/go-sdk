@@ -9,13 +9,8 @@ func (a Any) Matches(labels Labels) bool {
 }
 
 // Validate validates the selector
-func (a Any) Validate(options ...SelectorOption) (err error) {
+func (a Any) Validate() (err error) {
 	return nil
-}
-
-// AddPermittedValues adds runes to be accepted in values
-func (a Any) AddPermittedValues(permitted map[rune]bool) {
-	return
 }
 
 // String returns a string representation of the selector

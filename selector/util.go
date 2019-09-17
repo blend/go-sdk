@@ -91,13 +91,13 @@ var (
 )
 
 // CheckLabels validates all the keys and values for the label set.
-func CheckLabels(labels Labels, permittedValues ...map[rune]bool) (err error) {
+func CheckLabels(labels Labels) (err error) {
 	for key, value := range labels {
 		err = CheckKey(key)
 		if err != nil {
 			return
 		}
-		err = CheckValue(value, permittedValues...)
+		err = CheckValue(value)
 		if err != nil {
 			return
 		}
@@ -146,18 +146,18 @@ func CheckKey(key string) (err error) {
 		return ErrKeyTooLong
 	}
 
-	return checkName(string(working), nil)
+	return checkName(string(working))
 }
 
 // CheckValue returns if the value is valid.
-func CheckValue(value string, permitted ...map[rune]bool) error {
+func CheckValue(value string) error {
 	if len(value) > MaxValueLen {
 		return ErrValueTooLong
 	}
-	return checkName(value, permitted...)
+	return checkName(value)
 }
 
-func checkName(value string, permitted ...map[rune]bool) (err error) {
+func checkName(value string) (err error) {
 	valueLen := len(value)
 	var state int
 	var ch rune
@@ -166,14 +166,14 @@ func checkName(value string, permitted ...map[rune]bool) (err error) {
 		ch, width = utf8.DecodeRuneInString(value[pos:])
 		switch state {
 		case 0: //check prefix/suffix
-			if !isAlpha(ch) && !isPermitted(ch, permitted...) {
+			if !isAlpha(ch) {
 				err = ErrKeyInvalidCharacter
 				return
 			}
 			state = 1
 			continue
 		case 1:
-			if !(isNameSymbol(ch) || ch == BackSlash || isAlpha(ch) || isPermitted(ch, permitted...)) {
+			if !(isNameSymbol(ch) || ch == BackSlash || isAlpha(ch)) {
 				err = ErrKeyInvalidCharacter
 				return
 			}

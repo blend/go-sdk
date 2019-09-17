@@ -18,14 +18,9 @@ func TestAnd(t *testing.T) {
 		"moo": "bar",
 	}
 
-	selector := &And{selectors: []Selector{&Equals{Key: "foo", Value: "far"}, &Equals{Key: "moo", Value: "lar"}}}
+	selector := And([]Selector{Equals{Key: "foo", Value: "far"}, Equals{Key: "moo", Value: "lar"}})
 	assert.True(selector.Matches(valid))
 	assert.False(selector.Matches(invalid))
 
 	assert.Equal("foo == far, moo == lar", selector.String())
-
-	// Test: selector option does not mutate the operator
-	and := And{selectors: []Selector{&Equals{Key: "foo", Value: "*far"}}}
-	assert.Nil(and.Validate(SelectorOptPermittedValues('*')))
-	assert.Empty(and.options)
 }

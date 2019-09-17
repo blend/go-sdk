@@ -7,9 +7,8 @@ import (
 
 // NotIn returns if a key does not match a set of values.
 type NotIn struct {
-	Key             string
-	Values          []string
-	PermittedValues []map[rune]bool
+	Key    string
+	Values []string
 }
 
 // Matches returns the selector result.
@@ -27,28 +26,18 @@ func (ni NotIn) Matches(labels Labels) bool {
 }
 
 // Validate validates the selector.
-func (ni NotIn) Validate(options ...SelectorOption) (err error) {
-	var selector Selector = &ni
-	for _, option := range options {
-		option(selector)
-	}
-
+func (ni NotIn) Validate() (err error) {
 	err = CheckKey(ni.Key)
 	if err != nil {
 		return
 	}
 	for _, v := range ni.Values {
-		err = CheckValue(v, ni.PermittedValues...)
+		err = CheckValue(v)
 		if err != nil {
 			return
 		}
 	}
 	return
-}
-
-// AddPermittedValues adds runes to be accepted in values
-func (ni *NotIn) AddPermittedValues(permitted map[rune]bool) {
-	ni.PermittedValues = append(ni.PermittedValues, permitted)
 }
 
 // String returns a string representation of the selector.

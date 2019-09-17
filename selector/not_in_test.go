@@ -27,9 +27,4 @@ func TestNotIn(t *testing.T) {
 	assert.True(selector.Matches(missing))
 	assert.False(selector.Matches(invalid))
 	assert.Equal("foo notin (bar, far)", selector.String())
-
-	// Test: selector option does not mutate the operator
-	ni := NotIn{Key: "foo", Values: []string{"*far"}}
-	assert.Nil(ni.Validate(SelectorOptPermittedValues('*')))
-	assert.Empty(ni.PermittedValues)
 }

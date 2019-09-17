@@ -29,7 +29,6 @@ type Parser struct {
 
 	skipValidation  bool
 	permittedValues map[rune]bool
-	selectorOptions []SelectorOption
 }
 
 // Parse does the actual parsing.
@@ -131,7 +130,7 @@ func (p *Parser) Parse() (Selector, error) {
 	}
 
 	if !p.skipValidation {
-		err = selector.Validate(p.selectorOptions...)
+		err = selector.Validate()
 		if err != nil {
 			return nil, err
 		}
@@ -145,11 +144,10 @@ func (p *Parser) addAnd(current, next Selector) Selector {
 	if current == nil {
 		return next
 	}
-	if typed, isTyped := current.(*And); isTyped {
-		typed.selectors = append(typed.selectors, next)
-		return typed
+	if typed, isTyped := current.(And); isTyped {
+		return append(typed, next)
 	}
-	return &And{selectors: []Selector{current, next}}
+	return And([]Selector{current, next})
 }
 
 func (p *Parser) hasKey(key string) Selector {
@@ -162,12 +160,12 @@ func (p *Parser) notHasKey(key string) Selector {
 
 func (p *Parser) equals(key string) (Selector, error) {
 	value := p.readWord()
-	return &Equals{Key: key, Value: value}, nil
+	return Equals{Key: key, Value: value}, nil
 }
 
 func (p *Parser) notEquals(key string) (Selector, error) {
 	value := p.readWord()
-	return &NotEquals{Key: key, Value: value}, nil
+	return NotEquals{Key: key, Value: value}, nil
 }
 
 func (p *Parser) in(key string) (Selector, error) {
@@ -175,7 +173,7 @@ func (p *Parser) in(key string) (Selector, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &In{Key: key, Values: csv}, nil
+	return In{Key: key, Values: csv}, nil
 }
 
 func (p *Parser) notIn(key string) (Selector, error) {
@@ -183,7 +181,7 @@ func (p *Parser) notIn(key string) (Selector, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &NotIn{Key: key, Values: csv}, nil
+	return NotIn{Key: key, Values: csv}, nil
 }
 
 // done indicates the cursor is past the usable length of the string.

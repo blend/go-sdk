@@ -3,14 +3,11 @@ package selector
 import "strings"
 
 // And is a combination selector.
-type And struct {
-	selectors []Selector
-	options   []SelectorOption
-}
+type And []Selector
 
 // Matches returns if both A and B match the labels.
 func (a And) Matches(labels Labels) bool {
-	for _, s := range a.selectors {
+	for _, s := range a {
 		if !s.Matches(labels) {
 			return false
 		}
@@ -19,10 +16,9 @@ func (a And) Matches(labels Labels) bool {
 }
 
 // Validate validates all the selectors in the clause.
-func (a And) Validate(options ...SelectorOption) (err error) {
-	merged := append(a.options, options...)
-	for _, s := range a.selectors {
-		err = s.Validate(merged...)
+func (a And) Validate() (err error) {
+	for _, s := range a {
+		err = s.Validate()
 		if err != nil {
 			return
 		}
@@ -30,20 +26,10 @@ func (a And) Validate(options ...SelectorOption) (err error) {
 	return
 }
 
-// AddPermittedValues adds runes to be accepted in values
-func (a *And) AddPermittedValues(permitted map[rune]bool) {
-	p := []rune{}
-	for key := range permitted {
-		p = append(p, key)
-	}
-
-	a.options = append(a.options, SelectorOptPermittedValues(p...))
-}
-
 // And returns a string representation for the selector.
 func (a And) String() string {
 	var childValues []string
-	for _, c := range a.selectors {
+	for _, c := range a {
 		childValues = append(childValues, c.String())
 	}
 	return strings.Join(childValues, ", ")

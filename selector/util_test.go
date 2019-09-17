@@ -86,9 +86,6 @@ func TestCheckValue(t *testing.T) {
 	assert.NotNil(CheckValue("_bar_baz"))
 	assert.NotNil(CheckValue("bar_baz_"))
 	assert.NotNil(CheckValue("_bar_baz_"))
-	assert.Nil(CheckValue("_bar_baz", map[rune]bool{'_': true}))
-	assert.Nil(CheckValue("bar_baz^", map[rune]bool{'_': true, '^': true}))
-	assert.Nil(CheckValue("_bar_baz_", map[rune]bool{'_': true}))
 }
 
 func TestIsAlpha(t *testing.T) {
@@ -107,16 +104,6 @@ func TestIsAlpha(t *testing.T) {
 	assert.False(isAlpha('~'))
 }
 
-func TestIsPermitted(t *testing.T) {
-	assert := assert.New(t)
-
-	assert.False(isPermitted('%'))
-	assert.False(isPermitted('%', map[rune]bool{}))
-	assert.False(isPermitted('%', map[rune]bool{'#': true}))
-	assert.False(isPermitted('%', map[rune]bool{'%': false}))
-	assert.True(isPermitted('%', map[rune]bool{'%': true}))
-}
-
 func TestCheckLabels(t *testing.T) {
 	assert := assert.New(t)
 
@@ -124,8 +111,4 @@ func TestCheckLabels(t *testing.T) {
 	assert.Nil(CheckLabels(goodLabels))
 	badLabels := Labels{"foo": "bar", "_foo.com/bar": "baz"}
 	assert.NotNil(CheckLabels(badLabels))
-
-	optionallyGoodLabels := Labels{"foo": "bar", "hello": "_baz.com&"}
-	assert.NotNil(optionallyGoodLabels)
-	assert.Nil(CheckLabels(optionallyGoodLabels, map[rune]bool{'_': true, '&': true}))
 }

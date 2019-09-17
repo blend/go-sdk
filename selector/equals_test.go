@@ -18,9 +18,4 @@ func TestEquals(t *testing.T) {
 	assert.False(Equals{Key: "foo", Value: "bar"}.Matches(valid))
 
 	assert.Equal("foo == bar", Equals{Key: "foo", Value: "bar"}.String())
-
-	// Test: selector option does not mutate the operator
-	eq := Equals{Key: "foo", Value: "*far"}
-	assert.Nil(eq.Validate(SelectorOptPermittedValues('*')))
-	assert.Empty(eq.PermittedValues)
 }
