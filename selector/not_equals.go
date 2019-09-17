@@ -17,8 +17,8 @@ func (ne NotEquals) Matches(labels Labels) bool {
 }
 
 // Validate validates the selector.
-func (ne *NotEquals) Validate(options ...SelectorOption) (err error) {
-	var selector Selector = ne
+func (ne NotEquals) Validate(options ...SelectorOption) (err error) {
+	var selector Selector = &ne
 	for _, option := range options {
 		option(selector)
 	}

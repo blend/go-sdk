@@ -33,4 +33,9 @@ func TestIn(t *testing.T) {
 	assert.False(selector.Matches(invalid))
 
 	assert.Equal("foo in (bar, far)", selector.String())
+
+	// Test: selector option does not mutate the operator
+	in := In{Key: "foo", Values: []string{"*foo"}}
+	assert.Nil(in.Validate(SelectorOptPermittedValues('*')))
+	assert.Empty(in.PermittedValues)
 }

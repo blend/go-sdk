@@ -17,8 +17,8 @@ func (e Equals) Matches(labels Labels) bool {
 }
 
 // Validate validates the selector.
-func (e *Equals) Validate(options ...SelectorOption) (err error) {
-	var selector Selector = e
+func (e Equals) Validate(options ...SelectorOption) (err error) {
+	var selector Selector = &e
 	for _, option := range options {
 		option(selector)
 	}
@@ -33,10 +33,6 @@ func (e *Equals) Validate(options ...SelectorOption) (err error) {
 
 // AddPermittedValues adds runes to be accepted in values
 func (e *Equals) AddPermittedValues(permitted map[rune]bool) {
-	if e.PermittedValues == nil {
-		e.PermittedValues = []map[rune]bool{}
-	}
-
 	e.PermittedValues = append(e.PermittedValues, permitted)
 }
 

@@ -27,8 +27,8 @@ func (ni NotIn) Matches(labels Labels) bool {
 }
 
 // Validate validates the selector.
-func (ni *NotIn) Validate(options ...SelectorOption) (err error) {
-	var selector Selector = ni
+func (ni NotIn) Validate(options ...SelectorOption) (err error) {
+	var selector Selector = &ni
 	for _, option := range options {
 		option(selector)
 	}

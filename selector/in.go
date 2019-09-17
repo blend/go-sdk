@@ -29,8 +29,8 @@ func (i In) Matches(labels Labels) bool {
 }
 
 // Validate validates the selector.
-func (i *In) Validate(options ...SelectorOption) (err error) {
-	var selector Selector = i
+func (i In) Validate(options ...SelectorOption) (err error) {
+	var selector Selector = &i
 	for _, option := range options {
 		option(selector)
 	}
