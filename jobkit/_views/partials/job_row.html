@@ -30,12 +30,12 @@
 	{{ end }}
 	</td>
 	<td><!-- job history -->
-		{{ if call .ViewModel.HistoryDisabledProvider }}
+		{{ if .ViewModel.HistoryDisabled }}
 		<span class="uk-label uk-label-danger">Disabled</span>
 		{{ else }}
 
-		{{ $historyMaxCount := call .ViewModel.HistoryMaxCountProvider }}
-		{{ $historyMaxAge := call .ViewModel.HistoryMaxAgeProvider }}
+		{{ $historyMaxCount := .ViewModel.HistoryMaxCount }}
+		{{ $historyMaxAge := .ViewModel.HistoryMaxAge }}
 		{{ $historyDescription := "is unlimited" }}
 		{{ if ( and ($historyMaxCount) ($historyMaxAge ) ) }}
 		{{ $historyDescription = (printf "is limited to %d items or %v age" $historyMaxCount $historyMaxAge) }}
@@ -47,7 +47,7 @@
 
 		<span class="uk-label uk-label-success" uk-tooltip="History {{ $historyDescription }}">Enabled</span>
 		{{ end }}
-		{{ if call .ViewModel.HistoryPersistenceDisabledProvider }}
+		{{ if .ViewModel.HistoryPersistenceDisabled }}
 		<span class="uk-label uk-label-warning" uk-tooltip="History is not persisted">Ephemeral</span>
 		{{ else }}
 		<span class="uk-label uk-label-success" uk-tooltip="History is persisted">Persisted</span>
@@ -97,10 +97,10 @@
 	{{else}}
 		<a class="uk-button uk-button-secondary" href="/job.disable/{{ .ViewModel.Name }}" uk-icon="ban" uk-tooltip="Disable the job"></a>
 	{{end}}
-	{{ if .ViewModel.CanRun }}
-		<a class="uk-button uk-button-primary" href="/job.run/{{ .ViewModel.Name }}" uk-icon="play" uk-tooltip="Force the job to run"></a>
-	{{ else }}
+	{{ if .ViewModel.Current }}
 		<a class="uk-button uk-button-danger" href="/job.cancel/{{ .ViewModel.Name }}" uk-icon="close" uk-tooltip="Cancel the running job"></a>
+	{{ else }}
+		<a class="uk-button uk-button-primary" href="/job.run/{{ .ViewModel.Name }}" uk-icon="play" uk-tooltip="Force the job to run"></a>
 	{{ end }}
 	</td>
 </tr>

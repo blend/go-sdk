@@ -52,10 +52,21 @@ type JobManagerState string
 
 // JobManagerState values.
 const (
-	JobManagerStateRunning  JobManagerState = "started"
-	JobManagerStatePaused   JobManagerState = "paused"
-	JobManagerStateResuming JobManagerState = "resuming"
-	JobManagerStateStopped  JobManagerState = "stopped"
+	JobManagerStateUnknown JobManagerState = "unknown"
+	JobManagerStateRunning JobManagerState = "started"
+	JobManagerStatePaused  JobManagerState = "paused"
+	JobManagerStateStopped JobManagerState = "stopped"
+)
+
+// JobSchedulerState is a job manager status.
+type JobSchedulerState string
+
+// JobManagerState values.
+const (
+	JobSchedulerStateUnknown JobSchedulerState = "unknown"
+	JobSchedulerStateRunning JobSchedulerState = "started"
+	JobSchedulerStatePaused  JobSchedulerState = "paused"
+	JobSchedulerStateStopped JobSchedulerState = "stopped"
 )
 
 // JobInvocationState is a job status.

@@ -3,7 +3,6 @@ package cron
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/blend/go-sdk/stringutil"
@@ -109,38 +108,34 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 
 // JobScheduler is a job instance.
 type JobScheduler struct {
-	sync.Mutex
-	*async.Latch `json:"-"`
+	*async.Latch
 
-	Job    Job        `json:"-"`
-	Config JobConfig  `json:"-"`
-	Tracer Tracer     `json:"-"`
-	Log    logger.Log `json:"-"`
+	Job    Job
+	Config JobConfig
+	Tracer Tracer
+	Log    logger.Log
 
-	// Schedule is the source of next run times for the scheduler.
-	Schedule Schedule `json:"-"`
-	// Disabled is an explicit override for the EnabledProvider.
-	Disabled bool `json:"disabled"`
+	Schedule    Schedule
+	Disabled    bool
+	NextRuntime time.Time
+	Current     *JobInvocation
+	Last        *JobInvocation
+	History     []JobInvocation
 
-	NextRuntime time.Time       `json:"nextRuntime"`
-	Current     *JobInvocation  `json:"current"`
-	Last        *JobInvocation  `json:"last"`
-	History     []JobInvocation `json:"history"`
+	DescriptionProvider                func() string
+	LabelsProvider                     func() map[string]string
+	DisabledProvider                   func() bool
+	TimeoutProvider                    func() time.Duration
+	ShutdownGracePeriodProvider        func() time.Duration
+	ShouldSkipLoggerListenersProvider  func() bool
+	ShouldSkipLoggerOutputProvider     func() bool
+	HistoryDisabledProvider            func() bool
+	HistoryPersistenceDisabledProvider func() bool
+	HistoryMaxCountProvider            func() int
+	HistoryMaxAgeProvider              func() time.Duration
 
-	DescriptionProvider                func() string            `json:"-"`
-	LabelsProvider                     func() map[string]string `json:"-"`
-	DisabledProvider                   func() bool              `json:"-"`
-	TimeoutProvider                    func() time.Duration     `json:"-"`
-	ShutdownGracePeriodProvider        func() time.Duration     `json:"-"`
-	ShouldSkipLoggerListenersProvider  func() bool              `json:"-"`
-	ShouldSkipLoggerOutputProvider     func() bool              `json:"-"`
-	HistoryDisabledProvider            func() bool              `json:"-"`
-	HistoryPersistenceDisabledProvider func() bool              `json:"-"`
-	HistoryMaxCountProvider            func() int               `json:"-"`
-	HistoryMaxAgeProvider              func() time.Duration     `json:"-"`
-
-	HistoryRestoreProvider func(context.Context) ([]JobInvocation, error) `json:"-"`
-	HistoryPersistProvider func(context.Context, []JobInvocation) error   `json:"-"`
+	HistoryRestoreProvider func(context.Context) ([]JobInvocation, error)
+	HistoryPersistProvider func(context.Context, []JobInvocation) error
 }
 
 // Name returns the job name.
@@ -168,6 +163,44 @@ func (js *JobScheduler) Labels() map[string]string {
 		}
 	}
 	return output
+}
+
+// State returns the job scheduler state.
+func (js *JobScheduler) State() JobSchedulerState {
+	if js.Latch.IsStarted() {
+		return JobSchedulerStateRunning
+	}
+	if js.Latch.IsPaused() {
+		return JobSchedulerStatePaused
+	}
+	if js.Latch.IsStopped() {
+		return JobSchedulerStateStopped
+	}
+	return JobSchedulerStateUnknown
+}
+
+// Status returns the job scheduler status.
+func (js *JobScheduler) Status() JobSchedulerStatus {
+	js.Lock()
+	defer js.Unlock()
+
+	status := JobSchedulerStatus{
+		Name:                       js.Name(),
+		State:                      js.State(),
+		Labels:                     js.Labels(),
+		Disabled:                   !js.CanScheduledRun(),
+		NextRuntime:                js.NextRuntime,
+		Current:                    js.Current,
+		Last:                       js.Last,
+		HistoryDisabled:            js.HistoryDisabledProvider(),
+		HistoryPersistenceDisabled: js.HistoryPersistenceDisabledProvider(),
+		HistoryMaxCount:            js.HistoryMaxCountProvider(),
+		HistoryMaxAge:              js.HistoryMaxAgeProvider(),
+	}
+	if typed, ok := js.Schedule.(fmt.Stringer); ok {
+		status.Schedule = typed.String()
+	}
+	return status
 }
 
 // Start starts the scheduler.
@@ -463,8 +496,6 @@ func (js *JobScheduler) Enabled() bool {
 // CanRun returns if the job can be triggered
 // with a call to Run.
 func (js *JobScheduler) CanRun() bool {
-	js.Lock()
-	defer js.Unlock()
 	return js.Current == nil
 }
 

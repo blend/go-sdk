@@ -9,9 +9,8 @@
 		</div>
 	</div>
 	{{ template "partials/job_table_header" }}
-		{{ $singleResult := .ViewModel.Jobs | len | eq 1 }}
 		{{ $vm := . }}
-		{{ range $index, $job := .ViewModel.Jobs }}
+		{{ range $index, $job := .ViewModel }}
 			{{ template "partials/job_row" ( $vm.Wrap $job ) }}
 			{{ else }}
 			<tr><td colspan=11>No jobs loaded or matched the search selector.</td></tr>

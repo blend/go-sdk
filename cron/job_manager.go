@@ -224,42 +224,42 @@ func (jm *JobManager) CancelJob(jobName string) (err error) {
 	return
 }
 
+// State returns the job manager state.
+func (jm *JobManager) State() JobManagerState {
+	if jm.Latch.IsStarted() {
+		return JobManagerStateRunning
+	} else if jm.Latch.IsPaused() {
+		return JobManagerStatePaused
+	} else if jm.Latch.IsStopped() {
+		return JobManagerStateStopped
+	}
+	return JobManagerStateUnknown
+}
+
 // Status returns a status object.
-func (jm *JobManager) Status() *JobManagerStatus {
+func (jm *JobManager) Status() JobManagerStatus {
 	jm.Lock()
 	defer jm.Unlock()
 
-	var jobManagerState JobManagerState
-	if jm.Latch.IsStarted() {
-		jobManagerState = JobManagerStateRunning
-	} else if jm.Latch.IsPaused() {
-		jobManagerState = JobManagerStatePaused
-	} else if jm.Latch.IsResuming() {
-		jobManagerState = JobManagerStateResuming
-	} else {
-		jobManagerState = JobManagerStateStopped
-	}
-
 	status := JobManagerStatus{
-		State:   jobManagerState,
+		State:   jm.State(),
 		Started: jm.Started,
 		Stopped: jm.Stopped,
-		Running: map[string]*JobInvocation{},
+		Running: map[string]JobInvocation{},
 	}
-
 	for _, job := range jm.Jobs {
-		status.Jobs = append(status.Jobs, job)
+		status.Jobs = append(status.Jobs, job.Status())
 		if job.Last != nil {
 			if job.Last.Started.After(status.JobLastStarted) {
 				status.JobLastStarted = job.Last.Started
 			}
 		}
 		if job.Current != nil {
-			status.Running[job.Name()] = job.Current
+			status.Running[job.Name()] = *job.Current
 		}
 	}
-	sort.Sort(JobSchedulersByJobNameAsc(status.Jobs))
-	return &status
+	sort.Sort(JobSchedulerStatusesByJobNameAsc(status.Jobs))
+	return status
 }
 
 //
