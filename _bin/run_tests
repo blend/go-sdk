@@ -1,0 +1,19 @@
+#! /usr/bin/env bash
+
+function usage {
+   cat << EOF
+Usage: run-tests.sh <docker compose file path>
+
+Runs the docker-compose file's tests.
+EOF
+}
+
+if [ "$1" != "" ]; then
+        docker-compose -f "$1" up --build --force-recreate --abort-on-container-exit --exit-code-from=test --remove-orphans;
+        EXIT_CODE=$?;
+        docker-compose -f "$1" down;
+        exit $EXIT_CODE;
+fi
+
+usage();
+exit 1
