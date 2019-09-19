@@ -763,60 +763,6 @@ func (r *Request) Response() (res *http.Response, err error) {
 	return
 }
 
-// ResponseWithClient makes the actual request but returns the underlying
-// http.Response object. This is the same as the `Response` method except it
-// allows the user to supply an HTTP client.
-func (r *Request) ResponseWithClient(client *http.Client) (res *http.Response, err error) {
-	var req *http.Request
-	req, err = r.Request()
-	if err != nil {
-		err = exception.New(err)
-		return
-	}
-
-	if r.tracer != nil {
-		tf := r.tracer.Start(req)
-		if tf != nil {
-			defer func() {
-				tf.Finish(req, NewResponseMeta(res), err)
-			}()
-		}
-	}
-
-	r.requestStarted = time.Now().UTC()
-	r.logRequest()
-	if r.mockProvider != nil {
-		mockedRes := r.mockProvider(r)
-		if mockedRes != nil {
-			res = mockedRes.Response()
-			err = mockedRes.Err
-			return
-		}
-	}
-
-	if r.RequiresTransport() && r.transport == nil {
-		err = exception.New(ErrRequiresTransport)
-		return
-	}
-
-	if r.transport != nil {
-		err = r.ApplyTransport(r.transport)
-		if err != nil {
-			return
-		}
-		client.Transport = r.transport
-	}
-	if r.timeout > 0 {
-		client.Timeout = r.timeout
-	}
-
-	res, err = client.Do(req)
-	if err != nil {
-		err = exception.New(err)
-	}
-	return
-}
-
 // Discard executes the request does not pass the response to handlers or events.
 func (r *Request) Discard() error {
 	_, err := r.DiscardWithMeta()
