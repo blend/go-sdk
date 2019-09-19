@@ -288,7 +288,7 @@ func (ms ManagementServer) getAPIJob(r *web.Ctx) web.Result {
 	if err != nil || job == nil {
 		return web.JSON.NotFound()
 	}
-	return web.JSON.Result(job)
+	return web.JSON.Result(job.Status())
 }
 
 // getAPIJobsStats is mapped to GET /api/jobs.stats

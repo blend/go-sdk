@@ -163,4 +163,3 @@ var BinaryAssets = map[string]*BinaryFile{
 		},
 	},
 }
-

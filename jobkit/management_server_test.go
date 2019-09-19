@@ -42,6 +42,17 @@ func TestManagementServerIndex(t *testing.T) {
 	assert.Contains(string(contents), firstJob(jm).Name())
 }
 
+func TestManagementServerAPIJobs(t *testing.T) {
+	assert := assert.New(t)
+
+	_, app := createTestManagementServer()
+	var jobs []cron.JobSchedulerStatus
+	meta, err := web.MockGet(app, "/api/jobs").JSON(&jobs)
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.NotEmpty(jobs)
+}
+
 func TestManagementServerJob(t *testing.T) {
 	assert := assert.New(t)
 
@@ -57,6 +68,22 @@ func TestManagementServerJob(t *testing.T) {
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.Contains(string(contents), jobName)
 	assert.Contains(string(contents), invocationID)
+}
+
+func TestManagementServerAPIJob(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job := firstJob(jm)
+	assert.NotNil(job)
+	jobName := job.Name()
+
+	var js cron.JobSchedulerStatus
+	meta, err := web.MockGet(app, fmt.Sprintf("/api/job/%s", jobName)).JSON(&js)
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.Equal(jobName, js.Name)
 }
 
 func TestManagementServerJobNotFound(t *testing.T) {

@@ -3,8 +3,10 @@ package jobkit
 import (
 	"fmt"
 	"sort"
+	"testing"
 	"time"
 
+	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/web"
@@ -111,4 +113,8 @@ func createTestManagementServer() (*cron.JobManager, *web.App) {
 			Port: 5000,
 		},
 	})
+}
+
+func TestMain(m *testing.M) {
+	assert.Main(m)
 }
