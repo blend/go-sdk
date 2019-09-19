@@ -92,6 +92,7 @@ type Request struct {
 	requestHandler  Handler
 	responseHandler ResponseHandler
 	mockProvider    MockedResponseProvider
+	client          *http.Client
 }
 
 // WithTracer sets the request tracer.
@@ -236,6 +237,13 @@ func (r *Request) KeepAliveTimeout() time.Duration {
 // WithResponseHeaderTimeout sets a timeout
 func (r *Request) WithResponseHeaderTimeout(timeout time.Duration) *Request {
 	r.responseHeaderTimeout = timeout
+	return r
+}
+
+// WithClient allows the user to set the http Client struct used to create the
+// request
+func (r *Request) WithClient(client *http.Client) *Request {
+	r.client = client
 	return r
 }
 
@@ -729,7 +737,9 @@ func (r *Request) Response() (res *http.Response, err error) {
 		}
 	}
 
-	client := &http.Client{}
+	if r.client == nil {
+		r.client = &http.Client{}
+	}
 	if r.RequiresTransport() && r.transport == nil {
 		err = exception.New(ErrRequiresTransport)
 		return
@@ -740,13 +750,13 @@ func (r *Request) Response() (res *http.Response, err error) {
 		if err != nil {
 			return
 		}
-		client.Transport = r.transport
+		r.client.Transport = r.transport
 	}
 	if r.timeout > 0 {
-		client.Timeout = r.timeout
+		r.client.Timeout = r.timeout
 	}
 
-	res, err = client.Do(req)
+	res, err = r.client.Do(req)
 	if err != nil {
 		err = exception.New(err)
 	}
@@ -867,26 +877,6 @@ func (r *Request) Bytes() ([]byte, error) {
 // BytesWithMeta fetches the response as bytes with meta.
 func (r *Request) BytesWithMeta() ([]byte, *ResponseMeta, error) {
 	res, err := r.Response()
-	if err != nil {
-		return nil, nil, exception.New(err)
-	}
-	defer res.Body.Close()
-
-	resMeta := NewResponseMeta(res)
-	bytes, readErr := ioutil.ReadAll(res.Body)
-	if readErr != nil {
-		return nil, resMeta, exception.New(readErr)
-	}
-
-	resMeta.ContentLength = int64(len(bytes))
-	r.logResponse(resMeta, bytes)
-	return bytes, resMeta, nil
-}
-
-// BytesWithMetaClient fetches the response as bytes with meta, allowing the
-// user to supply a custom http client.
-func (r *Request) BytesWithMetaClient(client *http.Client) ([]byte, *ResponseMeta, error) {
-	res, err := r.ResponseWithClient(client)
 	if err != nil {
 		return nil, nil, exception.New(err)
 	}
