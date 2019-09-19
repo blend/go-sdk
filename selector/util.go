@@ -48,8 +48,8 @@ const (
 	CarriageReturn = rune('\r')
 	// NewLine is a common rune.
 	NewLine = rune('\n')
-	// Asterisk is a common rune.
-	Asterisk = rune('*')
+	// Star is a common rune.
+	Star = rune('*')
 )
 
 const (
@@ -279,16 +279,10 @@ func isAlpha(ch rune) bool {
 }
 
 // isPermitted returns true if ch is a member of any set of permitted runes provided
-func isPermitted(ch rune, permitted ...map[rune]bool) bool {
-	for _, m := range permitted {
-		if m == nil {
-			continue
-		}
-
-		p, ok := m[ch]
-		if ok && p {
-			return true
-		}
+func isPermitted(ch rune, permitted map[rune]bool) bool {
+	if permitted != nil {
+		p, ok := permitted[ch]
+		return ok && p
 	}
 	return false
 }

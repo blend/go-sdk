@@ -5,18 +5,19 @@ type Option func(p *Parser)
 
 // SkipValidation is an option to skip checking the values of selector expressions.
 func SkipValidation(p *Parser) {
-	p.skipValidation = true
+	p.SkipValidation = true
 }
 
-// OptPermittedValues is an option to extend the set of symbols that are valid in name values
-func OptPermittedValues(permitted []rune) Option {
+// OptExtraAlphas is an option to extend the set of symbols that are valid in values.
+// Note that this doesn't affect keys.
+func OptExtraAlphas(permitted ...rune) Option {
 	return func(p *Parser) {
-		if p.permittedValues == nil {
-			p.permittedValues = map[rune]bool{}
+		if p.ExtraAlphas == nil {
+			p.ExtraAlphas = map[rune]bool{}
 		}
 
 		for _, r := range permitted {
-			p.permittedValues[r] = true
+			p.ExtraAlphas[r] = true
 		}
 	}
 }

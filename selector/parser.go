@@ -27,8 +27,8 @@ type Parser struct {
 	// m is an optional mark
 	m int
 
-	skipValidation  bool
-	permittedValues map[rune]bool
+	SkipValidation bool
+	ExtraAlphas    map[rune]bool
 }
 
 // Parse does the actual parsing.
@@ -129,7 +129,7 @@ func (p *Parser) Parse() (Selector, error) {
 		return nil, ErrInvalidSelector
 	}
 
-	if !p.skipValidation {
+	if !p.SkipValidation {
 		err = selector.Validate()
 		if err != nil {
 			return nil, err
@@ -267,7 +267,7 @@ func (p *Parser) readOp() (string, error) {
 			}
 			return "", ErrInvalidOperator
 		case 1: // =
-			if p.isWhitespace(ch) || p.isAlpha(ch) || ch == Comma || isPermitted(ch, p.permittedValues) {
+			if p.isWhitespace(ch) || p.isAlpha(ch) || ch == Comma || isPermitted(ch, p.ExtraAlphas) {
 				return string(op), nil
 			}
 			if ch == Equal {
