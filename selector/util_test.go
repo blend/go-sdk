@@ -112,3 +112,12 @@ func TestCheckLabels(t *testing.T) {
 	badLabels := Labels{"foo": "bar", "_foo.com/bar": "baz"}
 	assert.NotNil(CheckLabels(badLabels))
 }
+
+func TestIsPermitted(t *testing.T) {
+	assert := assert.New(t)
+
+	assert.False(isPermitted('%', nil))
+	assert.False(isPermitted('%', map[rune]bool{}))
+	assert.False(isPermitted('%', map[rune]bool{'*': true}))
+	assert.True(isPermitted('%', map[rune]bool{'*': true, '%': true}))
+}

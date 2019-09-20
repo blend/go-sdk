@@ -278,7 +278,7 @@ func isAlpha(ch rune) bool {
 	return !isWhitespace(ch) && !unicode.IsControl(ch) && !isSymbol(ch)
 }
 
-// isPermitted returns true if ch is a member of any set of permitted runes provided
+// isPermitted returns true if ch is within the provided set of permitted runes
 func isPermitted(ch rune, permitted map[rune]bool) bool {
 	if permitted != nil {
 		p, ok := permitted[ch]
