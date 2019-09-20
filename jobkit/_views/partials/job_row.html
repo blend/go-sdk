@@ -87,9 +87,12 @@
 		{{ else if .ViewModel.Last }}
 		<a class="uk-button uk-button-default" href="/job.invocation/{{ .ViewModel.Name }}/{{ .ViewModel.Last.ID }}" uk-icon="reply" uk-tooltip="Show the last invocation output"></a>
 		{{ else }}
-		<a class="uk-button uk-button-default uk-button-disabled" uk-icon="history" uk-tooltip="Job has no history" disabled></a>
+		<a class="uk-button uk-button-default uk-button-disabled" uk-icon="reply" uk-tooltip="Job has no history" disabled></a>
 		{{ end }}
+
+		{{ if .Ctx.State.Get "show-job-history-link" }}
 		<a class="uk-button uk-button-default" href="/job/{{ .ViewModel.Name }}" uk-icon="history" uk-tooltip="Show job stats and history"></a>
+		{{ end }}
 	</td>
 	<td> <!-- actions -->
 	{{ if .ViewModel.Disabled }}

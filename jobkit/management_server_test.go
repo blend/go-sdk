@@ -39,7 +39,9 @@ func TestManagementServerIndex(t *testing.T) {
 	contents, meta, err := web.MockGet(app, "/").Bytes()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
-	assert.Contains(string(contents), firstJob(jm).Name())
+	jobName := firstJob(jm).Name()
+	assert.Contains(string(contents), fmt.Sprintf("/job/%s", jobName))
+	assert.Contains(string(contents), "Show job stats and history")
 }
 
 func TestManagementServerAPIJobs(t *testing.T) {
@@ -68,6 +70,9 @@ func TestManagementServerJob(t *testing.T) {
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.Contains(string(contents), jobName)
 	assert.Contains(string(contents), invocationID)
+
+	assert.Contains(string(contents), fmt.Sprintf("/job/%s", jobName))
+	assert.NotContains(string(contents), "Show job stats and history")
 }
 
 func TestManagementServerAPIJob(t *testing.T) {

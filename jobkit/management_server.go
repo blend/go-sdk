@@ -139,6 +139,7 @@ func (ms ManagementServer) getStatic(r *web.Ctx) web.Result {
 
 // getIndex is mapped to GET /
 func (ms ManagementServer) getIndex(r *web.Ctx) web.Result {
+	r.State.Set("show-job-history-link", true)
 	return r.Views.View("index", ms.Cron.Status().Jobs)
 }
 
