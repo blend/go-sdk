@@ -116,66 +116,65 @@ func (l *Logger) Listen(flag, listenerName string, listener Listener) {
 	if l.Listeners == nil {
 		l.Listeners = make(map[string]map[string]*Worker)
 	}
-
-	w := NewWorker(listener)
-	if listeners, ok := l.Listeners[flag]; ok {
-		listeners[listenerName] = w
-	} else {
-		l.Listeners[flag] = map[string]*Worker{
-			listenerName: w,
-		}
+	if l.Listeners[flag] == nil {
+		l.Listeners[flag] = make(map[string]*Worker)
 	}
-	go w.Start()
-	<-w.NotifyStarted()
+
+	eventListener := NewWorker(listener)
+	l.Listeners[flag][listenerName] = eventListener
+	go eventListener.Start()
+	<-eventListener.NotifyStarted()
 }
 
 // RemoveListeners clears *all* listeners for a Flag.
-func (l *Logger) RemoveListeners(flag string) {
+func (l *Logger) RemoveListeners(flag string) error {
 	l.Lock()
 	defer l.Unlock()
 
 	if l.Listeners == nil {
-		return
+		return nil
 	}
 
 	listeners, ok := l.Listeners[flag]
 	if !ok {
-		return
+		return nil
 	}
-
+	var err error
 	for _, l := range listeners {
-		l.Stop()
+		if err = l.Stop(); err != nil {
+			return err
+		}
 	}
-
 	delete(l.Listeners, flag)
+	return nil
 }
 
 // RemoveListener clears a specific listener for a Flag.
-func (l *Logger) RemoveListener(flag, listenerName string) {
+func (l *Logger) RemoveListener(flag, listenerName string) error {
 	l.Lock()
 	defer l.Unlock()
 
 	if l.Listeners == nil {
-		return
+		return nil
 	}
 
 	listeners, ok := l.Listeners[flag]
 	if !ok {
-		return
+		return nil
 	}
 
 	worker, ok := listeners[listenerName]
 	if !ok {
-		return
+		return nil
 	}
-
-	worker.Stop()
-	<-worker.NotifyStopped()
-
+	if err := worker.Stop(); err != nil {
+		return err
+	}
 	delete(listeners, listenerName)
 	if len(listeners) == 0 {
 		delete(l.Listeners, flag)
 	}
+	return nil
 }
 
 // Trigger fires the listeners for a given event asynchronously, and writes the event to the output.
@@ -230,6 +229,8 @@ func (l *Logger) Write(ctx context.Context, e Event) {
 // --------------------------------------------------------------------------------
 
 // Close releases shared resources for the agent.
+// It will stop listeners and wait for them to complete work
+// and then zero out any other resources.
 func (l *Logger) Close() error {
 	l.Lock()
 	defer l.Unlock()
@@ -238,12 +239,14 @@ func (l *Logger) Close() error {
 		l.Flags.SetNone()
 	}
 
+	var err error
 	for _, listeners := range l.Listeners {
 		for _, listener := range listeners {
-			listener.Stop()
+			if err = listener.Stop(); err != nil {
+				return err
+			}
 		}
 	}
-
 	for key := range l.Listeners {
 		delete(l.Listeners, key)
 	}
@@ -251,7 +254,8 @@ func (l *Logger) Close() error {
 	return nil
 }
 
-// Drain waits for the logger to finish its queue of events.
+// Drain stops the evnet listeners, letting them complete their work
+// and then restarts the listeners.
 func (l *Logger) Drain() error {
 	return l.DrainContext(context.Background())
 }
@@ -261,16 +265,11 @@ func (l *Logger) DrainContext(ctx context.Context) error {
 	var err error
 	for _, workers := range l.Listeners {
 		for _, worker := range workers {
-			if err = worker.DrainContext(ctx); err != nil {
+			if err = worker.StopContext(ctx); err != nil {
 				return err
 			}
+			go worker.Start()
 		}
 	}
 	return nil
-}
-
-// EventWithContext is an event with the context it was triggered with.
-type EventWithContext struct {
-	context.Context
-	Event
 }

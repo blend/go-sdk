@@ -64,9 +64,6 @@ func TestLatch(t *testing.T) {
 	assert.False(l.IsStarted())
 	assert.True(l.IsStopped())
 
-	// we should be able to do this again.
-	l.Reset()
-
 	go func() {
 		l.Starting()
 	}()

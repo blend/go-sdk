@@ -34,7 +34,7 @@ func TestWorker(t *testing.T) {
 	assert.True(didFire)
 }
 
-func TestWorkerDrain(t *testing.T) {
+func TestWorkerStop(t *testing.T) {
 	assert := assert.New(t)
 
 	wg := sync.WaitGroup{}
@@ -56,7 +56,7 @@ func TestWorkerDrain(t *testing.T) {
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
 		defer cancel()
-		w.DrainContext(ctx)
+		w.StopContext(ctx)
 	}()
 	wg.Wait()
 

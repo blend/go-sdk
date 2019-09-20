@@ -273,11 +273,17 @@ func TestJobManagerJobLifecycle(t *testing.T) {
 	})
 	jm.LoadJobs(j)
 
+	completeSignal := j.CompleteSignal
 	assert.Nil(jm.RunJob("broken-fixed"))
+	<-completeSignal
+
+	brokenSignal := j.BrokenSignal
 	assert.Nil(jm.RunJob("broken-fixed"))
-	<-j.BrokenSignal
+	<-brokenSignal
+
+	fixedSignal := j.FixedSignal
 	assert.Nil(jm.RunJob("broken-fixed"))
-	<-j.FixedSignal
+	<-fixedSignal
 
 	assert.Equal(3, j.Starts)
 	assert.Equal(1, j.Failures)

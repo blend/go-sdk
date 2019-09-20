@@ -228,7 +228,7 @@ func (js *JobScheduler) Stop() error {
 
 	ctx, cancel := js.createContextWithTimeout(js.ShutdownGracePeriodProvider())
 	defer cancel()
-	js.cancelInvocation(ctx, js.Current)
+	js.cancelJobInvocation(ctx, js.Current)
 	js.PersistHistory(ctx)
 
 	<-js.Latch.NotifyStopped()
@@ -282,7 +282,7 @@ func (js *JobScheduler) Cancel() error {
 		ctx, cancel := js.createContextWithTimeout(js.ShutdownGracePeriodProvider())
 		defer cancel()
 
-		js.cancelInvocation(ctx, js.Current)
+		js.cancelJobInvocation(ctx, js.Current)
 	}
 	js.debugf("job cancellation; cancelling immediately")
 	js.Current.Cancel()
@@ -305,27 +305,30 @@ func (js *JobScheduler) RunLoop() {
 		return
 	}
 
-	var notifyStopping <-chan struct{}
+	// this references the underlying js.Latch
+	// it returns the current latch signal for stopping *before*
+	// the job kicks off.
+	notifyStopping := js.NotifyStopping()
+
 	for {
 		if js.NextRuntime.IsZero() {
 			return
 		}
-		// this references the underlying js.Latch
-		// it returns the current latch signal for stopping *before*
-		// the job kicks off.
-		notifyStopping = js.NotifyStopping()
+
 		runAt := time.After(js.NextRuntime.UTC().Sub(Now()))
 		select {
 		case <-runAt:
-			// can start checks if the job is enabled
-			// AND if it can run in parallel if another
-			// invocation is already started.
+
+			// if the scheduler is enabled
+			// and there isn't another instance running
 			if js.CanScheduledRun() {
-				// start the job invocation.
+				// start the job invocation
 				go js.Run()
 			}
+
 			// set up the next runtime.
 			js.NextRuntime = js.Schedule.Next(js.NextRuntime)
+
 		case <-notifyStopping:
 			// note: we bail hard here
 			// because the job executions in flight are
@@ -556,8 +559,8 @@ func (js *JobScheduler) addCurrent(ji *JobInvocation) {
 	js.Unlock()
 }
 
-// Cancel stops an execution in process.
-func (js *JobScheduler) cancelInvocation(ctx context.Context, ji *JobInvocation) {
+// cancelJobInvocation stops a job invocation in process.
+func (js *JobScheduler) cancelJobInvocation(ctx context.Context, ji *JobInvocation) {
 	deadlinePoll := time.Tick(500 * time.Millisecond)
 	for {
 		if ji == nil || ji.State != JobInvocationStateRunning {
