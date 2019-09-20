@@ -34,10 +34,11 @@ func NewCertInfo(res *http.Response) *CertInfo {
 		}
 
 		return &CertInfo{
-			DNSNames:         firstCert.DNSNames,
-			NotAfter:         earliestExpiration,
-			NotBefore:        latestNotBefore,
-			IssuerCommonName: issuerCommonName,
+			DNSNames:          firstCert.DNSNames,
+			NotAfter:          earliestExpiration,
+			NotBefore:         latestNotBefore,
+			IssuerCommonName:  issuerCommonName,
+			SubjectCommonName: firstCert.Subject.CommonName,
 		}
 	}
 
@@ -46,8 +47,9 @@ func NewCertInfo(res *http.Response) *CertInfo {
 
 // CertInfo is the information for a certificate.
 type CertInfo struct {
-	IssuerCommonName string    `json:"issuerCommonName" yaml:"issuerCommonName"`
-	DNSNames         []string  `json:"dnsNames" yaml:"dnsNames"`
-	NotAfter         time.Time `json:"notAfter" yaml:"notAfter"`
-	NotBefore        time.Time `json:"notBefore" yaml:"notBefore"`
+	IssuerCommonName  string    `json:"issuerCommonName" yaml:"issuerCommonName"`
+	SubjectCommonName string    `json:"subjectCommonName" yaml:"subjectCommonName"`
+	DNSNames          []string  `json:"dnsNames" yaml:"dnsNames"`
+	NotAfter          time.Time `json:"notAfter" yaml:"notAfter"`
+	NotBefore         time.Time `json:"notBefore" yaml:"notBefore"`
 }
