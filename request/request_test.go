@@ -628,3 +628,44 @@ func TestRequestWithPostedFileIntegration(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 }
+
+func TestRequestWithClient(t *testing.T) {
+	assert := assert.New(t)
+	c := &http.Client{}
+	r := New().WithClient(c)
+	assert.Equal(c, r.client)
+
+	c = &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	r = New().WithClient(c)
+	assert.Equal(c, r.client)
+}
+
+func TestResponse(t *testing.T) {
+	assert := assert.New(t)
+	req := New()
+	_, err := req.Response()
+	assert.NotNil(err)
+	assert.NotNil(req.client)
+	assert.Equal(&http.Client{}, req.client)
+
+	c := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	meta := okMeta()
+	meta.StatusCode = 302
+	req = New().WithClient(c).WithMockProvider(func(req *Request) *MockedResponse {
+		return &MockedResponse{
+			Meta: *meta,
+			Res:  []byte("ok!"),
+		}
+	})
+	resp, err := req.Response()
+	assert.Nil(err)
+	assert.NotNil(resp)
+}
