@@ -30,56 +30,91 @@ func (w *Worker) Start() error {
 		return ex.New(async.ErrCannotStart)
 	}
 	w.Starting()
-	w.Dispatch()
+	w.DispatchWork()
 	return nil
 }
 
-// Dispatch is the main listen loop
-func (w *Worker) Dispatch() {
-	w.Started()
+// Stop stops the worker.
+func (w *Worker) Stop() error {
+	return w.StopContext(context.Background())
+}
 
+// StopContext stops the worker and processe what work is left in the queue.
+// The worker will be stopped at the end, and it will be required to Start
+// the worker again to
+func (w *Worker) StopContext(ctx context.Context) error {
+	// if the worker is currently processing work, wait for it to finish.
+	notifyStopped := w.NotifyStopped()
+
+	// signal that the DispatchWork loop should stop.
+	w.Stopping()
+
+	// wait for the DispatchWork loop to stop
+	// but also check if we've timed out.
+	select {
+	case <-notifyStopped:
+		break
+	case <-ctx.Done():
+		return context.Canceled
+	}
+
+	// process what's left of the work queue.
+	var work EventWithContext
+	var err error
+
+	workLeft := len(w.Work)
+	drained := make(chan struct{})
+	go func() {
+		// notify once the last of the work
+		// in the queue is complete.
+		defer close(drained)
+
+		// go through what's left of the work
+		// be mindful of the outer context timeout.
+		for index := 0; index < workLeft; index++ {
+			select {
+			case <-ctx.Done():
+				w.Errors <- context.Canceled
+				return
+			case work = <-w.Work:
+				if err = w.Process(work); err != nil && w.Errors != nil {
+					w.Errors <- err
+				}
+			}
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		return context.Canceled
+	case <-drained:
+		return nil
+	}
+}
+
+// AbortContext stops the worker but does not process the remaining work.
+func (w *Worker) AbortContext(ctx context.Context) error {
+	notifyStopped := w.NotifyStopped()
+	w.Stopping()
+	select {
+	case <-notifyStopped:
+		return nil
+	case <-ctx.Done():
+		return context.Canceled
+	}
+}
+
+// DispatchWork is the dispatch loop where
+// work is processed.
+func (w *Worker) DispatchWork() {
+	w.Started()
 	var e EventWithContext
 	var err error
-	var pausing <-chan struct{}
-	var stopping <-chan struct{}
 
+	notifyStopping := w.NotifyStopping()
 	for {
-		pausing = w.NotifyPausing()
-		stopping = w.NotifyStopping()
-
-		// we have to do this effectively twice to add precedence to the stop and pause
-		// signals
 		select {
-		case <-pausing:
-			w.Paused()
-			select {
-			case <-w.NotifyResuming():
-				w.Reset()
-				w.Started()
-				continue
-			case <-w.NotifyStopping():
-				w.Stopped()
-				return
-			}
-		case <-stopping:
-			w.Stopped()
-			return
-		default:
-		}
-
-		select {
-		case <-pausing:
-			w.Paused()
-			select {
-			case <-w.NotifyResuming():
-				w.Reset()
-				w.Started()
-				continue
-			case <-w.NotifyStopping():
-				w.Stopped()
-				return
-			}
-		case <-stopping:
+		case <-notifyStopping:
 			w.Stopped()
 			return
 		case e = <-w.Work:
@@ -100,68 +135,4 @@ func (w *Worker) Process(ec EventWithContext) (err error) {
 	}()
 	w.Listener(ec.Context, ec.Event)
 	return
-}
-
-// DrainContext pauses the worker and synchronously processes any remaining work.
-// It then restarts the worker.
-func (w *Worker) DrainContext(ctx context.Context) error {
-	// if the worker is currently processing work, wait for it to finish.
-	notifyPaused := w.NotifyPaused()
-	w.Pausing()
-	select {
-	case <-notifyPaused:
-		break
-	case <-ctx.Done():
-		return context.Canceled
-	}
-	defer func() {
-		w.Resuming()
-	}()
-
-	var work EventWithContext
-	var err error
-
-	workLeft := len(w.Work)
-	done := make(chan struct{})
-	go func() {
-		defer close(done)
-		for index := 0; index < workLeft; index++ {
-			work = <-w.Work
-			if err = w.Process(work); err != nil && w.Errors != nil {
-				w.Errors <- err
-			}
-		}
-	}()
-
-	select {
-	case <-ctx.Done():
-		return context.Canceled
-	case <-done:
-		return nil
-	}
-}
-
-// Stop stops the worker.
-func (w *Worker) Stop() error {
-	if !w.CanStop() {
-		return ex.New(async.ErrCannotStop)
-	}
-	if w.IsActive() {
-		<-w.NotifyStarted()
-	}
-
-	w.Stopping()
-	<-w.NotifyStopped()
-
-	var work EventWithContext
-	var err error
-
-	workLeft := len(w.Work)
-	for index := 0; index < workLeft; index++ {
-		work = <-w.Work
-		if err = w.Process(work); err != nil && w.Errors != nil {
-			w.Errors <- err
-		}
-	}
-	return nil
 }

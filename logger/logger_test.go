@@ -132,10 +132,10 @@ func TestLoggerSkipWrite(t *testing.T) {
 	log.Trigger(WithSkipWrite(context.Background()), NewMessageEvent(Info, "this is a triggered message"))
 
 	// at the very least this cannot cause a deadlock.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	assert.Nil(log.DrainContext(ctx))
 
+	assert.Nil(log.DrainContext(ctx))
 	assert.True(wasCalled)
 	assert.Empty(output.String())
 }

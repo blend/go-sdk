@@ -192,3 +192,19 @@ func TestManagementServerResume(t *testing.T) {
 
 	assert.True(jm.Latch.IsStarted())
 }
+
+func TestManagementServerAPIResume(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+	jm.StartAsync()
+	defer jm.Stop()
+
+	jm.Pause()
+	assert.True(jm.Latch.IsPaused())
+
+	meta, err := web.MockPost(app, "/api/resume", nil).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.True(jm.Latch.IsStarted())
+}
