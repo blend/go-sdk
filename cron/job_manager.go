@@ -318,7 +318,7 @@ func (jm *JobManager) Pause() error {
 
 // Resume stops the schedule runner for a JobManager.
 func (jm *JobManager) Resume() error {
-	if !jm.Latch.CanStart() {
+	if !jm.Latch.CanResume() {
 		return fmt.Errorf("already resumed")
 	}
 	jm.Latch.Resuming()
@@ -327,7 +327,7 @@ func (jm *JobManager) Resume() error {
 		go job.Start()
 		<-job.NotifyStarted()
 	}
-	jm.Latch.Paused()
+	jm.Latch.Started()
 	jm.Started = time.Now().UTC()
 	logger.MaybeInfo(jm.Log, "job manager resuming complete")
 	return nil

@@ -163,3 +163,32 @@ func TestManagementServerPause(t *testing.T) {
 
 	assert.True(jm.Latch.IsPaused())
 }
+
+func TestManagementServerAPIPause(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+	jm.StartAsync()
+	defer jm.Stop()
+	meta, err := web.MockPost(app, "/api/pause", nil).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.True(jm.Latch.IsPaused())
+}
+
+func TestManagementServerResume(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+	jm.StartAsync()
+	defer jm.Stop()
+
+	jm.Pause()
+	assert.True(jm.Latch.IsPaused())
+
+	meta, err := web.MockGet(app, "/resume").Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+
+	assert.True(jm.Latch.IsStarted())
+}

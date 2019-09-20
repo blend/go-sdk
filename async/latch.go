@@ -67,9 +67,28 @@ func (l *Latch) Reset() {
 	l.Unlock()
 }
 
+// ResetChannels resets the latch channels.
+func (l *Latch) ResetChannels() {
+	l.Lock()
+	l.starting = make(chan struct{})
+	l.resuming = make(chan struct{})
+	l.started = make(chan struct{})
+	l.active = make(chan struct{})
+	l.pausing = make(chan struct{})
+	l.paused = make(chan struct{})
+	l.stopping = make(chan struct{})
+	l.stopped = make(chan struct{})
+	l.Unlock()
+}
+
 // CanStart returns if the latch can start.
 func (l *Latch) CanStart() bool {
 	return atomic.LoadInt32(&l.state) == LatchStopped
+}
+
+// CanResume returns if the latch can resume.
+func (l *Latch) CanResume() bool {
+	return atomic.LoadInt32(&l.state) == LatchPaused
 }
 
 // CanPause returns if the latch can pause.
