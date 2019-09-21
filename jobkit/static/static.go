@@ -48,7 +48,7 @@ func (bf *BinaryFile) Decompress() (*gzip.Reader, error) {
 var BinaryAssets = map[string]*BinaryFile{
 	"_static/css/uikit.min.css": &BinaryFile{
 		Name:    "_static/css/uikit.min.css",
-		ModTime: 1568949036,
+		ModTime: 1568934466,
 		MD5: []byte{
 			0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04, 0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e,
 		},
@@ -357,7 +357,7 @@ var BinaryAssets = map[string]*BinaryFile{
 	},
 	"_static/css/xterm.css": &BinaryFile{
 		Name:    "_static/css/xterm.css",
-		ModTime: 1568949036,
+		ModTime: 1568934466,
 		MD5: []byte{
 			0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04, 0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e,
 		},
@@ -385,7 +385,7 @@ var BinaryAssets = map[string]*BinaryFile{
 	},
 	"_static/js/fit.js": &BinaryFile{
 		Name:    "_static/js/fit.js",
-		ModTime: 1568949036,
+		ModTime: 1568934466,
 		MD5: []byte{
 			0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04, 0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e,
 		},
@@ -405,7 +405,7 @@ var BinaryAssets = map[string]*BinaryFile{
 	},
 	"_static/js/fit.js.map": &BinaryFile{
 		Name:    "_static/js/fit.js.map",
-		ModTime: 1568949036,
+		ModTime: 1568934466,
 		MD5: []byte{
 			0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04, 0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e,
 		},
@@ -425,7 +425,7 @@ var BinaryAssets = map[string]*BinaryFile{
 	},
 	"_static/js/logs.js": &BinaryFile{
 		Name:    "_static/js/logs.js",
-		ModTime: 1568949036,
+		ModTime: 1568934466,
 		MD5: []byte{
 			0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04, 0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e,
 		},
@@ -437,7 +437,7 @@ var BinaryAssets = map[string]*BinaryFile{
 	},
 	"_static/js/uikit-icons.min.js": &BinaryFile{
 		Name:    "_static/js/uikit-icons.min.js",
-		ModTime: 1568949036,
+		ModTime: 1568934466,
 		MD5: []byte{
 			0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04, 0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e,
 		},
@@ -632,7 +632,7 @@ var BinaryAssets = map[string]*BinaryFile{
 	},
 	"_static/js/uikit.min.js": &BinaryFile{
 		Name:    "_static/js/uikit.min.js",
-		ModTime: 1568949036,
+		ModTime: 1568934466,
 		MD5: []byte{
 			0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04, 0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e,
 		},
@@ -1083,7 +1083,7 @@ var BinaryAssets = map[string]*BinaryFile{
 	},
 	"_static/js/webLinks.js": &BinaryFile{
 		Name:    "_static/js/webLinks.js",
-		ModTime: 1568949036,
+		ModTime: 1568934466,
 		MD5: []byte{
 			0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04, 0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e,
 		},
@@ -1104,7 +1104,7 @@ var BinaryAssets = map[string]*BinaryFile{
 	},
 	"_static/js/webLinks.js.map": &BinaryFile{
 		Name:    "_static/js/webLinks.js.map",
-		ModTime: 1568949036,
+		ModTime: 1568934466,
 		MD5: []byte{
 			0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04, 0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e,
 		},
@@ -1124,7 +1124,7 @@ var BinaryAssets = map[string]*BinaryFile{
 	},
 	"_static/js/xterm.js": &BinaryFile{
 		Name:    "_static/js/xterm.js",
-		ModTime: 1568949036,
+		ModTime: 1568934466,
 		MD5: []byte{
 			0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04, 0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e,
 		},
@@ -1876,7 +1876,7 @@ var BinaryAssets = map[string]*BinaryFile{
 	},
 	"_static/js/xterm.js.map": &BinaryFile{
 		Name:    "_static/js/xterm.js.map",
-		ModTime: 1568949036,
+		ModTime: 1568934466,
 		MD5: []byte{
 			0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04, 0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e,
 		},
@@ -3214,7 +3214,7 @@ var BinaryAssets = map[string]*BinaryFile{
 	},
 	"_static/js/zepto.min.js": &BinaryFile{
 		Name:    "_static/js/zepto.min.js",
-		ModTime: 1568949036,
+		ModTime: 1568934466,
 		MD5: []byte{
 			0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04, 0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e,
 		},
