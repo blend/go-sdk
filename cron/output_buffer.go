@@ -80,6 +80,7 @@ type OutputBuffer struct {
 func (ob *OutputBuffer) Write(contents []byte) (written int, err error) {
 	data := make([]byte, len(contents))
 	copy(data, contents)
+
 	chunk := OutputChunk{Timestamp: time.Now().UTC(), Data: data}
 	written = len(contents)
 

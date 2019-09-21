@@ -392,40 +392,39 @@ func (ms ManagementServer) getAPIJobInvocationOutputStream(r *web.Ctx) web.Resul
 	if result != nil {
 		return result
 	}
-	if !ms.Cron.IsJobRunning(invocation.JobName) {
-		return nil
-	}
-
 	es := webutil.EventSource{Output: r.Response}
 	if err := es.StartSession(); err != nil {
 		logger.MaybeError(log, err)
 		return nil
 	}
 
-	listenerID := uuid.V4().String()
-	shouldClose := make(chan struct{})
+	if !ms.Cron.IsJobRunning(invocation.JobName) {
+		logger.MaybeDebugf(log, "output stream; job is not running, closing")
+		if err := es.EventData("complete", string(invocation.State)); err != nil {
+			logger.MaybeError(log, err)
+		}
+		return nil
+	}
 
+	listenerID := uuid.V4().String()
 	// include catchup chunks
 	if afterNanos, _ := web.Int64Value(r.QueryValue("afterNanos")); afterNanos > 0 {
 		after := time.Unix(0, afterNanos)
-		logger.MaybeDebugf(log, "sending catchup output stream data from: %v", after)
+		logger.MaybeDebugf(log, "output stream; sending catchup output stream data from: %v", after)
 		for _, chunk := range invocation.Output.Chunks {
 			if chunk.Timestamp.After(after) {
 				if err := es.Data(string(chunk.Data)); err != nil {
 					logger.MaybeError(log, err)
-					return nil
 				}
 			}
 		}
 	}
 
+	logger.MaybeDebugf(log, "output stream; listening for new chunks")
 	invocation.OutputListeners.Add(listenerID, func(chunk cron.OutputChunk) {
+		logger.MaybeDebugf(log, "output stream; sending chunk: %s", string(chunk.Data))
 		if err := es.Data(string(chunk.Data)); err != nil {
 			logger.MaybeError(log, err)
-			if shouldClose != nil {
-				close(shouldClose)
-				shouldClose = nil
-			}
 		}
 	})
 	defer func() { invocation.OutputListeners.Remove(listenerID) }()
@@ -433,13 +432,9 @@ func (ms ManagementServer) getAPIJobInvocationOutputStream(r *web.Ctx) web.Resul
 	updateTick := time.Tick(500 * time.Millisecond)
 	for {
 		select {
-		case <-shouldClose:
-			if err := es.EventData("complete", string(invocation.State)); err != nil {
-				logger.MaybeError(log, err)
-			}
-			return nil
 		case <-updateTick:
 			if !ms.Cron.IsJobRunning(invocation.JobName) {
+				logger.MaybeDebugf(log, "output stream; job invocation is complete, closing")
 				if err := es.EventData("complete", string(invocation.State)); err != nil {
 					logger.MaybeError(log, err)
 				}
@@ -449,6 +444,7 @@ func (ms ManagementServer) getAPIJobInvocationOutputStream(r *web.Ctx) web.Resul
 				logger.MaybeError(log, err)
 				return nil
 			}
+			logger.MaybeDebugf(log, "output stream; updating elapsed time")
 			if err := es.EventData("elapsed", fmt.Sprintf("%v", time.Now().UTC().Sub(invocation.Started).Round(time.Millisecond))); err != nil {
 				logger.MaybeError(log, err)
 				return nil
