@@ -26,6 +26,24 @@ func TestOutputBuffer(t *testing.T) {
 	assert.Len(lw.Chunks, 5)
 }
 
+func TestOutputBufferShadowed(t *testing.T) {
+	assert := assert.New(t)
+
+	ob := new(OutputBuffer)
+
+	lines := [][]byte{
+		[]byte("this is a test"),
+		[]byte("this is another test"),
+	}
+
+	for _, buf := range lines {
+		assert.Nil(justError(ob.Write(buf)))
+	}
+	assert.Len(ob.Chunks, 2)
+	assert.Equal("this is a test", string(ob.Chunks[0].Data))
+	assert.Equal("this is another test", string(ob.Chunks[1].Data))
+}
+
 func TestOutputBufferWritten(t *testing.T) {
 	assert := assert.New(t)
 
