@@ -63,15 +63,38 @@ func TestJobSchedulerCullHistoryMaxCount(t *testing.T) {
 	assert.Len(filtered, 5)
 }
 
+func TestJobSchedulerJobInvocation(t *testing.T) {
+	assert := assert.New(t)
+
+	id7 := uuid.V4().String()
+
+	js := NewJobScheduler(NewJob())
+	js.History = []JobInvocation{
+		{ID: uuid.V4().String(), Started: time.Now().Add(-10 * time.Minute)},
+		{ID: uuid.V4().String(), Started: time.Now().Add(-9 * time.Minute)},
+		{ID: uuid.V4().String(), Started: time.Now().Add(-8 * time.Minute)},
+		{ID: id7, Started: time.Now().Add(-7 * time.Minute), Err: fmt.Errorf("this is a test")},
+		{ID: uuid.V4().String(), Started: time.Now().Add(-6 * time.Minute)},
+		{ID: uuid.V4().String(), Started: time.Now().Add(-5 * time.Minute)},
+		{ID: uuid.V4().String(), Started: time.Now().Add(-4 * time.Minute)},
+		{ID: uuid.V4().String(), Started: time.Now().Add(-3 * time.Minute)},
+		{ID: uuid.V4().String(), Started: time.Now().Add(-2 * time.Minute)},
+		{ID: uuid.V4().String(), Started: time.Now().Add(-1 * time.Minute)},
+	}
+
+	ji := js.JobInvocation(id7)
+	assert.NotNil(ji.Err)
+}
+
 func TestJobSchedulerEnableDisable(t *testing.T) {
 	assert := assert.New(t)
 
-	var enabled, disabled bool
+	var triggerdOnEnabled, triggeredOnDisabled bool
 
 	js := NewJobScheduler(
 		NewJob(
-			OptJobOnDisabled(func(_ context.Context) { disabled = true }),
-			OptJobOnEnabled(func(_ context.Context) { enabled = true }),
+			OptJobOnDisabled(func(_ context.Context) { triggeredOnDisabled = true }),
+			OptJobOnEnabled(func(_ context.Context) { triggerdOnEnabled = true }),
 		),
 	)
 
@@ -80,14 +103,13 @@ func TestJobSchedulerEnableDisable(t *testing.T) {
 
 	js.Disable()
 	assert.True(js.Disabled)
-
-	assert.False(js.CanScheduledRun())
+	assert.False(js.CanBeScheduled())
+	assert.True(triggeredOnDisabled)
 
 	js.Enable()
 	assert.False(js.Disabled)
-
-	assert.True(disabled)
-	assert.True(enabled)
+	assert.True(js.CanBeScheduled())
+	assert.True(triggerdOnEnabled)
 }
 
 func TestJobSchedulerPersistHistory(t *testing.T) {

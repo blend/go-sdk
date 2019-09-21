@@ -109,6 +109,7 @@ func (jm *JobManager) HasJob(jobName string) (hasJob bool) {
 func (jm *JobManager) Job(jobName string) (job *JobScheduler, err error) {
 	jm.Lock()
 	defer jm.Unlock()
+
 	if jobScheduler, hasJob := jm.Jobs[jobName]; hasJob {
 		job = jobScheduler
 	} else {
@@ -137,18 +138,7 @@ func (jm *JobManager) IsJobRunning(jobName string) (isRunning bool) {
 	defer jm.Unlock()
 
 	if job, ok := jm.Jobs[jobName]; ok {
-		isRunning = job.Current != nil
-	}
-	return
-}
-
-// IsJobInvocationRunning returns if a job invocation is currently running.
-func (jm *JobManager) IsJobInvocationRunning(jobName, invocationID string) (isRunning bool) {
-	jm.Lock()
-	defer jm.Unlock()
-
-	if job, ok := jm.Jobs[jobName]; ok {
-		isRunning = job.Current != nil
+		isRunning = !job.Idle()
 	}
 	return
 }
@@ -169,45 +159,15 @@ func (jm *JobManager) RunJobs(jobNames ...string) error {
 }
 
 // RunJob runs a job by jobName on demand.
-func (jm *JobManager) RunJob(jobName string) error {
+func (jm *JobManager) RunJob(jobName string) (*JobInvocation, error) {
 	jm.Lock()
 	defer jm.Unlock()
 
 	job, ok := jm.Jobs[jobName]
 	if !ok {
-		return ex.New(ErrJobNotLoaded, ex.OptMessagef("job: %s", jobName))
+		return nil, ex.New(ErrJobNotLoaded, ex.OptMessagef("job: %s", jobName))
 	}
-	go job.Run()
-	return nil
-}
-
-// RunAllJobs runs every job that has been loaded in the JobManager at once.
-func (jm *JobManager) RunAllJobs() {
-	jm.Lock()
-	defer jm.Unlock()
-
-	for _, job := range jm.Jobs {
-		go job.Run()
-	}
-}
-
-// WaitJobScheduled waits for a job to be scheduled after calling `.Run()`
-func (jm *JobManager) WaitJobScheduled(ctx context.Context, jobName string) (*JobInvocation, error) {
-	scheduler, err := jm.Job(jobName)
-	if err != nil {
-		return nil, err
-	}
-	tick := time.Tick(50 * time.Millisecond)
-	for {
-		if scheduler.Current != nil {
-			return scheduler.Current, nil
-		}
-		select {
-		case <-ctx.Done():
-			return nil, ex.New(context.Canceled)
-		case <-tick:
-		}
-	}
+	return job.RunAsync()
 }
 
 // CancelJob cancels (sends the cancellation signal) to a running job.

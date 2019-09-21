@@ -406,7 +406,7 @@ func (ms ManagementServer) getAPIJobInvocationOutputStream(r *web.Ctx) web.Resul
 	if result != nil {
 		return result
 	}
-	if !ms.Cron.IsJobInvocationRunning(invocation.JobName, invocation.ID) {
+	if !ms.Cron.IsJobRunning(invocation.JobName) {
 		return nil
 	}
 
@@ -439,7 +439,7 @@ func (ms ManagementServer) getAPIJobInvocationOutputStream(r *web.Ctx) web.Resul
 			}
 			return nil
 		case <-updateTick:
-			if !ms.Cron.IsJobInvocationRunning(invocation.JobName, invocation.ID) {
+			if !ms.Cron.IsJobRunning(invocation.JobName) {
 				if err := es.EventData("complete", string(invocation.State)); err != nil {
 					logger.MaybeError(log, err)
 					return nil

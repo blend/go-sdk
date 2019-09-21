@@ -165,7 +165,6 @@ func TestManagementServerPause(t *testing.T) {
 	meta, err := web.MockGet(app, "/pause").Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
-
 	assert.True(jm.Latch.IsPaused())
 }
 
@@ -175,6 +174,7 @@ func TestManagementServerAPIPause(t *testing.T) {
 	jm, app := createTestManagementServer()
 	jm.StartAsync()
 	defer jm.Stop()
+
 	meta, err := web.MockPost(app, "/api/pause", nil).Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
@@ -212,4 +212,20 @@ func TestManagementServerAPIResume(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.True(jm.Latch.IsStarted())
+}
+
+func TestManagementServerJobRun(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job, err := jm.Job("test1")
+	assert.Nil(err)
+	assert.NotNil(job)
+	jobName := job.Name()
+
+	meta, err := web.MockGet(app, fmt.Sprintf("/job.run/%s", jobName)).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.NotNil(job.Last)
 }

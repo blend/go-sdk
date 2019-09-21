@@ -14,6 +14,9 @@ const (
 
 	// ErrJobCancelled is a common error.
 	ErrJobCancelled ex.Class = "job cancelled"
+
+	// ErrJobAlreadyRunning is a common error.
+	ErrJobAlreadyRunning ex.Class = "job already running"
 )
 
 // IsJobNotLoaded returns if the error is a job not loaded error.
@@ -34,4 +37,9 @@ func IsJobNotFound(err error) bool {
 // IsJobCancelled returns if the error is a task not found error.
 func IsJobCancelled(err error) bool {
 	return ex.Is(err, ErrJobCancelled)
+}
+
+// IsJobAlreadyRunning returns if the error is a task not found error.
+func IsJobAlreadyRunning(err error) bool {
+	return ex.Is(err, ErrJobAlreadyRunning)
 }

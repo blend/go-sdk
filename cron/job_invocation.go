@@ -21,6 +21,7 @@ func NewJobInvocation(jobName string) *JobInvocation {
 		JobName:         jobName,
 		Output:          output,
 		OutputListeners: listeners,
+		Done:            make(chan struct{}),
 	}
 }
 
@@ -39,6 +40,7 @@ type JobInvocation struct {
 	OutputListeners *OutputListeners
 	Context         context.Context
 	Cancel          context.CancelFunc
+	Done            chan struct{}
 }
 
 // MarshalJSON marshals the invocation as json.

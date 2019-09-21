@@ -213,47 +213,6 @@ func TestJobManagerRunJobs(t *testing.T) {
 	assert.True(job2ran)
 }
 
-func TestJobManagerRunAllJobs(t *testing.T) {
-	assert := assert.New(t)
-
-	jm := New()
-	assert.Nil(jm.StartAsync())
-	defer jm.Stop()
-
-	job0 := uuid.V4().String()
-	job1 := uuid.V4().String()
-	job2 := uuid.V4().String()
-
-	var job0ran bool
-	var job1ran bool
-	var job2ran bool
-
-	wg := sync.WaitGroup{}
-	wg.Add(3)
-	assert.Nil(jm.LoadJobs(NewJob(OptJobName(job0), OptJobAction(func(_ context.Context) error {
-		defer wg.Done()
-		job0ran = true
-		return nil
-	}))))
-	assert.Nil(jm.LoadJobs(NewJob(OptJobName(job1), OptJobAction(func(_ context.Context) error {
-		defer wg.Done()
-		job1ran = true
-		return nil
-	}))))
-	assert.Nil(jm.LoadJobs(NewJob(OptJobName(job2), OptJobAction(func(_ context.Context) error {
-		defer wg.Done()
-		job2ran = true
-		return nil
-	}))))
-
-	jm.RunAllJobs()
-	wg.Wait()
-
-	assert.True(job0ran)
-	assert.True(job1ran)
-	assert.True(job2ran)
-}
-
 func TestJobManagerJobLifecycle(t *testing.T) {
 	assert := assert.New(t)
 
@@ -274,15 +233,21 @@ func TestJobManagerJobLifecycle(t *testing.T) {
 	jm.LoadJobs(j)
 
 	completeSignal := j.CompleteSignal
-	assert.Nil(jm.RunJob("broken-fixed"))
+	ji, err := jm.RunJob("broken-fixed")
+	assert.Nil(err)
+	<-ji.Done
 	<-completeSignal
 
 	brokenSignal := j.BrokenSignal
-	assert.Nil(jm.RunJob("broken-fixed"))
+	ji, err = jm.RunJob("broken-fixed")
+	assert.Nil(err)
+	<-ji.Done
 	<-brokenSignal
 
 	fixedSignal := j.FixedSignal
-	assert.Nil(jm.RunJob("broken-fixed"))
+	ji, err = jm.RunJob("broken-fixed")
+	assert.Nil(err)
+	<-ji.Done
 	<-fixedSignal
 
 	assert.Equal(3, j.Starts)
@@ -389,6 +354,7 @@ func TestJobManagerStatus(t *testing.T) {
 
 	jm.RunJob("is-running-test")
 	<-proceed
+
 	status := jm.Status()
 	close(checked)
 
