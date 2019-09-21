@@ -310,7 +310,7 @@ func (job Job) notify(ctx context.Context, flag string) {
 	if job.SlackClient != nil {
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
 			job.Debugf(ctx, "notify (slack); sending slack notification")
-			job.Error(ctx, job.SlackClient.Send(context.Background(), NewSlackMessage(ji)))
+			job.Error(ctx, job.SlackClient.Send(context.Background(), NewSlackMessage(flag, ji)))
 		}
 	} else {
 		job.Debugf(ctx, "notify (slack); sender unset skipping sending slack notification")
@@ -318,7 +318,7 @@ func (job Job) notify(ctx context.Context, flag string) {
 
 	if job.EmailClient != nil {
 		if ji := cron.GetJobInvocation(ctx); ji != nil {
-			message, err := NewEmailMessage(job.EmailDefaults, ji)
+			message, err := NewEmailMessage(flag, job.EmailDefaults, ji)
 			if err != nil {
 				job.Error(ctx, err)
 			}

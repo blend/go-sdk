@@ -8,12 +8,12 @@ import (
 )
 
 // NewSlackMessage returns a new job started message.
-func NewSlackMessage(ji *cron.JobInvocation, options ...slack.MessageOption) slack.Message {
+func NewSlackMessage(flag string, ji *cron.JobInvocation, options ...slack.MessageOption) slack.Message {
 	message := slack.Message{}
 	if ji.Err != nil {
 		message.Attachments = append(message.Attachments,
 			slack.MessageAttachment{
-				Text:  fmt.Sprintf("%s %s", ji.JobName, ji.State),
+				Text:  fmt.Sprintf("%s %s", ji.JobName, flag),
 				Color: "#ff0000",
 			},
 			slack.MessageAttachment{
@@ -24,7 +24,7 @@ func NewSlackMessage(ji *cron.JobInvocation, options ...slack.MessageOption) sla
 	} else {
 		message.Attachments = append(message.Attachments,
 			slack.MessageAttachment{
-				Text:  fmt.Sprintf("%s %s", ji.JobName, ji.State),
+				Text:  fmt.Sprintf("%s %s", ji.JobName, flag),
 				Color: "#00ff00",
 			},
 		)

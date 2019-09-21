@@ -12,7 +12,7 @@ import (
 func TestNewEmailMessage(t *testing.T) {
 	assert := assert.New(t)
 
-	message, err := NewEmailMessage(email.Message{}, &cron.JobInvocation{
+	message, err := NewEmailMessage(cron.FlagComplete, email.Message{}, &cron.JobInvocation{
 		JobName: "test",
 		Elapsed: time.Millisecond,
 		State:   cron.JobInvocationStateComplete,
@@ -28,7 +28,7 @@ func TestNewEmailMessage(t *testing.T) {
 		email.OptCC("baileydog@blend.com"),
 	)
 	assert.Nil(err)
-	assert.Equal("test :: complete", message.Subject)
+	assert.Equal("test :: cron.complete", message.Subject)
 	assert.NotEmpty(message.From)
 	assert.Equal("jobkit@blend.com", message.From)
 	assert.NotEmpty(message.To)

@@ -16,7 +16,7 @@ func TestNewSlackMessage(t *testing.T) {
 
 	id := uuid.V4().String()
 	jobName := uuid.V4().String()
-	message := NewSlackMessage(&cron.JobInvocation{
+	message := NewSlackMessage(cron.FlagComplete, &cron.JobInvocation{
 		ID:      id,
 		JobName: jobName,
 		State:   cron.JobInvocationStateComplete,
@@ -25,7 +25,7 @@ func TestNewSlackMessage(t *testing.T) {
 	}, func(m *slack.Message) { m.AsUser = true })
 	assert.True(message.AsUser)
 	assert.NotEmpty(message.Attachments)
-	assert.Contains(message.Attachments[0].Text, jobName)
+	assert.Contains(message.Attachments[0].Text, jobName+" "+cron.FlagComplete)
 	assert.Contains(message.Attachments[1].Text, "this is just a test")
 	assert.Contains(message.Attachments[2].Text, "1s elapsed")
 }

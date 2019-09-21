@@ -7,13 +7,14 @@ import (
 )
 
 // NewEmailMessage returns a new email message.
-func NewEmailMessage(emailDefaults email.Message, ji *cron.JobInvocation, options ...email.MessageOption) (email.Message, error) {
+func NewEmailMessage(flag string, emailDefaults email.Message, ji *cron.JobInvocation, options ...email.MessageOption) (email.Message, error) {
 	message := email.Message{
 		From: emailDefaults.From,
 		To:   emailDefaults.To,
 	}
 
 	vars := map[string]interface{}{
+		"flag":    flag,
 		"jobName": ji.JobName,
 		"state":   ji.State,
 		"elapsed": ji.Elapsed,
@@ -45,7 +46,7 @@ const (
 	DefaultEmailMimeType = "text/plain"
 
 	// DefaultEmailSubjectTemplate is the default subject template.
-	DefaultEmailSubjectTemplate = `{{.Var "jobName" }} :: {{ .Var "state" }}`
+	DefaultEmailSubjectTemplate = `{{.Var "jobName" }} :: {{ .Var "flag" }}`
 
 	// DefaultEmailHTMLBodyTemplate is the default email html body template.
 	DefaultEmailHTMLBodyTemplate = `
