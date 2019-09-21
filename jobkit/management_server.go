@@ -402,9 +402,13 @@ func (ms ManagementServer) getAPIJobInvocationOutputStream(r *web.Ctx) web.Resul
 		return nil
 	}
 
+	listenerID := uuid.V4().String()
+	shouldClose := make(chan struct{})
+
 	// include catchup chunks
 	if afterNanos, _ := web.Int64Value(r.QueryValue("afterNanos")); afterNanos > 0 {
 		after := time.Unix(0, afterNanos)
+		logger.MaybeDebugf(log, "sending catchup output stream data from: %v", after)
 		for _, chunk := range invocation.Output.Chunks {
 			if chunk.Timestamp.After(after) {
 				if err := es.Data(string(chunk.Data)); err != nil {
@@ -415,8 +419,6 @@ func (ms ManagementServer) getAPIJobInvocationOutputStream(r *web.Ctx) web.Resul
 		}
 	}
 
-	listenerID := uuid.V4().String()
-	shouldClose := make(chan struct{})
 	invocation.OutputListeners.Add(listenerID, func(chunk cron.OutputChunk) {
 		if err := es.Data(string(chunk.Data)); err != nil {
 			logger.MaybeError(log, err)
@@ -434,7 +436,6 @@ func (ms ManagementServer) getAPIJobInvocationOutputStream(r *web.Ctx) web.Resul
 		case <-shouldClose:
 			if err := es.EventData("complete", string(invocation.State)); err != nil {
 				logger.MaybeError(log, err)
-				return nil
 			}
 			return nil
 		case <-updateTick:
