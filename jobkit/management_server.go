@@ -197,12 +197,9 @@ func (ms ManagementServer) getJobRun(r *web.Ctx) web.Result {
 	if err != nil {
 		return r.Views.BadRequest(err)
 	}
-	if err := ms.Cron.RunJob(jobName); err != nil {
-		return r.Views.BadRequest(err)
-	}
-	ji, err := ms.Cron.WaitJobScheduled(r.Context(), jobName)
+	ji, err := ms.Cron.RunJob(jobName)
 	if err != nil {
-		return r.Views.InternalError(err)
+		return r.Views.BadRequest(err)
 	}
 	return web.RedirectWithMethodf("GET", "/job.invocation/%s/%s", jobName, ji.ID)
 }
@@ -311,9 +308,6 @@ func (ms ManagementServer) getAPIJobStats(r *web.Ctx) web.Result {
 	if err != nil {
 		return web.JSON.BadRequest(err)
 	}
-	if err := ms.Cron.RunJob(jobName); err != nil {
-		return web.JSON.BadRequest(err)
-	}
 	return web.JSON.Result(job.Stats())
 }
 
@@ -323,12 +317,9 @@ func (ms ManagementServer) postAPIJobRun(r *web.Ctx) web.Result {
 	if err != nil {
 		return web.JSON.BadRequest(err)
 	}
-	if err := ms.Cron.RunJob(jobName); err != nil {
-		return web.JSON.BadRequest(err)
-	}
-	ji, err := ms.Cron.WaitJobScheduled(r.Context(), jobName)
+	ji, err := ms.Cron.RunJob(jobName)
 	if err != nil {
-		return r.Views.InternalError(err)
+		return web.JSON.BadRequest(err)
 	}
 	return web.JSON.Result(ji)
 }
@@ -486,7 +477,7 @@ func (ms ManagementServer) getRequestJobInvocation(r *web.Ctx, resultProvider we
 		return job.Current, nil
 	}
 
-	invocation = job.GetInvocationByID(invocationID)
+	invocation = job.JobInvocation(invocationID)
 	if invocation == nil {
 		return nil, resultProvider.NotFound()
 	}
