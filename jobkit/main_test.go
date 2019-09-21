@@ -30,8 +30,8 @@ func sortedJobs(jm *cron.JobManager) []*cron.JobScheduler {
 	return output
 }
 
-func createTestOutputLine() cron.OutputLine {
-	return cron.OutputLine{
+func createTestOutputChunk() cron.OutputChunk {
+	return cron.OutputChunk{
 		Timestamp: time.Now().UTC(),
 		Data:      []byte(uuid.V4()),
 	}
@@ -46,12 +46,11 @@ func createTestCompleteJobInvocation(jobName string, elapsed time.Duration) cron
 		State:    cron.JobInvocationStateComplete,
 		Elapsed:  elapsed,
 		Output: &cron.OutputBuffer{
-			Working: createTestOutputLine(),
-			Lines: []cron.OutputLine{
-				createTestOutputLine(),
-				createTestOutputLine(),
-				createTestOutputLine(),
-				createTestOutputLine(),
+			Chunks: []cron.OutputChunk{
+				createTestOutputChunk(),
+				createTestOutputChunk(),
+				createTestOutputChunk(),
+				createTestOutputChunk(),
 			},
 		},
 	}
@@ -67,10 +66,9 @@ func createTestFailedJobInvocation(jobName string, elapsed time.Duration, err er
 		Elapsed:  elapsed,
 		Err:      err,
 		Output: &cron.OutputBuffer{
-			Working: createTestOutputLine(),
-			Lines: []cron.OutputLine{
-				createTestOutputLine(),
-				createTestOutputLine(),
+			Chunks: []cron.OutputChunk{
+				createTestOutputChunk(),
+				createTestOutputChunk(),
 			},
 		},
 	}
@@ -87,12 +85,11 @@ func createTestManagementServer() (*cron.JobManager, *web.App) {
 		JobName: "test0",
 		Started: time.Now().UTC(),
 		Output: &cron.OutputBuffer{
-			Working: createTestOutputLine(),
-			Lines: []cron.OutputLine{
-				createTestOutputLine(),
-				createTestOutputLine(),
-				createTestOutputLine(),
-				createTestOutputLine(),
+			Chunks: []cron.OutputChunk{
+				createTestOutputChunk(),
+				createTestOutputChunk(),
+				createTestOutputChunk(),
+				createTestOutputChunk(),
 			},
 		},
 	}

@@ -112,7 +112,7 @@ func OptConfig(cfg JobConfig) JobOption {
 	return func(job *Job) error {
 		job.Config = cfg
 		job.EmailDefaults = cfg.EmailDefaults
-		job.Webhook = cfg.Webhook
+		job.WebhookDefaults = cfg.Webhook
 		return nil
 	}
 }
@@ -139,8 +139,8 @@ type Job struct {
 	CompiledSchedule cron.Schedule
 	Action           func(context.Context) error
 
-	EmailDefaults email.Message
-	Webhook       Webhook
+	EmailDefaults   email.Message
+	WebhookDefaults Webhook
 
 	Log          logger.Log
 	StatsClient  stats.Collector
@@ -331,9 +331,9 @@ func (job Job) notify(ctx context.Context, flag string) {
 		job.Debugf(ctx, "notify (email); email sender unset, skipping sending email notification")
 	}
 
-	if !job.Webhook.IsZero() {
+	if !job.WebhookDefaults.IsZero() {
 		job.Debugf(ctx, "notify (webhook); sending webhook notification")
-		_, err := job.Config.Webhook.Request().Discard()
+		_, err := job.WebhookDefaults.Request().Discard()
 		if err != nil {
 			job.Error(ctx, err)
 		}

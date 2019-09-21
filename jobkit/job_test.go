@@ -4,9 +4,13 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/blend/go-sdk/email"
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/cron"
@@ -164,22 +168,113 @@ func TestJobLifecycleHooksNotificationsSetEnabled(t *testing.T) {
 	assert.Len(slackMessages, 6)
 
 	msg := <-slackMessages
-	assert.Contains("cron.started", msg.Text)
+	assert.Contains(msg.Attachments[0].Text, "cron.started")
 
 	msg = <-slackMessages
-	assert.Contains("cron.complete", msg.Text)
+	assert.Contains(msg.Attachments[0].Text, "cron.complete")
 
 	msg = <-slackMessages
-	assert.Contains("cron.failed", msg.Text)
+	assert.Contains(msg.Attachments[0].Text, "cron.failed")
 
 	msg = <-slackMessages
-	assert.Contains("cron.cancelled", msg.Text)
+	assert.Contains(msg.Attachments[0].Text, "cron.cancelled")
 
 	msg = <-slackMessages
-	assert.Contains("cron.broken", msg.Text)
+	assert.Contains(msg.Attachments[0].Text, "cron.broken")
 
 	msg = <-slackMessages
-	assert.Contains("cron.fixed", msg.Text)
+	assert.Contains(msg.Attachments[0].Text, "cron.fixed")
+}
+
+func TestJobLifecycleHooksEmailNotifications(t *testing.T) {
+	assert := assert.New(t)
+
+	ctx := cron.WithJobInvocation(context.Background(), &cron.JobInvocation{
+		ID:      uuid.V4().String(),
+		JobName: "test-job",
+		Err:     fmt.Errorf("only a test"),
+	})
+
+	emailMessages := make(chan email.Message, 6)
+
+	job := &Job{
+		EmailClient: email.MockSender(emailMessages),
+		Config: JobConfig{
+			NotifyOnStart:        ref.Bool(true),
+			NotifyOnSuccess:      ref.Bool(true),
+			NotifyOnFailure:      ref.Bool(true),
+			NotifyOnBroken:       ref.Bool(true),
+			NotifyOnFixed:        ref.Bool(true),
+			NotifyOnCancellation: ref.Bool(true),
+		},
+	}
+
+	job.OnStart(ctx)
+	job.OnComplete(ctx)
+	job.OnFailure(ctx)
+	job.OnCancellation(ctx)
+	job.OnBroken(ctx)
+	job.OnFixed(ctx)
+
+	assert.Len(emailMessages, 6)
+
+	msg := <-emailMessages
+	assert.Contains(msg.Subject, "cron.started")
+
+	msg = <-emailMessages
+	assert.Contains(msg.Subject, "cron.complete")
+
+	msg = <-emailMessages
+	assert.Contains(msg.Subject, "cron.failed")
+
+	msg = <-emailMessages
+	assert.Contains(msg.Subject, "cron.cancelled")
+
+	msg = <-emailMessages
+	assert.Contains(msg.Subject, "cron.broken")
+
+	msg = <-emailMessages
+	assert.Contains(msg.Subject, "cron.fixed")
+}
+
+func TestJobLifecycleHooksWebhookNotifications(t *testing.T) {
+	assert := assert.New(t)
+
+	ctx := cron.WithJobInvocation(context.Background(), &cron.JobInvocation{
+		ID:      uuid.V4().String(),
+		JobName: "test-job",
+		Err:     fmt.Errorf("only a test"),
+	})
+
+	webhooks := make(chan *http.Request, 6)
+
+	hookServer := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		webhooks <- req
+		fmt.Fprintf(rw, "OK!\n")
+	}))
+
+	job := &Job{
+		WebhookDefaults: Webhook{
+			URL: hookServer.URL,
+		},
+		Config: JobConfig{
+			NotifyOnStart:        ref.Bool(true),
+			NotifyOnSuccess:      ref.Bool(true),
+			NotifyOnFailure:      ref.Bool(true),
+			NotifyOnBroken:       ref.Bool(true),
+			NotifyOnFixed:        ref.Bool(true),
+			NotifyOnCancellation: ref.Bool(true),
+		},
+	}
+
+	job.OnStart(ctx)
+	job.OnComplete(ctx)
+	job.OnFailure(ctx)
+	job.OnCancellation(ctx)
+	job.OnBroken(ctx)
+	job.OnFixed(ctx)
+
+	assert.Len(webhooks, 6)
 }
 
 func TestJobHistoryProvider(t *testing.T) {

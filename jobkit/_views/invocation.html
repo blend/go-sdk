@@ -70,13 +70,19 @@
 			term.open(document.getElementById('term-window'));
 			term.markers = [];
 			term.fit();
-			/* code {{ range $index, $line := .ViewModel.Output.Lines }} */
-			term.writeln("{{ $line.Data | as_string }}");
-			/*{{ end }}*/
-			/* {{ if .ViewModel.State | eq "running" }} */
-			var es = new EventSource("/api/job.invocation.output.stream/{{ .ViewModel.JobName | urlencode }}/{{ .ViewModel.ID }}");
+
+			var termWrite = (data) => {
+				term.write(data.replace(/\n/g, '\r\n'));
+			};
+
+			/* {{ range $index, $chunk := .ViewModel.Output.Chunks }} */
+			termWrite("{{ $chunk.Data | as_string }}");
+			/*{{ end }} */
+
+			/*{{ if .ViewModel.State | eq "running" }}*/
+			var es = new EventSource("/api/job.invocation.output.stream/{{ .ViewModel.JobName | urlencode }}/{{ .ViewModel.ID }}?afterNanos={{ now_utc | unix_nano }}");
 			es.onmessage = (e) => {
-				term.writeln(e.data);
+				termWrite(e.data+'\n');
 			};
 			es.addEventListener("elapsed", (e) => {
 				document.getElementById("elapsed").textContent = e.data;

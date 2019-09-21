@@ -364,19 +364,24 @@ func (ms ManagementServer) getAPIJobInvocationOutput(r *web.Ctx) web.Result {
 	if result != nil {
 		return result
 	}
-	lines := append(invocation.Output.Lines)
-	if !invocation.Output.Working.Timestamp.IsZero() {
-		lines = append(lines, invocation.Output.Working)
-	}
+	chunks := invocation.Output.Chunks
 	if afterNanos, _ := web.Int64Value(r.QueryValue("afterNanos")); afterNanos > 0 {
 		afterTS := time.Unix(0, afterNanos)
-		lines = cron.FilterOutputLines(lines, func(l cron.OutputLine) bool {
-			return l.Timestamp.After(afterTS)
+
+		var filtered []cron.OutputChunk
+		for _, chunk := range chunks {
+			if chunk.Timestamp.After(afterTS) {
+				filtered = append(filtered, chunk)
+			}
+		}
+		return web.JSON.Result(map[string]interface{}{
+			"serverTimeNanos": time.Now().UTC().UnixNano(),
+			"chunks":          filtered,
 		})
 	}
 	return web.JSON.Result(map[string]interface{}{
 		"serverTimeNanos": time.Now().UTC().UnixNano(),
-		"lines":           lines,
+		"chunks":          chunks,
 	})
 }
 
@@ -396,11 +401,24 @@ func (ms ManagementServer) getAPIJobInvocationOutputStream(r *web.Ctx) web.Resul
 		logger.MaybeError(log, err)
 		return nil
 	}
-	listenerID := uuid.V4().String()
 
+	// include catchup chunks
+	if afterNanos, _ := web.Int64Value(r.QueryValue("afterNanos")); afterNanos > 0 {
+		after := time.Unix(0, afterNanos)
+		for _, chunk := range invocation.Output.Chunks {
+			if chunk.Timestamp.After(after) {
+				if err := es.Data(string(chunk.Data)); err != nil {
+					logger.MaybeError(log, err)
+					return nil
+				}
+			}
+		}
+	}
+
+	listenerID := uuid.V4().String()
 	shouldClose := make(chan struct{})
-	invocation.OutputListeners.Add(listenerID, func(l cron.OutputLine) {
-		if err := es.Data(string(l.Data)); err != nil {
+	invocation.OutputListeners.Add(listenerID, func(chunk cron.OutputChunk) {
+		if err := es.Data(string(chunk.Data)); err != nil {
 			logger.MaybeError(log, err)
 			if shouldClose != nil {
 				close(shouldClose)
@@ -423,7 +441,6 @@ func (ms ManagementServer) getAPIJobInvocationOutputStream(r *web.Ctx) web.Resul
 			if !ms.Cron.IsJobRunning(invocation.JobName) {
 				if err := es.EventData("complete", string(invocation.State)); err != nil {
 					logger.MaybeError(log, err)
-					return nil
 				}
 				return nil
 			}

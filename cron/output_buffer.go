@@ -2,6 +2,7 @@ package cron
 
 import (
 	"bytes"
+	"encoding/json"
 	"time"
 )
 
@@ -13,74 +14,71 @@ func NewOutputBuffer(contents []byte) *OutputBuffer {
 }
 
 // OutputListener is a handler for lines.
-type OutputListener func(OutputLine)
+type OutputListener func(OutputChunk)
+
+// OutputChunk is a single write to the output buffer with a timestamp.
+type OutputChunk struct {
+	Timestamp time.Time
+	Data      []byte
+}
+
+// MarshalJSON implemnts json.Marshaler.
+func (oc OutputChunk) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]interface{}{
+		"_ts":  oc.Timestamp,
+		"data": string(oc.Data),
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (oc *OutputChunk) UnmarshalJSON(contents []byte) error {
+	raw := make(map[string]interface{})
+	if err := json.Unmarshal(contents, &raw); err != nil {
+		return err
+	}
+
+	if typed, ok := raw["_ts"].(string); ok {
+		parsed, err := time.Parse(time.RFC3339, typed)
+		if err != nil {
+			return err
+		}
+		oc.Timestamp = parsed
+	}
+	if typed, ok := raw["data"].(string); ok {
+		oc.Data = []byte(typed)
+	}
+	return nil
+}
 
 // OutputBuffer is a writer that accepts binary but splits out onto new lines.
 type OutputBuffer struct {
 	// Lines are the string lines broken up by newlines with associated timestamps
-	Lines []OutputLine `json:"lines"`
-	// Working is a temporary holder for the current line.
-	// It is added to the `Lines` slice when a newline is processed.
-	Working OutputLine `json:"working"`
+	Chunks []OutputChunk `json:"chunks"`
 	// Listener is an optional listener for new line events.
 	Listener OutputListener `json:"-"`
 }
 
 // Write writes the contents to the lines buffer.
-func (lw *OutputBuffer) Write(contents []byte) (written int, err error) {
-	var state int
-	if lw.Working.Timestamp.IsZero() {
-		lw.Working.Timestamp = time.Now().UTC()
+func (ob *OutputBuffer) Write(contents []byte) (written int, err error) {
+	chunk := OutputChunk{Timestamp: time.Now().UTC(), Data: contents}
+	if ob.Listener != nil {
+		ob.Listener(chunk)
 	}
-	for _, b := range contents {
-		switch state {
-		case 0: //
-			if b == '\r' { //handle CrLf
-				state = 1
-				continue
-			}
-			if b == '\n' {
-				lw.AddWorkingLine()
-				continue
-			}
-			lw.Working.Data = append(lw.Working.Data, b)
-		case 1:
-			state = 0
-			if b == '\n' {
-				lw.AddWorkingLine()
-				continue
-			}
-			lw.Working.Data = append(lw.Working.Data, b)
-		}
-	}
+	ob.Chunks = append(ob.Chunks, chunk)
 	written = len(contents)
 	return
 }
 
 // Bytes rerturns the bytes written to the writer.
-func (lw *OutputBuffer) Bytes() []byte {
+func (ob *OutputBuffer) Bytes() []byte {
 	buffer := new(bytes.Buffer)
-	for _, line := range lw.Lines {
-		buffer.Write(line.Data)
-		buffer.WriteRune('\n')
+	for _, chunk := range ob.Chunks {
+		buffer.Write(chunk.Data)
 	}
-	buffer.Write(lw.Working.Data)
 	return buffer.Bytes()
 }
 
 // String returns the current combined output as a string.
-func (lw *OutputBuffer) String() string {
-	return string(lw.Bytes())
-}
-
-// AddWorkingLine adds the current line to the lines set and resets
-// the current line
-func (lw *OutputBuffer) AddWorkingLine() {
-	if lw.Listener != nil {
-		lw.Listener(lw.Working)
-	}
-	lw.Lines = append(lw.Lines, lw.Working)
-	lw.Working.Timestamp = time.Time{}
-	lw.Working.Data = nil
-	return
+func (ob *OutputBuffer) String() string {
+	return string(ob.Bytes())
 }

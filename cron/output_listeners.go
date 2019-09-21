@@ -29,7 +29,7 @@ func (ol *OutputListeners) Remove(uid string) {
 }
 
 // Trigger calls the handlers.
-func (ol *OutputListeners) Trigger(line OutputLine) {
+func (ol *OutputListeners) Trigger(line OutputChunk) {
 	ol.RLock()
 	defer ol.RUnlock()
 

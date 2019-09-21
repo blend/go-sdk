@@ -68,6 +68,7 @@ func (vf ViewFuncs) FuncMap() map[string]interface{} {
 		"date_month_day": vf.DateMonthDay,
 		"date_short_rev": vf.DateShortRev,
 		"unix":           vf.Unix,
+		"unix_nano":      vf.UnixNano,
 		"rfc3339":        vf.RFC3339,
 		"time_short":     vf.TimeShort,
 		"time_medium":    vf.TimeMedium,
@@ -238,8 +239,13 @@ func (vf ViewFuncs) NowUTC() time.Time {
 }
 
 // Unix returns the unix format for a timestamp.
-func (vf ViewFuncs) Unix(t time.Time) string {
-	return fmt.Sprintf("%d", t.Unix())
+func (vf ViewFuncs) Unix(t time.Time) int64 {
+	return t.Unix()
+}
+
+// UnixNano returns the timetamp as nanoseconds from 1970-01-01.
+func (vf ViewFuncs) UnixNano(t time.Time) int64 {
+	return t.UnixNano()
 }
 
 // RFC3339 returns the RFC3339 format for a timestamp.

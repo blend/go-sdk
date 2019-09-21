@@ -85,7 +85,7 @@
 				<td class="uk-table-shrink">{{ .ViewModel.Current.Started | rfc3339 }}</td>
 				<td class="uk-table-shrink">{{ if .ViewModel.Current.Finished.IsZero }}-{{ else }}{{ .ViewModel.Current.Finished | rfc3339 }}{{ end }}</td>
 				<td class="uk-table-shrink">{{ .ViewModel.Current.State }}</td>
-				<td class="uk-table-shrink">{{ .ViewModel.Current.Elapsed }}</td>
+				<td class="uk-table-shrink">{{ if .ViewModel.Current.Finished.IsZero}}{{ .ViewModel.Current.Started | since_utc | duration_round_millis }}{{ else }}{{.ViewModel.Current.Elapsed | duration_round_millis }}{{end}}</td>
 				<td class="uk-table-expand uk-text-truncate">{{ if .ViewModel.Current.Err }}<code>{{ .ViewModel.Current.Err }}</code>{{ else }}-{{end}}</td>
 				<td class="uk-table-shrink"><a class="uk-button uk-button-primary"href="/job.invocation/{{ .ViewModel.Current.JobName | urlencode }}/{{ .ViewModel.Current.ID }}">Output</td>
 			</tr>

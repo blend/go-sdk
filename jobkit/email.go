@@ -19,7 +19,7 @@ func NewEmailMessage(emailDefaults email.Message, ji *cron.JobInvocation, option
 		"elapsed": ji.Elapsed,
 		"err":     ji.Err,
 	}
-	if ji.Output != nil && len(ji.Output.Lines) > 0 {
+	if ji.Output != nil && len(ji.Output.Chunks) > 0 {
 		vars["output"] = ji.Output.String()
 	}
 
