@@ -18,13 +18,13 @@
 		{{ end }}
 	</td>
 	<td>
-		<a class="uk-button uk-button-link" href="/job/{{ .ViewModel.Name }}">{{ .ViewModel.Name }}</a>
+		<a class="uk-button uk-button-link" href="/job/{{ .ViewModel.Name | urlencode }}">{{ .ViewModel.Name }}</a>
 	</td>
 	<td class="uk-width-1-6"> <!-- job labels-->
 	{{ range $key, $value := .ViewModel.Labels}}
 		<div>
 			<span class="uk-label">
-				<a href="/search?selector={{ $key | urlencode }}={{ $value | slugify }}">{{ $key }}={{ $value | slugify }}</a>
+				<a href="/search?selector={{ $key | urlencode }}={{ $value | slugify }}">{{ $key }}={{ $value }}</a>
 			</span>
 		</div>
 	{{ end }}
@@ -83,27 +83,27 @@
 	</td>
 	<td> <!-- job links -->
 		{{ if .ViewModel.Current }}
-		<a class="uk-button uk-button-secondary" href="/job.invocation/{{ .ViewModel.Name }}/{{ .ViewModel.Current.ID }}" uk-icon="reply" uk-tooltip="Show the current invocation output"></a>
+		<a class="uk-button uk-button-secondary" href="/job.invocation/{{ .ViewModel.Name | urlencode }}/{{ .ViewModel.Current.ID }}" uk-icon="reply" uk-tooltip="Show the current invocation output"></a>
 		{{ else if .ViewModel.Last }}
-		<a class="uk-button uk-button-default" href="/job.invocation/{{ .ViewModel.Name }}/{{ .ViewModel.Last.ID }}" uk-icon="reply" uk-tooltip="Show the last invocation output"></a>
+		<a class="uk-button uk-button-default" href="/job.invocation/{{ .ViewModel.Name | urlencode }}/{{ .ViewModel.Last.ID }}" uk-icon="reply" uk-tooltip="Show the last invocation output"></a>
 		{{ else }}
 		<a class="uk-button uk-button-default uk-button-disabled" uk-icon="reply" uk-tooltip="Job has no history" disabled></a>
 		{{ end }}
 
 		{{ if .Ctx.State.Get "show-job-history-link" }}
-		<a class="uk-button uk-button-default" href="/job/{{ .ViewModel.Name }}" uk-icon="history" uk-tooltip="Show job stats and history"></a>
+		<a class="uk-button uk-button-default" href="/job/{{ .ViewModel.Name | urlencode }}" uk-icon="history" uk-tooltip="Show job stats and history"></a>
 		{{ end }}
 	</td>
 	<td> <!-- actions -->
 	{{ if .ViewModel.Disabled }}
-		<a class="uk-button uk-button-default" href="/job.enable/{{ .ViewModel.Name }}" uk-icon="future" uk-tooltip="Enable the job"></a>
+		<a class="uk-button uk-button-default" href="/job.enable/{{ .ViewModel.Name | urlencode }}" uk-icon="future" uk-tooltip="Enable the job"></a>
 	{{else}}
-		<a class="uk-button uk-button-secondary" href="/job.disable/{{ .ViewModel.Name }}" uk-icon="ban" uk-tooltip="Disable the job"></a>
+		<a class="uk-button uk-button-secondary" href="/job.disable/{{ .ViewModel.Name | urlencode }}" uk-icon="ban" uk-tooltip="Disable the job"></a>
 	{{end}}
 	{{ if .ViewModel.Current }}
-		<a class="uk-button uk-button-danger" href="/job.cancel/{{ .ViewModel.Name }}" uk-icon="close" uk-tooltip="Cancel the running job"></a>
+		<a class="uk-button uk-button-danger" href="/job.cancel/{{ .ViewModel.Name | urlencode }}" uk-icon="close" uk-tooltip="Cancel the running job"></a>
 	{{ else }}
-		<a class="uk-button uk-button-primary" href="/job.run/{{ .ViewModel.Name }}" uk-icon="play" uk-tooltip="Force the job to run"></a>
+		<a class="uk-button uk-button-primary" href="/job.run/{{ .ViewModel.Name | urlencode }}" uk-icon="play" uk-tooltip="Force the job to run"></a>
 	{{ end }}
 	</td>
 </tr>

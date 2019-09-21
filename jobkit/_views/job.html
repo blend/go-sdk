@@ -5,7 +5,7 @@
 		<div>
 			<ul class="uk-breadcrumb">
 				<li><a href="/">Jobs</a></li>
-				<li><a href="/job/{{ .ViewModel.Name }}">{{ .ViewModel.Name }}</a></li>
+				<li><a href="/job/{{ .ViewModel.Name | urlencode }}">{{ .ViewModel.Name }}</a></li>
 			</ul>
 		</div>
 	</div>
@@ -87,7 +87,7 @@
 				<td class="uk-table-shrink">{{ .ViewModel.Current.State }}</td>
 				<td class="uk-table-shrink">{{ .ViewModel.Current.Elapsed }}</td>
 				<td class="uk-table-expand uk-text-truncate">{{ if .ViewModel.Current.Err }}<code>{{ .ViewModel.Current.Err }}</code>{{ else }}-{{end}}</td>
-				<td class="uk-table-shrink"><a class="uk-button uk-button-primary"href="/job.invocation/{{.ViewModel.Current.JobName}}/{{ .ViewModel.Current.ID }}">Output</td>
+				<td class="uk-table-shrink"><a class="uk-button uk-button-primary"href="/job.invocation/{{ .ViewModel.Current.JobName | urlencode }}/{{ .ViewModel.Current.ID }}">Output</td>
 			</tr>
 		{{ end }}
 		{{ range $index, $ji := .ViewModel.History | reverse }}
@@ -97,7 +97,7 @@
 				<td class="uk-table-shrink">{{ $ji.State }}</td>
 				<td class="uk-table-shrink">{{ $ji.Elapsed }}</td>
 				<td class="uk-table-expand uk-text-truncate">{{ if $ji.Err }}{{ $ji.Err }}{{ else }}-{{end}}</td>
-				<td class="uk-table-shrink"><a class="uk-button uk-button-secondary" href="/job.invocation/{{$ji.JobName}}/{{ $ji.ID }}">Output</td>
+				<td class="uk-table-shrink"><a class="uk-button uk-button-secondary" href="/job.invocation/{{ $ji.JobName | urlencode }}/{{ $ji.ID }}">Output</td>
 			</tr>
 		{{ end }}
 		</tbody>

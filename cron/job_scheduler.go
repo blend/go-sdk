@@ -213,6 +213,7 @@ func (js *JobScheduler) Stats() JobStats {
 	var output JobStats
 	var elapsedTimes []time.Duration
 
+	output.JobName = js.Name()
 	output.RunsTotal = len(js.History)
 	for _, ji := range js.History {
 		switch ji.State {

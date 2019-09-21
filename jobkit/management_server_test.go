@@ -1,6 +1,7 @@
 package jobkit
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -195,14 +196,28 @@ func TestManagementServerJobCancel(t *testing.T) {
 
 	jm, app := createTestManagementServer()
 
-	job, err := jm.Job("test1")
-	assert.Nil(err)
-	assert.NotNil(job)
-	jobName := job.Name()
+	called := make(chan struct{})
+	cancelled := make(chan struct{})
 
-	meta, err := web.MockGet(app, fmt.Sprintf("/job.cancel/%s", jobName)).Discard()
+	job := cron.NewJob(cron.OptJobName("cancel-test"), cron.OptJobAction(func(ctx context.Context) error {
+		close(called)
+		<-ctx.Done()
+		close(cancelled)
+		return nil
+	}))
+	jm.LoadJobs(job)
+
+	meta, err := web.MockGet(app, fmt.Sprintf("/job.run/%s", job.Name())).Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
+
+	<-called
+
+	meta, err = web.MockGet(app, fmt.Sprintf("/job.cancel/%s", job.Name())).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+
+	<-cancelled
 }
 
 func TestManagementServerJobInvocation(t *testing.T) {
@@ -274,6 +289,28 @@ func TestManagementServerAPIJobs(t *testing.T) {
 	assert.NotEmpty(jobs)
 }
 
+func TestManagementServerAPIJobsRunning(t *testing.T) {
+	assert := assert.New(t)
+
+	_, app := createTestManagementServer()
+	var jobs map[string]cron.JobInvocation
+	meta, err := web.MockGet(app, "/api/jobs.running").JSON(&jobs)
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.NotEmpty(jobs)
+}
+
+func TestManagementServerAPIJobsStats(t *testing.T) {
+	assert := assert.New(t)
+
+	_, app := createTestManagementServer()
+	var jobs []cron.JobStats
+	meta, err := web.MockGet(app, "/api/jobs.stats").JSON(&jobs)
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.NotEmpty(jobs)
+}
+
 func TestManagementServerAPIJob(t *testing.T) {
 	assert := assert.New(t)
 
@@ -288,6 +325,22 @@ func TestManagementServerAPIJob(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.Equal(jobName, js.Name)
+}
+
+func TestManagementServerAPIJobStats(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job := firstJob(jm)
+	assert.NotNil(job)
+	jobName := job.Name()
+
+	var js cron.JobStats
+	meta, err := web.MockGet(app, fmt.Sprintf("/api/job.stats/%s", jobName)).JSON(&js)
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.Equal(jobName, js.JobName)
 }
 
 func TestManagementServerAPIPause(t *testing.T) {
@@ -334,4 +387,33 @@ func TestManagementServerAPIJobRun(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.Equal("test1", ji.JobName)
+}
+
+func TestManagementServerAPIJobCancel(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	called := make(chan struct{})
+	cancelled := make(chan struct{})
+
+	job := cron.NewJob(cron.OptJobName("cancel-test"), cron.OptJobAction(func(ctx context.Context) error {
+		close(called)
+		<-ctx.Done()
+		close(cancelled)
+		return nil
+	}))
+	jm.LoadJobs(job)
+
+	meta, err := web.MockPost(app, fmt.Sprintf("/api/job.run/%s", job.Name()), nil).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+
+	<-called
+
+	meta, err = web.MockPost(app, fmt.Sprintf("/api/job.cancel/%s", job.Name()), nil).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+
+	<-cancelled
 }

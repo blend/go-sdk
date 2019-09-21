@@ -4,6 +4,7 @@ import "time"
 
 // JobStats represent stats about a job based on history.
 type JobStats struct {
+	JobName        string        `json:"jobName"`
 	SuccessRate    float64       `json:"successRate"`
 	OutputBytes    int           `json:"outputBytes"`
 	RunsTotal      int           `json:"runsTotal"`

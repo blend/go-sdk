@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"time"
@@ -84,7 +85,7 @@ func (ms ManagementServer) Register(app *web.App) {
 	app.POST("/api/resume", ms.postAPIResume)
 	app.GET("/api/jobs", ms.getAPIJobs)
 	app.GET("/api/jobs.running", ms.getAPIJobsRunning)
-	app.GET("/api/jobs.stats", ms.getAPIJobStats)
+	app.GET("/api/jobs.stats", ms.getAPIJobsStats)
 	app.GET("/api/job/:jobName", ms.getAPIJob)
 	app.GET("/api/job.stats/:jobName", ms.getAPIJobStats)
 	app.POST("/api/job.run/:jobName", ms.postAPIJobRun)
@@ -181,37 +182,33 @@ func (ms ManagementServer) getResume(r *web.Ctx) web.Result {
 
 // getJob is mapped to GET /job/:jobName
 func (ms ManagementServer) getJob(r *web.Ctx) web.Result {
-	jobName, err := r.RouteParam("jobName")
-	if err != nil {
-		return web.JSON.BadRequest(err)
-	}
-	job, err := ms.Cron.Job(jobName)
-	if err != nil || job == nil {
-		return r.Views.NotFound()
+	job, result := ms.getRequestJob(r, web.JSON)
+	if result != nil {
+		return result
 	}
 	return r.Views.View("job", job)
 }
 
 // getJobRun is mapped to GET /job.run/:jobName
 func (ms ManagementServer) getJobRun(r *web.Ctx) web.Result {
-	jobName, err := r.RouteParam("jobName")
+	job, result := ms.getRequestJob(r, web.JSON)
+	if result != nil {
+		return result
+	}
+	ji, err := ms.Cron.RunJob(job.Name())
 	if err != nil {
 		return r.Views.BadRequest(err)
 	}
-	ji, err := ms.Cron.RunJob(jobName)
-	if err != nil {
-		return r.Views.BadRequest(err)
-	}
-	return web.RedirectWithMethodf("GET", "/job.invocation/%s/%s", jobName, ji.ID)
+	return web.RedirectWithMethodf("GET", "/job.invocation/%s/%s", url.QueryEscape(job.Name()), ji.ID)
 }
 
 // getJobEnable is mapped to GET /job.enable/:jobName
 func (ms ManagementServer) getJobEnable(r *web.Ctx) web.Result {
-	jobName, err := r.RouteParam("jobName")
-	if err != nil {
-		return r.Views.BadRequest(err)
+	job, result := ms.getRequestJob(r, web.JSON)
+	if result != nil {
+		return result
 	}
-	if err := ms.Cron.EnableJobs(jobName); err != nil {
+	if err := ms.Cron.EnableJobs(job.Name()); err != nil {
 		return r.Views.BadRequest(err)
 	}
 	return web.RedirectWithMethod("GET", "/")
@@ -219,11 +216,11 @@ func (ms ManagementServer) getJobEnable(r *web.Ctx) web.Result {
 
 // getJobDisable is mapped to GET /job.disable/:jobName
 func (ms ManagementServer) getJobDisable(r *web.Ctx) web.Result {
-	jobName, err := r.RouteParam("jobName")
-	if err != nil {
-		return r.Views.BadRequest(err)
+	job, result := ms.getRequestJob(r, web.JSON)
+	if result != nil {
+		return result
 	}
-	if err := ms.Cron.DisableJobs(jobName); err != nil {
+	if err := ms.Cron.DisableJobs(job.Name()); err != nil {
 		return r.Views.BadRequest(err)
 	}
 	return web.RedirectWithMethod("GET", "/")
@@ -231,11 +228,11 @@ func (ms ManagementServer) getJobDisable(r *web.Ctx) web.Result {
 
 // getJobCancel is mapped to GET /job.cancel;/:jobName
 func (ms ManagementServer) getJobCancel(r *web.Ctx) web.Result {
-	jobName, err := r.RouteParam("jobName")
-	if err != nil {
-		return r.Views.BadRequest(err)
+	job, result := ms.getRequestJob(r, web.JSON)
+	if result != nil {
+		return result
 	}
-	err = ms.Cron.CancelJob(jobName)
+	err := ms.Cron.CancelJob(job.Name())
 	if err != nil {
 		return r.Views.BadRequest(err)
 	}
@@ -279,46 +276,38 @@ func (ms ManagementServer) postAPIResume(r *web.Ctx) web.Result {
 
 // getAPIJob is mapped to GET /api/job/:jobName
 func (ms ManagementServer) getAPIJob(r *web.Ctx) web.Result {
-	jobName, err := r.RouteParam("jobName")
-	if err != nil {
-		return web.JSON.BadRequest(err)
-	}
-	job, err := ms.Cron.Job(jobName)
-	if err != nil || job == nil {
-		return web.JSON.NotFound()
+	job, result := ms.getRequestJob(r, web.JSON)
+	if result != nil {
+		return result
 	}
 	return web.JSON.Result(job.Status())
 }
 
 // getAPIJobsStats is mapped to GET /api/jobs.stats
 func (ms ManagementServer) getAPIJobsStats(r *web.Ctx) web.Result {
-	output := make(map[string]cron.JobStats)
+	var output []cron.JobStats
 	for _, job := range ms.Cron.Jobs {
-		output[job.Name()] = job.Stats()
+		output = append(output, job.Stats())
 	}
 	return web.JSON.Result(output)
 }
 
 // getAPIJobStats is mapped to GET /api/job.stats/:jobName
 func (ms ManagementServer) getAPIJobStats(r *web.Ctx) web.Result {
-	jobName, err := r.RouteParam("jobName")
-	if err != nil {
-		return web.JSON.BadRequest(err)
-	}
-	job, err := ms.Cron.Job(jobName)
-	if err != nil {
-		return web.JSON.BadRequest(err)
+	job, result := ms.getRequestJob(r, web.JSON)
+	if result != nil {
+		return result
 	}
 	return web.JSON.Result(job.Stats())
 }
 
 // postAPIJobRun is mapped to POST /api/job.run/:jobName
 func (ms ManagementServer) postAPIJobRun(r *web.Ctx) web.Result {
-	jobName, err := r.RouteParam("jobName")
-	if err != nil {
-		return web.JSON.BadRequest(err)
+	job, result := ms.getRequestJob(r, web.JSON)
+	if result != nil {
+		return result
 	}
-	ji, err := ms.Cron.RunJob(jobName)
+	ji, err := ms.Cron.RunJob(job.Name())
 	if err != nil {
 		return web.JSON.BadRequest(err)
 	}
@@ -327,11 +316,11 @@ func (ms ManagementServer) postAPIJobRun(r *web.Ctx) web.Result {
 
 // postAPIJobCancel is mapped to POST /api/job.cancel/:jobName
 func (ms ManagementServer) postAPIJobCancel(r *web.Ctx) web.Result {
-	jobName, err := r.RouteParam("jobName")
-	if err != nil {
-		return web.JSON.BadRequest(err)
+	job, result := ms.getRequestJob(r, web.JSON)
+	if result != nil {
+		return result
 	}
-	if err := ms.Cron.CancelJob(jobName); err != nil {
+	if err := ms.Cron.CancelJob(job.Name()); err != nil {
 		return web.JSON.BadRequest(err)
 	}
 	return web.JSON.OK()
@@ -339,11 +328,11 @@ func (ms ManagementServer) postAPIJobCancel(r *web.Ctx) web.Result {
 
 // postAPIJobDisable is mapped to POST /api/job.disable/:jobName
 func (ms ManagementServer) postAPIJobDisable(r *web.Ctx) web.Result {
-	jobName, err := r.RouteParam("jobName")
-	if err != nil {
-		return web.JSON.BadRequest(err)
+	job, result := ms.getRequestJob(r, web.JSON)
+	if result != nil {
+		return result
 	}
-	if err := ms.Cron.DisableJobs(jobName); err != nil {
+	if err := ms.Cron.DisableJobs(job.Name()); err != nil {
 		return web.JSON.BadRequest(err)
 	}
 	return web.JSON.OK()
@@ -351,14 +340,14 @@ func (ms ManagementServer) postAPIJobDisable(r *web.Ctx) web.Result {
 
 // postAPIJobEnable is mapped to POST /api/job.enable/:jobName
 func (ms ManagementServer) postAPIJobEnable(r *web.Ctx) web.Result {
-	jobName, err := r.RouteParam("jobName")
-	if err != nil {
+	job, result := ms.getRequestJob(r, web.JSON)
+	if result != nil {
+		return result
+	}
+	if err := ms.Cron.EnableJobs(job.Name()); err != nil {
 		return web.JSON.BadRequest(err)
 	}
-	if err := ms.Cron.EnableJobs(jobName); err != nil {
-		return web.JSON.BadRequest(err)
-	}
-	return web.JSON.Result(fmt.Sprintf("%s enabled", jobName))
+	return web.JSON.Result(fmt.Sprintf("%s enabled", job.Name()))
 }
 
 // getAPIJobInvocation is mapped to GET /api/job.invocation/:jobName/:id
@@ -458,16 +447,29 @@ func (ms ManagementServer) addContextStateConfig(action web.Action) web.Action {
 	}
 }
 
-// getRequestJobInvocation pulls a job invocation off a request context.
-func (ms ManagementServer) getRequestJobInvocation(r *web.Ctx, resultProvider web.ResultProvider) (*cron.JobInvocation, web.Result) {
+func (ms ManagementServer) getRequestJob(r *web.Ctx, resultProvider web.ResultProvider) (*cron.JobScheduler, web.Result) {
 	jobName, err := r.RouteParam("jobName")
 	if err != nil {
 		return nil, resultProvider.BadRequest(err)
 	}
-	job, err := ms.Cron.Job(jobName)
+	jobName, err = url.QueryUnescape(jobName)
 	if err != nil {
+		return nil, resultProvider.BadRequest(err)
+	}
+	job, err := ms.Cron.Job(jobName)
+	if err != nil || job == nil {
 		return nil, resultProvider.NotFound()
 	}
+	return job, nil
+}
+
+// getRequestJobInvocation pulls a job invocation off a request context.
+func (ms ManagementServer) getRequestJobInvocation(r *web.Ctx, resultProvider web.ResultProvider) (*cron.JobInvocation, web.Result) {
+	job, result := ms.getRequestJob(r, resultProvider)
+	if result != nil {
+		return nil, result
+	}
+
 	invocationID, err := r.RouteParam("id")
 	if err != nil {
 		return nil, resultProvider.BadRequest(err)

@@ -5,12 +5,12 @@
 		<div>
 			<ul class="uk-breadcrumb">
 				<li><a href="/">Jobs</a></li>
-				<li><a href="/job/{{ .ViewModel.JobName }}">{{ .ViewModel.JobName }}</a></li>
+				<li><a href="/job/{{ .ViewModel.JobName | urlencode }}">{{ .ViewModel.JobName }}</a></li>
 				<li><span>{{ .ViewModel.ID }}</span></li>
 			</ul>
 		</div>
 		<div class="uk-flex-right uk-text-right">
-			<a class="uk-button" href="/job.invocation.output/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}" uk-icon="download" uk-tooltip="Download Job Output"></a>
+			<a class="uk-button" href="/job.invocation.output/{{ .ViewModel.JobName | urlencode }}/{{ .ViewModel.ID }}" uk-icon="download" uk-tooltip="Download Job Output"></a>
 		</div>
 	</div>
 	<div class="uk-grid uk-grid-match uk-grid-divider uk-grid-medium uk-child-width-1-4">
@@ -74,7 +74,7 @@
 			term.writeln("{{ $line.Data | as_string }}");
 			/*{{ end }}*/
 			/* {{ if .ViewModel.State | eq "running" }} */
-			var es = new EventSource("/api/job.invocation.output.stream/{{ .ViewModel.JobName }}/{{ .ViewModel.ID }}");
+			var es = new EventSource("/api/job.invocation.output.stream/{{ .ViewModel.JobName | urlencode }}/{{ .ViewModel.ID }}");
 			es.onmessage = (e) => {
 				term.writeln(e.data);
 			};
