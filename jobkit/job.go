@@ -277,14 +277,14 @@ func (job Job) Execute(ctx context.Context) error {
 // Debugf logs a debug message if the logger is set.
 func (job Job) Debugf(ctx context.Context, format string, args ...interface{}) {
 	if job.Log != nil {
-		job.Log.WithPath(job.Name(), cron.GetJobInvocation(ctx).ID).WithContext(ctx).Debugf(format, args...)
+		job.Log.WithPath("cron", job.Name(), cron.GetJobInvocation(ctx).ID).WithContext(ctx).Debugf(format, args...)
 	}
 }
 
 // Error logs an error if the logger i set.
 func (job Job) Error(ctx context.Context, err error) error {
 	if job.Log != nil && err != nil {
-		job.Log.WithPath(job.Name(), cron.GetJobInvocation(ctx).ID).WithContext(ctx).Error(err)
+		job.Log.WithPath("cron", job.Name(), cron.GetJobInvocation(ctx).ID).WithContext(ctx).Error(err)
 	}
 	return err
 

@@ -3,6 +3,8 @@ package jobkit
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"testing"
 	"time"
 
@@ -178,4 +180,31 @@ func TestJobLifecycleHooksNotificationsSetEnabled(t *testing.T) {
 
 	msg = <-slackMessages
 	assert.Contains("cron.fixed", msg.Text)
+}
+
+func TestJobHistoryProvider(t *testing.T) {
+	assert := assert.New(t)
+
+	tmpdir, err := ioutil.TempDir("", "gosdk_jobkit")
+	assert.Nil(err)
+	defer os.RemoveAll(tmpdir)
+
+	job := &Job{
+		Config: JobConfig{
+			HistoryPath: tmpdir,
+		},
+	}
+
+	history := []cron.JobInvocation{
+		createTestCompleteJobInvocation("test0", 100*time.Millisecond),
+		createTestCompleteJobInvocation("test0", 200*time.Millisecond),
+		createTestFailedJobInvocation("test0", 100*time.Millisecond, fmt.Errorf("this is only a test")),
+	}
+
+	err = job.PersistHistory(context.Background(), history)
+	assert.Nil(err)
+
+	returned, err := job.RestoreHistory(context.Background())
+	assert.Nil(err)
+	assert.Len(returned, 3)
 }

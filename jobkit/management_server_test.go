@@ -327,6 +327,15 @@ func TestManagementServerAPIJob(t *testing.T) {
 	assert.Equal(jobName, js.Name)
 }
 
+func TestManagementServerAPIJobNotFound(t *testing.T) {
+	assert := assert.New(t)
+
+	_, app := createTestManagementServer()
+	meta, err := web.MockGet(app, fmt.Sprintf("/api/job/%s", uuid.V4().String())).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusNotFound, meta.StatusCode)
+}
+
 func TestManagementServerAPIJobStats(t *testing.T) {
 	assert := assert.New(t)
 
@@ -386,6 +395,8 @@ func TestManagementServerAPIJobRun(t *testing.T) {
 	meta, err := web.MockPost(app, fmt.Sprintf("/api/job.run/%s", jobName), nil).JSON(&ji)
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.NotEmpty(ji.ID)
+	assert.False(ji.Started.IsZero())
 	assert.Equal("test1", ji.JobName)
 }
 
@@ -416,4 +427,39 @@ func TestManagementServerAPIJobCancel(t *testing.T) {
 	assert.Equal(http.StatusOK, meta.StatusCode)
 
 	<-cancelled
+}
+
+func TestManagementServerAPIJobDisable(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job, err := jm.Job("test1")
+	assert.Nil(err)
+	assert.NotNil(job)
+	jobName := job.Name()
+	assert.False(job.Disabled)
+
+	meta, err := web.MockPost(app, fmt.Sprintf("/api/job.disable/%s", jobName), nil).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+
+	assert.True(job.Disabled)
+}
+
+func TestManagementServerAPIJobEnable(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job, err := jm.Job("test1")
+	assert.Nil(err)
+	assert.NotNil(job)
+	jobName := job.Name()
+	job.Disabled = true
+
+	meta, err := web.MockPost(app, fmt.Sprintf("/api/job.enable/%s", jobName), nil).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.False(job.Disabled)
 }

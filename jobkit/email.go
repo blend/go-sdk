@@ -19,6 +19,10 @@ func NewEmailMessage(emailDefaults email.Message, ji *cron.JobInvocation, option
 		"elapsed": ji.Elapsed,
 		"err":     ji.Err,
 	}
+	if ji.Output != nil && len(ji.Output.Lines) > 0 {
+		vars["output"] = ji.Output.String()
+	}
+
 	var err error
 	message.Subject, err = template.New().WithBody(DefaultEmailSubjectTemplate).WithVars(vars).ProcessString()
 	if err != nil {
@@ -61,12 +65,17 @@ const (
 </style>
 </head>
 <body class="email-body">
-	<h2>{{ .Var "jobName" }} {{ .Var "state" "Unknown" }}</h2>
+	<h3>{{ .Var "jobName" }} {{ .Var "state" "Unknown" }}</h3>
 	<div class="email-details">
 	{{ if .Var "err" }}
+	<h4>Error</h4>
 	<pre>{{ .Var "err" }}</pre>
 	{{ end }}
 	</div>
+	{{ if .Var "output" }}
+	<h4>Output</h4>
+	<pre>{{ .Var "output" }}</pre>
+	{{ end }}
 </body>
 </html>
 `
@@ -74,5 +83,8 @@ const (
 	// DefaultEmailTextBodyTemplate is the default body template.
 	DefaultEmailTextBodyTemplate = `{{ .Var "jobName" }} {{ .Var "state" }}
 Elapsed: {{ .Var "elapsed" }}
-{{ if .HasVar "err" }}Error: {{ .Var "err" }}{{end}}`
+{{ if .HasVar "err" }}Error: {{ .Var "err" }}{{end}}
+{{ if .HasVar "output" }}Output:
+{{ .Var "output" }}{{end}}
+`
 )

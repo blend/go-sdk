@@ -57,7 +57,7 @@ func createTestCompleteJobInvocation(jobName string, elapsed time.Duration) cron
 	}
 }
 
-func createTestFailedJobInvocation(jobName string, elapsed time.Duration) cron.JobInvocation {
+func createTestFailedJobInvocation(jobName string, elapsed time.Duration, err error) cron.JobInvocation {
 	return cron.JobInvocation{
 		ID:       uuid.V4().String(),
 		JobName:  jobName,
@@ -65,7 +65,7 @@ func createTestFailedJobInvocation(jobName string, elapsed time.Duration) cron.J
 		Finished: time.Now().UTC().Add(elapsed),
 		State:    cron.JobInvocationStateFailed,
 		Elapsed:  elapsed,
-		Err:      fmt.Errorf("this is only a test: %s", uuid.V4().String()),
+		Err:      err,
 		Output: &cron.OutputBuffer{
 			Working: createTestOutputLine(),
 			Lines: []cron.OutputLine{
@@ -100,7 +100,7 @@ func createTestManagementServer() (*cron.JobManager, *web.App) {
 	jm.Jobs["test0"].History = []cron.JobInvocation{
 		createTestCompleteJobInvocation("test0", 200*time.Millisecond),
 		createTestCompleteJobInvocation("test0", 250*time.Millisecond),
-		createTestFailedJobInvocation("test0", 5*time.Second),
+		createTestFailedJobInvocation("test0", 5*time.Second, fmt.Errorf("this is only a test %s", uuid.V4().String())),
 	}
 	jm.Jobs["test1"].History = []cron.JobInvocation{
 		createTestCompleteJobInvocation("test1", 200*time.Millisecond),

@@ -16,6 +16,12 @@ func TestNewEmailMessage(t *testing.T) {
 		JobName: "test",
 		Elapsed: time.Millisecond,
 		State:   cron.JobInvocationStateComplete,
+		Output: &cron.OutputBuffer{
+			Lines: []cron.OutputLine{
+				{Data: []byte("this is a test")},
+				{Data: []byte("this is another test")},
+			},
+		},
 	},
 		email.OptFrom("jobkit@blend.com"),
 		email.OptTo("foo@bar.com"),
@@ -30,5 +36,9 @@ func TestNewEmailMessage(t *testing.T) {
 	assert.NotEmpty(message.CC)
 	assert.Equal("baileydog@blend.com", message.CC[0])
 	assert.NotEmpty(message.HTMLBody)
+	assert.Contains(message.HTMLBody, "this is a test")
+	assert.Contains(message.HTMLBody, "this is another test")
 	assert.NotEmpty(message.TextBody)
+	assert.Contains(message.TextBody, "this is a test")
+	assert.Contains(message.TextBody, "this is another test")
 }
