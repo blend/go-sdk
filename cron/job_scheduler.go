@@ -264,8 +264,10 @@ func (js *JobScheduler) Stop() error {
 	if !js.Latch.CanStop() {
 		return fmt.Errorf("already stopped")
 	}
-	// Signal we are stopping.
+	stopped := js.Latch.NotifyStopped()
+
 	js.infof("scheduler stopping")
+	// signal we are stopping.
 	js.Latch.Stopping()
 
 	ctx, cancel := js.createContextWithTimeout(js.ShutdownGracePeriodProvider())
@@ -273,7 +275,7 @@ func (js *JobScheduler) Stop() error {
 	js.cancelJobInvocation(ctx, js.Current)
 	js.PersistHistory(ctx)
 
-	<-js.Latch.NotifyStopped()
+	<-stopped
 	js.infof("scheduler stopped")
 	return nil
 }

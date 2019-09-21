@@ -296,6 +296,7 @@ func (jm *JobManager) Resume() error {
 // Stop stops the schedule runner for a JobManager.
 func (jm *JobManager) Stop() error {
 	if !jm.Latch.CanStop() {
+		logger.MaybeDebug(jm.Log, "job manager already stopped")
 		return fmt.Errorf("already stopped")
 	}
 	jm.Latch.Stopping()

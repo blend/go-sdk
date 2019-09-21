@@ -256,7 +256,9 @@ func run(cmd *cobra.Command, args []string) error {
 		log.Infof("adding sentry error collection")
 	}
 
-	jobs := cron.New(cron.OptLog(log.WithPath("cron")))
+	jobs := cron.New(
+		cron.OptLog(log.WithPath("cron")),
+	)
 
 	for _, jobCfg := range cfg.Jobs {
 		job, err := createJobFromConfig(cfg, jobCfg)
