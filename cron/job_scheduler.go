@@ -371,6 +371,7 @@ func (js *JobScheduler) RunLoop() {
 
 			// set up the next runtime.
 			js.NextRuntime = js.Schedule.Next(js.NextRuntime)
+
 		case <-notifyStopping:
 			// note: we bail hard here
 			// because the job executions in flight are
