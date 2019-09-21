@@ -80,7 +80,7 @@
 			/*{{ if .ViewModel.State | eq "running" }}*/
 			var es = new EventSource("/api/job.invocation.output.stream/{{ .ViewModel.JobName | urlencode }}/{{ .ViewModel.ID }}?afterNanos={{ now_utc | unix_nano }}");
 			es.onmessage = (e) => {
-				termWrite(e.data+'\n');
+				termWrite(e.data);
 			};
 			es.addEventListener("elapsed", (e) => {
 				document.getElementById("elapsed").textContent = e.data;

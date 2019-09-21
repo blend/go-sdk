@@ -8,15 +8,14 @@ func SplitLines(contents string) []string {
 	var output []string
 
 	const (
-		newline        = '\n'
-		carriageReturn = '\r'
+		newline = '\n'
 	)
 
 	var line []rune
 	var c rune
 	for index := 0; index < len(contentRunes); index++ {
 		c = contentRunes[index]
-		if c == newline || c == carriageReturn {
+		if c == newline {
 			if len(line) > 0 {
 				output = append(output, string(line))
 				line = nil
