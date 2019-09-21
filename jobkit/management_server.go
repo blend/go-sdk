@@ -159,6 +159,7 @@ func (ms ManagementServer) getSearch(r *web.Ctx) web.Result {
 	status.Jobs = ms.filterJobSchedulers(status.Jobs, func(js cron.JobSchedulerStatus) bool {
 		return sel.Matches(js.Labels)
 	})
+	r.State.Set("show-job-history-link", true)
 	return r.Views.View("index", status.Jobs)
 }
 

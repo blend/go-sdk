@@ -5,11 +5,23 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/blend/go-sdk/r2"
+
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/web"
 )
+
+func TestManagementServerStatic(t *testing.T) {
+	assert := assert.New(t)
+
+	_, app := createTestManagementServer()
+
+	meta, err := web.MockGet(app, "/static/js/zepto.min.js").Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+}
 
 func TestManagementServerStatus(t *testing.T) {
 	assert := assert.New(t)
@@ -44,15 +56,57 @@ func TestManagementServerIndex(t *testing.T) {
 	assert.Contains(string(contents), "Show job stats and history")
 }
 
-func TestManagementServerAPIJobs(t *testing.T) {
+func TestManagementServerSearch(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+	jobName := firstJob(jm).Name()
+
+	contents, meta, err := web.MockGet(app, "/search", r2.OptQueryValue("selector", "name="+jobName)).Bytes()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.Contains(string(contents), fmt.Sprintf("/job/%s", jobName))
+	assert.Contains(string(contents), "Show job stats and history")
+}
+
+func TestManagementServerSearchInvalidSelector(t *testing.T) {
 	assert := assert.New(t)
 
 	_, app := createTestManagementServer()
-	var jobs []cron.JobSchedulerStatus
-	meta, err := web.MockGet(app, "/api/jobs").JSON(&jobs)
+
+	meta, err := web.MockGet(app, "/search", r2.OptQueryValue("selector", "~~")).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusBadRequest, meta.StatusCode)
+}
+
+func TestManagementServerPause(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+	jm.StartAsync()
+	defer jm.Stop()
+
+	meta, err := web.MockGet(app, "/pause").Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
-	assert.NotEmpty(jobs)
+	assert.True(jm.Latch.IsPaused())
+}
+
+func TestManagementServerResume(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+	jm.StartAsync()
+	defer jm.Stop()
+
+	jm.Pause()
+	assert.True(jm.Latch.IsPaused())
+
+	meta, err := web.MockGet(app, "/resume").Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+
+	assert.True(jm.Latch.IsStarted())
 }
 
 func TestManagementServerJob(t *testing.T) {
@@ -75,22 +129,6 @@ func TestManagementServerJob(t *testing.T) {
 	assert.NotContains(string(contents), "Show job stats and history")
 }
 
-func TestManagementServerAPIJob(t *testing.T) {
-	assert := assert.New(t)
-
-	jm, app := createTestManagementServer()
-
-	job := firstJob(jm)
-	assert.NotNil(job)
-	jobName := job.Name()
-
-	var js cron.JobSchedulerStatus
-	meta, err := web.MockGet(app, fmt.Sprintf("/api/job/%s", jobName)).JSON(&js)
-	assert.Nil(err)
-	assert.Equal(http.StatusOK, meta.StatusCode)
-	assert.Equal(jobName, js.Name)
-}
-
 func TestManagementServerJobNotFound(t *testing.T) {
 	assert := assert.New(t)
 
@@ -99,6 +137,72 @@ func TestManagementServerJobNotFound(t *testing.T) {
 	meta, err := web.MockGet(app, fmt.Sprintf("/job/%s", uuid.V4().String())).Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusNotFound, meta.StatusCode)
+}
+
+func TestManagementServerJobDisable(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job, err := jm.Job("test1")
+	assert.Nil(err)
+	assert.NotNil(job)
+	jobName := job.Name()
+	assert.False(job.Disabled)
+
+	meta, err := web.MockGet(app, fmt.Sprintf("/job.disable/%s", jobName)).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+
+	assert.True(job.Disabled)
+}
+
+func TestManagementServerJobEnable(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job, err := jm.Job("test1")
+	assert.Nil(err)
+	assert.NotNil(job)
+	jobName := job.Name()
+	job.Disabled = true
+
+	meta, err := web.MockGet(app, fmt.Sprintf("/job.enable/%s", jobName)).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.False(job.Disabled)
+}
+
+func TestManagementServerJobRun(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job, err := jm.Job("test1")
+	assert.Nil(err)
+	assert.NotNil(job)
+	jobName := job.Name()
+
+	meta, err := web.MockGet(app, fmt.Sprintf("/job.run/%s", jobName)).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.NotNil(job.Last)
+}
+
+func TestManagementServerJobCancel(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job, err := jm.Job("test1")
+	assert.Nil(err)
+	assert.NotNil(job)
+	jobName := job.Name()
+
+	meta, err := web.MockGet(app, fmt.Sprintf("/job.cancel/%s", jobName)).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
 }
 
 func TestManagementServerJobInvocation(t *testing.T) {
@@ -155,17 +259,35 @@ func TestManagementServerJobInvocationNotFound(t *testing.T) {
 	assert.Equal(http.StatusNotFound, meta.StatusCode)
 }
 
-func TestManagementServerPause(t *testing.T) {
+//
+// api tests
+//
+
+func TestManagementServerAPIJobs(t *testing.T) {
+	assert := assert.New(t)
+
+	_, app := createTestManagementServer()
+	var jobs []cron.JobSchedulerStatus
+	meta, err := web.MockGet(app, "/api/jobs").JSON(&jobs)
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.NotEmpty(jobs)
+}
+
+func TestManagementServerAPIJob(t *testing.T) {
 	assert := assert.New(t)
 
 	jm, app := createTestManagementServer()
-	jm.StartAsync()
-	defer jm.Stop()
 
-	meta, err := web.MockGet(app, "/pause").Discard()
+	job := firstJob(jm)
+	assert.NotNil(job)
+	jobName := job.Name()
+
+	var js cron.JobSchedulerStatus
+	meta, err := web.MockGet(app, fmt.Sprintf("/api/job/%s", jobName)).JSON(&js)
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
-	assert.True(jm.Latch.IsPaused())
+	assert.Equal(jobName, js.Name)
 }
 
 func TestManagementServerAPIPause(t *testing.T) {
@@ -179,23 +301,6 @@ func TestManagementServerAPIPause(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.True(jm.Latch.IsPaused())
-}
-
-func TestManagementServerResume(t *testing.T) {
-	assert := assert.New(t)
-
-	jm, app := createTestManagementServer()
-	jm.StartAsync()
-	defer jm.Stop()
-
-	jm.Pause()
-	assert.True(jm.Latch.IsPaused())
-
-	meta, err := web.MockGet(app, "/resume").Discard()
-	assert.Nil(err)
-	assert.Equal(http.StatusOK, meta.StatusCode)
-
-	assert.True(jm.Latch.IsStarted())
 }
 
 func TestManagementServerAPIResume(t *testing.T) {
@@ -214,7 +319,7 @@ func TestManagementServerAPIResume(t *testing.T) {
 	assert.True(jm.Latch.IsStarted())
 }
 
-func TestManagementServerJobRun(t *testing.T) {
+func TestManagementServerAPIJobRun(t *testing.T) {
 	assert := assert.New(t)
 
 	jm, app := createTestManagementServer()
@@ -224,8 +329,9 @@ func TestManagementServerJobRun(t *testing.T) {
 	assert.NotNil(job)
 	jobName := job.Name()
 
-	meta, err := web.MockGet(app, fmt.Sprintf("/job.run/%s", jobName)).Discard()
+	var ji cron.JobInvocation
+	meta, err := web.MockPost(app, fmt.Sprintf("/api/job.run/%s", jobName), nil).JSON(&ji)
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
-	assert.NotNil(job.Last)
+	assert.Equal("test1", ji.JobName)
 }
