@@ -3,6 +3,7 @@ package cron
 import (
 	"bytes"
 	"encoding/json"
+	"sync"
 	"time"
 )
 
@@ -20,6 +21,16 @@ type OutputListener func(OutputChunk)
 type OutputChunk struct {
 	Timestamp time.Time
 	Data      []byte
+}
+
+// Copy returns a copy of the chunk.
+func (oc OutputChunk) Copy() OutputChunk {
+	data := make([]byte, len(oc.Data))
+	copy(data, oc.Data)
+	return OutputChunk{
+		Timestamp: oc.Timestamp,
+		Data:      data,
+	}
 }
 
 // MarshalJSON implemnts json.Marshaler.
@@ -52,6 +63,8 @@ func (oc *OutputChunk) UnmarshalJSON(contents []byte) error {
 
 // OutputBuffer is a writer that accepts binary but splits out onto new lines.
 type OutputBuffer struct {
+	sync.RWMutex
+
 	// Lines are the string lines broken up by newlines with associated timestamps
 	Chunks []OutputChunk `json:"chunks"`
 	// Listener is an optional listener for new line events.
@@ -59,18 +72,34 @@ type OutputBuffer struct {
 }
 
 // Write writes the contents to the lines buffer.
+// An important gotcha here is the `contents` parameter is by reference, as a result
+// you can get into some bad loop capture states where this buffer will
+// be assigned to multiple chunks but be effectively the same value.
+// As a result, when you write to the output buffer, we fully copy this
+// contents parameter for storage in the buffer.
 func (ob *OutputBuffer) Write(contents []byte) (written int, err error) {
-	chunk := OutputChunk{Timestamp: time.Now().UTC(), Data: contents}
-	if ob.Listener != nil {
-		ob.Listener(chunk)
-	}
-	ob.Chunks = append(ob.Chunks, chunk)
+	data := make([]byte, len(contents))
+	copy(data, contents)
+	chunk := OutputChunk{Timestamp: time.Now().UTC(), Data: data}
 	written = len(contents)
+
+	// lock the buffer only to add the new chunk
+	ob.Lock()
+	ob.Chunks = append(ob.Chunks, chunk)
+	ob.Unlock()
+
+	// called outside critical section
+	if ob.Listener != nil {
+		// call the listener with a chunk copy.
+		ob.Listener(chunk.Copy())
+	}
 	return
 }
 
 // Bytes rerturns the bytes written to the writer.
 func (ob *OutputBuffer) Bytes() []byte {
+	ob.RLock()
+	defer ob.RUnlock()
 	buffer := new(bytes.Buffer)
 	for _, chunk := range ob.Chunks {
 		buffer.Write(chunk.Data)

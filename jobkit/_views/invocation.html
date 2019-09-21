@@ -10,7 +10,7 @@
 			</ul>
 		</div>
 		<div class="uk-flex-right uk-text-right">
-			<a class="uk-button" href="/job.invocation.output/{{ .ViewModel.JobName | urlencode }}/{{ .ViewModel.ID }}" uk-icon="download" uk-tooltip="Download Job Output"></a>
+			<a class="uk-button" href="/api/job.invocation.output/{{ .ViewModel.JobName | urlencode }}/{{ .ViewModel.ID }}" uk-icon="download" uk-tooltip="Download Job Output"></a>
 		</div>
 	</div>
 	<div class="uk-grid uk-grid-match uk-grid-divider uk-grid-medium uk-child-width-1-4">
@@ -75,9 +75,7 @@
 				term.write(data.replace(/\n/g, '\r\n'));
 			};
 
-			/* {{ range $index, $chunk := .ViewModel.Output.Chunks }} */
-			termWrite("{{ $chunk.Data | as_string }}");
-			/*{{ end }} */
+			termWrite("{{ .ViewModel.Output }}");
 
 			/*{{ if .ViewModel.State | eq "running" }}*/
 			var es = new EventSource("/api/job.invocation.output.stream/{{ .ViewModel.JobName | urlencode }}/{{ .ViewModel.ID }}?afterNanos={{ now_utc | unix_nano }}");
