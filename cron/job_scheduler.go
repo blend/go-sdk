@@ -191,6 +191,7 @@ func (js *JobScheduler) Status() JobSchedulerStatus {
 		Labels:                     js.Labels(),
 		Disabled:                   !js.Enabled(),
 		NextRuntime:                js.NextRuntime,
+		Timeout:                    js.TimeoutProvider(),
 		Current:                    js.Current,
 		Last:                       js.Last,
 		HistoryDisabled:            js.HistoryDisabledProvider(),

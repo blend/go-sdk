@@ -60,6 +60,13 @@
 		<span>-</span>
 	{{ end }}
 	</td>
+	<td> <!-- schedule -->
+	{{ if .ViewModel.Timeout }}
+		{{ .ViewModel.Timeout | duration_round_millis }}
+	{{ else }}
+		<span>-</span>
+	{{ end }}
+	</td>
 	<td> <!-- next run-->
 	{{ if .ViewModel.Disabled }}
 		<span>-</span>
@@ -70,13 +77,6 @@
 	<td> <!-- last run -->
 	{{ if .ViewModel.Last }}
 		{{ .ViewModel.Last.Finished | since_utc | duration_round_seconds }} ago
-	{{ else }}
-		<span class="none">-</span>
-	{{ end }}
-	</td>
-	<td> <!-- last elapsed -->
-	{{ if .ViewModel.Last }}
-		{{ .ViewModel.Last.Elapsed | duration_round_millis }}
 	{{ else }}
 		<span class="none">-</span>
 	{{ end }}

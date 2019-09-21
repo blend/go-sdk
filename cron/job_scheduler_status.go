@@ -8,6 +8,7 @@ type JobSchedulerStatus struct {
 	State       JobSchedulerState `json:"state"`
 	Labels      map[string]string `json:"labels"`
 	Schedule    string            `json:"schedule"`
+	Timeout     time.Duration     `json:"timeout"`
 	Disabled    bool              `json:"disabled"`
 	NextRuntime time.Time         `json:"nextRuntime"`
 	Current     *JobInvocation    `json:"current"`
