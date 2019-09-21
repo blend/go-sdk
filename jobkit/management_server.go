@@ -422,7 +422,6 @@ func (ms ManagementServer) getAPIJobInvocationOutputStream(r *web.Ctx) web.Resul
 
 	logger.MaybeDebugf(log, "output stream; listening for new chunks")
 	invocation.OutputListeners.Add(listenerID, func(chunk cron.OutputChunk) {
-		logger.MaybeDebugf(log, "output stream; sending chunk: %s", string(chunk.Data))
 		if err := es.Data(string(chunk.Data)); err != nil {
 			logger.MaybeError(log, err)
 		}
@@ -444,7 +443,6 @@ func (ms ManagementServer) getAPIJobInvocationOutputStream(r *web.Ctx) web.Resul
 				logger.MaybeError(log, err)
 				return nil
 			}
-			logger.MaybeDebugf(log, "output stream; updating elapsed time")
 			if err := es.EventData("elapsed", fmt.Sprintf("%v", time.Now().UTC().Sub(invocation.Started).Round(time.Millisecond))); err != nil {
 				logger.MaybeError(log, err)
 				return nil
@@ -489,12 +487,14 @@ func (ms ManagementServer) getRequestJobInvocation(r *web.Ctx, resultProvider we
 		return nil, resultProvider.BadRequest(err)
 	}
 
-	var invocation *cron.JobInvocation
 	if invocationID == "current" && job.Current != nil {
 		return job.Current, nil
 	}
+	if invocationID == "last" && job.Last != nil {
+		return job.Last, nil
+	}
 
-	invocation = job.JobInvocation(invocationID)
+	invocation := job.JobInvocation(invocationID)
 	if invocation == nil {
 		return nil, resultProvider.NotFound()
 	}
