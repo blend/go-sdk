@@ -4,8 +4,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/blend/go-sdk/stringutil"
-
 	"github.com/blend/go-sdk/ex"
 )
 
@@ -46,13 +44,7 @@ func (es EventSource) Event(name string) error {
 
 // Data writes a data event.
 func (es EventSource) Data(data string) error {
-	for _, line := range stringutil.SplitLines(data) {
-		_, err := io.WriteString(es.Output, "data: "+line+"\n")
-		if err != nil {
-			return ex.New(err)
-		}
-	}
-	_, err := io.WriteString(es.Output, "\n")
+	_, err := io.WriteString(es.Output, "data: "+data+"\n\n")
 	if err != nil {
 		return ex.New(err)
 	}
@@ -68,13 +60,7 @@ func (es EventSource) EventData(name, data string) error {
 	if err != nil {
 		return ex.New(err)
 	}
-	for _, line := range stringutil.SplitLines(data) {
-		_, err := io.WriteString(es.Output, "data: "+line+"\n")
-		if err != nil {
-			return ex.New(err)
-		}
-	}
-	_, err = io.WriteString(es.Output, "\n")
+	_, err = io.WriteString(es.Output, "data: "+data+"\n\n")
 	if err != nil {
 		return ex.New(err)
 	}

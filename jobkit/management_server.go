@@ -2,12 +2,16 @@ package jobkit
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
+
+	"github.com/blend/go-sdk/stringutil"
 
 	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/ex"
@@ -406,6 +410,21 @@ func (ms ManagementServer) getAPIJobInvocationOutputStream(r *web.Ctx) web.Resul
 		return nil
 	}
 
+	sendOutputData := func(chunk cron.OutputChunk) {
+		for _, line := range stringutil.SplitLines(string(chunk.Data)) {
+			contents, _ := json.Marshal(map[string]interface{}{"data": strings.TrimSuffix(line, "\n")})
+			if strings.HasSuffix(line, "\n") {
+				if err := es.EventData("println", string(contents)); err != nil {
+					logger.MaybeError(log, err)
+				}
+			} else {
+				if err := es.EventData("print", string(contents)); err != nil {
+					logger.MaybeError(log, err)
+				}
+			}
+		}
+	}
+
 	listenerID := uuid.V4().String()
 	// include catchup chunks
 	if afterNanos, _ := web.Int64Value(r.QueryValue("afterNanos")); afterNanos > 0 {
@@ -413,18 +432,14 @@ func (ms ManagementServer) getAPIJobInvocationOutputStream(r *web.Ctx) web.Resul
 		logger.MaybeDebugf(log, "output stream; sending catchup output stream data from: %v", after)
 		for _, chunk := range invocation.Output.Chunks {
 			if chunk.Timestamp.After(after) {
-				if err := es.Data(string(chunk.Data)); err != nil {
-					logger.MaybeError(log, err)
-				}
+				sendOutputData(chunk)
 			}
 		}
 	}
 
 	logger.MaybeDebugf(log, "output stream; listening for new chunks")
 	invocation.OutputListeners.Add(listenerID, func(chunk cron.OutputChunk) {
-		if err := es.Data(string(chunk.Data)); err != nil {
-			logger.MaybeError(log, err)
-		}
+		sendOutputData(chunk)
 	})
 	defer func() { invocation.OutputListeners.Remove(listenerID) }()
 

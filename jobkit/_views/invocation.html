@@ -79,9 +79,12 @@
 
 			/*{{ if .ViewModel.State | eq "running" }}*/
 			var es = new EventSource("/api/job.invocation.output.stream/{{ .ViewModel.JobName | urlencode }}/{{ .ViewModel.ID }}?afterNanos={{ now_utc | unix_nano }}");
-			es.onmessage = (e) => {
-				termWrite(e.data);
-			};
+			es.addEventListener("println", (e) => {
+				termWrite(JSON.parse(e.data).data+"\n");
+			});
+			es.addEventListener("print", (e) => {
+				termWrite(JSON.parse(e.data).data);
+			});
 			es.addEventListener("elapsed", (e) => {
 				document.getElementById("elapsed").textContent = e.data;
 			});
