@@ -33,7 +33,12 @@ func (ol *OutputListeners) Trigger(line OutputChunk) {
 	ol.RLock()
 	defer ol.RUnlock()
 
-	for _, listener := range ol.Listeners {
-		listener(line)
+	for index := range ol.Listeners {
+		go func(l OutputListener) {
+			defer func() {
+				recover()
+			}()
+			l(line)
+		}(ol.Listeners[index])
 	}
 }
