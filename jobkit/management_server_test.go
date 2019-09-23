@@ -3,6 +3,7 @@ package jobkit
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"testing"
 
@@ -570,4 +571,56 @@ func TestManagementServerAPIJobInvocationOutputAfterNanos(t *testing.T) {
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.NotZero(output.ServerTimeNanos)
 	assert.Len(output.Chunks, 2)
+}
+
+func TestManagementServerAPIJobInvocationOutputAfterNanosInvalid(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job := firstJob(jm)
+	assert.NotNil(job)
+
+	jobName := job.Name()
+	invocationID := job.History[0].ID
+
+	var output struct {
+		ServerTimeNanos int64              `json:"serverTimeNanos"`
+		Chunks          []cron.OutputChunk `json:"chunks"`
+	}
+	meta, err := web.MockGet(app,
+		fmt.Sprintf("/api/job.invocation.output/%s/%s", jobName, invocationID),
+		r2.OptQueryValue("afterNanos", "baileydog"),
+	).JSON(&output)
+
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.NotZero(output.ServerTimeNanos)
+	assert.Len(output.Chunks, 5)
+}
+
+func TestManagementServerAPIJobInvocationOutputStream(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job, err := jm.Job("test1")
+	assert.Nil(err)
+	assert.NotNil(job)
+
+	jobName := job.Name()
+	invocationID := job.History[0].ID
+
+	res, err := web.MockGet(app,
+		fmt.Sprintf("/api/job.invocation.output.stream/%s/%s", jobName, invocationID),
+		r2.OptQueryValue("afterNanos", "baileydog"),
+	).Do()
+
+	assert.Nil(err)
+	defer res.Body.Close()
+
+	assert.Equal(http.StatusOK, res.StatusCode)
+	contents, err := ioutil.ReadAll(res.Body)
+	assert.Nil(err)
+	assert.Equal("event: ping\n\nevent: complete\ndata: complete\n\n", string(contents))
 }

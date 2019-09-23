@@ -446,7 +446,7 @@ func (ms ManagementServer) getAPIJobInvocationOutputStream(r *web.Ctx) web.Resul
 	})
 	defer func() { invocation.OutputListeners.Remove(listenerID) }()
 
-	updateTick := time.Tick(500 * time.Millisecond)
+	updateTick := time.Tick(100 * time.Millisecond)
 	for {
 		select {
 		case <-updateTick:
