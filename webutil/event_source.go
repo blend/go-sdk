@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/blend/go-sdk/ex"
+	"github.com/blend/go-sdk/stringutil"
 )
 
 // NewEventSource returns a new event source.
@@ -42,9 +43,18 @@ func (es EventSource) Event(name string) error {
 	return nil
 }
 
-// Data writes a data event.
+// Data writes a data segment.
+// It will slit lines on newline across multiple data events.
 func (es EventSource) Data(data string) error {
-	_, err := io.WriteString(es.Output, "data: "+data+"\n\n")
+	lines := stringutil.SplitLines(data, stringutil.OptSplitLinesIncludeEmptyLines(true))
+
+	for _, line := range lines {
+		_, err := io.WriteString(es.Output, "data: "+line+"\n")
+		if err != nil {
+			return ex.New(err)
+		}
+	}
+	_, err := io.WriteString(es.Output, "\n")
 	if err != nil {
 		return ex.New(err)
 	}
@@ -60,15 +70,5 @@ func (es EventSource) EventData(name, data string) error {
 	if err != nil {
 		return ex.New(err)
 	}
-	_, err = io.WriteString(es.Output, "data: "+data+"\n\n")
-	if err != nil {
-		return ex.New(err)
-	}
-	if typed, ok := es.Output.(http.Flusher); ok {
-		typed.Flush()
-	}
-	if typed, ok := es.Output.(http.Flusher); ok {
-		typed.Flush()
-	}
-	return nil
+	return es.Data(data)
 }

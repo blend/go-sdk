@@ -14,6 +14,46 @@ import (
 	"github.com/blend/go-sdk/web"
 )
 
+func TestManagmentServerGetRequestJob(t *testing.T) {
+	assert := assert.New(t)
+
+	jm := createTestJobManager()
+	ms := ManagementServer{
+		Cron: jm,
+	}
+
+	r := web.MockCtx("GET", "/job/test2+job.foo", web.OptCtxRouteParamValue("jobName", "test2+job.foo"))
+	job, res := ms.getRequestJob(r, web.Text)
+	assert.Nil(res)
+	assert.NotNil(job)
+	assert.Equal("test2 job.foo", job.Name())
+}
+
+func TestManagmentServerGetRequestJobInvocation(t *testing.T) {
+	assert := assert.New(t)
+
+	jm := createTestJobManager()
+	ms := ManagementServer{
+		Cron: jm,
+	}
+
+	job, err := jm.Job("test2 job.foo")
+	assert.Nil(err)
+	assert.NotNil(job)
+	invocation := job.History[2]
+	id := invocation.ID
+
+	r := web.MockCtx("GET", "/job.invocation/test2+job.foo/"+id,
+		web.OptCtxRouteParamValue("jobName", "test2+job.foo"),
+		web.OptCtxRouteParamValue("id", id),
+	)
+	found, res := ms.getRequestJobInvocation(r, web.Text)
+	assert.Nil(res)
+	assert.NotNil(found)
+	assert.Equal("test2 job.foo", found.JobName)
+	assert.Equal(id, found.ID)
+}
+
 func TestManagementServerStatic(t *testing.T) {
 	assert := assert.New(t)
 
@@ -462,4 +502,72 @@ func TestManagementServerAPIJobEnable(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.False(job.Disabled)
+}
+
+func TestManagementServerAPIJobInvocation(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job := firstJob(jm)
+	assert.NotNil(job)
+
+	jobName := job.Name()
+	invocationID := job.History[0].ID
+
+	var ji cron.JobInvocation
+	meta, err := web.MockGet(app, fmt.Sprintf("/api/job.invocation/%s/%s", jobName, invocationID)).JSON(&ji)
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.Equal(jobName, ji.JobName)
+	assert.Equal(invocationID, ji.ID)
+}
+
+func TestManagementServerAPIJobInvocationOutput(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job := firstJob(jm)
+	assert.NotNil(job)
+
+	jobName := job.Name()
+	invocationID := job.History[0].ID
+
+	var output struct {
+		ServerTimeNanos int64              `json:"serverTimeNanos"`
+		Chunks          []cron.OutputChunk `json:"chunks"`
+	}
+	meta, err := web.MockGet(app, fmt.Sprintf("/api/job.invocation.output/%s/%s", jobName, invocationID)).JSON(&output)
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.NotZero(output.ServerTimeNanos)
+	assert.Len(output.Chunks, 5)
+}
+
+func TestManagementServerAPIJobInvocationOutputAfterNanos(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job := firstJob(jm)
+	assert.NotNil(job)
+
+	jobName := job.Name()
+	invocationID := job.History[0].ID
+	afterNanos := job.History[0].Output.Chunks[2].Timestamp.UnixNano()
+
+	var output struct {
+		ServerTimeNanos int64              `json:"serverTimeNanos"`
+		Chunks          []cron.OutputChunk `json:"chunks"`
+	}
+	meta, err := web.MockGet(app,
+		fmt.Sprintf("/api/job.invocation.output/%s/%s", jobName, invocationID),
+		r2.OptQueryValue("afterNanos", fmt.Sprint(afterNanos)),
+	).JSON(&output)
+
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.NotZero(output.ServerTimeNanos)
+	assert.Len(output.Chunks, 2)
 }

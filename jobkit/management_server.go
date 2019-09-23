@@ -411,7 +411,10 @@ func (ms ManagementServer) getAPIJobInvocationOutputStream(r *web.Ctx) web.Resul
 	}
 
 	sendOutputData := func(chunk cron.OutputChunk) {
-		for _, line := range stringutil.SplitLines(string(chunk.Data)) {
+		for _, line := range stringutil.SplitLines(string(chunk.Data),
+			stringutil.OptSplitLinesIncludeNewLine(true),
+			stringutil.OptSplitLinesIncludeEmptyLines(true),
+		) {
 			contents, _ := json.Marshal(map[string]interface{}{"data": strings.TrimSuffix(line, "\n")})
 			if strings.HasSuffix(line, "\n") {
 				if err := es.EventData("println", string(contents)); err != nil {
