@@ -32,7 +32,6 @@ func New(cfg Config) *WebhookSender {
 // WebhookSender sends slack webhooks.
 type WebhookSender struct {
 	Transport       *http.Transport
-	URL             string
 	RequestDefaults []r2.Option
 	Config          Config
 }
@@ -51,10 +50,9 @@ func (whs WebhookSender) Defaults() []MessageOption {
 func (whs WebhookSender) Send(ctx context.Context, message Message) error {
 	messageWithDefaults := ApplyMessageOptions(message, whs.Defaults()...)
 
-	options := append(whs.RequestDefaults, r2.OptTransport(whs.Transport))
-	options = append(options, r2.OptJSONBody(messageWithDefaults))
+	options := append(whs.RequestDefaults, r2.OptTransport(whs.Transport), r2.OptJSONBody(messageWithDefaults))
 
-	res, err := r2.New(whs.URL, options...).Do()
+	res, err := r2.New(whs.Config.Webhook, options...).Do()
 	if err != nil {
 		return err
 	}
@@ -74,10 +72,9 @@ func (whs WebhookSender) Send(ctx context.Context, message Message) error {
 func (whs WebhookSender) SendAndReadResponse(ctx context.Context, message Message) (*PostMessageResponse, error) {
 	messageWithDefaults := ApplyMessageOptions(message, whs.Defaults()...)
 
-	options := append(whs.RequestDefaults, r2.OptTransport(whs.Transport))
-	options = append(options, r2.OptJSONBody(messageWithDefaults))
+	options := append(whs.RequestDefaults, r2.OptTransport(whs.Transport), r2.OptJSONBody(messageWithDefaults))
 
-	res, err := r2.New(whs.URL, options...).Do()
+	res, err := r2.New(whs.Config.Webhook, options...).Do()
 	if err != nil {
 		return nil, err
 	}
