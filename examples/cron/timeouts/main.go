@@ -64,12 +64,10 @@ func main() {
 	for {
 		status := jm.Status()
 		for _, job := range status.Jobs {
-			if runningJobs, ok := status.Running[job.Name()]; ok {
-				for _, runningJob := range runningJobs {
-					jm.Log.Infof("job: %s > %s state: running elapsed: %v", job.Name(), runningJob.ID, cron.Since(runningJob.Started))
-				}
+			if runningJob, ok := status.Running[job.Name]; ok {
+				jm.Log.Infof("job: %s > %s state: running elapsed: %v", job.Name, runningJob.ID, cron.Since(runningJob.Started))
 			} else {
-				jm.Log.Infof("job: %s state: stopped", job.Name())
+				jm.Log.Infof("job: %s state: stopped", job.Name)
 			}
 		}
 
