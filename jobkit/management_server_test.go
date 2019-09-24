@@ -689,12 +689,9 @@ func TestManagementServerAPIJobInvocationOutputStream(t *testing.T) {
 		"",
 		"event: complete",
 	}
-	var index int
-	for scanner.Scan() {
+	for _, expected := range expectedScript {
+		scanner.Scan()
 		line := scanner.Text()
-		assert.Equal(expectedScript[index], line)
-		index++
+		assert.Equal(expected, line)
 	}
-
-	assert.False(true)
 }

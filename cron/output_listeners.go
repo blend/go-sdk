@@ -22,7 +22,7 @@ func (ol *OutputListeners) Add(uid string, listener OutputListener) {
 	w := async.NewQueue(func(_ context.Context, wi interface{}) error {
 		listener(wi.(OutputChunk))
 		return nil
-	}, async.OptQueueMaxWork(128))
+	}, async.OptQueueMaxWork(128), async.OptQueueParallelism(1))
 	go w.Start()
 
 	ol.Listeners[uid] = w
