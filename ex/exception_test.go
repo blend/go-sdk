@@ -197,6 +197,28 @@ func TestNestNil(t *testing.T) {
 	a.True(nil == err)
 }
 
+func TestExceptionFormat(t *testing.T) {
+	assert := assert.New(t)
+
+	e := &Ex{Class: fmt.Errorf("this is only a test")}
+	output := fmt.Sprintf("%v", e)
+	assert.Equal("this is only a test", output)
+
+	output = fmt.Sprintf("%+v", e)
+	assert.Equal("this is only a test", output)
+
+	e = &Ex{
+		Class: fmt.Errorf("this is only a test"),
+		StackTrace: StackStrings([]string{
+			"foo",
+			"bar",
+		}),
+	}
+
+	output = fmt.Sprintf("%+v", e)
+	assert.Equal("this is only a test\nfoo\nbar", output)
+}
+
 func TestExceptionPrintsInner(t *testing.T) {
 	assert := assert.New(t)
 

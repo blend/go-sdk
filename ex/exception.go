@@ -110,7 +110,7 @@ func (e *Ex) Format(s fmt.State, verb rune) {
 		if len(e.Message) > 0 {
 			io.WriteString(s, "; "+e.Message)
 		}
-		if s.Flag('+') {
+		if s.Flag('+') && e.StackTrace != nil {
 			e.StackTrace.Format(s, verb)
 		}
 		if e.Inner != nil {
