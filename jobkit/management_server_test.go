@@ -1,11 +1,14 @@
 package jobkit
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/blend/go-sdk/r2"
 
@@ -599,7 +602,7 @@ func TestManagementServerAPIJobInvocationOutputAfterNanosInvalid(t *testing.T) {
 	assert.Len(output.Chunks, 5)
 }
 
-func TestManagementServerAPIJobInvocationOutputStream(t *testing.T) {
+func TestManagementServerAPIJobInvocationOutputStreamComplete(t *testing.T) {
 	assert := assert.New(t)
 
 	jm, app := createTestManagementServer()
@@ -623,4 +626,75 @@ func TestManagementServerAPIJobInvocationOutputStream(t *testing.T) {
 	contents, err := ioutil.ReadAll(res.Body)
 	assert.Nil(err)
 	assert.Equal("event: ping\n\nevent: complete\ndata: complete\n\n", string(contents))
+}
+
+func TestManagementServerAPIJobInvocationOutputStream(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job, err := jm.Job("test0")
+	assert.Nil(err)
+	assert.NotNil(job)
+
+	jobName := job.Name()
+	ji := job.Current
+	invocationID := ji.ID
+
+	res, err := web.MockGet(app,
+		fmt.Sprintf("/api/job.invocation.output.stream/%s/%s", jobName, invocationID),
+		r2.OptQueryValue("afterNanos", "baileydog"),
+	).Do()
+
+	start := make(chan struct{})
+	go func() {
+		<-start
+		io.WriteString(ji.Output, "test1\n")
+		io.WriteString(ji.Output, "test2\n")
+		io.WriteString(ji.Output, "test3\n")
+		io.WriteString(ji.Output, "test4\n")
+		io.WriteString(ji.Output, "test5\n")
+
+		ji.State = cron.JobInvocationStateComplete
+		ji.Finished = time.Now().UTC()
+		job.Last = ji
+		job.Current = nil
+	}()
+
+	assert.Nil(err)
+	defer res.Body.Close()
+	assert.Equal(http.StatusOK, res.StatusCode)
+
+	close(start)
+
+	scanner := bufio.NewScanner(res.Body)
+
+	expectedScript := []string{
+		"event: ping",
+		"",
+		"event: println",
+		"data: {\"data\":\"test1\"}",
+		"",
+		"event: println",
+		"data: {\"data\":\"test2\"}",
+		"",
+		"event: println",
+		"data: {\"data\":\"test3\"}",
+		"",
+		"event: println",
+		"data: {\"data\":\"test4\"}",
+		"",
+		"event: println",
+		"data: {\"data\":\"test5\"}",
+		"",
+		"event: complete",
+	}
+	var index int
+	for scanner.Scan() {
+		line := scanner.Text()
+		assert.Equal(expectedScript[index], line)
+		index++
+	}
+
+	assert.False(true)
 }

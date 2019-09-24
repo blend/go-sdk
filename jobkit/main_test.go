@@ -82,18 +82,24 @@ func createTestJobManager() *cron.JobManager {
 
 	jm := cron.New()
 	jm.LoadJobs(test0, test1, test2)
-	jm.Jobs["test0"].Current = &cron.JobInvocation{
-		ID:      uuid.V4().String(),
-		JobName: "test0",
-		Started: time.Now().UTC(),
-		Output: &cron.OutputBuffer{
-			Chunks: []cron.OutputChunk{
-				createTestOutputChunk(),
-				createTestOutputChunk(),
-				createTestOutputChunk(),
-				createTestOutputChunk(),
-			},
+
+	test0CurrentOutput := &cron.OutputBuffer{
+		Chunks: []cron.OutputChunk{
+			createTestOutputChunk(),
+			createTestOutputChunk(),
+			createTestOutputChunk(),
+			createTestOutputChunk(),
 		},
+	}
+	test0CurrentOutputListeners := new(cron.OutputListeners)
+	test0CurrentOutput.Listener = test0CurrentOutputListeners.Trigger
+
+	jm.Jobs["test0"].Current = &cron.JobInvocation{
+		ID:              uuid.V4().String(),
+		JobName:         "test0",
+		Started:         time.Now().UTC(),
+		Output:          test0CurrentOutput,
+		OutputListeners: test0CurrentOutputListeners,
 	}
 
 	jm.Jobs["test0"].History = []cron.JobInvocation{
