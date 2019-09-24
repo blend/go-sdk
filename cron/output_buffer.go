@@ -71,7 +71,7 @@ type OutputBuffer struct {
 	Listener OutputListener `json:"-"`
 }
 
-// Write writes the contents to the lines buffer.
+// Write writes the contents to the output buffer.
 // An important gotcha here is the `contents` parameter is by reference, as a result
 // you can get into some bad loop capture states where this buffer will
 // be assigned to multiple chunks but be effectively the same value.

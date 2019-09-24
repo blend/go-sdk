@@ -647,6 +647,7 @@ func TestManagementServerAPIJobInvocationOutputStream(t *testing.T) {
 	).Do()
 
 	start := make(chan struct{})
+	finish := make(chan struct{})
 	go func() {
 		<-start
 		io.WriteString(ji.Output, "test1\n")
@@ -655,6 +656,7 @@ func TestManagementServerAPIJobInvocationOutputStream(t *testing.T) {
 		io.WriteString(ji.Output, "test4\n")
 		io.WriteString(ji.Output, "test5\n")
 
+		<-finish
 		ji.State = cron.JobInvocationStateComplete
 		ji.Finished = time.Now().UTC()
 		job.Last = ji
@@ -687,11 +689,14 @@ func TestManagementServerAPIJobInvocationOutputStream(t *testing.T) {
 		"event: println",
 		"data: {\"data\":\"test5\"}",
 		"",
-		"event: complete",
 	}
 	for _, expected := range expectedScript {
 		scanner.Scan()
 		line := scanner.Text()
 		assert.Equal(expected, line)
 	}
+	close(finish)
+	scanner.Scan()
+	line := scanner.Text()
+	assert.Equal("event: complete", line)
 }
