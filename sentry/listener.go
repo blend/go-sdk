@@ -7,7 +7,7 @@ import (
 
 const (
 	// ListenerName is the sentry listener name.
-	ListenerName = "airbrake"
+	ListenerName = "sentry"
 )
 
 // AddListeners adds error listeners.
