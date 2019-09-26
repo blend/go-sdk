@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/blend/go-sdk/ex"
@@ -70,24 +71,24 @@ func Table(wr io.Writer, columns []string, rows [][]string) error {
 
 	/* begin establish max widths of columns */
 	maxWidths := make([]int, len(columns))
+	var width int
 	for index, columnName := range columns {
-		maxWidths[index] = utf8.RuneCountInString(columnName)
+		maxWidths[index] = stringWidth(columnName)
 	}
 	for _, cols := range rows {
 		for index, columnValue := range cols {
-			if maxWidths[index] < utf8.RuneCountInString(columnValue) {
-				maxWidths[index] = utf8.RuneCountInString(columnValue)
+			width = stringWidth(columnValue)
+			if maxWidths[index] < width {
+				maxWidths[index] = width
 			}
 		}
 	}
 	/* end establish max widths of columns */
 
-	// draw headings
+	/* draw top of column row */
 	io.WriteString(wr, string(TableTopLeft))
 	for index := range columns {
-		for x := 0; x < maxWidths[index]+2; x++ {
-			io.WriteString(wr, string(TableHorizBar))
-		}
+		io.WriteString(wr, strings.Repeat(string(TableHorizBar), maxWidths[index]))
 		if index < (len(columns) - 1) {
 			io.WriteString(wr, string(TableTopSep))
 		}
@@ -95,7 +96,9 @@ func Table(wr io.Writer, columns []string, rows [][]string) error {
 	io.WriteString(wr, string(TableTopRight))
 	io.WriteString(wr, "\n")
 
-	// draw column names
+	/* end draw top of column row */
+
+	/* draw column names */
 	io.WriteString(wr, string(TableVertBar))
 	for index, column := range columns {
 		writeWidth(wr, maxWidths[index], column)
@@ -105,21 +108,21 @@ func Table(wr io.Writer, columns []string, rows [][]string) error {
 	}
 	io.WriteString(wr, string(TableVertBar))
 	io.WriteString(wr, "\n")
+	/* end draw column names */
 
-	// draw bottom of column row
+	/* draw bottom of column row */
 	io.WriteString(wr, string(TableMidLeft))
 	for index := range columns {
-		for x := 0; x < maxWidths[index]+2; x++ {
-			io.WriteString(wr, string(TableHorizBar))
-		}
+		io.WriteString(wr, strings.Repeat(string(TableHorizBar), maxWidths[index]))
 		if index < (len(columns) - 1) {
 			io.WriteString(wr, string(TableMidSep))
 		}
 	}
 	io.WriteString(wr, string(TableMidRight))
 	io.WriteString(wr, "\n")
+	/* end draw bottom of column row */
 
-	// draw rows
+	/* draw rows */
 	for _, row := range rows {
 		io.WriteString(wr, string(TableVertBar))
 		for index, column := range row {
@@ -131,22 +134,41 @@ func Table(wr io.Writer, columns []string, rows [][]string) error {
 		io.WriteString(wr, string(TableVertBar))
 		io.WriteString(wr, "\n")
 	}
+	/* end draw rows */
 
-	// draw footer
+	/* draw footer */
 	io.WriteString(wr, string(TableBottomLeft))
 	for index := range columns {
-		for x := 0; x < maxWidths[index]+2; x++ {
-			io.WriteString(wr, string(TableHorizBar))
-		}
+		io.WriteString(wr, strings.Repeat(string(TableHorizBar), maxWidths[index]))
 		if index < (len(columns) - 1) {
 			io.WriteString(wr, string(TableBottomSep))
 		}
 	}
 	io.WriteString(wr, string(TableBottomRight))
 	io.WriteString(wr, "\n")
+	/* end draw footer */
 	return nil
 }
 
+func stringWidth(value string) (width int) {
+	runes := []rune(value)
+	var runeWidth int
+	for _, c := range runes {
+		runeWidth = utf8.RuneLen(c)
+		if runeWidth > 1 {
+			width += 2
+		} else {
+			width++
+		}
+	}
+	return
+}
+
 func writeWidth(wr io.Writer, width int, value string) (int, error) {
-	return fmt.Fprintf(wr, fmt.Sprintf(" %%-%ds ", width), value)
+	valueWidth := stringWidth(value)
+	spaces := width - valueWidth
+	if spaces == 0 {
+		return fmt.Fprint(wr, value)
+	}
+	return fmt.Fprintf(wr, value+strings.Repeat(" ", spaces))
 }
