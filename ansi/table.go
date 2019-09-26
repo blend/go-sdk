@@ -12,17 +12,18 @@ import (
 
 // Table character constants.
 const (
-	TableTopLeft     = '┌'
-	TableTopRight    = '┐'
-	TableBottomLeft  = '└'
-	TableBottomRight = '┘'
-	TableMidLeft     = '├'
-	TableMidRight    = '┤'
-	TableVertBar     = '│'
-	TableHorizBar    = '─'
-	TableTopSep      = '┬'
-	TableBottomSep   = '┴'
-	TableMidSep      = '┼'
+	TableTopLeft     = "┌"
+	TableTopRight    = "┐"
+	TableBottomLeft  = "└"
+	TableBottomRight = "┘"
+	TableMidLeft     = "├"
+	TableMidRight    = "┤"
+	TableVertBar     = "│"
+	TableHorizBar    = "─"
+	TableTopSep      = "┬"
+	TableBottomSep   = "┴"
+	TableMidSep      = "┼"
+	NewLine          = "\n"
 )
 
 // TableForSlice prints a table for a given slice.
@@ -64,17 +65,34 @@ func TableForSlice(wr io.Writer, collection interface{}) error {
 }
 
 // Table writes a table to a given writer.
-func Table(wr io.Writer, columns []string, rows [][]string) error {
+func Table(wr io.Writer, columns []string, rows [][]string) (err error) {
 	if len(columns) == 0 {
 		return ex.New("table; invalid columns; column set is empty")
 	}
 
+	/* helpers */
+	defer func() {
+		if r := recover(); r != nil {
+			if typed, ok := r.(error); ok {
+				err = typed
+			}
+		}
+	}()
+	write := func(str string) {
+		_, writeErr := io.WriteString(wr, str)
+		if writeErr != nil {
+			panic(writeErr)
+		}
+	}
+	/* end helpers */
+
 	/* begin establish max widths of columns */
 	maxWidths := make([]int, len(columns))
-	var width int
 	for index, columnName := range columns {
 		maxWidths[index] = stringWidth(columnName)
 	}
+
+	var width int
 	for _, cols := range rows {
 		for index, columnValue := range cols {
 			width = stringWidth(columnValue)
@@ -86,68 +104,67 @@ func Table(wr io.Writer, columns []string, rows [][]string) error {
 	/* end establish max widths of columns */
 
 	/* draw top of column row */
-	io.WriteString(wr, string(TableTopLeft))
+	write(TableTopLeft)
 	for index := range columns {
-		io.WriteString(wr, strings.Repeat(string(TableHorizBar), maxWidths[index]))
-		if index < (len(columns) - 1) {
-			io.WriteString(wr, string(TableTopSep))
+		write(repeat(TableHorizBar, maxWidths[index]))
+		if isNotLast(index, columns) {
+			write(TableTopSep)
 		}
 	}
-	io.WriteString(wr, string(TableTopRight))
-	io.WriteString(wr, "\n")
-
+	write(TableTopRight)
+	write(NewLine)
 	/* end draw top of column row */
 
 	/* draw column names */
-	io.WriteString(wr, string(TableVertBar))
-	for index, column := range columns {
-		writeWidth(wr, maxWidths[index], column)
-		if index < (len(columns) - 1) {
-			io.WriteString(wr, string(TableVertBar))
+	write(TableVertBar)
+	for index, columnLabel := range columns {
+		write(padRight(columnLabel, maxWidths[index]))
+		if isNotLast(index, columns) {
+			write(TableVertBar)
 		}
 	}
-	io.WriteString(wr, string(TableVertBar))
-	io.WriteString(wr, "\n")
+	write(TableVertBar)
+	write(NewLine)
 	/* end draw column names */
 
 	/* draw bottom of column row */
-	io.WriteString(wr, string(TableMidLeft))
+	write(TableMidLeft)
 	for index := range columns {
-		io.WriteString(wr, strings.Repeat(string(TableHorizBar), maxWidths[index]))
-		if index < (len(columns) - 1) {
-			io.WriteString(wr, string(TableMidSep))
+		write(repeat(TableHorizBar, maxWidths[index]))
+		if isNotLast(index, columns) {
+			write(TableMidSep)
 		}
 	}
-	io.WriteString(wr, string(TableMidRight))
-	io.WriteString(wr, "\n")
+	write(TableMidRight)
+	write(NewLine)
 	/* end draw bottom of column row */
 
 	/* draw rows */
 	for _, row := range rows {
-		io.WriteString(wr, string(TableVertBar))
+		write(TableVertBar)
 		for index, column := range row {
-			writeWidth(wr, maxWidths[index], column)
-			if index < (len(columns) - 1) {
-				io.WriteString(wr, string(TableVertBar))
+			write(padRight(column, maxWidths[index]))
+			if isNotLast(index, columns) {
+				write(TableVertBar)
 			}
 		}
-		io.WriteString(wr, string(TableVertBar))
-		io.WriteString(wr, "\n")
+		write(TableVertBar)
+		write(NewLine)
 	}
 	/* end draw rows */
 
 	/* draw footer */
-	io.WriteString(wr, string(TableBottomLeft))
+	write(TableBottomLeft)
 	for index := range columns {
-		io.WriteString(wr, strings.Repeat(string(TableHorizBar), maxWidths[index]))
-		if index < (len(columns) - 1) {
-			io.WriteString(wr, string(TableBottomSep))
+		write(repeat(TableHorizBar, maxWidths[index]))
+		if isNotLast(index, columns) {
+			write(TableBottomSep)
 		}
 	}
-	io.WriteString(wr, string(TableBottomRight))
-	io.WriteString(wr, "\n")
+	write(TableBottomRight)
+	write(NewLine)
 	/* end draw footer */
-	return nil
+	return
 }
 
 func stringWidth(value string) (width int) {
@@ -164,11 +181,23 @@ func stringWidth(value string) (width int) {
 	return
 }
 
-func writeWidth(wr io.Writer, width int, value string) (int, error) {
+func repeat(str string, count int) string {
+	return strings.Repeat(str, count)
+}
+
+func padRight(value string, width int) string {
 	valueWidth := stringWidth(value)
 	spaces := width - valueWidth
 	if spaces == 0 {
-		return fmt.Fprint(wr, value)
+		return value
 	}
-	return fmt.Fprintf(wr, value+strings.Repeat(" ", spaces))
+	return value + strings.Repeat(" ", spaces)
+}
+
+func isNotLast(index int, values []string) bool {
+	return index < (len(values) - 1)
+}
+
+func isLast(index int, values []string) bool {
+	return index == (len(values) - 1)
 }
