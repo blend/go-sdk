@@ -1,10 +1,14 @@
 package jobkit
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/blend/go-sdk/r2"
 
@@ -13,6 +17,46 @@ import (
 	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/web"
 )
+
+func TestManagmentServerGetRequestJob(t *testing.T) {
+	assert := assert.New(t)
+
+	jm := createTestJobManager()
+	ms := ManagementServer{
+		Cron: jm,
+	}
+
+	r := web.MockCtx("GET", "/job/test2+job.foo", web.OptCtxRouteParamValue("jobName", "test2+job.foo"))
+	job, res := ms.getRequestJob(r, web.Text)
+	assert.Nil(res)
+	assert.NotNil(job)
+	assert.Equal("test2 job.foo", job.Name())
+}
+
+func TestManagmentServerGetRequestJobInvocation(t *testing.T) {
+	assert := assert.New(t)
+
+	jm := createTestJobManager()
+	ms := ManagementServer{
+		Cron: jm,
+	}
+
+	job, err := jm.Job("test2 job.foo")
+	assert.Nil(err)
+	assert.NotNil(job)
+	invocation := job.History[2]
+	id := invocation.ID
+
+	r := web.MockCtx("GET", "/job.invocation/test2+job.foo/"+id,
+		web.OptCtxRouteParamValue("jobName", "test2+job.foo"),
+		web.OptCtxRouteParamValue("id", id),
+	)
+	found, res := ms.getRequestJobInvocation(r, web.Text)
+	assert.Nil(res)
+	assert.NotNil(found)
+	assert.Equal("test2 job.foo", found.JobName)
+	assert.Equal(id, found.ID)
+}
 
 func TestManagementServerStatic(t *testing.T) {
 	assert := assert.New(t)
@@ -462,4 +506,197 @@ func TestManagementServerAPIJobEnable(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
 	assert.False(job.Disabled)
+}
+
+func TestManagementServerAPIJobInvocation(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job := firstJob(jm)
+	assert.NotNil(job)
+
+	jobName := job.Name()
+	invocationID := job.History[0].ID
+
+	var ji cron.JobInvocation
+	meta, err := web.MockGet(app, fmt.Sprintf("/api/job.invocation/%s/%s", jobName, invocationID)).JSON(&ji)
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.Equal(jobName, ji.JobName)
+	assert.Equal(invocationID, ji.ID)
+}
+
+func TestManagementServerAPIJobInvocationOutput(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job := firstJob(jm)
+	assert.NotNil(job)
+
+	jobName := job.Name()
+	invocationID := job.History[0].ID
+
+	var output struct {
+		ServerTimeNanos int64              `json:"serverTimeNanos"`
+		Chunks          []cron.OutputChunk `json:"chunks"`
+	}
+	meta, err := web.MockGet(app, fmt.Sprintf("/api/job.invocation.output/%s/%s", jobName, invocationID)).JSON(&output)
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.NotZero(output.ServerTimeNanos)
+	assert.Len(output.Chunks, 5)
+}
+
+func TestManagementServerAPIJobInvocationOutputAfterNanos(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job := firstJob(jm)
+	assert.NotNil(job)
+
+	jobName := job.Name()
+	invocationID := job.History[0].ID
+	afterNanos := job.History[0].Output.Chunks[2].Timestamp.UnixNano()
+
+	var output struct {
+		ServerTimeNanos int64              `json:"serverTimeNanos"`
+		Chunks          []cron.OutputChunk `json:"chunks"`
+	}
+	meta, err := web.MockGet(app,
+		fmt.Sprintf("/api/job.invocation.output/%s/%s", jobName, invocationID),
+		r2.OptQueryValue("afterNanos", fmt.Sprint(afterNanos)),
+	).JSON(&output)
+
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.NotZero(output.ServerTimeNanos)
+	assert.Len(output.Chunks, 2)
+}
+
+func TestManagementServerAPIJobInvocationOutputAfterNanosInvalid(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job := firstJob(jm)
+	assert.NotNil(job)
+
+	jobName := job.Name()
+	invocationID := job.History[0].ID
+
+	var output struct {
+		ServerTimeNanos int64              `json:"serverTimeNanos"`
+		Chunks          []cron.OutputChunk `json:"chunks"`
+	}
+	meta, err := web.MockGet(app,
+		fmt.Sprintf("/api/job.invocation.output/%s/%s", jobName, invocationID),
+		r2.OptQueryValue("afterNanos", "baileydog"),
+	).JSON(&output)
+
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.NotZero(output.ServerTimeNanos)
+	assert.Len(output.Chunks, 5)
+}
+
+func TestManagementServerAPIJobInvocationOutputStreamComplete(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job, err := jm.Job("test1")
+	assert.Nil(err)
+	assert.NotNil(job)
+
+	jobName := job.Name()
+	invocationID := job.History[0].ID
+
+	res, err := web.MockGet(app,
+		fmt.Sprintf("/api/job.invocation.output.stream/%s/%s", jobName, invocationID),
+		r2.OptQueryValue("afterNanos", "baileydog"),
+	).Do()
+
+	assert.Nil(err)
+	defer res.Body.Close()
+
+	assert.Equal(http.StatusOK, res.StatusCode)
+	contents, err := ioutil.ReadAll(res.Body)
+	assert.Nil(err)
+	assert.Equal("event: ping\n\nevent: complete\ndata: complete\n\n", string(contents))
+}
+
+func TestManagementServerAPIJobInvocationOutputStream(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+
+	job, err := jm.Job("test0")
+	assert.Nil(err)
+	assert.NotNil(job)
+
+	jobName := job.Name()
+	ji := job.Current
+	invocationID := ji.ID
+
+	res, err := web.MockGet(app,
+		fmt.Sprintf("/api/job.invocation.output.stream/%s/%s", jobName, invocationID),
+		r2.OptQueryValue("afterNanos", "baileydog"),
+	).Do()
+
+	start := make(chan struct{})
+	finish := make(chan struct{})
+	go func() {
+		<-start
+		io.WriteString(ji.Output, "test1\n")
+		io.WriteString(ji.Output, "test2\n")
+		io.WriteString(ji.Output, "test3\n")
+		io.WriteString(ji.Output, "test4\n")
+		io.WriteString(ji.Output, "test5\n")
+
+		<-finish
+		ji.State = cron.JobInvocationStateComplete
+		ji.Finished = time.Now().UTC()
+		job.Last = ji
+		job.Current = nil
+	}()
+
+	assert.Nil(err)
+	defer res.Body.Close()
+	assert.Equal(http.StatusOK, res.StatusCode)
+
+	close(start)
+
+	scanner := bufio.NewScanner(res.Body)
+
+	expectedScript := []string{
+		"event: ping",
+		"",
+		"event: println",
+		"data: {\"data\":\"test1\"}",
+		"",
+		"event: println",
+		"data: {\"data\":\"test2\"}",
+		"",
+		"event: println",
+		"data: {\"data\":\"test3\"}",
+		"",
+		"event: println",
+		"data: {\"data\":\"test4\"}",
+		"",
+		"event: println",
+		"data: {\"data\":\"test5\"}",
+		"",
+	}
+	for _, expected := range expectedScript {
+		scanner.Scan()
+		line := scanner.Text()
+		assert.Equal(expected, line)
+	}
+	close(finish)
+	scanner.Scan()
+	line := scanner.Text()
+	assert.Equal("event: complete", line)
 }

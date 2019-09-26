@@ -23,9 +23,10 @@ func TestWebhookSender(t *testing.T) {
 	}
 
 	sender := New(config)
-	assert.Nil(sender.Send(context.TODO(), Message{
+	err := sender.Send(context.TODO(), Message{
 		Text: "this is only a test",
-	}))
+	})
+	assert.Nil(err)
 }
 
 func TestWebhookSenderStatusCode(t *testing.T) {
