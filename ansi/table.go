@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"unicode/utf8"
 
 	"github.com/blend/go-sdk/ex"
 )
@@ -70,7 +71,7 @@ func Table(wr io.Writer, columns []string, rows [][]string) error {
 	/* begin establish max widths of columns */
 	maxWidths := make([]int, len(columns))
 	for index := range columns {
-		maxWidths[index] = len(columns[index])
+		maxWidths[index] = utf8.RuneCountInString(columns[index])
 	}
 
 	for _, cols := range rows {
