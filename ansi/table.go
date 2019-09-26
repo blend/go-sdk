@@ -75,9 +75,9 @@ func Table(wr io.Writer, columns []string, rows [][]string) error {
 	}
 
 	for _, cols := range rows {
-		for index, col := range cols {
-			if maxWidths[index] < len(col) {
-				maxWidths[index] = len(col)
+		for index, colValue := range cols {
+			if maxWidths[index] < utf8.RuneCountInString(colValue) {
+				maxWidths[index] = utf8.RuneCountInString(colValue)
 			}
 		}
 	}
