@@ -70,14 +70,13 @@ func Table(wr io.Writer, columns []string, rows [][]string) error {
 
 	/* begin establish max widths of columns */
 	maxWidths := make([]int, len(columns))
-	for index := range columns {
-		maxWidths[index] = utf8.RuneCountInString(columns[index])
+	for index, columnName := range columns {
+		maxWidths[index] = utf8.RuneCountInString(columnName)
 	}
-
 	for _, cols := range rows {
-		for index, colValue := range cols {
-			if maxWidths[index] < utf8.RuneCountInString(colValue) {
-				maxWidths[index] = utf8.RuneCountInString(colValue)
+		for index, columnValue := range cols {
+			if maxWidths[index] < utf8.RuneCountInString(columnValue) {
+				maxWidths[index] = utf8.RuneCountInString(columnValue)
 			}
 		}
 	}

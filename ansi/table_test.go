@@ -26,3 +26,23 @@ func TestTableForSlice(t *testing.T) {
 		output.String(),
 	)
 }
+
+func TestTableForSliceUnicode(t *testing.T) {
+	assert := assert.New(t)
+
+	objects := []struct {
+		ID    string
+		Count int
+	}{
+		{"モ foo", 1},
+		{"ふ bar", 1},
+		{"ス baz", 3},
+	}
+
+	output := new(bytes.Buffer)
+	assert.Nil(TableForSlice(output, objects))
+	assert.Equal(
+		"┌───────┬───────┐\n│ ID    │ Count │\n├───────┼───────┤\n│ モ foo │ 1     │\n│ ふ bar │ 1     │\n│ ス baz │ 3     │\n└───────┴───────┘\n",
+		output.String(),
+	)
+}
