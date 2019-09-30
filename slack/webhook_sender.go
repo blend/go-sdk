@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
+	"github.com/blend/go-sdk/r2"
+
 	"net/http"
 
 	"github.com/blend/go-sdk/ex"
-	"github.com/blend/go-sdk/webutil"
 )
 
 const (
@@ -23,15 +24,16 @@ var (
 // New creates a new webhook sender.
 func New(cfg Config) *WebhookSender {
 	return &WebhookSender{
-		RequestSender: webutil.NewRequestSender(webutil.MustParseURL(cfg.Webhook)),
-		Config:        cfg,
+		Transport: &http.Transport{},
+		Config:    cfg,
 	}
 }
 
 // WebhookSender sends slack webhooks.
 type WebhookSender struct {
-	*webutil.RequestSender
-	Config Config
+	Transport       *http.Transport
+	RequestDefaults []r2.Option
+	Config          Config
 }
 
 // Defaults returns default message options.
@@ -46,7 +48,11 @@ func (whs WebhookSender) Defaults() []MessageOption {
 
 // Send sends a slack hook.
 func (whs WebhookSender) Send(ctx context.Context, message Message) error {
-	res, err := whs.SendJSON(ctx, ApplyMessageOptions(message, whs.Defaults()...))
+	messageWithDefaults := ApplyMessageOptions(message, whs.Defaults()...)
+
+	options := append(whs.RequestDefaults, r2.OptTransport(whs.Transport), r2.OptJSONBody(messageWithDefaults))
+
+	res, err := r2.New(whs.Config.Webhook, options...).Do()
 	if err != nil {
 		return err
 	}
@@ -64,7 +70,11 @@ func (whs WebhookSender) Send(ctx context.Context, message Message) error {
 
 // SendAndReadResponse sends a slack hook and returns the deserialized response
 func (whs WebhookSender) SendAndReadResponse(ctx context.Context, message Message) (*PostMessageResponse, error) {
-	res, err := whs.SendJSON(ctx, ApplyMessageOptions(message, whs.Defaults()...))
+	messageWithDefaults := ApplyMessageOptions(message, whs.Defaults()...)
+
+	options := append(whs.RequestDefaults, r2.OptTransport(whs.Transport), r2.OptJSONBody(messageWithDefaults))
+
+	res, err := r2.New(whs.Config.Webhook, options...).Do()
 	if err != nil {
 		return nil, err
 	}
