@@ -174,9 +174,6 @@ func (js *JobScheduler) State() JobSchedulerState {
 	if js.Latch.IsStarted() {
 		return JobSchedulerStateRunning
 	}
-	if js.Latch.IsPaused() {
-		return JobSchedulerStatePaused
-	}
 	if js.Latch.IsStopped() {
 		return JobSchedulerStateStopped
 	}
@@ -194,6 +191,7 @@ func (js *JobScheduler) Status() JobSchedulerStatus {
 		Timeout:                    js.TimeoutProvider(),
 		Current:                    js.Current,
 		Last:                       js.Last,
+		Stats:                      js.Stats(),
 		HistoryDisabled:            js.HistoryDisabledProvider(),
 		HistoryPersistenceDisabled: js.HistoryPersistenceDisabledProvider(),
 		HistoryMaxCount:            js.HistoryMaxCountProvider(),
@@ -206,15 +204,12 @@ func (js *JobScheduler) Status() JobSchedulerStatus {
 }
 
 // Stats returns job stats.
-func (js *JobScheduler) Stats() JobStats {
-	js.Lock()
-	defer js.Unlock()
-
-	var output JobStats
+func (js *JobScheduler) Stats() JobSchedulerStats {
+	output := JobSchedulerStats{
+		RunsTotal: len(js.History),
+	}
 	var elapsedTimes []time.Duration
 
-	output.JobName = js.Name()
-	output.RunsTotal = len(js.History)
 	for _, ji := range js.History {
 		switch ji.State {
 		case JobInvocationStateComplete:
@@ -228,12 +223,12 @@ func (js *JobScheduler) Stats() JobStats {
 				output.RunsCancelled++
 			}
 		}
-		if ji.Elapsed > 0 {
-			elapsedTimes = append(elapsedTimes, ji.Elapsed)
-		}
+
+		elapsedTimes = append(elapsedTimes, ji.Elapsed)
 		if ji.Elapsed > output.ElapsedMax {
 			output.ElapsedMax = ji.Elapsed
 		}
+
 		if ji.Output != nil {
 			output.OutputBytes += len(ji.Output.Bytes())
 		}

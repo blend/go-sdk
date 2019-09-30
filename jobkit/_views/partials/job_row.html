@@ -1,9 +1,14 @@
 {{ define "partials/job_row" }}
 <tr id="{{ .ViewModel.Name }}">
+
 	<td> <!-- status -->
+		{{ if .ViewModel.HistoryDisabled  }}
+
+		<!-- if history is disabled -->
 		{{ if .ViewModel.Current }}
 		<div uk-tooltip="Job is currently running" uk-spinner="ration: 0.5"></div>
 		{{ else if .ViewModel.Last }}
+
 		{{ if .ViewModel.Last.State | eq "cancelled" }}
 		<span class="uk-text-warning" uk-icon="warning" uk-tooltip="Last invocation cancelled"></span>
 		{{ else if .ViewModel.Last.State | eq "failed" }}
@@ -13,8 +18,35 @@
 		{{ else }}
 		<span class="uk-text-primary" uk-icon="question" uk-tooltip="Last invocation state is unknown"></span>
 		{{ end }}
+
 		{{ else }}
 		<span class="uk-text-primary" uk-icon="question" uk-tooltip="Job has no history"></span>
+		{{ end }}
+
+		{{ else }} 
+
+		{{ $stats := .ViewModel.Stats }}
+
+		<!-- otherwise use success rate -->
+		{{ if .ViewModel.Current }}
+		<div uk-tooltip="Job is currently running" uk-spinner="ration: 0.5"></div>
+
+		{{ else if $stats.RunsTotal }} 
+
+		{{ if $stats.SuccessRate | eq 1.0 }}
+		<span class="uk-text-success" uk-icon="check" uk-tooltip="Job is healthy"></span>
+		{{ else if $stats.SuccessRate | gt 0.8 }}
+		<span class="uk-text-warning" uk-icon="warning" uk-tooltip="Job has at least an 80% success rate"></span>
+		{{ else if $stats.SuccessRate | gt 0.5 }}
+		<span class="uk-text-danger" uk-icon="warning" uk-tooltip="Job has at least a 50% success rate"></span>
+		{{ else }}
+		<span class="uk-text-danger" uk-icon="warning" uk-tooltip="Job has less than a 50% success rate"></span>
+		{{ end }}
+
+		{{ else }}
+		<span class="uk-text-primary" uk-icon="question" uk-tooltip="Job has no history"></span>
+		{{ end }}
+
 		{{ end }}
 	</td>
 	<td>
@@ -28,30 +60,6 @@
 			</span>
 		</div>
 	{{ end }}
-	</td>
-	<td><!-- job history -->
-		{{ if .ViewModel.HistoryDisabled }}
-		<span class="uk-label uk-label-danger">Disabled</span>
-		{{ else }}
-
-		{{ $historyMaxCount := .ViewModel.HistoryMaxCount }}
-		{{ $historyMaxAge := .ViewModel.HistoryMaxAge }}
-		{{ $historyDescription := "is unlimited" }}
-		{{ if ( and ($historyMaxCount) ($historyMaxAge ) ) }}
-		{{ $historyDescription = (printf "is limited to %d items or %v age" $historyMaxCount $historyMaxAge) }}
-		{{ else if ($historyMaxCount) }}
-		{{ $historyDescription = (printf "is limited to %d items" $historyMaxCount) }}
-		{{ else if ($historyMaxAge) }}
-		{{ $historyDescription = (printf "is limited to %v age" $historyMaxAge) }}
-		{{ end }}
-
-		<span class="uk-label uk-label-success" uk-tooltip="History {{ $historyDescription }}">Enabled</span>
-		{{ end }}
-		{{ if .ViewModel.HistoryPersistenceDisabled }}
-		<span class="uk-label uk-label-warning" uk-tooltip="History is not persisted">Ephemeral</span>
-		{{ else }}
-		<span class="uk-label uk-label-success" uk-tooltip="History is persisted">Persisted</span>
-		{{ end }}
 	</td>
 	<td> <!-- schedule -->
 	{{ if .ViewModel.Schedule }}

@@ -69,100 +69,91 @@ type Queue struct {
 }
 
 // Background returns a background context.
-func (pq *Queue) Background() context.Context {
-	if pq.Context != nil {
-		return pq.Context
+func (q *Queue) Background() context.Context {
+	if q.Context != nil {
+		return q.Context
 	}
 	return context.Background()
 }
 
 // Enqueue adds an item to the work queue.
-func (pq *Queue) Enqueue(obj interface{}) {
-	pq.Work <- obj
+func (q *Queue) Enqueue(obj interface{}) {
+	q.Work <- obj
 }
 
 // Start starts the queue and its workers.
 // This call blocks.
-func (pq *Queue) Start() error {
-	if !pq.CanStart() {
+func (q *Queue) Start() error {
+	if !q.CanStart() {
 		return ex.New(ErrCannotStart)
 	}
-	pq.Starting()
+	q.Starting()
 
 	// create channel(s)
-	pq.Work = make(chan interface{}, pq.MaxWork)
-	pq.Workers = make(chan *Worker, pq.Parallelism)
+	q.Work = make(chan interface{}, q.MaxWork)
+	q.Workers = make(chan *Worker, q.Parallelism)
 
-	for x := 0; x < pq.Parallelism; x++ {
-		worker := NewWorker(pq.Action)
-		worker.Context = pq.Context
-		worker.Errors = pq.Errors
-		worker.Finalizer = pq.ReturnWorker
+	for x := 0; x < q.Parallelism; x++ {
+		worker := NewWorker(q.Action)
+		worker.Context = q.Context
+		worker.Errors = q.Errors
+		worker.Finalizer = q.ReturnWorker
 
 		// start the worker on its own goroutine
 		go worker.Start()
 		<-worker.NotifyStarted()
-		pq.Workers <- worker
+		q.Workers <- worker
 	}
-	pq.Dispatch()
+	q.Dispatch()
 	return nil
 }
 
 // Dispatch processes work items in a loop.
-func (pq *Queue) Dispatch() {
-	pq.Started()
+func (q *Queue) Dispatch() {
+	q.Started()
 	var workItem interface{}
 	var worker *Worker
 	for {
 		select {
-		case workItem = <-pq.Work:
+		case workItem = <-q.Work:
 			select {
-			case worker = <-pq.Workers:
+			case worker = <-q.Workers:
 				worker.Enqueue(workItem)
-			case <-pq.NotifyStopping():
-				pq.Stopped()
+			case <-q.NotifyStopping():
+				q.Stopped()
 				return
 			}
-		case <-pq.NotifyPausing():
-			pq.Paused()
-			select {
-			case <-pq.NotifyResuming():
-				pq.Started()
-			case <-pq.NotifyStopping():
-				pq.Stopped()
-				return
-			}
-		case <-pq.NotifyStopping():
-			pq.Stopped()
+		case <-q.NotifyStopping():
+			q.Stopped()
 			return
 		}
 	}
 }
 
 // Stop stops the queue
-func (pq *Queue) Stop() error {
-	if !pq.CanStop() {
+func (q *Queue) Stop() error {
+	if !q.CanStop() {
 		return ex.New(ErrCannotStop)
 	}
-	for x := 0; x < pq.Parallelism; x++ {
-		worker := <-pq.Workers
+	for x := 0; x < q.Parallelism; x++ {
+		worker := <-q.Workers
 		worker.Stop()
-		pq.Workers <- worker
+		q.Workers <- worker
 	}
 	return nil
 }
 
 // Close stops the queue.
 // Any work left in the queue will be discarded.
-func (pq *Queue) Close() error {
-	pq.Stopping()
-	<-pq.NotifyStopped()
+func (q *Queue) Close() error {
+	q.Stopping()
+	<-q.NotifyStopped()
 	return nil
 }
 
 // ReturnWorker creates an action handler that returns a given worker to the worker queue.
 // It wraps any action provided to the queue.
-func (pq *Queue) ReturnWorker(ctx context.Context, worker *Worker) error {
-	pq.Workers <- worker
+func (q *Queue) ReturnWorker(ctx context.Context, worker *Worker) error {
+	q.Workers <- worker
 	return nil
 }

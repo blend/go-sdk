@@ -16,6 +16,8 @@ func NewWorker(action WorkAction) *Worker {
 }
 
 // Worker is a worker that is pushed work over a channel.
+// It is used by other work distribution types (i.e. queue and batch)
+// but can also be used independently.
 type Worker struct {
 	*Latch
 	Context   context.Context
@@ -53,25 +55,14 @@ func (qw *Worker) Dispatch() {
 	qw.Started()
 
 	var workItem interface{}
-	var pausing <-chan struct{}
 	var stopping <-chan struct{}
 
 	for {
-		pausing = qw.NotifyPausing()
 		stopping = qw.NotifyStopping()
 
 		select {
 		case workItem = <-qw.Work:
 			qw.Execute(qw.Background(), workItem)
-		case <-pausing:
-			qw.Paused()
-			select {
-			case <-qw.NotifyResuming():
-				qw.Started()
-			case <-qw.NotifyStopping():
-				qw.Stopped()
-				return
-			}
 		case <-stopping:
 			qw.Stopped()
 			return

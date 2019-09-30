@@ -104,20 +104,13 @@ func (ab *AutoflushBuffer) Start() error {
 func (ab *AutoflushBuffer) Dispatch() {
 	ab.Started()
 	ticker := time.Tick(ab.Interval)
+	var stopping <-chan struct{}
 	for {
+		stopping = ab.NotifyStopping()
 		select {
 		case <-ticker:
 			ab.FlushAsync(ab.Background())
-		case <-ab.NotifyPausing():
-			ab.Paused()
-			select {
-			case <-ab.NotifyResuming():
-				ab.Started()
-			case <-ab.NotifyStopping():
-				ab.Stopped()
-				return
-			}
-		case <-ab.NotifyStopping():
+		case <-stopping:
 			if ab.FlushOnStop {
 				ab.Flush(ab.Background())
 			}

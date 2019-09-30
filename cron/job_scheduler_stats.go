@@ -2,8 +2,8 @@ package cron
 
 import "time"
 
-// JobStats represent stats about a job based on history.
-type JobStats struct {
+// JobSchedulerStats represent stats about a job scheduler.
+type JobSchedulerStats struct {
 	JobName        string        `json:"jobName"`
 	SuccessRate    float64       `json:"successRate"`
 	OutputBytes    int           `json:"outputBytes"`
@@ -13,6 +13,7 @@ type JobStats struct {
 	RunsCancelled  int           `json:"runsCancelled"`
 	RunsTimedOut   int           `json:"runsTimedOut"`
 	ElapsedMax     time.Duration `json:"elapsedMax"`
+	ElapsedMin     time.Duration `json:"elapsedMin"`
 	Elapsed50th    time.Duration `json:"elapsed50th"`
 	Elapsed95th    time.Duration `json:"elapsed95th"`
 }

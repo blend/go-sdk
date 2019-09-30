@@ -16,7 +16,7 @@ func justError(_ interface{}, err error) error {
 func TestOutputBuffer(t *testing.T) {
 	assert := assert.New(t)
 
-	lw := new(OutputBuffer)
+	lw := new(Buffer)
 
 	assert.Nil(justError(io.WriteString(lw, "this is a test\n")))
 	assert.Nil(justError(io.WriteString(lw, "this is another test\n")))
@@ -29,7 +29,7 @@ func TestOutputBuffer(t *testing.T) {
 func TestOutputBufferShadowed(t *testing.T) {
 	assert := assert.New(t)
 
-	ob := new(OutputBuffer)
+	ob := new(Buffer)
 
 	lines := [][]byte{
 		[]byte("this is a test"),
@@ -47,7 +47,7 @@ func TestOutputBufferShadowed(t *testing.T) {
 func TestOutputBufferWritten(t *testing.T) {
 	assert := assert.New(t)
 
-	ob := new(OutputBuffer)
+	ob := new(Buffer)
 
 	written, err := ob.Write([]byte("this is just a test"))
 	assert.Nil(err)
@@ -64,7 +64,7 @@ func TestOutputBufferWritten(t *testing.T) {
 func TestOutputChunkJSON(t *testing.T) {
 	assert := assert.New(t)
 
-	chunk := OutputChunk{
+	chunk := BufferChunk{
 		Timestamp: time.Date(2019, 9, 21, 12, 11, 10, 9, time.UTC),
 		Data:      []byte("this is just a test"),
 	}
@@ -73,7 +73,7 @@ func TestOutputChunkJSON(t *testing.T) {
 	assert.Nil(err)
 	assert.NotEmpty(jsonContents)
 
-	var verify OutputChunk
+	var verify BufferChunk
 	assert.Nil(json.Unmarshal(jsonContents, &verify))
 	assert.Equal(chunk.Timestamp, verify.Timestamp)
 	assert.Equal(chunk.Data, verify.Data)

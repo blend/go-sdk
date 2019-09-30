@@ -9,9 +9,8 @@
 			</ul>
 		</div>
 	</div>
-	{{ $vm := . }}
 	{{ template "partials/job_table_header" }}
-	{{ template "partials/job_row" $vm.Wrap .ViewModel.Status }}
+	{{ template "partials/job_row" .Wrap .ViewModel.Status }}
 	{{ template "partials/job_table_footer" }}
 	<hr/>
 	<div class="uk-grid uk-grid-divider uk-grid-small uk-child-width-1-5 uk-text-center">
@@ -53,20 +52,46 @@
 			</h1>
 		</div>
 	</div>
+    <div class="uk-grid uk-grid-divider uk-grid-small uk-child-width-1-5 uk-text-center">
+		<div class="uk-first-column">
+            <span class="uk-text-small"><span class="uk-text-primary uk-margin-small-right" uk-icon="history"></span>History</span>
+            {{ if .ViewModel.Status.HistoryDisabled }}
+            <h3 class="uk-text-danger">Disabled</h3>
+            {{ else }}
+            <h3 class="uk-text-primary">Enabled</h3>
+            {{ end }}
+        </div>
+		<div>
+            <span class="uk-text-small"><span class="uk-text-primary uk-margin-small-right" uk-icon="history"></span>History Persistence</span>
+            {{ if .ViewModel.Status.HistoryPersistenceDisabled }}
+            <h3 class="uk-text-danger">Disabled</h3>
+            {{ else }}
+            <h3 class="uk-text-primary">Enabled</h3>
+            {{ end }}
+        </div>
+		<div>
+            <span class="uk-text-small"><span class="uk-text-primary uk-margin-small-right" uk-icon="history"></span>Retention</span>
+            {{ if .ViewModel.Status.HistoryMaxCount }}
+            <h3 class="uk-text-primary">{{ .ViewModel.Status.HistoryMaxCount }} items</h3>
+            {{ else if .ViewModel.Status.HistoryMaxAge }}
+            <h3 class="uk-text-primary">{{ .ViewModel.Status.HistoryMaxAge | duration_round_millis }} age</h3>
+            {{ else }}
+            <h3>-</h3>
+            {{ end }}
+        </div>
+    </div>
 	<hr/>
 	{{ if .ViewModel.Description }}
 	<div class="uk-grid uk-grid-divider uk-grid-medium uk-child-width-1-1">
 		<div>
-			<span class="uk-text-small">
-				Description
-			</span>
+			<span class="uk-text-small">Job Body</span>
 			<pre>{{ .ViewModel.Description }}</pre>
 		</div>
 	</div>
 	<hr/>
 	{{ end }}
 	<span class="uk-text-small">
-		History
+		Previous Invocations
 	</span>
 	<table class="uk-table uk-table-small uk-table-striped">
 		<thead>

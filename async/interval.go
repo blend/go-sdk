@@ -101,26 +101,20 @@ func (i *Interval) Dispatch() {
 
 	tick := time.Tick(i.Interval)
 	var err error
+	var stopping <-chan struct{}
+
 	for {
+		stopping = i.NotifyStopping()
 		select {
 		case <-tick:
 			err = i.Action(context.Background())
 			if err != nil && i.Errors != nil {
 				i.Errors <- err
 			}
-		case <-i.NotifyPausing():
-			i.Paused()
-			select {
-			case <-i.NotifyResuming():
-				i.Started()
-			case <-i.NotifyStopping():
-				i.Stopped()
-				return
-			}
 		case <-i.Context.Done():
 			i.Stopped()
 			return
-		case <-i.NotifyStopping():
+		case <-stopping:
 			i.Stopped()
 			return
 		}

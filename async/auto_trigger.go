@@ -106,20 +106,13 @@ func (a *AutoTrigger) Start() error {
 func (a *AutoTrigger) Dispatch() {
 	a.Started()
 	ticker := time.Tick(a.Interval)
+	var stopping <-chan struct{}
 	for {
+		stopping = a.NotifyStopping()
 		select {
 		case <-ticker:
 			a.Trigger(a.Background())
-		case <-a.NotifyPausing():
-			a.Paused()
-			select {
-			case <-a.NotifyResuming():
-				a.Started()
-			case <-a.NotifyStopping():
-				a.Stopped()
-				return
-			}
-		case <-a.NotifyStopping():
+		case <-stopping:
 			if a.TriggerOnStop {
 				a.Trigger(a.Background())
 			}

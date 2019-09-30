@@ -54,7 +54,6 @@ type JobManagerState string
 const (
 	JobManagerStateUnknown JobManagerState = "unknown"
 	JobManagerStateRunning JobManagerState = "started"
-	JobManagerStatePaused  JobManagerState = "paused"
 	JobManagerStateStopped JobManagerState = "stopped"
 )
 
@@ -65,7 +64,6 @@ type JobSchedulerState string
 const (
 	JobSchedulerStateUnknown JobSchedulerState = "unknown"
 	JobSchedulerStateRunning JobSchedulerState = "started"
-	JobSchedulerStatePaused  JobSchedulerState = "paused"
 	JobSchedulerStateStopped JobSchedulerState = "stopped"
 )
 

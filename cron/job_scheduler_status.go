@@ -14,6 +14,8 @@ type JobSchedulerStatus struct {
 	Current     *JobInvocation    `json:"current"`
 	Last        *JobInvocation    `json:"last"`
 
+	Stats JobSchedulerStats `json:"stats"`
+
 	HistoryDisabled            bool          `json:"historyDisabled"`
 	HistoryPersistenceDisabled bool          `json:"HistoryPersistenceDisabled"`
 	HistoryMaxCount            int           `json:"historyMaxCount"`

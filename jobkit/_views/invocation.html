@@ -18,7 +18,7 @@
 			<div class="uk-text-small"><span class="uk-icon uk-text-primary uk-margin-small-right" uk-icon="info"></span>State</div>
 			<h1>
 			{{ if .ViewModel.State | eq "running" }}
-			<div uk-tooltip="Job is currently running" uk-spinner="ratio: 2" uk-tooltip="Invocation is running"></div>
+			<div uk-tooltip="Job is currently running" uk-spinner="ratio: 1.0" uk-tooltip="Invocation is running"></div>
 			{{ else if .ViewModel.State | eq "cancelled" }}
 			<span class="uk-text-warning" uk-icon="icon:warning; ratio:2" uk-tooltip="Invocation was cancelled"></span>
 			{{ else if.ViewModel.State | eq "failed" }}

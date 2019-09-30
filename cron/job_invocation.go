@@ -11,36 +11,36 @@ import (
 
 // NewJobInvocation returns a new job invocation.
 func NewJobInvocation(jobName string) *JobInvocation {
-	output := new(OutputBuffer)
-	listeners := new(OutputListeners)
-	output.Listener = listeners.Trigger
+	output := new(Buffer)
+	handlers := new(BufferHandlers)
+	output.Handler = handlers.Handle
 	return &JobInvocation{
-		ID:              NewJobInvocationID(),
-		Started:         Now(),
-		State:           JobInvocationStateRunning,
-		JobName:         jobName,
-		Output:          output,
-		OutputListeners: listeners,
-		Done:            make(chan struct{}),
+		ID:             NewJobInvocationID(),
+		Started:        Now(),
+		State:          JobInvocationStateRunning,
+		JobName:        jobName,
+		Output:         output,
+		OutputHandlers: handlers,
+		Done:           make(chan struct{}),
 	}
 }
 
 // JobInvocation is metadata for a job invocation (or instance of a job running).
 type JobInvocation struct {
-	ID              string
-	JobName         string
-	Started         time.Time
-	Finished        time.Time
-	Cancelled       time.Time
-	Timeout         time.Time
-	Err             error
-	Elapsed         time.Duration
-	State           JobInvocationState
-	Output          *OutputBuffer
-	OutputListeners *OutputListeners
-	Context         context.Context
-	Cancel          context.CancelFunc
-	Done            chan struct{}
+	ID             string
+	JobName        string
+	Started        time.Time
+	Finished       time.Time
+	Cancelled      time.Time
+	Timeout        time.Time
+	Err            error
+	Elapsed        time.Duration
+	State          JobInvocationState
+	Output         *Buffer
+	OutputHandlers *BufferHandlers
+	Context        context.Context
+	Cancel         context.CancelFunc
+	Done           chan struct{}
 }
 
 // MarshalJSON marshals the invocation as json.
@@ -97,7 +97,7 @@ func (ji *JobInvocation) UnmarshalJSON(contents []byte) error {
 	if values.Error != "" {
 		ji.Err = errors.New(values.Error)
 	}
-	ji.Output = new(OutputBuffer)
+	ji.Output = new(Buffer)
 	if err := json.Unmarshal([]byte(values.Output), ji.Output); err != nil {
 		return ex.New(err)
 	}

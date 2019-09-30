@@ -188,8 +188,6 @@ func (jm *JobManager) CancelJob(jobName string) (err error) {
 func (jm *JobManager) State() JobManagerState {
 	if jm.Latch.IsStarted() {
 		return JobManagerStateRunning
-	} else if jm.Latch.IsPaused() {
-		return JobManagerStatePaused
 	} else if jm.Latch.IsStopped() {
 		return JobManagerStateStopped
 	}
@@ -257,39 +255,6 @@ func (jm *JobManager) StartAsync() error {
 	jm.Latch.Started()
 	jm.Started = time.Now().UTC()
 	logger.MaybeInfo(jm.Log, "job manager started")
-	return nil
-}
-
-// Pause stops the schedule runner for a JobManager.
-func (jm *JobManager) Pause() error {
-	if !jm.Latch.CanPause() {
-		return fmt.Errorf("already paused")
-	}
-	jm.Latch.Pausing()
-	logger.MaybeInfo(jm.Log, "job manager pausing")
-	for _, job := range jm.Jobs {
-		job.Stop()
-	}
-	jm.Latch.Paused()
-	jm.Paused = time.Now().UTC()
-	logger.MaybeInfo(jm.Log, "job manager pausing complete")
-	return nil
-}
-
-// Resume stops the schedule runner for a JobManager.
-func (jm *JobManager) Resume() error {
-	if !jm.Latch.CanResume() {
-		return fmt.Errorf("already resumed")
-	}
-	jm.Latch.Resuming()
-	logger.MaybeInfo(jm.Log, "job manager resuming")
-	for _, job := range jm.Jobs {
-		go job.Start()
-		<-job.NotifyStarted()
-	}
-	jm.Latch.Started()
-	jm.Started = time.Now().UTC()
-	logger.MaybeInfo(jm.Log, "job manager resuming complete")
 	return nil
 }
 
