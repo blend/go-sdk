@@ -5,38 +5,45 @@ import (
 )
 
 // Slugify replaces non-letter or digit runes with '-'.
+// It will not add repeated '-'.
 func Slugify(v string) string {
 	runes := []rune(v)
+
 	var output []rune
 	var c rune
-	var previousWasReplaced bool
+	var lastWasDash bool
+
 	for index := range runes {
 		c = runes[index]
+		// add letters and make them lowercase
 		if unicode.IsLetter(c) {
 			output = append(output, unicode.ToLower(c))
-			previousWasReplaced = false
+			lastWasDash = false
 			continue
 		}
-		if c == '-' {
-			if !previousWasReplaced {
-				output = append(output, c)
-				previousWasReplaced = true
-			}
-			continue
-		}
+		// add digits unchanged
 		if unicode.IsDigit(c) {
 			output = append(output, c)
-			previousWasReplaced = false
+			lastWasDash = false
 			continue
 		}
+		// if we hit a dash, only add it if
+		// the last character wasnt a dash
+		if c == '-' {
+			if !lastWasDash {
+				output = append(output, c)
+				lastWasDash = true
+			}
+			continue
+
+		}
 		if unicode.IsSpace(c) {
-			if !previousWasReplaced {
+			if !lastWasDash {
 				output = append(output, '-')
-				previousWasReplaced = true
+				lastWasDash = true
 			}
 			continue
 		}
-		previousWasReplaced = false
 	}
 	return string(output)
 }
