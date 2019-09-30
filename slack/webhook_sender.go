@@ -5,11 +5,10 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	"github.com/blend/go-sdk/r2"
-
 	"net/http"
 
 	"github.com/blend/go-sdk/ex"
+	"github.com/blend/go-sdk/r2"
 )
 
 const (
