@@ -46,9 +46,6 @@ install-bindata:
 install-coverage:
 	@go install github.com/blend/go-sdk/cmd/coverage
 
-install-job:
-	@go install github.com/blend/go-sdk/cmd/job
-
 install-profanity:
 	@go install github.com/blend/go-sdk/cmd/profanity
 
@@ -169,9 +166,6 @@ release-bindata:
 
 release-coverage:
 	@goreleaser release -f .goreleaser/coverage.yml
-
-release-job:
-	@goreleaser release -f .goreleaser/job.yml
 
 release-profanity:
 	@goreleaser release -f .goreleaser/profanity.yml
