@@ -16,8 +16,8 @@ func TestNewEmailMessage(t *testing.T) {
 		JobName: "test",
 		Elapsed: time.Millisecond,
 		State:   cron.JobInvocationStateComplete,
-		Output: &cron.OutputBuffer{
-			Chunks: []cron.OutputChunk{
+		Output: &cron.Buffer{
+			Chunks: []cron.BufferChunk{
 				{Data: []byte("this is a test")},
 				{Data: []byte("this is another test")},
 			},

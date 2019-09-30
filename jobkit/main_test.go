@@ -30,8 +30,8 @@ func sortedJobs(jm *cron.JobManager) []*cron.JobScheduler {
 	return output
 }
 
-func createTestOutputChunk() cron.OutputChunk {
-	return cron.OutputChunk{
+func createTestBufferChunk() cron.BufferChunk {
+	return cron.BufferChunk{
 		Timestamp: time.Now().UTC(),
 		Data:      []byte(uuid.V4()),
 	}
@@ -45,13 +45,13 @@ func createTestCompleteJobInvocation(jobName string, elapsed time.Duration) cron
 		Finished: time.Now().UTC().Add(elapsed),
 		State:    cron.JobInvocationStateComplete,
 		Elapsed:  elapsed,
-		Output: &cron.OutputBuffer{
-			Chunks: []cron.OutputChunk{
-				createTestOutputChunk(),
-				createTestOutputChunk(),
-				createTestOutputChunk(),
-				createTestOutputChunk(),
-				createTestOutputChunk(),
+		Output: &cron.Buffer{
+			Chunks: []cron.BufferChunk{
+				createTestBufferChunk(),
+				createTestBufferChunk(),
+				createTestBufferChunk(),
+				createTestBufferChunk(),
+				createTestBufferChunk(),
 			},
 		},
 	}
@@ -66,10 +66,10 @@ func createTestFailedJobInvocation(jobName string, elapsed time.Duration, err er
 		State:    cron.JobInvocationStateFailed,
 		Elapsed:  elapsed,
 		Err:      err,
-		Output: &cron.OutputBuffer{
-			Chunks: []cron.OutputChunk{
-				createTestOutputChunk(),
-				createTestOutputChunk(),
+		Output: &cron.Buffer{
+			Chunks: []cron.BufferChunk{
+				createTestBufferChunk(),
+				createTestBufferChunk(),
 			},
 		},
 	}
@@ -83,23 +83,23 @@ func createTestJobManager() *cron.JobManager {
 	jm := cron.New()
 	jm.LoadJobs(test0, test1, test2)
 
-	test0CurrentOutput := &cron.OutputBuffer{
-		Chunks: []cron.OutputChunk{
-			createTestOutputChunk(),
-			createTestOutputChunk(),
-			createTestOutputChunk(),
-			createTestOutputChunk(),
+	test0CurrentOutput := &cron.Buffer{
+		Chunks: []cron.BufferChunk{
+			createTestBufferChunk(),
+			createTestBufferChunk(),
+			createTestBufferChunk(),
+			createTestBufferChunk(),
 		},
 	}
-	test0CurrentOutputListeners := new(cron.OutputListeners)
-	test0CurrentOutput.Listener = test0CurrentOutputListeners.Trigger
+	test0CurrentBufferHandlers := new(cron.BufferHandlers)
+	test0CurrentOutput.Handler = test0CurrentBufferHandlers.Handle
 
 	jm.Jobs["test0"].Current = &cron.JobInvocation{
-		ID:              uuid.V4().String(),
-		JobName:         "test0",
-		Started:         time.Now().UTC(),
-		Output:          test0CurrentOutput,
-		OutputListeners: test0CurrentOutputListeners,
+		ID:             uuid.V4().String(),
+		JobName:        "test0",
+		Started:        time.Now().UTC(),
+		Output:         test0CurrentOutput,
+		OutputHandlers: test0CurrentBufferHandlers,
 	}
 
 	jm.Jobs["test0"].History = []cron.JobInvocation{

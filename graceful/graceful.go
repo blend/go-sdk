@@ -13,10 +13,6 @@ type Graceful interface {
 	Start() error
 	// Stop the service.
 	Stop() error
-	// Notify the service has started.
-	NotifyStarted() <-chan struct{}
-	// Notify the service has stopped.
-	NotifyStopped() <-chan struct{}
 }
 
 // Shutdown racefully stops a set hosted processes based on SIGINT or SIGTERM received from the os.

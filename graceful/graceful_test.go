@@ -1,6 +1,7 @@
 package graceful
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 func newHosted() *hosted {
 	return &hosted{
 		started: make(chan struct{}),
+		stopped: make(chan struct{}),
 	}
 }
 
@@ -27,6 +29,9 @@ func (h *hosted) Start() error {
 }
 
 func (h *hosted) Stop() error {
+	if h.state != 1 {
+		return fmt.Errorf("cannot stop")
+	}
 	h.state = 0
 	h.started = make(chan struct{})
 	close(h.stopped)
@@ -63,7 +68,7 @@ func TestGracefulShutdown(t *testing.T) {
 func TestGracefulShutdownMany(t *testing.T) {
 	assert := assert.New(t)
 
-	hosted := []Graceful{
+	workers := []Graceful{
 		newHosted(),
 		newHosted(),
 		newHosted(),
@@ -74,12 +79,14 @@ func TestGracefulShutdownMany(t *testing.T) {
 	terminateSignal := make(chan os.Signal)
 	var err error
 	done := make(chan struct{})
+
 	go func() {
-		err = ShutdownBySignal(terminateSignal, hosted...)
+		err = ShutdownBySignal(terminateSignal, workers...)
 		close(done)
 	}()
-	for _, instance := range hosted {
-		<-instance.NotifyStarted()
+
+	for _, h := range workers {
+		<-h.(*hosted).NotifyStarted()
 	}
 
 	close(terminateSignal)

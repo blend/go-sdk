@@ -129,12 +129,11 @@ func TestManagementServerPause(t *testing.T) {
 
 	jm, app := createTestManagementServer()
 	jm.StartAsync()
-	defer jm.Stop()
 
 	meta, err := web.MockGet(app, "/pause").Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
-	assert.True(jm.Latch.IsPaused())
+	assert.True(jm.Latch.IsStopped())
 }
 
 func TestManagementServerResume(t *testing.T) {
@@ -144,8 +143,8 @@ func TestManagementServerResume(t *testing.T) {
 	jm.StartAsync()
 	defer jm.Stop()
 
-	jm.Pause()
-	assert.True(jm.Latch.IsPaused())
+	jm.Stop()
+	assert.True(jm.Latch.IsStopped())
 
 	meta, err := web.MockGet(app, "/resume").Discard()
 	assert.Nil(err)
@@ -344,15 +343,32 @@ func TestManagementServerAPIJobsRunning(t *testing.T) {
 	assert.NotEmpty(jobs)
 }
 
-func TestManagementServerAPIJobsStats(t *testing.T) {
+func TestManagementServerAPIPause(t *testing.T) {
 	assert := assert.New(t)
 
-	_, app := createTestManagementServer()
-	var jobs []cron.JobStats
-	meta, err := web.MockGet(app, "/api/jobs.stats").JSON(&jobs)
+	jm, app := createTestManagementServer()
+	jm.StartAsync()
+
+	meta, err := web.MockPost(app, "/api/pause", nil).Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
-	assert.NotEmpty(jobs)
+	assert.True(jm.Latch.IsStopped())
+}
+
+func TestManagementServerAPIResume(t *testing.T) {
+	assert := assert.New(t)
+
+	jm, app := createTestManagementServer()
+	jm.StartAsync()
+	defer jm.Stop()
+
+	jm.Stop()
+	assert.True(jm.Latch.IsStopped())
+
+	meta, err := web.MockPost(app, "/api/resume", nil).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode)
+	assert.True(jm.Latch.IsStarted())
 }
 
 func TestManagementServerAPIJob(t *testing.T) {
@@ -378,51 +394,6 @@ func TestManagementServerAPIJobNotFound(t *testing.T) {
 	meta, err := web.MockGet(app, fmt.Sprintf("/api/job/%s", uuid.V4().String())).Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusNotFound, meta.StatusCode)
-}
-
-func TestManagementServerAPIJobStats(t *testing.T) {
-	assert := assert.New(t)
-
-	jm, app := createTestManagementServer()
-
-	job := firstJob(jm)
-	assert.NotNil(job)
-	jobName := job.Name()
-
-	var js cron.JobStats
-	meta, err := web.MockGet(app, fmt.Sprintf("/api/job.stats/%s", jobName)).JSON(&js)
-	assert.Nil(err)
-	assert.Equal(http.StatusOK, meta.StatusCode)
-	assert.Equal(jobName, js.JobName)
-}
-
-func TestManagementServerAPIPause(t *testing.T) {
-	assert := assert.New(t)
-
-	jm, app := createTestManagementServer()
-	jm.StartAsync()
-	defer jm.Stop()
-
-	meta, err := web.MockPost(app, "/api/pause", nil).Discard()
-	assert.Nil(err)
-	assert.Equal(http.StatusOK, meta.StatusCode)
-	assert.True(jm.Latch.IsPaused())
-}
-
-func TestManagementServerAPIResume(t *testing.T) {
-	assert := assert.New(t)
-
-	jm, app := createTestManagementServer()
-	jm.StartAsync()
-	defer jm.Stop()
-
-	jm.Pause()
-	assert.True(jm.Latch.IsPaused())
-
-	meta, err := web.MockPost(app, "/api/resume", nil).Discard()
-	assert.Nil(err)
-	assert.Equal(http.StatusOK, meta.StatusCode)
-	assert.True(jm.Latch.IsStarted())
 }
 
 func TestManagementServerAPIJobRun(t *testing.T) {
@@ -540,7 +511,7 @@ func TestManagementServerAPIJobInvocationOutput(t *testing.T) {
 
 	var output struct {
 		ServerTimeNanos int64              `json:"serverTimeNanos"`
-		Chunks          []cron.OutputChunk `json:"chunks"`
+		Chunks          []cron.BufferChunk `json:"chunks"`
 	}
 	meta, err := web.MockGet(app, fmt.Sprintf("/api/job.invocation.output/%s/%s", jobName, invocationID)).JSON(&output)
 	assert.Nil(err)
@@ -563,7 +534,7 @@ func TestManagementServerAPIJobInvocationOutputAfterNanos(t *testing.T) {
 
 	var output struct {
 		ServerTimeNanos int64              `json:"serverTimeNanos"`
-		Chunks          []cron.OutputChunk `json:"chunks"`
+		Chunks          []cron.BufferChunk `json:"chunks"`
 	}
 	meta, err := web.MockGet(app,
 		fmt.Sprintf("/api/job.invocation.output/%s/%s", jobName, invocationID),
@@ -589,7 +560,7 @@ func TestManagementServerAPIJobInvocationOutputAfterNanosInvalid(t *testing.T) {
 
 	var output struct {
 		ServerTimeNanos int64              `json:"serverTimeNanos"`
-		Chunks          []cron.OutputChunk `json:"chunks"`
+		Chunks          []cron.BufferChunk `json:"chunks"`
 	}
 	meta, err := web.MockGet(app,
 		fmt.Sprintf("/api/job.invocation.output/%s/%s", jobName, invocationID),

@@ -89,9 +89,7 @@ func (ms ManagementServer) Register(app *web.App) {
 	app.POST("/api/resume", ms.postAPIResume)
 	app.GET("/api/jobs", ms.getAPIJobs)
 	app.GET("/api/jobs.running", ms.getAPIJobsRunning)
-	app.GET("/api/jobs.stats", ms.getAPIJobsStats)
 	app.GET("/api/job/:jobName", ms.getAPIJob)
-	app.GET("/api/job.stats/:jobName", ms.getAPIJobStats)
 	app.POST("/api/job.run/:jobName", ms.postAPIJobRun)
 	app.POST("/api/job.cancel/:jobName", ms.postAPIJobCancel)
 	app.POST("/api/job.disable/:jobName", ms.postAPIJobDisable)
@@ -170,7 +168,7 @@ func (ms ManagementServer) getSearch(r *web.Ctx) web.Result {
 
 // getPause is mapped to GET /pause
 func (ms ManagementServer) getPause(r *web.Ctx) web.Result {
-	if err := ms.Cron.Pause(); err != nil {
+	if err := ms.Cron.Stop(); err != nil {
 		return r.Views.BadRequest(err)
 	}
 	return web.RedirectWithMethod("GET", "/")
@@ -178,7 +176,7 @@ func (ms ManagementServer) getPause(r *web.Ctx) web.Result {
 
 // getResume is mapped to GET /resume
 func (ms ManagementServer) getResume(r *web.Ctx) web.Result {
-	if err := ms.Cron.Resume(); err != nil {
+	if err := ms.Cron.StartAsync(); err != nil {
 		return r.Views.BadRequest(err)
 	}
 	return web.RedirectWithMethod("GET", "/")
@@ -264,7 +262,7 @@ func (ms ManagementServer) getAPIJobsRunning(r *web.Ctx) web.Result {
 
 // postAPIPause is mapped to POST /api/pause
 func (ms ManagementServer) postAPIPause(r *web.Ctx) web.Result {
-	if err := ms.Cron.Pause(); err != nil {
+	if err := ms.Cron.Stop(); err != nil {
 		return r.Views.BadRequest(err)
 	}
 	return web.JSON.OK()
@@ -272,7 +270,7 @@ func (ms ManagementServer) postAPIPause(r *web.Ctx) web.Result {
 
 // postAPIResume is mapped to POST /api/resume
 func (ms ManagementServer) postAPIResume(r *web.Ctx) web.Result {
-	if err := ms.Cron.Resume(); err != nil {
+	if err := ms.Cron.StartAsync(); err != nil {
 		return r.Views.BadRequest(err)
 	}
 	return web.JSON.OK()
@@ -285,24 +283,6 @@ func (ms ManagementServer) getAPIJob(r *web.Ctx) web.Result {
 		return result
 	}
 	return web.JSON.Result(job.Status())
-}
-
-// getAPIJobsStats is mapped to GET /api/jobs.stats
-func (ms ManagementServer) getAPIJobsStats(r *web.Ctx) web.Result {
-	var output []cron.JobStats
-	for _, job := range ms.Cron.Jobs {
-		output = append(output, job.Stats())
-	}
-	return web.JSON.Result(output)
-}
-
-// getAPIJobStats is mapped to GET /api/job.stats/:jobName
-func (ms ManagementServer) getAPIJobStats(r *web.Ctx) web.Result {
-	job, result := ms.getRequestJob(r, web.JSON)
-	if result != nil {
-		return result
-	}
-	return web.JSON.Result(job.Stats())
 }
 
 // postAPIJobRun is mapped to POST /api/job.run/:jobName
@@ -372,7 +352,7 @@ func (ms ManagementServer) getAPIJobInvocationOutput(r *web.Ctx) web.Result {
 	if afterNanos, _ := web.Int64Value(r.QueryValue("afterNanos")); afterNanos > 0 {
 		afterTS := time.Unix(0, afterNanos)
 
-		var filtered []cron.OutputChunk
+		var filtered []cron.BufferChunk
 		for _, chunk := range chunks {
 			if chunk.Timestamp.After(afterTS) {
 				filtered = append(filtered, chunk)
@@ -410,7 +390,7 @@ func (ms ManagementServer) getAPIJobInvocationOutputStream(r *web.Ctx) web.Resul
 		return nil
 	}
 
-	sendOutputData := func(chunk cron.OutputChunk) {
+	sendOutputData := func(chunk cron.BufferChunk) {
 		for _, line := range stringutil.SplitLines(string(chunk.Data),
 			stringutil.OptSplitLinesIncludeNewLine(true),
 			stringutil.OptSplitLinesIncludeEmptyLines(true),
@@ -441,10 +421,10 @@ func (ms ManagementServer) getAPIJobInvocationOutputStream(r *web.Ctx) web.Resul
 	}
 
 	logger.MaybeDebugf(log, "output stream; listening for new chunks")
-	invocation.OutputListeners.Add(listenerID, func(chunk cron.OutputChunk) {
+	invocation.OutputHandlers.Add(listenerID, func(chunk cron.BufferChunk) {
 		sendOutputData(chunk)
 	})
-	defer func() { invocation.OutputListeners.Remove(listenerID) }()
+	defer func() { invocation.OutputHandlers.Remove(listenerID) }()
 
 	updateTick := time.Tick(100 * time.Millisecond)
 	for {

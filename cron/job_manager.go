@@ -226,10 +226,11 @@ func (jm *JobManager) Status() JobManagerStatus {
 
 // Start starts the job manager and blocks.
 func (jm *JobManager) Start() error {
+	stopped := jm.Latch.NotifyStopped()
 	if err := jm.StartAsync(); err != nil {
 		return err
 	}
-	<-jm.Latch.NotifyStopped()
+	<-stopped
 	return nil
 }
 
