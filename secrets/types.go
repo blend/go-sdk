@@ -249,7 +249,7 @@ type UpdateTransitKeyConfig struct {
 	// min_decryption_version.
 	MinEncryptionVersion int `json:"min_encryption_version,omitempty"`
 	// DeletionAllowed - Specifies if the key is allowed to be deleted.
-	DeletionAllowed *bool `json:"derived,omitempty"`
+	DeletionAllowed *bool `json:"deletion_allowed,omitempty"`
 	// Exportable - Enables keys to be exportable. This allows for all the valid keys in the key ring to be exported.
 	// Once set, this cannot be disabled.
 	Exportable bool `json:"exportable,omitempty"`
