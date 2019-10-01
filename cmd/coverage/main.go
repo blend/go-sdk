@@ -71,10 +71,6 @@ func getPackageCoverage(currentPath string, info os.FileInfo, err error) (string
 	}
 	fileName := info.Name()
 
-	if currentPath == "./" {
-		vf("`%s` skipping dir; home\n", currentPath)
-		return "", nil
-	}
 	if fileName == ".git" {
 		vf("`%s` skipping dir; .git", currentPath)
 		return "", filepath.SkipDir
