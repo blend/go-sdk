@@ -105,11 +105,11 @@ test-verbose:
 
 cover:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
-	@go run cmd/coverage/main.go --exclude="examples/*"
+	@go run cmd/coverage/main.go --exclude="examples/*" --exclude="cmd/*" --timeout="10s"
 
 cover-ci:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
-	@go run cmd/coverage/main.go --keep-coverage-out --covermode=atomic --coverprofile=coverage.txt --exclude="examples/*"
+	@go run cmd/coverage/main.go --keep-coverage-out --covermode=atomic --coverprofile=coverage.txt --exclude="examples/*" --exclude="cmd/*" --timeout="10s"
 
 cover-enforce:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
