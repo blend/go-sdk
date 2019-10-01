@@ -187,6 +187,9 @@ func (jm *JobManager) CancelJob(jobName string) (err error) {
 // State returns the job manager state.
 func (jm *JobManager) State() JobManagerState {
 	if jm.Latch.IsStarted() {
+		if !jm.Paused.IsZero() {
+			return JobManagerStatePaused
+		}
 		return JobManagerStateRunning
 	} else if jm.Latch.IsStopped() {
 		return JobManagerStateStopped
@@ -285,7 +288,11 @@ func (jm *JobManager) Resume() error {
 	jm.Paused = time.Time{}
 	logger.MaybeInfo(jm.Log, "job manager pausing")
 	for _, job := range jm.Jobs {
-		go job.Start()
+		go func() {
+			if err := job.Start(); err != nil {
+				logger.MaybeError(jm.Log, err)
+			}
+		}()
 		<-job.NotifyStarted()
 	}
 	logger.MaybeInfo(jm.Log, "job manager resumed")

@@ -432,3 +432,39 @@ func TestJobManagerEnableDisableJob(t *testing.T) {
 	assert.Nil(err)
 	assert.False(j.Disabled)
 }
+
+func TestJobManagerPauseResume(t *testing.T) {
+	assert := assert.New(t)
+
+	name := "pause-resume-test"
+	jm := New()
+	jobTemplate := NewJob(
+		OptJobName(name),
+		OptJobSchedule(EveryMinute()),
+	)
+	jm.LoadJobs(jobTemplate)
+	jm.StartAsync()
+	assert.True(jm.Latch.IsStarted())
+	assert.True(jm.Paused.IsZero())
+	assert.Equal(JobManagerStateRunning, jm.State())
+
+	assert.Nil(jm.Pause())
+	assert.True(jm.Latch.IsStarted())
+	assert.False(jm.Paused.IsZero())
+	assert.Equal(JobManagerStatePaused, jm.State())
+
+	job, err := jm.Job(name)
+	assert.Nil(err)
+	assert.NotNil(job)
+	assert.True(job.Latch.IsStopped())
+
+	assert.Nil(jm.Resume())
+	assert.True(jm.Latch.IsStarted())
+	assert.True(jm.Paused.IsZero())
+	assert.Equal(JobManagerStateRunning, jm.State())
+
+	job, err = jm.Job(name)
+	assert.Nil(err)
+	assert.NotNil(job)
+	assert.True(job.Latch.IsStarted())
+}
