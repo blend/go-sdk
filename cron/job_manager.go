@@ -234,16 +234,11 @@ func (jm *JobManager) Start() error {
 	return nil
 }
 
-// NotifyStarted implements graceful.Graceful.
-func (jm *JobManager) NotifyStarted() <-chan struct{} {
-	return jm.Latch.NotifyStarted()
-}
-
 // StartAsync starts the job manager and the loaded jobs.
 // It does not block.
 func (jm *JobManager) StartAsync() error {
 	if !jm.Latch.CanStart() {
-		return fmt.Errorf("already started")
+		return async.ErrCannotStart
 	}
 	jm.Latch.Starting()
 	logger.MaybeInfo(jm.Log, "job manager starting")
@@ -259,11 +254,48 @@ func (jm *JobManager) StartAsync() error {
 	return nil
 }
 
+// Pause stops the job manager's job schedulers but does not
+// shut down the job manager.
+func (jm *JobManager) Pause() error {
+	jm.Lock()
+	defer jm.Unlock()
+
+	if !jm.Paused.IsZero() {
+		return fmt.Errorf("cannot pause; already paused")
+	}
+	jm.Paused = time.Now().UTC()
+	logger.MaybeInfo(jm.Log, "job manager pausing")
+	for _, job := range jm.Jobs {
+		job.Stop()
+	}
+
+	logger.MaybeInfo(jm.Log, "job manager paused")
+	return nil
+}
+
+// Resume restarts the job manager's job schedulers.
+// This call is asynchronous and does not block.
+func (jm *JobManager) Resume() error {
+	jm.Lock()
+	defer jm.Unlock()
+
+	if jm.Paused.IsZero() {
+		return fmt.Errorf("cannot resume; not paused")
+	}
+	jm.Paused = time.Time{}
+	logger.MaybeInfo(jm.Log, "job manager pausing")
+	for _, job := range jm.Jobs {
+		go job.Start()
+		<-job.NotifyStarted()
+	}
+	logger.MaybeInfo(jm.Log, "job manager resumed")
+	return nil
+}
+
 // Stop stops the schedule runner for a JobManager.
 func (jm *JobManager) Stop() error {
 	if !jm.Latch.CanStop() {
-		logger.MaybeDebug(jm.Log, "job manager already stopped")
-		return fmt.Errorf("already stopped")
+		return async.ErrCannotStop
 	}
 	jm.Latch.Stopping()
 	logger.MaybeInfo(jm.Log, "job manager shutting down")
@@ -274,9 +306,4 @@ func (jm *JobManager) Stop() error {
 	jm.Stopped = time.Now().UTC()
 	logger.MaybeInfo(jm.Log, "job manager shutdown complete")
 	return nil
-}
-
-// NotifyStopped implements graceful.Graceful.
-func (jm *JobManager) NotifyStopped() <-chan struct{} {
-	return jm.Latch.NotifyStopped()
 }

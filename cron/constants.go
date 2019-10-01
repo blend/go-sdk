@@ -54,6 +54,7 @@ type JobManagerState string
 const (
 	JobManagerStateUnknown JobManagerState = "unknown"
 	JobManagerStateRunning JobManagerState = "started"
+	JobManagerStatePaused  JobManagerState = "paused"
 	JobManagerStateStopped JobManagerState = "stopped"
 )
 

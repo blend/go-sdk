@@ -20,10 +20,10 @@ Latch is a helper to coordinate goroutine lifecycles, specifically waiting for g
 
 The lifecycle is generally as follows:
 
-	0 - stopped
-	1 - starting
-	2 - started - goto 3, goto 4, goto 6
-	7 - stopping - goto 0
+	0 - stopped - goto 1
+	1 - starting - goto 2
+	2 - started - goto 3
+	3 - stopping - goto 0
 
 Control flow is coordinated with chan struct{}, which acts as a semaphore.
 */
@@ -156,4 +156,24 @@ func (l *Latch) Stopped() {
 	atomic.StoreInt32(&l.state, LatchStopped)
 	close(l.stopped)
 	l.stopped = make(chan struct{})
+}
+
+// WaitStarted triggers `Starting` and waits for the `Started` signal.
+func (l *Latch) WaitStarted() {
+	if !l.CanStart() {
+		return
+	}
+	started := l.NotifyStarted()
+	l.Starting()
+	<-started
+}
+
+// WaitStopped triggers `Stopping` and waits for the `Stopped` signal.
+func (l *Latch) WaitStopped() {
+	if !l.CanStop() {
+		return
+	}
+	stopped := l.NotifyStopped()
+	l.Stopping()
+	<-stopped
 }
