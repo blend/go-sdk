@@ -10,6 +10,7 @@ import (
 
 	"github.com/blend/go-sdk/fileutil"
 	"github.com/blend/go-sdk/reflectutil"
+	"github.com/blend/go-sdk/stringutil"
 )
 
 // New returns a new env var set.
@@ -78,7 +79,10 @@ func (ev Vars) ReadFile(path string) error {
 // Everything else is false, including `REEEEEEEEEEEEEEE`.
 func (ev Vars) Bool(envVar string, defaults ...bool) bool {
 	if value, hasValue := ev[envVar]; hasValue {
-		return mustParseBool(value)
+		boolValue, err := stringutil.ParseBool(value)
+		if err == nil {
+			return boolValue
+		}
 	}
 	if len(defaults) > 0 {
 		return defaults[0]

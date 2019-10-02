@@ -13,7 +13,7 @@ import (
 func mustParseBool(str string) bool {
 	strLower := strings.ToLower(str)
 	switch strLower {
-	case "true", "1", "yes":
+	case "true", "1", "yes", "enabled":
 		return true
 	}
 	return false
@@ -22,9 +22,9 @@ func mustParseBool(str string) bool {
 func parseBool(str string) (bool, error) {
 	strLower := strings.ToLower(str)
 	switch strLower {
-	case "true", "1", "yes":
+	case "true", "1", "yes", "enabled":
 		return true, nil
-	case "false", "0", "no":
+	case "false", "0", "no", "disabled":
 		return false, nil
 	}
 	return false, ex.New("invalid bool value", ex.OptMessage(str))

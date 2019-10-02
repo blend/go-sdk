@@ -2,10 +2,10 @@ package configutil
 
 import (
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/blend/go-sdk/ex"
+	"github.com/blend/go-sdk/stringutil"
 )
 
 var (
@@ -33,14 +33,10 @@ func (p Parser) Bool() (*bool, error) {
 	if value == nil {
 		return nil, nil
 	}
-	var parsed bool
-	switch strings.ToLower(*value) {
-	case "1", "true", "on", "yes":
-		parsed = true
-	case "0", "false", "off", "no":
-		parsed = false
-	default:
-		return nil, ex.New("invalid bool value", ex.OptMessagef("value: %s", *value))
+
+	parsed, err := stringutil.ParseBool(*value)
+	if err != nil {
+		return nil, err
 	}
 	return &parsed, nil
 }
