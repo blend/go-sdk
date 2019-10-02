@@ -113,7 +113,9 @@ func (q *Queue) Dispatch() {
 	q.Started()
 	var workItem interface{}
 	var worker *Worker
+	var stopping <-chan struct{}
 	for {
+		stopping = q.NotifyStopping()
 		select {
 		case workItem = <-q.Work:
 			select {
@@ -123,7 +125,7 @@ func (q *Queue) Dispatch() {
 				q.Stopped()
 				return
 			}
-		case <-q.NotifyStopping():
+		case <-stopping:
 			q.Stopped()
 			return
 		}

@@ -53,10 +53,8 @@ func (qw *Worker) Start() error {
 // Dispatch starts the listen loop for work.
 func (qw *Worker) Dispatch() {
 	qw.Started()
-
 	var workItem interface{}
 	var stopping <-chan struct{}
-
 	for {
 		stopping = qw.NotifyStopping()
 

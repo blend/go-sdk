@@ -102,7 +102,6 @@ func (i *Interval) Dispatch() {
 	tick := time.Tick(i.Interval)
 	var err error
 	var stopping <-chan struct{}
-
 	for {
 		stopping = i.NotifyStopping()
 		select {
