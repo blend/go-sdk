@@ -8,27 +8,8 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/ex"
+	"github.com/blend/go-sdk/stringutil"
 )
-
-func mustParseBool(str string) bool {
-	strLower := strings.ToLower(str)
-	switch strLower {
-	case "true", "1", "yes", "enabled":
-		return true
-	}
-	return false
-}
-
-func parseBool(str string) (bool, error) {
-	strLower := strings.ToLower(str)
-	switch strLower {
-	case "true", "1", "yes", "enabled":
-		return true, nil
-	case "false", "0", "no", "disabled":
-		return false, nil
-	}
-	return false, ex.New("invalid bool value", ex.OptMessage(str))
-}
 
 // PatchStrings options.
 const (
@@ -139,7 +120,7 @@ func patchStrings(tagName string, data map[string]string, obj interface{}) (err 
 					switch fieldType.Kind() {
 					case reflect.Bool:
 						if hasDataValue {
-							dataFieldValue = mustParseBool(dataValue)
+							dataFieldValue, _ = stringutil.ParseBool(dataValue)
 						} else {
 							continue
 						}
