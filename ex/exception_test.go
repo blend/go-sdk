@@ -127,6 +127,7 @@ func TestMarshalJSON(t *testing.T) {
 	type ReadableStackTrace struct {
 		Class   string   `json:"Class"`
 		Message string   `json:"Message"`
+		Inner   error    `json:"Inner"`
 		Stack   []string `json:"StackTrace"`
 	}
 
@@ -167,6 +168,28 @@ func TestMarshalJSON(t *testing.T) {
 	a.Nil(err)
 	a.Len(ex2.Stack, stackDepth)
 	a.Equal(message, ex2.Class)
+}
+
+func TestJSON(t *testing.T) {
+	assert := assert.New(t)
+
+	ex := New("this is a test",
+		OptMessage("test message"),
+		OptInner(New("inner exception", OptMessagef("inner test message"))),
+	)
+
+	contents, err := json.Marshal(ex)
+	assert.Nil(err)
+
+	var verify Ex
+	err = json.Unmarshal(contents, &verify)
+	assert.Nil(err)
+
+	assert.Equal(ErrClass(ex), ErrClass(verify))
+	assert.Equal(ErrMessage(ex), ErrMessage(verify))
+	assert.NotNil(verify.Inner)
+	assert.Equal(ErrClass(ErrInner(ex)), ErrClass(ErrInner(verify)))
+	assert.Equal(ErrMessage(ErrInner(ex)), ErrMessage(ErrInner(verify)))
 }
 
 func TestNest(t *testing.T) {
