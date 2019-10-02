@@ -118,10 +118,11 @@ func (q *Queue) Dispatch() {
 		stopping = q.NotifyStopping()
 		select {
 		case workItem = <-q.Work:
+			stopping = q.NotifyStopping()
 			select {
 			case worker = <-q.Workers:
 				worker.Enqueue(workItem)
-			case <-q.NotifyStopping():
+			case <-stopping:
 				q.Stopped()
 				return
 			}
