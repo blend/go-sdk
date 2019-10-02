@@ -15,17 +15,17 @@ import (
 func main() {
 	log := logger.Prod()
 
-	_, err := r2.New("https://sentry.k8s.tools.blend.com").CopyTo(os.Stdout)
+	_, err := r2.New("https://www.google.com").CopyTo(os.Stdout)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
 
-	upstream := reverseproxy.NewUpstream(webutil.MustParseURL("https://sentry.k8s.tools.blend.com"))
+	upstream := reverseproxy.NewUpstream(webutil.MustParseURL("https://www.google.com"))
 	proxy := reverseproxy.NewProxy(
 		reverseproxy.OptProxyUpstream(upstream),
 		reverseproxy.OptProxySetHeaderValue(webutil.HeaderXForwardedProto, webutil.SchemeHTTPS),
-		reverseproxy.OptProxySetHeaderValue(webutil.HeaderXForwardedHost, "sentry.k8s.tools.blend.com"),
+		reverseproxy.OptProxySetHeaderValue(webutil.HeaderXForwardedHost, "www.google.com"),
 		reverseproxy.OptProxyLog(log),
 	)
 

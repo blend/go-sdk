@@ -51,7 +51,7 @@ func (b *Buffer) Write(contents []byte) (written int, err error) {
 	return
 }
 
-// Bytes rerturns the bytes written to the writer.
+// Bytes returns the bytes written to the writer.
 func (b *Buffer) Bytes() []byte {
 	b.RLock()
 	defer b.RUnlock()

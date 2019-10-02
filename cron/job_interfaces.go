@@ -12,9 +12,7 @@ MethodName[Receiver|Provider] is the general pattern.
 
 "Receiver" indicates the function will be called by the manager.
 
-"Proivder" indicates the function will be called and is expected to return a specific value.
-
-They're mostly the same except
+"Provider" indicates the function will be called and is expected to return a specific value.
 */
 
 // JobConfigProvider is a type that returns a job config.

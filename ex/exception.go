@@ -169,6 +169,11 @@ func (e *Ex) MarshalJSON() ([]byte, error) {
 	return json.Marshal(e.Decompose())
 }
 
+// MarshalJSON is a custom json marshaler.
+func (e *Ex) UnmarshalJSON(contents []byte) error {
+	return json.Marshal(e.Decompose())
+}
+
 // String returns a fully formed string representation of the ex.
 // It's equivalent to calling sprintf("%+v", ex).
 func (e *Ex) String() string {

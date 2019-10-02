@@ -3,7 +3,6 @@ package cron
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"time"
 
 	"github.com/blend/go-sdk/bufferutil"
@@ -64,7 +63,7 @@ func (ji JobInvocation) MarshalJSON() ([]byte, error) {
 		values["timeout"] = ji.Timeout
 	}
 	if ji.Err != nil {
-		values["err"] = ji.Err.Error()
+		values["err"] = ji.Err
 	}
 	contents, err := json.Marshal(values)
 	return contents, ex.New(err)
@@ -81,7 +80,7 @@ func (ji *JobInvocation) UnmarshalJSON(contents []byte) error {
 		Timeout   time.Time          `json:"timeout"`
 		Elapsed   time.Duration      `json:"elapsed"`
 		State     JobInvocationState `json:"state"`
-		Error     string             `json:"err"`
+		Error     json.RawMessage    `json:"err"`
 		Output    json.RawMessage    `json:"output"`
 	}
 	if err := json.Unmarshal(contents, &values); err != nil {
@@ -95,8 +94,12 @@ func (ji *JobInvocation) UnmarshalJSON(contents []byte) error {
 	ji.Timeout = values.Timeout
 	ji.Elapsed = values.Elapsed
 	ji.State = values.State
-	if values.Error != "" {
-		ji.Err = errors.New(values.Error)
+	if values.Error != nil {
+		valuesErr := &ex.Ex{}
+		if err := valuesErr.UnmarshalJSON([]byte(values.Error)); err != nil {
+			return ex.New(err)
+		}
+		ji.Err = valuesErr
 	}
 	ji.Output = new(bufferutil.Buffer)
 	if err := json.Unmarshal([]byte(values.Output), ji.Output); err != nil {
