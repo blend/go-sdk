@@ -500,6 +500,8 @@ func (js *JobScheduler) RestoreHistory(ctx context.Context) error {
 		return nil
 	}
 	if js.HistoryRestoreProvider != nil {
+		js.Lock()
+		defer js.Unlock()
 		var err error
 		if js.History, err = js.HistoryRestoreProvider(ctx); err != nil {
 			return js.error(err)
@@ -516,8 +518,14 @@ func (js *JobScheduler) PersistHistory(ctx context.Context) error {
 	if js.HistoryPersistenceDisabledProvider() {
 		return nil
 	}
+
 	if js.HistoryPersistProvider != nil {
-		if err := js.HistoryPersistProvider(ctx, js.History); err != nil {
+		js.Lock()
+		defer js.Unlock()
+
+		historyCopy := make([]JobInvocation, len(js.History))
+		copy(historyCopy, js.History)
+		if err := js.HistoryPersistProvider(ctx, historyCopy); err != nil {
 			return js.error(err)
 		}
 	}
@@ -550,7 +558,9 @@ func (js *JobScheduler) Enabled() bool {
 
 // Idle returns if the job is not currently running.
 func (js *JobScheduler) Idle() (isIdle bool) {
+	js.Lock()
 	isIdle = js.Current == nil
+	js.Unlock()
 	return
 }
 
@@ -560,13 +570,14 @@ func (js *JobScheduler) Idle() (isIdle bool) {
 
 func (js *JobScheduler) finishCurrent(ji *JobInvocation) {
 	js.Lock()
+	defer js.Unlock()
+
 	if !js.HistoryDisabledProvider() {
 		js.History = append(js.cullHistory(), *ji)
 	}
 	js.Current = nil
 	js.Last = ji
 	close(ji.Done)
-	js.Unlock()
 }
 
 func (js *JobScheduler) addCurrent(ji *JobInvocation) {

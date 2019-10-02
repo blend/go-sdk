@@ -123,19 +123,19 @@ func TestJobSchedulerPersistHistory(t *testing.T) {
 	assert.Nil(js.RestoreHistory(context.Background()))
 	assert.Nil(js.PersistHistory(context.Background()))
 
-	var history []JobInvocation
+	history := make(chan []JobInvocation, 2)
 	js.HistoryPersistProvider = func(_ context.Context, h []JobInvocation) error {
-		history = h
+		history <- h
 		return nil
 	}
 	js.Run()
-	assert.Len(history, 1)
+	assert.Len(<-history, 1)
 	js.Run()
-	assert.Len(history, 2)
+	assert.Len(<-history, 2)
 
 	js.HistoryDisabledProvider = func() bool { return true }
 	js.Run()
-	assert.Len(history, 2)
+	assert.Len(<-history, 2)
 
 	js.HistoryRestoreProvider = func(_ context.Context) ([]JobInvocation, error) {
 		return []JobInvocation{
