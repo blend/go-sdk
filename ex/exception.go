@@ -174,7 +174,6 @@ func (e *Ex) UnmarshalJSON(contents []byte) error {
 	// try first as a string ...
 	var class string
 	if tryErr := json.Unmarshal(contents, &class); tryErr == nil {
-		println("unmarshal json as string")
 		e.Class = Class(class)
 		return nil
 	}
