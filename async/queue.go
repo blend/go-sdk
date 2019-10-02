@@ -137,6 +137,7 @@ func (q *Queue) Stop() error {
 	if !q.CanStop() {
 		return ex.New(ErrCannotStop)
 	}
+	q.WaitStopped()
 	for x := 0; x < q.Parallelism; x++ {
 		worker := <-q.Workers
 		worker.Stop()
@@ -148,8 +149,7 @@ func (q *Queue) Stop() error {
 // Close stops the queue.
 // Any work left in the queue will be discarded.
 func (q *Queue) Close() error {
-	q.Stopping()
-	<-q.NotifyStopped()
+	q.WaitStopped()
 	return nil
 }
 
