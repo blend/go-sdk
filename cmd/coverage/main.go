@@ -36,7 +36,7 @@ var update = flag.Bool("update", false, "if we should write the current coverage
 var enforce = flag.Bool("enforce", false, "if we should enforce coverage minimums defined in `COVERAGE` files")
 var timeout = flag.String("timeout", "", "the timeout to pass to the package tests.")
 var race = flag.Bool("race", false, "if we should add -race to test invocations")
-var covermode = flag.String("covermode", "set", "the go test covermode.")
+var covermode = flag.String("covermode", "atomic", "the go test covermode.")
 var coverprofile = flag.String("coverprofile", "coverage.cov", "the intermediate cover profile.")
 var keepCoverageOut = flag.Bool("keep-coverage-out", false, "if we should keep coverage.out")
 var v = flag.Bool("v", false, "show verbose output")
@@ -59,6 +59,12 @@ func main() {
 	fmt.Fprintf(os.Stdout, "using coverprofile: %s\n", *coverprofile)
 	if *timeout != "" {
 		fmt.Fprintf(os.Stdout, "using timeout: %s\n", *timeout)
+	}
+	if len(includes) > 0 {
+		fmt.Fprintf(os.Stdout, "using includes: %s\n", strings.Join(includes, ", "))
+	}
+	if len(excludes) > 0 {
+		fmt.Fprintf(os.Stdout, "using excludes: %s\n", strings.Join(excludes, ", "))
 	}
 	if *race {
 		fmt.Fprintln(os.Stdout, "using race detection")
