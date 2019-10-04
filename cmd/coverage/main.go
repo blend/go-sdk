@@ -35,8 +35,23 @@ var reportOutputPath = flag.String("output", "coverage.html", "the path to write
 var update = flag.Bool("update", false, "if we should write the current coverage to `COVERAGE` files")
 var enforce = flag.Bool("enforce", false, "if we should enforce coverage minimums defined in `COVERAGE` files")
 var include = flag.String("include", "", "the include file filter in glob form, can be a csv.")
+
+type paths []string
+
+func (p *paths) String() string {
+	return fmt.Sprint(*p)
+}
+
+func (p *paths) Set(value string) error {
+	for _, val := range strings.Split(value, ",") {
+		*p = append(*p, val)
+	}
+	return nil
+}
+
 var exclude = flag.String("exclude", "", "the exclude file filter in glob form, can be a csv.")
 var timeout = flag.String("timeout", "", "the timeout to pass to the package tests.")
+var race = flag.Bool("race", false, "if we should add -race to test invocations")
 var covermode = flag.String("covermode", "set", "the go test covermode.")
 var coverprofile = flag.String("coverprofile", "coverage.cov", "the intermediate cover profile.")
 var keepCoverageOut = flag.Bool("keep-coverage-out", false, "if we should keep coverage.out")
@@ -148,34 +163,33 @@ func main() {
 	fmt.Fprintln(os.Stdout, "coverage starting")
 	fmt.Fprintf(os.Stdout, "using covermode: %s\n", *covermode)
 	fmt.Fprintf(os.Stdout, "using coverprofile: %s\n", *coverprofile)
+	if *timeout != "" {
+		fmt.Fprintf(os.Stdout, "using timeout: %s\n", *timeout)
+	}
+	if *race {
+		fmt.Fprintln(os.Stdout, "using race detection")
+	}
+
+	//
+	// start
+	//
+
 	fullCoverageData, err := removeAndOpen(*coverprofile)
 	if err != nil {
 		maybeFatal(err)
 	}
 	fmt.Fprintln(fullCoverageData, "mode: set")
 
-	maybeFatal(filepath.Walk("./", func(currentPath string, info os.FileInfo, fileErr error) error {
-		packageCoverReport, err := getPackageCoverage(currentPath, info, fileErr)
-		if err != nil {
-			return err
-		}
+	paths := flag.Args()
 
-		if len(packageCoverReport) == 0 {
-			return nil
-		}
+	if len(paths) == 0 {
+		paths = []string{"./..."}
+	}
 
-		err = mergeCoverageOutput(packageCoverReport, fullCoverageData)
-		if err != nil {
-			return err
-		}
-
-		err = removeIfExists(packageCoverReport)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}))
+	for _, path := range paths {
+		fmt.Fprintf(os.Stdout, "walking path: %s\n", path)
+		walkPath(path, fullCoverageData)
+	}
 
 	// close the coverage data handle
 	maybeFatal(fullCoverageData.Close())
@@ -197,6 +211,37 @@ func main() {
 	}
 
 	fmt.Fprintln(os.Stdout, "coverage complete")
+}
+
+func walkPath(walkedPath string, fullCoverageData *os.File) {
+	recursive := strings.HasSuffix(walkedPath, "/...")
+	rootPath := filepath.Dir(walkedPath)
+
+	maybeFatal(filepath.Walk(rootPath, func(currentPath string, info os.FileInfo, fileErr error) error {
+		packageCoverReport, err := getPackageCoverage(currentPath, info, fileErr)
+		if err != nil {
+			return err
+		}
+
+		if len(packageCoverReport) == 0 {
+			return nil
+		}
+
+		err = mergeCoverageOutput(packageCoverReport, fullCoverageData)
+		if err != nil {
+			return err
+		}
+
+		err = removeIfExists(packageCoverReport)
+		if err != nil {
+			return err
+		}
+
+		if !recursive && info.IsDir() {
+			return filepath.SkipDir
+		}
+		return nil
+	}))
 }
 
 // --------------------------------------------------------------------------------
@@ -324,12 +369,19 @@ func gobin() string {
 }
 
 func execCoverage(path string) ([]byte, error) {
-	var cmd *exec.Cmd
-	if *timeout != "" {
-		cmd = exec.Command(gobin(), "test", "-timeout", *timeout, "-short", fmt.Sprintf("-covermode=%s", *covermode), "-coverprofile=profile.cov")
-	} else {
-		cmd = exec.Command(gobin(), "test", "-short", fmt.Sprintf("-covermode=%s", *covermode), "-coverprofile=profile.cov")
+	args := []string{
+		"test",
+		"-short",
+		fmt.Sprintf("-covermode=%s", *covermode),
+		"-coverprofile=profile.cov",
 	}
+	if *timeout != "" {
+		args = append(args, fmt.Sprintf("-timeout=%s", *timeout))
+	}
+	if *race {
+		args = append(args, "-race")
+	}
+	cmd := exec.Command(gobin(), args...)
 	cmd.Env = os.Environ()
 	cmd.Dir = path
 	return cmd.CombinedOutput()
