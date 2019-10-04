@@ -17,6 +17,7 @@ func TestGopath(t *testing.T) {
 
 	assert.Contains(gopath(), "/go")
 }
+
 func TestGlob(t *testing.T) {
 	assert := assert.New(t)
 
@@ -28,13 +29,13 @@ func TestGlob(t *testing.T) {
 	assert.False(glob("*/*/*/testo", "asdf/testo"))
 	assert.True(glob("*/*/*/testo", "asdf/x/x/testo"))
 }
+
 func TestGlobAnyMatch(t *testing.T) {
 	assert := assert.New(t)
 
 	assert.False(globAnyMatch("", "testo"))
 	assert.True(globAnyMatch("*", "testo"))
-	assert.True(globAnyMatch("x,testo", "testo"))
-	assert.False(globAnyMatch("x,y", "testo"))
+	assert.False(globAnyMatch("x", "testo"))
 }
 
 func TestJoinCoverPath(t *testing.T) {
