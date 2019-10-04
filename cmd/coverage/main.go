@@ -259,8 +259,11 @@ func gopath() string {
 
 // globIncludeMatch tests if a file matches a (potentially) csv of glob filters.
 func globAnyMatch(filter, file string) bool {
-	if matches := glob(strings.TrimSpace(filter), file); matches {
-		return true
+	parts := strings.Split(filter, ",")
+	for _, part := range parts {
+		if matches := glob(strings.TrimSpace(part), file); matches {
+			return true
+		}
 	}
 	return false
 }
