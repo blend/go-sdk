@@ -113,35 +113,13 @@ func (sc *StaticFileServer) Action(r *Ctx) Result {
 func (sc *StaticFileServer) ServeFile(r *Ctx, filePath string) Result {
 	f, err := sc.ResolveFile(filePath)
 	if err != nil {
-		if os.IsNotExist(err) {
-			if r.DefaultProvider != nil {
-				return r.DefaultProvider.NotFound()
-			}
-			http.NotFound(r.Response, r.Request)
-			return nil
-		}
-		if r.DefaultProvider != nil {
-			return r.DefaultProvider.InternalError(err)
-		}
-		http.Error(r.Response, err.Error(), http.StatusInternalServerError)
-		return nil
+		return sc.fileError(r, err)
 	}
 	defer f.Close()
 
 	finfo, err := f.Stat()
 	if err != nil {
-		if os.IsNotExist(err) {
-			if r.DefaultProvider != nil {
-				return r.DefaultProvider.NotFound()
-			}
-			http.NotFound(r.Response, r.Request)
-			return nil
-		}
-		if r.DefaultProvider != nil {
-			return r.DefaultProvider.InternalError(err)
-		}
-		http.Error(r.Response, err.Error(), http.StatusInternalServerError)
-		return nil
+		return sc.fileError(r, err)
 	}
 	http.ServeContent(r.Response, r.Request, filePath, finfo.ModTime(), f)
 	return nil
@@ -152,18 +130,7 @@ func (sc *StaticFileServer) ServeFile(r *Ctx, filePath string) Result {
 func (sc *StaticFileServer) ServeCachedFile(r *Ctx, filepath string) Result {
 	file, err := sc.ResolveCachedFile(filepath)
 	if err != nil {
-		if os.IsNotExist(err) {
-			if r.DefaultProvider != nil {
-				return r.DefaultProvider.NotFound()
-			}
-			http.NotFound(r.Response, r.Request)
-			return nil
-		}
-		if r.DefaultProvider != nil {
-			return r.DefaultProvider.InternalError(err)
-		}
-		http.Error(r.Response, err.Error(), http.StatusInternalServerError)
-		return nil
+		return sc.fileError(r, err)
 	}
 	if file.ETag != "" {
 		r.Response.Header().Set(webutil.HeaderETag, file.ETag)
@@ -251,4 +218,19 @@ func (sc *StaticFileServer) ResolveCachedFile(filepath string) (*CachedStaticFil
 
 	sc.Cache[filepath] = file
 	return file, nil
+}
+
+func (sc *StaticFileServer) fileError(r *Ctx, err error) Result {
+	if os.IsNotExist(err) {
+		if r.DefaultProvider != nil {
+			return r.DefaultProvider.NotFound()
+		}
+		http.NotFound(r.Response, r.Request)
+		return nil
+	}
+	if r.DefaultProvider != nil {
+		return r.DefaultProvider.InternalError(err)
+	}
+	http.Error(r.Response, err.Error(), http.StatusInternalServerError)
+	return nil
 }
