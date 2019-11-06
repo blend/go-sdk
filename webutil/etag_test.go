@@ -14,4 +14,5 @@ func TestETag(t *testing.T) {
 
 	etag = ETag([]byte("something else that is really cool"))
 	assert.Equal("a8c90c3202be46c1d766b2c63d38332b", etag)
+
 }
