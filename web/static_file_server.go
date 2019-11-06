@@ -130,6 +130,13 @@ func (sc *StaticFileServer) ServeFile(r *Ctx, filePath string) Result {
 
 	finfo, err := f.Stat()
 	if err != nil {
+		if os.IsNotExist(err) {
+			if r.DefaultProvider != nil {
+				return r.DefaultProvider.NotFound()
+			}
+			http.NotFound(r.Response, r.Request)
+			return nil
+		}
 		if r.DefaultProvider != nil {
 			return r.DefaultProvider.InternalError(err)
 		}
