@@ -47,8 +47,8 @@ func TestCachedStaticFileserverHeaders(t *testing.T) {
 
 	assert.Nil(result)
 	assert.NotEmpty(buffer.Bytes())
-
 	assert.Equal("bar", res.Header().Get("foo"), "the header should be set on the response")
+	assert.NotEmpty(res.Header().Get(HeaderETag))
 }
 
 func TestCachedStaticFileserverRewriteRule(t *testing.T) {

@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sync"
+
+	"github.com/blend/go-sdk/webutil"
 )
 
 // Interface assertions
@@ -74,6 +76,7 @@ func (csfs *CachedStaticFileServer) File(filepath string) (*CachedStaticFile, er
 
 	file := &CachedStaticFile{
 		Path:     filepath,
+		ETag:     webutil.ETag(contents),
 		Contents: bytes.NewReader(contents),
 		ModTime:  finfo.ModTime(),
 		Size:     len(contents),
@@ -94,6 +97,6 @@ func (csfs *CachedStaticFileServer) ServeFile(r *Ctx, filepath string) Result {
 	if err != nil {
 		return r.DefaultResultProvider().InternalError(err)
 	}
-	http.ServeContent(r.Response(), r.Request(), filepath, file.ModTime, file.Contents)
+	_ = file.Render(r)
 	return nil
 }

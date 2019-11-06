@@ -63,6 +63,9 @@ const (
 	// HeaderUserAgent is the user agent header.
 	HeaderUserAgent = "User-Agent"
 
+	// HeaderETag is the etag header.
+	HeaderETag = "etag"
+
 	// HeaderVary is the "Vary" header.
 	// It is used to indicate what fields should be used by the client as cache keys.
 	HeaderVary = "Vary"
