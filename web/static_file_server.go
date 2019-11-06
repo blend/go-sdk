@@ -241,16 +241,11 @@ func (sc *StaticFileServer) ResolveCachedFile(filepath string) (*CachedStaticFil
 		return nil, err
 	}
 
-	etag, err := webutil.ETag(contents)
-	if err != nil {
-		return nil, err
-	}
-
 	file := &CachedStaticFile{
 		Path:     filepath,
 		Contents: bytes.NewReader(contents),
 		ModTime:  finfo.ModTime(),
-		ETag:     etag,
+		ETag:     webutil.ETag(contents),
 		Size:     len(contents),
 	}
 
