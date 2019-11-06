@@ -7,6 +7,8 @@ import (
 	"os"
 	"regexp"
 	"sync"
+
+	"github.com/blend/go-sdk/webutil"
 )
 
 // NewStaticFileServer returns a new static file cache.
@@ -43,8 +45,9 @@ func OptStaticFileServerCacheDisabled(cacheDisabled bool) StaticFileserverOption
 }
 
 // StaticFileServer is a cache of static files.
-// It can operate in cached mode, or with `CacheDisabled` it will read from
-// disk for each request.
+// It can operate in cached mode, or with `CacheDisabled` set to `true`
+// it will read from disk for each request.
+// In cached mode, it automatically adds etags for files it caches.
 type StaticFileServer struct {
 	sync.RWMutex
 
@@ -155,6 +158,9 @@ func (sc *StaticFileServer) ServeCachedFile(r *Ctx, filepath string) Result {
 		http.Error(r.Response, err.Error(), http.StatusInternalServerError)
 		return nil
 	}
+	if file.ETag != "" {
+		r.Response.Header().Set(webutil.HeaderETag, file.ETag)
+	}
 	http.ServeContent(r.Response, r.Request, filepath, file.ModTime, file.Contents)
 	return nil
 }
@@ -228,10 +234,16 @@ func (sc *StaticFileServer) ResolveCachedFile(filepath string) (*CachedStaticFil
 		return nil, err
 	}
 
+	etag, err := webutil.ETag(contents)
+	if err != nil {
+		return nil, err
+	}
+
 	file := &CachedStaticFile{
 		Path:     filepath,
 		Contents: bytes.NewReader(contents),
 		ModTime:  finfo.ModTime(),
+		ETag:     etag,
 		Size:     len(contents),
 	}
 
