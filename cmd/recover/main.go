@@ -45,15 +45,27 @@ func main() {
 	os.Exit(0)
 }
 
-func createSub(pwd string, subCommand ...string) (*exec.Cmd, error) {
+// resolveBin splits a slice of command arguments into the binary (i.e. the
+// first argument) and the arguments. It also will resolve the first argument
+// to a binary on the PATH. E.g. `ls` gets replaced with `/bin/ls`.
+func resolveBin(subCommand ...string) (string, []string, error) {
 	bin := subCommand[0]
-
 	binPath, err := exec.LookPath(bin)
+	if err != nil {
+		return "", nil, err
+	}
+
+	verbosef("%q resolved to %q", bin, binPath)
+	return binPath, subCommand[1:], nil
+}
+
+func createSub(pwd string, subCommand ...string) (*exec.Cmd, error) {
+	binPath, args, err := resolveBin(subCommand...)
 	if err != nil {
 		return nil, err
 	}
 
-	sub := exec.Command(binPath, subCommand[1:]...)
+	sub := exec.Command(binPath, args...)
 	sub.Env = os.Environ()
 	sub.Dir = pwd
 	sub.Stdout = os.Stdout
