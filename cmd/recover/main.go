@@ -70,8 +70,8 @@ func runLoop(quit chan os.Signal, pwd string, subCommand ...string) error {
 		select {
 		case <-alarm:
 			break
-		case <-quit:
-			verbosef("received SIGINT during delay, exiting")
+		case s := <-quit:
+			verbosef("received SIGINT (%s) during delay, exiting", s)
 			return nil
 		}
 	}
@@ -98,8 +98,8 @@ func runLoop(quit chan os.Signal, pwd string, subCommand ...string) error {
 		// kick off monitor
 		go func() {
 			select {
-			case <-quit:
-				verbosef("received SIGINT while sub process is running, killing sub process")
+			case s := <-quit:
+				verbosef("received SIGINT (%s) while sub process is running, killing sub process", s)
 				didQuit = true
 				sub.Process.Kill()
 				return
@@ -130,8 +130,8 @@ func runLoop(quit chan os.Signal, pwd string, subCommand ...string) error {
 			select {
 			case <-alarm:
 				continue
-			case <-quit:
-				verbosef("received SIGINT during wait, exiting")
+			case s := <-quit:
+				verbosef("received SIGINT (%s) during wait, exiting", s)
 				return nil
 			}
 		}
