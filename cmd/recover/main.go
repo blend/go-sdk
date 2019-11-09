@@ -59,19 +59,13 @@ func resolveBin(subCommand ...string) (string, []string, error) {
 	return binPath, subCommand[1:], nil
 }
 
-func createSub(pwd string, subCommand ...string) (*exec.Cmd, error) {
-	binPath, args, err := resolveBin(subCommand...)
-	if err != nil {
-		return nil, err
-	}
-
+func createSub(pwd, binPath string, args ...string) *exec.Cmd {
 	sub := exec.Command(binPath, args...)
 	sub.Env = os.Environ()
 	sub.Dir = pwd
 	sub.Stdout = os.Stdout
 	sub.Stderr = os.Stderr
-
-	return sub, nil
+	return sub
 }
 
 func runLoop(quit chan os.Signal, pwd string, subCommand ...string) error {
@@ -94,15 +88,16 @@ func runLoop(quit chan os.Signal, pwd string, subCommand ...string) error {
 	var abort chan struct{}
 	var aborted chan struct{}
 
+	binPath, args, err := resolveBin(subCommand...)
+	if err != nil {
+		return err
+	}
+
 	for {
 		abort = make(chan struct{})
 		aborted = make(chan struct{})
 
-		sub, err = createSub(pwd, subCommand...)
-		if err != nil {
-			return err
-		}
-
+		sub = createSub(pwd, binPath, args...)
 		if err := sub.Start(); err != nil {
 			return err
 		}
