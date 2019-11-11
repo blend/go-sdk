@@ -53,6 +53,8 @@ const (
 	ContentTypeApplicationJSON = "application/json; charset=utf-8"
 	// ContentTypeApplicationXML is a content type header value.
 	ContentTypeApplicationXML = "application/xml"
+	// ContentTypeTextXML is a content type header value.
+	ContentTypeTextXML = "text/xml"
 	// ContentTypeApplicationFormEncoded is a content type header value.
 	ContentTypeApplicationFormEncoded = "application/x-www-form-urlencoded"
 	// ContentTypeApplicationOctetStream is a content type header value.

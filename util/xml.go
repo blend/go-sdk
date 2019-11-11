@@ -8,9 +8,10 @@ import (
 )
 
 var (
-	cdataPrefix = []byte("<![CDATA[")
-	cdataSuffix = []byte("]]>")
-	cdataRe     = regexp.MustCompile("<!\\[CDATA\\[(.*?)\\]\\]>")
+	cdataPrefix   = []byte("<![CDATA[")
+	cdataSuffix   = []byte("]]>")
+	cdataRe       = regexp.MustCompile("<!\\[CDATA\\[(.*?)\\]\\]>")
+	cdataReDotall = regexp.MustCompile("(?s)" + "<!\\[CDATA\\[(.*?)\\]\\]>")
 )
 
 var (
@@ -26,8 +27,12 @@ func (xu xmlUtil) EncodeCDATA(data []byte) []byte {
 }
 
 // DecodeCDATA decodes a cdata tag to a byte array.
-func (xu xmlUtil) DecodeCDATA(cdata []byte) []byte {
-	matches := cdataRe.FindAllSubmatch(cdata, 1)
+func (xu xmlUtil) DecodeCDATA(cdata []byte, allowNewLines bool) []byte {
+	cdataRegex := cdataRe
+	if allowNewLines {
+		cdataRegex = cdataReDotall
+	}
+	matches := cdataRegex.FindAllSubmatch(cdata, 1)
 	if len(matches) == 0 {
 		return cdata
 	}
