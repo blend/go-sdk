@@ -3,6 +3,7 @@ package request
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -508,6 +509,13 @@ func TestResponseAppliesTransportDefaults(t *testing.T) {
 
 	assert.NotNil(xport.TLSClientConfig)
 	assert.False(xport.TLSClientConfig.InsecureSkipVerify)
+
+	// Keeps existing TLS Client Configs
+	xport.TLSClientConfig.Renegotiation = tls.RenegotiateOnceAsClient
+	assert.Nil(New().AsGet().MustWithRawURL(ts.URL).WithTransport(xport).Execute())
+
+	assert.NotNil(xport.TLSClientConfig)
+	assert.Equal(tls.RenegotiateOnceAsClient, xport.TLSClientConfig.Renegotiation)
 }
 
 var (

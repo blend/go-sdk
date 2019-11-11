@@ -574,10 +574,11 @@ func (r *Request) ApplyTransport(transport *http.Transport) error {
 		}
 		transport.Dial = dialer.Dial
 	}
-	transport.TLSClientConfig = &tls.Config{
-		RootCAs:            r.tlsRootCAPool,
-		InsecureSkipVerify: r.tlsSkipVerify,
+	if transport.TLSClientConfig == nil {
+		transport.TLSClientConfig = &tls.Config{}
 	}
+	transport.TLSClientConfig.RootCAs = r.tlsRootCAPool
+	transport.TLSClientConfig.InsecureSkipVerify = r.tlsSkipVerify
 	if len(r.tlsClientCert) > 0 && len(r.tlsClientKey) > 0 {
 		cert, err := tls.X509KeyPair(r.tlsClientCert, r.tlsClientKey)
 		if err != nil {
@@ -591,9 +592,9 @@ func (r *Request) ApplyTransport(transport *http.Transport) error {
 // Meta returns the request as a HTTPRequestMeta.
 func (r *Request) Meta() *Meta {
 	return &Meta{
-		Method:  r.Method(),
-		URL:     r.URL(),
-		Headers: r.Headers(),
+		Method:    r.Method(),
+		URL:       r.URL(),
+		Headers:   r.Headers(),
 		StartTime: r.requestStarted,
 	}
 }
