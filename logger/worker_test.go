@@ -58,3 +58,27 @@ func TestWorkerPanics(t *testing.T) {
 	w.Close()
 	assert.NotEmpty(buffer.String())
 }
+
+func TestWorkerDrain(t *testing.T) {
+	assert := assert.New(t)
+
+	wg := sync.WaitGroup{}
+	wg.Add(4)
+	var didFire bool
+	w := NewWorker(nil, func(e Event) {
+		defer wg.Done()
+		didFire = true
+	}, DefaultWriteQueueDepth)
+
+	w.Work <- Messagef(Info, "test1")
+	w.Work <- Messagef(Info, "test2")
+	w.Work <- Messagef(Info, "test3")
+	w.Work <- Messagef(Info, "test4")
+
+	go func() {
+		w.Drain()
+	}()
+	wg.Wait()
+
+	assert.True(didFire)
+}

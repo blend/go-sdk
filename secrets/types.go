@@ -51,6 +51,28 @@ type SecretV2 struct {
 	WrapInfo *SecretWrapInfo `json:"wrap_info,omitempty"`
 }
 
+// TransitKey is the structure returned for every transit key within Vault.
+type TransitKey struct {
+	// The request ID that generated this response
+	RequestID     string `json:"request_id"`
+	LeaseID       string `json:"lease_id"`
+	LeaseDuration int    `json:"lease_duration"`
+	Renewable     bool   `json:"renewable"`
+	// Data is the data associated with a transit key
+	Data map[string]interface{} `json:"data"`
+	// Warnings contains any warnings related to the operation. These
+	// are not issues that caused the command to fail, but that the
+	// client should be aware of.
+	Warnings []string `json:"warnings"`
+	// Auth, if non-nil, means that there was authentication information
+	// attached to this response.
+	Auth *SecretAuth `json:"auth,omitempty"`
+	// WrapInfo, if non-nil, means that the initial response was wrapped in the
+	// cubbyhole of the given token (which has a TTL of the given number of
+	// seconds)
+	WrapInfo *SecretWrapInfo `json:"wrap_info,omitempty"`
+}
+
 // SecretData is used for puts.
 type SecretData struct {
 	Data Values `json:"data"`
@@ -129,4 +151,12 @@ type MountConfigInput struct {
 	AuditNonHMACResponseKeys  []string          `json:"audit_non_hmac_response_keys,omitempty" mapstructure:"audit_non_hmac_response_keys"`
 	ListingVisibility         string            `json:"listing_visibility,omitempty" mapstructure:"listing_visibility"`
 	PassthroughRequestHeaders []string          `json:"passthrough_request_headers,omitempty" mapstructure:"passthrough_request_headers"`
+}
+
+// TransitResult is the structure returned by vault for transit requests
+type TransitResult struct {
+	Data struct {
+		Ciphertext string `json:"ciphertext"`
+		Plaintext  string `json:"plaintext"`
+	} `json:"data"`
 }

@@ -532,7 +532,7 @@ func (a *App) Start() (err error) {
 	a.latch.Started()
 
 	if a.server.TLSConfig != nil {
-		shutdownErr = a.server.ServeTLS(keepAliveListener, "", "")
+		shutdownErr = a.server.Serve(tls.NewListener(keepAliveListener, a.server.TLSConfig))
 	} else {
 		shutdownErr = a.server.Serve(keepAliveListener)
 	}
@@ -556,9 +556,12 @@ func (a *App) Stop() error {
 	}
 	a.latch.Stopping()
 
-	ctx, cancel := context.WithTimeout(context.Background(), a.shutdownGracePeriod)
-	defer cancel()
-
+	ctx := context.Background()
+	var cancel context.CancelFunc
+	if a.shutdownGracePeriod > 0 {
+		ctx, cancel = context.WithTimeout(ctx, a.shutdownGracePeriod)
+		defer cancel()
+	}
 	a.syncInfof("server shutting down")
 	a.server.SetKeepAlivesEnabled(false)
 	if err := a.server.Shutdown(ctx); err != nil {

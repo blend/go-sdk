@@ -3,7 +3,6 @@ package webutil
 import (
 	"net"
 	"net/http"
-	"strings"
 )
 
 // GetRemoteAddr gets the origin/client ip for a request.
@@ -16,22 +15,13 @@ func GetRemoteAddr(r *http.Request) string {
 		return ""
 	}
 	tryHeader := func(key string) (string, bool) {
-		if headerVal := r.Header.Get(key); len(headerVal) > 0 {
-			if !strings.ContainsRune(headerVal, ',') {
-				return headerVal, true
-			}
-			vals := strings.Split(headerVal, ",")
-			return vals[len(vals)-1], true
-		}
-		return "", false
+		return HeaderLastValue(r.Header, key)
 	}
-
-	for _, header := range []string{"X-FORWARDED-FOR", "X-REAL-IP"} {
+	for _, header := range []string{HeaderXForwardedFor, HeaderXRealIP} {
 		if headerVal, ok := tryHeader(header); ok {
 			return headerVal
 		}
 	}
-
 	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 	return ip
 }

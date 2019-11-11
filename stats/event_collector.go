@@ -8,8 +8,7 @@ import (
 
 // EventCollector is a collector for events.
 type EventCollector interface {
-	AddDefaultTag(key, value string)
-	DefaultTags() []string
+	Taggable
 	SendEvent(Event) error
 	CreateEvent(title, text string, tags ...string) Event
 }

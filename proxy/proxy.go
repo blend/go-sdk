@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/webutil"
 )
 
 const (
@@ -20,9 +21,31 @@ func New() *Proxy {
 
 // Proxy is a factory for a simple reverse proxy.
 type Proxy struct {
-	log       *logger.Logger
-	upstreams []*Upstream
-	resolver  Resolver
+	upstreamHeaders http.Header
+	log             *logger.Logger
+	upstreams       []*Upstream
+	resolver        Resolver
+}
+
+// WithUpstreamHeaders sets headers to be added to all upstream requests.
+// Note: this will overwrite any existing headers.
+func (p *Proxy) WithUpstreamHeaders(headers http.Header) *Proxy {
+	p.upstreamHeaders = headers
+	return p
+}
+
+// WithUpstreamHeader adds a single upstream header.
+func (p *Proxy) WithUpstreamHeader(key, value string) *Proxy {
+	if p.upstreamHeaders == nil {
+		p.upstreamHeaders = http.Header{}
+	}
+	p.upstreamHeaders.Set(key, value)
+	return p
+}
+
+// UpstreamHeaders returns the upstream headers to add to all upstream requests.
+func (p *Proxy) UpstreamHeaders() http.Header {
+	return p.upstreamHeaders
 }
 
 // WithLogger sets a property and returns the proxy reference.
@@ -71,6 +94,23 @@ func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if upstream == nil {
 		rw.WriteHeader(http.StatusBadGateway)
 		return
+	}
+
+	// Add extra forwarded headers.
+	// these are required for a majority of services to function correctly behind
+	// a reverse proxy.
+	// They are "Add" vs. "Set" in case there are existing values.
+	if port := webutil.GetPort(req); port != "" {
+		req.Header.Add("X-Forwarded-Port", port)
+	}
+	if proto := webutil.GetProto(req); proto != "" {
+		req.Header.Add("X-Forwarded-Proto", proto)
+	}
+	// add upstream headers.
+	for key, values := range p.upstreamHeaders {
+		for _, value := range values {
+			req.Header.Add(key, value)
+		}
 	}
 
 	upstream.ServeHTTP(rw, req)

@@ -1,6 +1,7 @@
 package secrets
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -18,6 +19,9 @@ import (
 
 // assert VaultClient implements Client
 var _ Client = &VaultClient{}
+
+// assert VaultClient implements TransitClient
+var _ TransitClient = &VaultClient{}
 
 // NewVaultClient returns a new client.
 func NewVaultClient() (*VaultClient, error) {
@@ -63,6 +67,8 @@ func NewVaultClientFromConfig(cfg *Config) (*VaultClient, error) {
 
 	client.kv1 = &kv1{client: client}
 	client.kv2 = &kv2{client: client}
+	client.Transit = &VaultTransit{Client: client}
+
 	return client, nil
 }
 
@@ -90,8 +96,9 @@ type VaultClient struct {
 	mount  string
 	log    *logger.Logger
 
-	kv1 *kv1
-	kv2 *kv2
+	kv1     *kv1
+	kv2     *kv2
+	Transit TransitClient
 
 	bufferPool *BufferPool
 	client     HTTPClient
@@ -160,7 +167,7 @@ func (c *VaultClient) Logger() *logger.Logger {
 
 // Put puts a value.
 func (c *VaultClient) Put(key string, data Values, options ...Option) error {
-	backend, err := c.backend(key)
+	backend, err := c.backendKV(key)
 	if err != nil {
 		return err
 	}
@@ -170,7 +177,7 @@ func (c *VaultClient) Put(key string, data Values, options ...Option) error {
 
 // Get gets a value at a given key.
 func (c *VaultClient) Get(key string, options ...Option) (Values, error) {
-	backend, err := c.backend(key)
+	backend, err := c.backendKV(key)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +187,7 @@ func (c *VaultClient) Get(key string, options ...Option) (Values, error) {
 
 // Delete puts a key.
 func (c *VaultClient) Delete(key string, options ...Option) error {
-	backend, err := c.backend(key)
+	backend, err := c.backendKV(key)
 	if err != nil {
 		return err
 	}
@@ -201,11 +208,41 @@ func (c *VaultClient) WriteInto(key string, obj interface{}, options ...Option) 
 	return c.Put(key, util.Reflection.DecomposeStrings(obj, ReflectTagName), options...)
 }
 
+// CreateTransitKey creates a transit key path
+func (c *VaultClient) CreateTransitKey(ctx context.Context, key string, params map[string]interface{}) error {
+	return c.Transit.CreateTransitKey(ctx, key, params)
+}
+
+// ConfigureTransitKey configures a transit key path
+func (c *VaultClient) ConfigureTransitKey(ctx context.Context, key string, config map[string]interface{}) error {
+	return c.Transit.ConfigureTransitKey(ctx, key, config)
+}
+
+// ReadTransitKey returns data about a transit key path
+func (c *VaultClient) ReadTransitKey(ctx context.Context, key string) (map[string]interface{}, error) {
+	return c.Transit.ReadTransitKey(ctx, key)
+}
+
+// DeleteTransitKey deletes a transit key path
+func (c *VaultClient) DeleteTransitKey(ctx context.Context, key string) error {
+	return c.Transit.DeleteTransitKey(ctx, key)
+}
+
+// Encrypt encrypts a given set of data.
+func (c *VaultClient) Encrypt(ctx context.Context, key string, context, data []byte) (string, error) {
+	return c.Transit.Encrypt(ctx, key, context, data)
+}
+
+// Decrypt decrypts a given set of data.
+func (c *VaultClient) Decrypt(ctx context.Context, key string, context []byte, ciphertext string) ([]byte, error) {
+	return c.Transit.Decrypt(ctx, key, context, ciphertext)
+}
+
 // --------------------------------------------------------------------------------
 // utility methods
 // --------------------------------------------------------------------------------
 
-func (c *VaultClient) backend(key string) (KV, error) {
+func (c *VaultClient) backendKV(key string) (KV, error) {
 	version, err := c.getVersion(key)
 	if err != nil {
 		return nil, err

@@ -11,25 +11,24 @@ func TestGetProto(t *testing.T) {
 	assert := assert.New(t)
 
 	headers := http.Header{}
-	headers.Set("X-Forwarded-Proto", "https")
+	headers.Set(HeaderXForwardedProto, SchemeHTTPS)
 	r := http.Request{
-		Proto:  "http",
+		Proto:  SchemeHTTP + "/1.0",
 		Header: headers,
 	}
-	assert.Equal("https", GetProto(&r))
+	assert.Equal(SchemeHTTPS, GetProto(&r))
 
 	headers = http.Header{}
-	headers.Set("X-Forwarded-Proto", "spdy,https")
+	headers.Set(HeaderXForwardedProto, SchemeSPDY+","+SchemeHTTPS)
 	r = http.Request{
-		Proto:  "http",
+		Proto:  SchemeHTTP + "/1.0",
 		Header: headers,
 	}
-	assert.Equal("spdy", GetProto(&r))
+	assert.Equal(SchemeHTTPS, GetProto(&r))
 
 	headers = http.Header{}
 	r = http.Request{
-		Proto:  "http",
 		Header: headers,
 	}
-	assert.Equal("http", GetProto(&r))
+	assert.Empty(GetProto(&r))
 }

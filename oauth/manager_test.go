@@ -8,6 +8,7 @@ import (
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/util"
+	"github.com/blend/go-sdk/webutil"
 )
 
 func TestNew(t *testing.T) {
@@ -81,7 +82,7 @@ func TestManagerGetRedirectURI(t *testing.T) {
 		WithClientID("test_client_id").
 		WithRedirectURI("/oauth/google")
 
-	redirectURI := m.getRedirectURI(&http.Request{Proto: "https", Host: "test.blend.com"})
+	redirectURI := m.getRedirectURI(&http.Request{Proto: "https", Host: "test.blend.com", Header: http.Header{webutil.HeaderXForwardedProto: {webutil.SchemeHTTPS}}})
 	parsedRedirectURI, err := url.Parse(redirectURI)
 	assert.Nil(err)
 	assert.Equal("https", parsedRedirectURI.Scheme)

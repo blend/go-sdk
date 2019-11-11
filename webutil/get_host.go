@@ -11,16 +11,9 @@ func GetHost(r *http.Request) string {
 		return ""
 	}
 	tryHeader := func(key string) (string, bool) {
-		if headerVal := r.Header.Get(key); len(headerVal) > 0 {
-			if !strings.ContainsRune(headerVal, ',') {
-				return headerVal, true
-			}
-			return strings.SplitN(headerVal, ",", 2)[0], true
-		}
-		return "", false
+		return HeaderLastValue(r.Header, key)
 	}
-
-	for _, header := range []string{"X-FORWARDED-HOST"} {
+	for _, header := range []string{HeaderXForwardedHost} {
 		if headerVal, ok := tryHeader(header); ok {
 			return headerVal
 		}
