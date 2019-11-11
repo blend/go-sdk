@@ -38,10 +38,10 @@ func TestCdata(t *testing.T) {
 	assert := assert.New(t)
 
 	assert.Equal("<![CDATA[test]]>", string(XML.EncodeCDATA([]byte("test"))))
-	assert.Equal("<![CDATA[test", string(XML.DecodeCDATA([]byte("<![CDATA[test"))))
-	assert.Empty(XML.DecodeCDATA([]byte("<![CDATA[]]>")))
-	assert.Equal("test", string(XML.DecodeCDATA([]byte("<![CDATA[test]]>"))))
-	assert.Equal("test", string(XML.DecodeCDATA([]byte(" <![CDATA[test]]>"))))
-	assert.Equal("<![CDATA[test", string(XML.DecodeCDATA([]byte("<![CDATA[<![CDATA[test]]>]]>"))))
-	assert.Equal("one", string(XML.DecodeCDATA([]byte("<![CDATA[one]]><![CDATA[two]]>"))))
+	assert.Equal("<![CDATA[test", string(XML.DecodeCDATA([]byte("<![CDATA[test"), false)))
+	assert.Empty(XML.DecodeCDATA([]byte("<![CDATA[]]>"), false))
+	assert.Equal("test", string(XML.DecodeCDATA([]byte("<![CDATA[test]]>"), false)))
+	assert.Equal("test", string(XML.DecodeCDATA([]byte(" <![CDATA[test]]>"), false)))
+	assert.Equal("<![CDATA[test", string(XML.DecodeCDATA([]byte("<![CDATA[<![CDATA[test]]>]]>"), false)))
+	assert.Equal("one", string(XML.DecodeCDATA([]byte("<![CDATA[one]]><![CDATA[two]]>"), false)))
 }
