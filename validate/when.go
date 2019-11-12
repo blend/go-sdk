@@ -5,8 +5,14 @@ package validate
 func When(predicate func() bool, passes, fails Validator) Validator {
 	return func() error {
 		if predicate() {
-			return passes()
+			if passes != nil {
+				return passes()
+			}
+			return nil
 		}
-		return fails()
+		if fails != nil {
+			return fails()
+		}
+		return nil
 	}
 }
