@@ -73,9 +73,9 @@ func Errorf(cause error, value interface{}, format string, args ...interface{}) 
 	}
 }
 
-// Inner returns the inner validation error if it's present on
+// ErrInner returns the inner validation error if it's present on
 // the outer error.
-func Inner(err error) *ValidationError {
+func ErrInner(err error) *ValidationError {
 	inner := ex.ErrInner(err)
 	if inner == nil {
 		return nil
@@ -86,40 +86,40 @@ func Inner(err error) *ValidationError {
 	return nil
 }
 
-// Cause returns the underlying validation failure for an error.
+// ErrCause returns the underlying validation failure for an error.
 // If the error is not a validation error, it returns the error class.
-func Cause(err error) error {
+func ErrCause(err error) error {
 	if exClass := ex.ErrClass(err); exClass != ErrValidation {
 		return exClass
 	}
-	if inner := Inner(err); inner != nil {
+	if inner := ErrInner(err); inner != nil {
 		return inner.Cause
 	}
 	return nil
 }
 
-// Message returns the underlying validation error message.
-func Message(err error) string {
-	if inner := Inner(err); inner != nil {
+// ErrMessage returns the underlying validation error message.
+func ErrMessage(err error) string {
+	if inner := ErrInner(err); inner != nil {
 		return inner.Message
 	}
 	return ""
 }
 
-// Value returns the validation error value.
-func Value(err error) interface{} {
-	if inner := Inner(err); inner != nil {
+// ErrValue returns the validation error value.
+func ErrValue(err error) interface{} {
+	if inner := ErrInner(err); inner != nil {
 		return inner.Value
 	}
 	return nil
 }
 
-// Format formats an error.
-func Format(err error) string {
+// ErrFormat formats an error.
+func ErrFormat(err error) string {
 	if err == nil {
 		return "ok!"
 	}
-	return Inner(err).Error()
+	return ErrInner(err).Error()
 }
 
 // Is returns if an error is a validation error.

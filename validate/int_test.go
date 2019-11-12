@@ -20,14 +20,14 @@ func TestIntMin(t *testing.T) {
 
 	verr = Int(nil).Min(10)()
 	assert.NotNil(verr)
-	assert.Nil(Value(verr))
-	assert.Equal(ErrIntMin, Cause(verr))
+	assert.Nil(ErrValue(verr))
+	assert.Equal(ErrIntMin, ErrCause(verr))
 
 	val = 1
 	verr = Int(&val).Min(10)()
 	assert.NotNil(verr)
-	assert.NotNil(Value(verr))
-	assert.Equal(ErrIntMin, Cause(verr))
+	assert.NotNil(ErrValue(verr))
+	assert.Equal(ErrIntMin, ErrCause(verr))
 
 	val = 10
 	verr = Int(&val).Min(10)()
@@ -52,8 +52,8 @@ func TestIntMax(t *testing.T) {
 	val = 11
 	verr = Int(&val).Max(10)()
 	assert.NotNil(verr)
-	assert.NotNil(Value(verr))
-	assert.Equal(ErrIntMax, Cause(verr))
+	assert.NotNil(ErrValue(verr))
+	assert.Equal(ErrIntMax, ErrCause(verr))
 }
 
 func TestIntBetween(t *testing.T) {
@@ -66,14 +66,14 @@ func TestIntBetween(t *testing.T) {
 
 	verr = Int(nil).Between(5, 10)()
 	assert.NotNil(verr)
-	assert.Nil(Value(verr))
-	assert.Equal(ErrIntMin, Cause(verr))
+	assert.Nil(ErrValue(verr))
+	assert.Equal(ErrIntMin, ErrCause(verr))
 
 	val = 1
 	verr = Int(&val).Between(5, 10)()
 	assert.NotNil(verr)
-	assert.Equal(1, Value(verr))
-	assert.Equal(ErrIntMin, Cause(verr))
+	assert.Equal(1, ErrValue(verr))
+	assert.Equal(ErrIntMin, ErrCause(verr))
 
 	val = 5
 	verr = Int(&val).Between(5, 10)()
@@ -86,8 +86,8 @@ func TestIntBetween(t *testing.T) {
 	val = 11
 	verr = Int(&val).Between(5, 10)()
 	assert.NotNil(verr)
-	assert.Equal(11, Value(verr))
-	assert.Equal(ErrIntMax, Cause(verr))
+	assert.Equal(11, ErrValue(verr))
+	assert.Equal(ErrIntMax, ErrCause(verr))
 }
 
 func TestIntPositive(t *testing.T) {
@@ -100,14 +100,14 @@ func TestIntPositive(t *testing.T) {
 
 	verr = Int(nil).Positive()()
 	assert.NotNil(verr)
-	assert.Nil(Value(verr))
-	assert.Equal(ErrIntPositive, Cause(verr))
+	assert.Nil(ErrValue(verr))
+	assert.Equal(ErrIntPositive, ErrCause(verr))
 
 	val = -5
 	verr = Int(&val).Positive()()
 	assert.NotNil(verr)
-	assert.NotNil(Value(verr))
-	assert.Equal(ErrIntPositive, Cause(verr))
+	assert.NotNil(ErrValue(verr))
+	assert.Equal(ErrIntPositive, ErrCause(verr))
 }
 
 func TestIntNegative(t *testing.T) {
@@ -120,12 +120,12 @@ func TestIntNegative(t *testing.T) {
 
 	verr = Int(nil).Negative()()
 	assert.NotNil(verr)
-	assert.Nil(Value(verr))
-	assert.Equal(ErrIntNegative, Cause(verr))
+	assert.Nil(ErrValue(verr))
+	assert.Equal(ErrIntNegative, ErrCause(verr))
 
 	val = 5
 	verr = Int(&val).Negative()()
 	assert.NotNil(verr)
-	assert.NotNil(Value(verr))
-	assert.Equal(ErrIntNegative, Cause(verr))
+	assert.NotNil(ErrValue(verr))
+	assert.Equal(ErrIntNegative, ErrCause(verr))
 }

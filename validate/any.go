@@ -24,6 +24,8 @@ const (
 )
 
 // Any returns a new AnyValidators.
+// Any can be used to validate any type, but will be more limited
+// than using type specific validators.
 func Any(obj interface{}) AnyValidators {
 	return AnyValidators{Obj: obj}
 }

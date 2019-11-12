@@ -21,7 +21,7 @@ func TestTimeBefore(t *testing.T) {
 	verr = Time(tv(ts.Add(time.Hour))).Before(ts)()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
-	assert.Equal(ErrTimeBefore, Cause(verr))
+	assert.Equal(ErrTimeBefore, ErrCause(verr))
 }
 
 func TestTimeBeforeNowUTC(t *testing.T) {
@@ -35,7 +35,7 @@ func TestTimeBeforeNowUTC(t *testing.T) {
 	verr = Time(tv(ts.Add(time.Hour))).BeforeNowUTC()()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
-	assert.Equal(ErrTimeBefore, Cause(verr))
+	assert.Equal(ErrTimeBefore, ErrCause(verr))
 }
 
 func TestTimeAfter(t *testing.T) {
@@ -49,7 +49,7 @@ func TestTimeAfter(t *testing.T) {
 	verr = Time(tv(ts.Add(-time.Hour))).After(ts)()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
-	assert.Equal(ErrTimeAfter, Cause(verr))
+	assert.Equal(ErrTimeAfter, ErrCause(verr))
 }
 
 func TestTimeAfterNowUTC(t *testing.T) {
@@ -63,7 +63,7 @@ func TestTimeAfterNowUTC(t *testing.T) {
 	verr = Time(tv(ts.Add(-time.Hour))).AfterNowUTC()()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
-	assert.Equal(ErrTimeAfter, Cause(verr))
+	assert.Equal(ErrTimeAfter, ErrCause(verr))
 }
 
 func TestTimeBetween(t *testing.T) {
@@ -80,10 +80,10 @@ func TestTimeBetween(t *testing.T) {
 	verr = Time(&c).Between(a, b)()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
-	assert.Equal(ErrTimeBefore, Cause(verr))
+	assert.Equal(ErrTimeBefore, ErrCause(verr))
 
 	verr = Time(&a).Between(b, c)()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
-	assert.Equal(ErrTimeAfter, Cause(verr))
+	assert.Equal(ErrTimeAfter, ErrCause(verr))
 }

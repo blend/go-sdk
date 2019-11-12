@@ -28,6 +28,7 @@ const (
 	ErrStringIsURI     ex.Class = "string should be a valid uri"
 	ErrStringIsIP      ex.Class = "string should be a valid ip address"
 	ErrStringIsSlug    ex.Class = "string should be a valid slug (i.e. matching [0-9,a-z,A-Z,_,-])"
+	ErrStringIsOneOf   ex.Class = "string should be one of a set of values"
 )
 
 // String contains helpers for string validation.
@@ -254,5 +255,20 @@ func (s StringValidators) IsSlug() Validator {
 			return Error(ErrStringIsSlug, *s.Value)
 		}
 		return nil
+	}
+}
+
+// IsOneOf validates a string is one of a known set of values.
+func (s StringValidators) IsOneOf(values ...string) Validator {
+	return func() error {
+		if s.Value == nil {
+			return Error(ErrStringIsOneOf, s.Value, strings.Join(values, ", "))
+		}
+		for _, value := range values {
+			if *s.Value == value {
+				return nil
+			}
+		}
+		return Error(ErrStringIsOneOf, s.Value, strings.Join(values, ", "))
 	}
 }

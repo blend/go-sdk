@@ -15,13 +15,13 @@ func TestError(t *testing.T) {
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
 	assert.Empty(ex.ErrMessage(verr))
-	assert.Equal(fmt.Errorf("this is a test"), Cause(verr))
+	assert.Equal(fmt.Errorf("this is a test"), ErrCause(verr))
 
 	verr = Error(fmt.Errorf("this is a test"), nil, "foo", "bar")
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
-	assert.Equal("foobar", Message(verr))
-	assert.Equal(fmt.Errorf("this is a test"), Cause(verr))
+	assert.Equal("foobar", ErrMessage(verr))
+	assert.Equal(fmt.Errorf("this is a test"), ErrCause(verr))
 }
 
 func TestErrorf(t *testing.T) {
@@ -30,18 +30,18 @@ func TestErrorf(t *testing.T) {
 	verr := Errorf(fmt.Errorf("this is a test"), "foo", "minimum: %d", 30)
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
-	assert.Equal("minimum: 30", Message(verr))
-	assert.Equal(fmt.Errorf("this is a test"), Cause(verr))
+	assert.Equal("minimum: 30", ErrMessage(verr))
+	assert.Equal(fmt.Errorf("this is a test"), ErrCause(verr))
 }
 
-func TestCause(t *testing.T) {
+func TestErrCause(t *testing.T) {
 	assert := assert.New(t)
 
 	err := ex.New(ErrNonLengthType)
 	assert.Equal(ErrNonLengthType, ex.ErrClass(err))
-	assert.Equal(ErrNonLengthType, Cause(err))
+	assert.Equal(ErrNonLengthType, ErrCause(err))
 
 	verr := Error(ErrEmpty, "foo")
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
-	assert.Equal(ErrEmpty, Cause(verr))
+	assert.Equal(ErrEmpty, ErrCause(verr))
 }

@@ -15,12 +15,12 @@ func TestStringRequired(t *testing.T) {
 	var verr error
 	verr = String(nil).Required()()
 	assert.NotNil(verr)
-	assert.Equal(ErrStringRequired, Cause(ErrStringRequired))
+	assert.Equal(ErrStringRequired, ErrCause(ErrStringRequired))
 
 	bad := ""
 	verr = String(&bad).Required()()
 	assert.NotNil(verr)
-	assert.Equal(ErrStringRequired, Cause(ErrStringRequired))
+	assert.Equal(ErrStringRequired, ErrCause(ErrStringRequired))
 
 	good := "ok!"
 	verr = String(&good).Required()()
@@ -38,13 +38,13 @@ func TestStringMin(t *testing.T) {
 	verr = String(nil).MinLen(3)()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
-	assert.Equal(ErrStringLengthMin, Cause(verr))
+	assert.Equal(ErrStringLengthMin, ErrCause(verr))
 
 	good := "a"
 	verr = String(&good).MinLen(3)()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
-	assert.Equal(ErrStringLengthMin, Cause(verr))
+	assert.Equal(ErrStringLengthMin, ErrCause(verr))
 }
 
 func TestStringMaxlen(t *testing.T) {
@@ -62,7 +62,7 @@ func TestStringMaxlen(t *testing.T) {
 	verr = String(&good).MaxLen(3)()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
-	assert.Equal(ErrStringLengthMax, Cause(verr))
+	assert.Equal(ErrStringLengthMax, ErrCause(verr))
 }
 
 func TestStringBetweenLen(t *testing.T) {
@@ -77,18 +77,18 @@ func TestStringBetweenLen(t *testing.T) {
 	verr = String(&bad).BetweenLen(1, 3)()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
-	assert.Equal(ErrStringLengthMax, Cause(verr))
+	assert.Equal(ErrStringLengthMax, ErrCause(verr))
 
 	verr = String(nil).BetweenLen(2, 5)()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
-	assert.Equal(ErrStringLengthMin, Cause(verr))
+	assert.Equal(ErrStringLengthMin, ErrCause(verr))
 
 	bad = "a"
 	verr = String(&bad).BetweenLen(2, 5)()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
-	assert.Equal(ErrStringLengthMin, Cause(verr))
+	assert.Equal(ErrStringLengthMin, ErrCause(verr))
 }
 
 func TestStringMatches(t *testing.T) {
@@ -101,13 +101,13 @@ func TestStringMatches(t *testing.T) {
 
 	verr = String(nil).Matches("foo$")()
 	assert.NotNil(verr)
-	assert.Nil(Value(verr))
-	assert.Equal(ErrStringMatches, Cause(verr))
+	assert.Nil(ErrValue(verr))
+	assert.Equal(ErrStringMatches, ErrCause(verr))
 
 	bad := "foo not"
 	verr = String(&bad).Matches("foo$")()
 	assert.NotNil(verr)
-	assert.Equal(ErrStringMatches, Cause(verr))
+	assert.Equal(ErrStringMatches, ErrCause(verr))
 }
 
 func TestStringMatchesError(t *testing.T) {
@@ -130,13 +130,13 @@ func TestStringIsUpper(t *testing.T) {
 
 	verr = String(nil).IsUpper()()
 	assert.NotNil(verr)
-	assert.Nil(Value(verr))
-	assert.Equal(ErrStringIsUpper, Cause(verr))
+	assert.Nil(ErrValue(verr))
+	assert.Equal(ErrStringIsUpper, ErrCause(verr))
 
 	bad := "FOo"
 	verr = String(&bad).IsUpper()()
 	assert.NotNil(verr)
-	assert.Equal(ErrStringIsUpper, Cause(verr))
+	assert.Equal(ErrStringIsUpper, ErrCause(verr))
 }
 
 func TestStringIsLower(t *testing.T) {
@@ -149,13 +149,13 @@ func TestStringIsLower(t *testing.T) {
 
 	verr = String(nil).IsLower()()
 	assert.NotNil(verr)
-	assert.Nil(Value(verr))
-	assert.Equal(ErrStringIsLower, Cause(verr))
+	assert.Nil(ErrValue(verr))
+	assert.Equal(ErrStringIsLower, ErrCause(verr))
 
 	bad := "foO"
 	verr = String(&bad).IsLower()()
 	assert.NotNil(verr)
-	assert.Equal(ErrStringIsLower, Cause(verr))
+	assert.Equal(ErrStringIsLower, ErrCause(verr))
 }
 
 func TestStringIsTitle(t *testing.T) {
@@ -168,13 +168,13 @@ func TestStringIsTitle(t *testing.T) {
 
 	verr = String(nil).IsTitle()()
 	assert.NotNil(verr)
-	assert.Nil(Value(verr))
-	assert.Equal(ErrStringIsTitle, Cause(verr))
+	assert.Nil(ErrValue(verr))
+	assert.Equal(ErrStringIsTitle, ErrCause(verr))
 
 	bad := "this is a test"
 	verr = String(&bad).IsTitle()()
 	assert.NotNil(verr)
-	assert.Equal(ErrStringIsTitle, Cause(verr))
+	assert.Equal(ErrStringIsTitle, ErrCause(verr))
 }
 
 func TestStringIsUUID(t *testing.T) {
@@ -188,8 +188,8 @@ func TestStringIsUUID(t *testing.T) {
 	verr = String(nil).IsUUID()()
 	assert.NotNil(verr)
 	assert.NotNil(verr)
-	assert.Nil(Value(verr))
-	assert.Equal(ErrStringIsUUID, Cause(verr))
+	assert.Nil(ErrValue(verr))
+	assert.Equal(ErrStringIsUUID, ErrCause(verr))
 
 	good = uuid.V4().ToFullString()
 	verr = String(&good).IsUUID()()
@@ -198,7 +198,7 @@ func TestStringIsUUID(t *testing.T) {
 	bad := "asldkfjaslkfjasdlfa"
 	verr = String(&bad).IsUUID()()
 	assert.NotNil(verr)
-	assert.Equal(ErrStringIsUUID, Cause(verr))
+	assert.Equal(ErrStringIsUUID, ErrCause(verr))
 }
 
 func TestStringIsEmail(t *testing.T) {
@@ -207,8 +207,8 @@ func TestStringIsEmail(t *testing.T) {
 	var verr error
 	verr = String(nil).IsEmail()()
 	assert.NotNil(verr)
-	assert.Nil(Value(verr))
-	assert.Equal(ErrStringIsEmail, Cause(verr))
+	assert.Nil(ErrValue(verr))
+	assert.Equal(ErrStringIsEmail, ErrCause(verr))
 
 	good := "foo@bar.com"
 	verr = String(&good).IsEmail()()
@@ -225,7 +225,7 @@ func TestStringIsEmail(t *testing.T) {
 	bad := "this is a test"
 	verr = String(&bad).IsEmail()()
 	assert.NotNil(verr)
-	assert.Equal(ErrStringIsEmail, Cause(verr))
+	assert.Equal(ErrStringIsEmail, ErrCause(verr))
 }
 
 func TestStringIsURI(t *testing.T) {
@@ -234,8 +234,8 @@ func TestStringIsURI(t *testing.T) {
 	var verr error
 	verr = String(nil).IsURI()()
 	assert.NotNil(verr)
-	assert.Nil(Value(verr))
-	assert.Equal(ErrStringIsURI, Cause(verr))
+	assert.Nil(ErrValue(verr))
+	assert.Equal(ErrStringIsURI, ErrCause(verr))
 
 	good := "https://foo.com"
 
@@ -245,8 +245,8 @@ func TestStringIsURI(t *testing.T) {
 	bad := "this is a test"
 	verr = String(&bad).IsURI()()
 	assert.NotNil(verr)
-	assert.Equal(bad, Value(verr))
-	assert.Equal(ErrStringIsURI, Cause(verr))
+	assert.Equal(bad, ErrValue(verr))
+	assert.Equal(ErrStringIsURI, ErrCause(verr))
 }
 
 func TestStringIsIP(t *testing.T) {
@@ -255,8 +255,8 @@ func TestStringIsIP(t *testing.T) {
 	var verr error
 	verr = String(nil).IsIP()()
 	assert.NotNil(verr)
-	assert.Nil(Value(verr))
-	assert.Equal(ErrStringIsIP, Cause(verr))
+	assert.Nil(ErrValue(verr))
+	assert.Equal(ErrStringIsIP, ErrCause(verr))
 
 	good := "127.0.0.1"
 	verr = String(&good).IsIP()()
@@ -274,12 +274,12 @@ func TestStringIsIP(t *testing.T) {
 	bad := ""
 	verr = String(&bad).IsIP()()
 	assert.NotNil(verr)
-	assert.Equal(ErrStringIsIP, Cause(verr))
+	assert.Equal(ErrStringIsIP, ErrCause(verr))
 
 	bad = "this is a test"
 	verr = String(&bad).IsIP()()
 	assert.NotNil(verr)
-	assert.Equal(ErrStringIsIP, Cause(verr))
+	assert.Equal(ErrStringIsIP, ErrCause(verr))
 }
 
 func TestStringIsSlug(t *testing.T) {
@@ -288,8 +288,8 @@ func TestStringIsSlug(t *testing.T) {
 	var verr error
 	verr = String(nil).IsSlug()()
 	assert.NotNil(verr)
-	assert.Nil(Value(verr))
-	assert.Equal(ErrStringIsSlug, Cause(verr))
+	assert.Nil(ErrValue(verr))
+	assert.Equal(ErrStringIsSlug, ErrCause(verr))
 
 	good := "abcdefghijklmnopqrstuvwxyz"
 	verr = String(&good).IsSlug()()
@@ -318,5 +318,27 @@ func TestStringIsSlug(t *testing.T) {
 	bad := "this/../is/../hacking?"
 	verr = String(&bad).IsSlug()()
 	assert.NotNil(verr)
-	assert.Equal(ErrStringIsSlug, Cause(verr))
+	assert.Equal(ErrStringIsSlug, ErrCause(verr))
+}
+
+func TestStringIsOneOf(t *testing.T) {
+	assert := assert.New(t)
+
+	var verr error
+	verr = String(nil).IsOneOf()()
+	assert.NotNil(verr)
+	assert.Equal(ErrStringIsOneOf, ErrCause(verr))
+	assert.Nil(ErrValue(verr))
+	assert.NotNil(ErrMessage(verr))
+
+	good := "foo"
+	verr = String(&good).IsOneOf("foo", "bar")()
+	assert.Nil(verr)
+
+	bad := "bad"
+	verr = String(&bad).IsOneOf("foo", "bar")()
+	assert.NotNil(verr)
+	assert.NotNil(ErrValue(verr))
+	assert.Equal(ErrStringIsOneOf, ErrCause(verr))
+	assert.Equal("foo, bar", ErrMessage(verr))
 }
