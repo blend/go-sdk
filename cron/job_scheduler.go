@@ -266,7 +266,7 @@ func (js *JobScheduler) Stop() error {
 	// signal we are stopping.
 	js.Latch.Stopping()
 
-	ctx, cancel := js.createContextWithTimeout(js.ShutdownGracePeriodProvider())
+	ctx, cancel := js.createContextWithTimeout(context.Background(), js.ShutdownGracePeriodProvider())
 	defer cancel()
 	js.cancelJobInvocation(ctx, js.Current)
 	js.PersistHistory(ctx)
@@ -319,7 +319,7 @@ func (js *JobScheduler) Cancel() error {
 	gracePeriod := js.ShutdownGracePeriodProvider()
 	if gracePeriod > 0 {
 		js.debugf("job cancellation; cancelling with %v grace period", gracePeriod)
-		ctx, cancel := js.createContextWithTimeout(js.ShutdownGracePeriodProvider())
+		ctx, cancel := js.createContextWithTimeout(context.Background(), js.ShutdownGracePeriodProvider())
 		defer cancel()
 
 		js.cancelJobInvocation(ctx, js.Current)
@@ -380,8 +380,14 @@ func (js *JobScheduler) RunLoop() {
 	}
 }
 
-// RunAsync forces the job to run.
+// RunAsync starts a job invocation with a context.Background() as
+// the root context.
 func (js *JobScheduler) RunAsync() (*JobInvocation, error) {
+	return js.RunAsyncContext(context.Background())
+}
+
+// RunAsyncContext starts a job invocation with a given context.
+func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, error) {
 	// if there is already another instance running
 	if !js.Idle() {
 		return nil, ex.New(ErrJobAlreadyRunning, ex.OptMessagef("job: %s", js.Name()))
@@ -392,7 +398,7 @@ func (js *JobScheduler) RunAsync() (*JobInvocation, error) {
 	// create a job invocation, or a record of each
 	// individual execution of a job.
 	ji := NewJobInvocation(js.Name())
-	ji.Context, ji.Cancel = js.createContextWithTimeout(timeout)
+	ji.Context, ji.Cancel = js.createContextWithTimeout(ctx, timeout)
 
 	if timeout > 0 {
 		ji.Timeout = ji.Started.Add(timeout)
@@ -462,9 +468,17 @@ func (js *JobScheduler) RunAsync() (*JobInvocation, error) {
 
 // Run forces the job to run.
 // This call will block.
-// It checks if the job should be allowed to execute.
 func (js *JobScheduler) Run() {
 	ji, err := js.RunAsync()
+	if err != nil {
+		return
+	}
+	<-ji.Done
+}
+
+// RunContext runs a job with a given context as the root context.
+func (js *JobScheduler) RunContext(ctx context.Context) {
+	ji, err := js.RunAsyncContext(ctx)
 	if err != nil {
 		return
 	}
@@ -638,11 +652,11 @@ func (js *JobScheduler) safeBackgroundExec(ctx context.Context) chan error {
 	return errors
 }
 
-func (js *JobScheduler) createContextWithTimeout(timeout time.Duration) (context.Context, context.CancelFunc) {
+func (js *JobScheduler) createContextWithTimeout(ctx context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
 	if timeout > 0 {
-		return context.WithTimeout(context.Background(), timeout)
+		return context.WithTimeout(ctx, timeout)
 	}
-	return context.WithCancel(context.Background())
+	return context.WithCancel(ctx)
 }
 
 func (js *JobScheduler) onStart(ctx context.Context, ji *JobInvocation) {

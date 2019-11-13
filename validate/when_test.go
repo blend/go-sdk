@@ -11,13 +11,8 @@ func TestWhen(t *testing.T) {
 	assert := assert.New(t)
 
 	var toggle bool
-	when := When(func() bool { return toggle }, func() error { return fmt.Errorf("passes") }, func() error { return fmt.Errorf("fails") })
-
-	err := when()
-	assert.Equal(fmt.Errorf("fails"), err)
-
+	when := When(func() bool { return toggle }, func() error { return fmt.Errorf("passes") })
+	assert.Nil(when())
 	toggle = true
-
-	err = when()
-	assert.Equal(fmt.Errorf("passes"), err)
+	assert.Equal(fmt.Errorf("passes"), when())
 }
