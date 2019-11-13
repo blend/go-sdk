@@ -143,21 +143,6 @@ func (jm *JobManager) IsJobRunning(jobName string) (isRunning bool) {
 	return
 }
 
-// RunJobs runs a variadic list of job names.
-func (jm *JobManager) RunJobs(jobNames ...string) error {
-	jm.Lock()
-	defer jm.Unlock()
-
-	for _, jobName := range jobNames {
-		if job, ok := jm.Jobs[jobName]; ok {
-			job.Run()
-		} else {
-			return ex.New(ErrJobNotLoaded, ex.OptMessagef("job: %s", jobName))
-		}
-	}
-	return nil
-}
-
 // RunJob runs a job by jobName on demand.
 func (jm *JobManager) RunJob(jobName string) (*JobInvocation, error) {
 	jm.Lock()
@@ -168,6 +153,18 @@ func (jm *JobManager) RunJob(jobName string) (*JobInvocation, error) {
 		return nil, ex.New(ErrJobNotLoaded, ex.OptMessagef("job: %s", jobName))
 	}
 	return job.RunAsync()
+}
+
+// RunJobContext runs a job by jobName on demand with a given context.
+func (jm *JobManager) RunJobContext(ctx context.Context, jobName string) (*JobInvocation, error) {
+	jm.Lock()
+	defer jm.Unlock()
+
+	job, ok := jm.Jobs[jobName]
+	if !ok {
+		return nil, ex.New(ErrJobNotLoaded, ex.OptMessagef("job: %s", jobName))
+	}
+	return job.RunAsyncContext(ctx)
 }
 
 // CancelJob cancels (sends the cancellation signal) to a running job.
