@@ -33,7 +33,7 @@ func (v Validated) Validate() error {
 		joi.Int(&v.Count).Between(0, 99),
 		joi.Any(&v.Count).NotEquals(81),
 		joi.Time(&v.Created).BeforeNowUTC(),
-		joi.When(
+		joi.WhenElse(
 			func() bool { return v.ID != nil && v.ID.IsV4() },
 			joi.String(v.Optional).IsURI(),
 			joi.String(v.Optional).IsIP(),
@@ -49,7 +49,7 @@ func main() {
 
 	for index, obj := range objects {
 		if err := obj.Validate(); err != nil {
-			fmt.Printf("object %d fails validation: %v\n", index, validate.Format(err))
+			fmt.Printf("object %d fails validation: %v\n", index, validate.ErrFormat(err))
 		}
 	}
 }
