@@ -35,8 +35,8 @@ func (v Validated) Validate() error {
 		joi.Time(&v.Created).BeforeNowUTC(),
 		joi.WhenElse(
 			func() bool { return v.ID != nil && v.ID.IsV4() },
-			joi.String(v.Optional).IsURI(),
-			joi.String(v.Optional).IsIP(),
+			joi.String(v.Optional).IsURI(), // not sure why
+			joi.String(v.Optional).IsIP(),  // still not sure why
 		),
 	)
 }
