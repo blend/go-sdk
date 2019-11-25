@@ -7,9 +7,9 @@ import (
 	"github.com/blend/go-sdk/assert"
 )
 
-func TestFirst(t *testing.T) {
+func TestReturnFirst(t *testing.T) {
 	assert := assert.New(t)
 
-	res := First(none, some(fmt.Errorf("one")), some(fmt.Errorf("two")), none)
+	res := ReturnFirst(none, some(fmt.Errorf("one")), some(fmt.Errorf("two")), none)
 	assert.Equal(fmt.Errorf("one"), res)
 }

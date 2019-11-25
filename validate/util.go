@@ -30,3 +30,13 @@ func GetLength(obj interface{}) (int, error) {
 	}
 	return 0, ErrNonLengthType
 }
+
+// IsNil returns if an object is nil or is a typed pointer to nil.
+func IsNil(obj interface{}) bool {
+	if obj == nil {
+		return true
+	}
+	value := reflect.ValueOf(obj)
+	kind := value.Kind()
+	return kind >= reflect.Chan && kind <= reflect.Slice && value.IsNil()
+}

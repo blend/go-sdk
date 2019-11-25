@@ -54,7 +54,7 @@ func TestNotZero(t *testing.T) {
 	assert.Equal(ErrNotZero, ErrCause(verr))
 }
 
-func TestZero(t *testing.T) {
+func TestAnyRefZero(t *testing.T) {
 	assert := assert.New(t)
 
 	type zeroTest struct {
@@ -106,7 +106,7 @@ func TestZero(t *testing.T) {
 	}
 }
 
-func TestEmpty(t *testing.T) {
+func TestAnyRefEmpty(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := [...]struct {
@@ -169,7 +169,7 @@ func TestEmpty(t *testing.T) {
 	}
 }
 
-func TestNotEmpty(t *testing.T) {
+func TestAnyRefNotEmpty(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := [...]struct {
@@ -232,7 +232,7 @@ func TestNotEmpty(t *testing.T) {
 	}
 }
 
-func TestLen(t *testing.T) {
+func TestAnyRefLen(t *testing.T) {
 	assert := assert.New(t)
 
 	var err error
@@ -252,7 +252,7 @@ func TestLen(t *testing.T) {
 	assert.Equal(ErrLen, ErrCause(verr))
 }
 
-func TestNil(t *testing.T) {
+func TestAnyRefNil(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
@@ -268,7 +268,7 @@ func TestNil(t *testing.T) {
 	assert.Equal(ErrNil, ErrCause(verr))
 }
 
-func TestNotNil(t *testing.T) {
+func TestAnyRefNotNil(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
@@ -304,7 +304,7 @@ func TestEquals(t *testing.T) {
 	assert.Equal(ErrEquals, ErrCause(verr))
 }
 
-func TestNotEquals(t *testing.T) {
+func TestAnyRefNotEquals(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
@@ -323,7 +323,7 @@ func TestNotEquals(t *testing.T) {
 	assert.Equal(ErrNotEquals, ErrCause(verr))
 }
 
-func TestAllow(t *testing.T) {
+func TestAnyRefAllow(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
@@ -339,7 +339,7 @@ func TestAllow(t *testing.T) {
 	assert.Equal(ErrAllowed, ErrCause(verr))
 }
 
-func TestDisallow(t *testing.T) {
+func TestAnyRefDisallow(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error

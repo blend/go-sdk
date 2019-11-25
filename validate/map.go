@@ -13,7 +13,7 @@ const (
 	ErrMapKeys        ex.Class = "map should have keys"
 )
 
-// Map returns map validators.
+// Map returns validators for a map type reference.
 func Map(instance interface{}) MapValidators {
 	return MapValidators{instance}
 }

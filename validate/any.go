@@ -23,8 +23,8 @@ const (
 	ErrDisallowed ex.Class = "objects should not be one of a given set of disallowed values"
 )
 
-// Any returns a new AnyValidators.
-// Any can be used to validate any type, but will be more limited
+// Any returns a new AnyRefValidators.
+// AnyRef can be used to validate any type, but will be more limited
 // than using type specific validators.
 func Any(obj interface{}) AnyValidators {
 	return AnyValidators{Obj: obj}
@@ -132,13 +132,7 @@ func (a AnyValidators) Len(length int) Validator {
 // Nil validates the object is nil.
 func (a AnyValidators) Nil() Validator {
 	return func() error {
-		if a.Obj == nil {
-			return nil
-		}
-
-		value := reflect.ValueOf(a.Obj)
-		kind := value.Kind()
-		if kind >= reflect.Chan && kind <= reflect.Slice && value.IsNil() {
+		if IsNil(a.Obj) {
 			return nil
 		}
 		return Error(ErrNil, a.Obj)
@@ -161,10 +155,10 @@ func (a AnyValidators) Equals(expected interface{}) Validator {
 	return func() error {
 		actual := a.Obj
 
-		if expected == nil && actual == nil {
+		if IsNil(expected) && IsNil(actual) {
 			return nil
 		}
-		if (expected == nil && actual != nil) || (expected != nil && actual == nil) {
+		if (IsNil(expected) && !IsNil(actual)) || (!IsNil(expected) && IsNil(actual)) {
 			return Error(ErrEquals, a.Obj)
 		}
 
