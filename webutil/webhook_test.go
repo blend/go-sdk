@@ -23,7 +23,7 @@ func TestWebhookSend(t *testing.T) {
 		bodyCorrect = string(body) == `this is only a test`
 		methodCorrect = r.Method == "POST"
 		headerCorrect = r.Header.Get("X-Test-Value") == "foo"
-		contentLengthCorrect = r.ContentLength == -1
+		contentLengthCorrect = r.ContentLength == 19
 
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, "OK!\n")
