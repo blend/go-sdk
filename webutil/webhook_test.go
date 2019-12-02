@@ -13,7 +13,7 @@ import (
 func TestWebhookSend(t *testing.T) {
 	assert := assert.New(t)
 
-	var bodyCorrect, methodCorrect, headerCorrect bool
+	var bodyCorrect, methodCorrect, headerCorrect, contentLengthCorrect bool
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -23,6 +23,7 @@ func TestWebhookSend(t *testing.T) {
 		bodyCorrect = string(body) == `this is only a test`
 		methodCorrect = r.Method == "POST"
 		headerCorrect = r.Header.Get("X-Test-Value") == "foo"
+		contentLengthCorrect = r.ContentLength == -1
 
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, "OK!\n")
@@ -45,4 +46,5 @@ func TestWebhookSend(t *testing.T) {
 	assert.True(bodyCorrect)
 	assert.True(methodCorrect)
 	assert.True(headerCorrect)
+	assert.True(contentLengthCorrect)
 }
