@@ -137,7 +137,7 @@ func TestOptBodyBytes(t *testing.T) {
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	assert.Nil(err)
 	assert.Equal(bodyBytes, body)
-	assert.Equal(r.ContentLength, 0)
+	assert.Equal(r.ContentLength, 6)
 }
 
 func TestOptJSONBody(t *testing.T) {
@@ -153,7 +153,7 @@ func TestOptJSONBody(t *testing.T) {
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	assert.Nil(err)
 	assert.Equal(bodyBytes, []byte(`{"x":1.25,"y":-5.75}`))
-	assert.Equal(r.ContentLength, 0)
+	assert.Equal(r.ContentLength, 20)
 }
 
 func TestOptXMLBody(t *testing.T) {
@@ -169,5 +169,5 @@ func TestOptXMLBody(t *testing.T) {
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	assert.Nil(err)
 	assert.Equal(bodyBytes, []byte("<xmlBody><x>hello</x><y>goodbye</y></xmlBody>"))
-	assert.Equal(r.ContentLength, 0)
+	assert.Equal(r.ContentLength, 45)
 }
