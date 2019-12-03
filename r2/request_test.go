@@ -124,7 +124,7 @@ func TestRequestDoPostForm(t *testing.T) {
 	).Do()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, res.StatusCode, readString(res.Body))
-	assert.Equal(reqContentLength, []int64{-1})
+	assert.Equal(reqContentLength, []int64{7})
 }
 
 func TestRequestDiscard(t *testing.T) {

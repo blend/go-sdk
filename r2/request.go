@@ -65,7 +65,9 @@ func (r Request) Do() (*http.Response, error) {
 	// reconcile post form values
 	if r.Request.PostForm != nil && len(r.Request.PostForm) > 0 {
 		if r.Request.Body == nil {
-			r.Request.Body = ioutil.NopCloser(strings.NewReader(r.Request.PostForm.Encode()))
+			body := r.Request.PostForm.Encode()
+			r.Request.Body = ioutil.NopCloser(strings.NewReader(body))
+			r.Request.ContentLength = int64(len(body))
 		}
 	}
 
