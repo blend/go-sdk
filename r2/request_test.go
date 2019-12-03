@@ -100,7 +100,9 @@ func TestRequestDoQuery(t *testing.T) {
 func TestRequestDoPostForm(t *testing.T) {
 	assert := assert.New(t)
 
+	var reqContentLength []int64
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reqContentLength = append(reqContentLength, r.ContentLength)
 		if err := r.ParseForm(); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "%v!\n", err)
@@ -122,6 +124,7 @@ func TestRequestDoPostForm(t *testing.T) {
 	).Do()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, res.StatusCode, readString(res.Body))
+	assert.Equal(reqContentLength, []int64{7})
 }
 
 func TestRequestDiscard(t *testing.T) {

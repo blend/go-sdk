@@ -11,6 +11,11 @@ import (
 	"github.com/blend/go-sdk/assert"
 )
 
+type xmlBody struct {
+	X []string `xml:"x"`
+	Y []string `xml:"y"`
+}
+
 func TestRequestOptions(t *testing.T) {
 	assert := assert.New(t)
 
@@ -118,4 +123,51 @@ func TestRequestOptions(t *testing.T) {
 	assert.Nil(OptXMLBody([]string{"foo", "bar"})(req))
 	assert.Equal(ContentTypeApplicationXML, req.Header.Get(HeaderContentType))
 	assert.NotNil(req.Body)
+}
+
+func TestOptBodyBytes(t *testing.T) {
+	assert := assert.New(t)
+	body := []byte("hello\n")
+	opt := OptBodyBytes(body)
+
+	r := &http.Request{}
+	err := opt(r)
+	assert.Nil(err)
+
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	assert.Nil(err)
+	assert.Equal(bodyBytes, body)
+	assert.Equal(r.ContentLength, 6)
+}
+
+func TestOptJSONBody(t *testing.T) {
+	assert := assert.New(t)
+	payload := map[string]float64{"x": 1.25, "y": -5.75}
+	opt := OptJSONBody(payload)
+
+	r := &http.Request{}
+	err := opt(r)
+	assert.Nil(err)
+
+	assert.Equal(r.Header, http.Header{HeaderContentType: []string{ContentTypeApplicationJSON}})
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	assert.Nil(err)
+	assert.Equal(bodyBytes, []byte(`{"x":1.25,"y":-5.75}`))
+	assert.Equal(r.ContentLength, 20)
+}
+
+func TestOptXMLBody(t *testing.T) {
+	assert := assert.New(t)
+	payload := xmlBody{X: []string{"hello"}, Y: []string{"goodbye"}}
+	opt := OptXMLBody(payload)
+
+	r := &http.Request{}
+	err := opt(r)
+	assert.Nil(err)
+
+	assert.Equal(r.Header, http.Header{HeaderContentType: []string{ContentTypeApplicationXML}})
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	assert.Nil(err)
+	assert.Equal(bodyBytes, []byte("<xmlBody><x>hello</x><y>goodbye</y></xmlBody>"))
+	assert.Equal(r.ContentLength, 45)
 }

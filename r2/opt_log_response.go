@@ -11,7 +11,7 @@ import (
 )
 
 // OptLogResponse adds an OnResponse listener to log the response of a call.
-func OptLogResponse(log logger.Log) Option {
+func OptLogResponse(log logger.Triggerable) Option {
 	return OptOnResponse(func(req *http.Request, res *http.Response, started time.Time, err error) error {
 		if err != nil {
 			return err
@@ -30,7 +30,7 @@ func OptLogResponse(log logger.Log) Option {
 // OptLogResponseWithBody adds an OnResponse listener to log the response of a call.
 // It reads the contents of the response fully before emitting the event.
 // Do not use this if the size of the responses can be large.
-func OptLogResponseWithBody(log logger.Log) Option {
+func OptLogResponseWithBody(log logger.Triggerable) Option {
 	return OptOnResponse(func(req *http.Request, res *http.Response, started time.Time, err error) error {
 		if err != nil {
 			return err
