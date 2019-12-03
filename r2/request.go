@@ -63,12 +63,10 @@ func (r Request) Do() (*http.Response, error) {
 	}
 
 	// reconcile post form values
-	if r.Request.PostForm != nil && len(r.Request.PostForm) > 0 {
-		if r.Request.Body == nil {
-			body := r.Request.PostForm.Encode()
-			r.Request.Body = ioutil.NopCloser(strings.NewReader(body))
-			r.Request.ContentLength = int64(len(body))
-		}
+	if r.Request.PostForm != nil && len(r.Request.PostForm) > 0 && r.Request.Body == nil {
+		body := r.Request.PostForm.Encode()
+		r.Request.Body = ioutil.NopCloser(strings.NewReader(body))
+		r.Request.ContentLength = int64(len(body))
 	}
 
 	var err error
