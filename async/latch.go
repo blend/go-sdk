@@ -67,7 +67,7 @@ func (l *Latch) IsStopped() (isStopped bool) {
 	return atomic.LoadInt32(&l.state) == LatchStopped
 }
 
-// NotifyStarting returns the started signal.
+// NotifyStarting returns the starting signal.
 // It is used to coordinate the transition from stopped -> starting.
 func (l *Latch) NotifyStarting() (notifyStarting <-chan struct{}) {
 	l.Lock()
