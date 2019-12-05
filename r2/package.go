@@ -15,7 +15,7 @@ Note: you must close the response body when finished with it:
 	body, err := ioutil.ReadAll(resp.Body)
 	// ...
 
-You can specify  woadditional options as a variadic list of `Opt` functions:
+You can specify additional options as a variadic list of `Opt` functions:
 
 	resp, err := r2.New("http://example.com",
 		OptPost(),

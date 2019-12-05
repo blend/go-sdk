@@ -27,6 +27,7 @@ var (
 	HeaderSetCookie               = http.CanonicalHeaderKey("Set-Cookie")
 	HeaderCookie                  = http.CanonicalHeaderKey("Cookie")
 	HeaderDate                    = http.CanonicalHeaderKey("Date")
+	HeaderETag                    = http.CanonicalHeaderKey("etag")
 	HeaderCacheControl            = http.CanonicalHeaderKey("Cache-Control")
 	HeaderConnection              = http.CanonicalHeaderKey("Connection")
 	HeaderContentEncoding         = http.CanonicalHeaderKey("Content-Encoding")
