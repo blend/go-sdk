@@ -399,6 +399,7 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, er
 	// individual execution of a job.
 	ji := NewJobInvocation(js.Name())
 	ji.Context, ji.Cancel = js.createContextWithTimeout(ctx, timeout)
+	ji.Parameters = GetJobParameters(ctx) // pull the parameters off the calling context.
 
 	if timeout > 0 {
 		ji.Timeout = ji.Started.Add(timeout)

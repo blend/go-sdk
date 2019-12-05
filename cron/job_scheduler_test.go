@@ -206,3 +206,36 @@ func TestJobSchedulerStats(t *testing.T) {
 	assert.Equal(16*time.Second, stats.Elapsed95th)
 	assert.Equal(9*time.Second, stats.Elapsed50th)
 }
+
+func TestJobSchedulerJobParameters(t *testing.T) {
+	assert := assert.New(t)
+
+	var contextParameters, invocationParameters JobParameters
+
+	done := make(chan struct{})
+	js := NewJobScheduler(
+		NewJob(
+			OptJobName("test"),
+			OptJobAction(func(ctx context.Context) error {
+				defer close(done)
+				ji := GetJobInvocation(ctx)
+				invocationParameters = ji.Parameters
+				contextParameters = GetJobParameters(ctx)
+				return nil
+			}),
+		),
+	)
+
+	testParameters := JobParameters{
+		"foo":    "bar",
+		"moo":    "loo",
+		"bailey": "dog",
+	}
+
+	ji, err := js.RunAsyncContext(WithJobParameters(context.Background(), testParameters))
+	assert.Nil(err)
+	assert.Equal(testParameters, ji.Parameters)
+	<-done
+	assert.Equal(testParameters, contextParameters)
+	assert.Equal(testParameters, invocationParameters)
+}

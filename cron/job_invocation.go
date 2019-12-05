@@ -36,6 +36,7 @@ type JobInvocation struct {
 	Timeout        time.Time
 	Err            error
 	Elapsed        time.Duration
+	Parameters     JobParameters
 	State          JobInvocationState
 	Output         *bufferutil.Buffer
 	OutputHandlers *bufferutil.BufferHandlers
