@@ -12,10 +12,6 @@ import (
 	joi "github.com/blend/go-sdk/validate"
 )
 
-var (
-	_ joi.Validated = (*Validated)(nil)
-)
-
 // Validated is a validated object.
 type Validated struct {
 	ID       uuid.UUID
@@ -27,7 +23,7 @@ type Validated struct {
 
 // Validate implements validated.
 func (v Validated) Validate() error {
-	return joi.First(
+	return joi.ReturnFirst(
 		joi.Any(v.ID).NotNil(),
 		joi.String(&v.Name).Matches("foo$"),
 		joi.Int(&v.Count).Between(0, 99),

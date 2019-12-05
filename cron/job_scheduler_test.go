@@ -119,6 +119,7 @@ func TestJobSchedulerPersistHistory(t *testing.T) {
 		NewJob(OptJobName("foo")),
 	)
 	js.HistoryDisabledProvider = func() bool { return false }
+	js.HistoryPersistenceEnabledProvider = func() bool { return true }
 
 	assert.Nil(js.RestoreHistory(context.Background()))
 	assert.Nil(js.PersistHistory(context.Background()))

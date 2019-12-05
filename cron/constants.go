@@ -20,8 +20,8 @@ const (
 	DefaultShouldSkipLoggerOutput = false
 	// DefaultHistoryDisabled is a default.
 	DefaultHistoryDisabled = false
-	// DefaultHistoryPersistenceDisabled is a default.
-	DefaultHistoryPersistenceDisabled = false
+	// DefaultHistoryPersistenceEnabled is a default.
+	DefaultHistoryPersistenceEnabled = false
 	// DefaultHistoryMaxCount is the default number of history items to track.
 	DefaultHistoryMaxCount = 10
 	// DefaultHistoryMaxAge is the default maximum age of history items.

@@ -65,10 +65,10 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 		js.HistoryDisabledProvider = func() bool { return js.Config.HistoryDisabledOrDefault() }
 	}
 
-	if typed, ok := job.(HistoryPersistenceDisabledProvider); ok {
-		js.HistoryPersistenceDisabledProvider = typed.HistoryPersistenceDisabled
+	if typed, ok := job.(HistoryPersistenceEnabledProvider); ok {
+		js.HistoryPersistenceEnabledProvider = typed.HistoryPersistenceEnabled
 	} else {
-		js.HistoryPersistenceDisabledProvider = func() bool { return js.Config.HistoryPersistenceDisabledOrDefault() }
+		js.HistoryPersistenceEnabledProvider = func() bool { return js.Config.HistoryPersistenceEnabledOrDefault() }
 	}
 
 	if typed, ok := job.(HistoryMaxCountProvider); ok {
@@ -124,17 +124,17 @@ type JobScheduler struct {
 	Last        *JobInvocation
 	History     []JobInvocation
 
-	DescriptionProvider                func() string
-	LabelsProvider                     func() map[string]string
-	DisabledProvider                   func() bool
-	TimeoutProvider                    func() time.Duration
-	ShutdownGracePeriodProvider        func() time.Duration
-	ShouldSkipLoggerListenersProvider  func() bool
-	ShouldSkipLoggerOutputProvider     func() bool
-	HistoryDisabledProvider            func() bool
-	HistoryPersistenceDisabledProvider func() bool
-	HistoryMaxCountProvider            func() int
-	HistoryMaxAgeProvider              func() time.Duration
+	DescriptionProvider               func() string
+	LabelsProvider                    func() map[string]string
+	DisabledProvider                  func() bool
+	TimeoutProvider                   func() time.Duration
+	ShutdownGracePeriodProvider       func() time.Duration
+	ShouldSkipLoggerListenersProvider func() bool
+	ShouldSkipLoggerOutputProvider    func() bool
+	HistoryDisabledProvider           func() bool
+	HistoryPersistenceEnabledProvider func() bool
+	HistoryMaxCountProvider           func() int
+	HistoryMaxAgeProvider             func() time.Duration
 
 	HistoryRestoreProvider func(context.Context) ([]JobInvocation, error)
 	HistoryPersistProvider func(context.Context, []JobInvocation) error
@@ -183,19 +183,19 @@ func (js *JobScheduler) State() JobSchedulerState {
 // Status returns the job scheduler status.
 func (js *JobScheduler) Status() JobSchedulerStatus {
 	status := JobSchedulerStatus{
-		Name:                       js.Name(),
-		State:                      js.State(),
-		Labels:                     js.Labels(),
-		Disabled:                   !js.Enabled(),
-		NextRuntime:                js.NextRuntime,
-		Timeout:                    js.TimeoutProvider(),
-		Current:                    js.Current,
-		Last:                       js.Last,
-		Stats:                      js.Stats(),
-		HistoryDisabled:            js.HistoryDisabledProvider(),
-		HistoryPersistenceDisabled: js.HistoryPersistenceDisabledProvider(),
-		HistoryMaxCount:            js.HistoryMaxCountProvider(),
-		HistoryMaxAge:              js.HistoryMaxAgeProvider(),
+		Name:                      js.Name(),
+		State:                     js.State(),
+		Labels:                    js.Labels(),
+		Disabled:                  !js.Enabled(),
+		NextRuntime:               js.NextRuntime,
+		Timeout:                   js.TimeoutProvider(),
+		Current:                   js.Current,
+		Last:                      js.Last,
+		Stats:                     js.Stats(),
+		HistoryDisabled:           js.HistoryDisabledProvider(),
+		HistoryPersistenceEnabled: js.HistoryPersistenceEnabledProvider(),
+		HistoryMaxCount:           js.HistoryMaxCountProvider(),
+		HistoryMaxAge:             js.HistoryMaxAgeProvider(),
 	}
 	if typed, ok := js.Schedule.(fmt.Stringer); ok {
 		status.Schedule = typed.String()
@@ -511,7 +511,7 @@ func (js *JobScheduler) JobInvocation(id string) *JobInvocation {
 
 // RestoreHistory calls the persist handler if it's set.
 func (js *JobScheduler) RestoreHistory(ctx context.Context) error {
-	if js.HistoryPersistenceDisabledProvider() {
+	if !js.HistoryPersistenceEnabledProvider() {
 		return nil
 	}
 	if js.HistoryRestoreProvider != nil {
@@ -530,7 +530,7 @@ func (js *JobScheduler) RestoreHistory(ctx context.Context) error {
 
 // PersistHistory calls the persist handler if it's set.
 func (js *JobScheduler) PersistHistory(ctx context.Context) error {
-	if js.HistoryPersistenceDisabledProvider() {
+	if !js.HistoryPersistenceEnabledProvider() {
 		return nil
 	}
 
