@@ -42,8 +42,8 @@ var keepCoverageOut = flag.Bool("keep-coverage-out", false, "if we should keep c
 var v = flag.Bool("v", false, "show verbose output")
 
 var (
-	includes paths
-	excludes paths
+	includes Paths
+	excludes Paths
 )
 
 func main() {
@@ -569,12 +569,16 @@ func formatCoverage(coverage float64) string {
 	return fmt.Sprintf("%.2f", coverage)
 }
 
-type paths []string
+// Paths are cli flag input paths.
+type Paths []string
 
-func (p *paths) String() string {
+// String returns the param as a string.
+func (p *Paths) String() string {
 	return fmt.Sprint(*p)
 }
-func (p *paths) Set(value string) error {
+
+// Set sets a value.
+func (p *Paths) Set(value string) error {
 	for _, val := range strings.Split(value, ",") {
 		*p = append(*p, val)
 	}
