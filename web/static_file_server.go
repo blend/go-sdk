@@ -7,6 +7,8 @@ import (
 	"os"
 	"regexp"
 	"sync"
+
+	"github.com/blend/go-sdk/webutil"
 )
 
 // NewStaticFileServer returns a new static file cache.
@@ -43,8 +45,9 @@ func OptStaticFileServerCacheDisabled(cacheDisabled bool) StaticFileserverOption
 }
 
 // StaticFileServer is a cache of static files.
-// It can operate in cached mode, or with `CacheDisabled` it will read from
-// disk for each request.
+// It can operate in cached mode, or with `CacheDisabled` set to `true`
+// it will read from disk for each request.
+// In cached mode, it automatically adds etags for files it caches.
 type StaticFileServer struct {
 	sync.RWMutex
 
@@ -110,28 +113,13 @@ func (sc *StaticFileServer) Action(r *Ctx) Result {
 func (sc *StaticFileServer) ServeFile(r *Ctx, filePath string) Result {
 	f, err := sc.ResolveFile(filePath)
 	if err != nil {
-		if os.IsNotExist(err) {
-			if r.DefaultProvider != nil {
-				return r.DefaultProvider.NotFound()
-			}
-			http.NotFound(r.Response, r.Request)
-			return nil
-		}
-		if r.DefaultProvider != nil {
-			return r.DefaultProvider.InternalError(err)
-		}
-		http.Error(r.Response, err.Error(), http.StatusInternalServerError)
-		return nil
+		return sc.fileError(r, err)
 	}
 	defer f.Close()
 
 	finfo, err := f.Stat()
 	if err != nil {
-		if r.DefaultProvider != nil {
-			return r.DefaultProvider.InternalError(err)
-		}
-		http.Error(r.Response, err.Error(), http.StatusInternalServerError)
-		return nil
+		return sc.fileError(r, err)
 	}
 	http.ServeContent(r.Response, r.Request, filePath, finfo.ModTime(), f)
 	return nil
@@ -142,18 +130,10 @@ func (sc *StaticFileServer) ServeFile(r *Ctx, filePath string) Result {
 func (sc *StaticFileServer) ServeCachedFile(r *Ctx, filepath string) Result {
 	file, err := sc.ResolveCachedFile(filepath)
 	if err != nil {
-		if os.IsNotExist(err) {
-			if r.DefaultProvider != nil {
-				return r.DefaultProvider.NotFound()
-			}
-			http.NotFound(r.Response, r.Request)
-			return nil
-		}
-		if r.DefaultProvider != nil {
-			return r.DefaultProvider.InternalError(err)
-		}
-		http.Error(r.Response, err.Error(), http.StatusInternalServerError)
-		return nil
+		return sc.fileError(r, err)
+	}
+	if file.ETag != "" {
+		r.Response.Header().Set(webutil.HeaderETag, file.ETag)
 	}
 	http.ServeContent(r.Response, r.Request, filepath, file.ModTime, file.Contents)
 	return nil
@@ -232,9 +212,25 @@ func (sc *StaticFileServer) ResolveCachedFile(filepath string) (*CachedStaticFil
 		Path:     filepath,
 		Contents: bytes.NewReader(contents),
 		ModTime:  finfo.ModTime(),
+		ETag:     webutil.ETag(contents),
 		Size:     len(contents),
 	}
 
 	sc.Cache[filepath] = file
 	return file, nil
+}
+
+func (sc *StaticFileServer) fileError(r *Ctx, err error) Result {
+	if os.IsNotExist(err) {
+		if r.DefaultProvider != nil {
+			return r.DefaultProvider.NotFound()
+		}
+		http.NotFound(r.Response, r.Request)
+		return nil
+	}
+	if r.DefaultProvider != nil {
+		return r.DefaultProvider.InternalError(err)
+	}
+	http.Error(r.Response, err.Error(), http.StatusInternalServerError)
+	return nil
 }

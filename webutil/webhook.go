@@ -48,6 +48,7 @@ func (wh Webhook) Send() (*http.Response, error) {
 	req.Header = headers
 	if wh.Body != "" {
 		req.Body = ioutil.NopCloser(bytes.NewBufferString(wh.Body))
+		req.ContentLength = int64(len(wh.Body))
 	}
 
 	res, err := http.DefaultClient.Do(req)

@@ -193,6 +193,7 @@ func OptBody(contents io.ReadCloser) RequestOption {
 func OptBodyBytes(body []byte) RequestOption {
 	return func(r *http.Request) error {
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		r.ContentLength = int64(len(body))
 		return nil
 	}
 }
@@ -237,6 +238,7 @@ func OptJSONBody(obj interface{}) RequestOption {
 		}
 		r.Header.Set(HeaderContentType, ContentTypeApplicationJSON)
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(contents))
+		r.ContentLength = int64(len(contents))
 		return nil
 	}
 }
@@ -253,6 +255,7 @@ func OptXMLBody(obj interface{}) RequestOption {
 		}
 		r.Header.Set(HeaderContentType, ContentTypeApplicationXML)
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(contents))
+		r.ContentLength = int64(len(contents))
 		return nil
 	}
 }

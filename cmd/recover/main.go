@@ -45,21 +45,27 @@ func main() {
 	os.Exit(0)
 }
 
-func createSub(pwd string, subCommand ...string) (*exec.Cmd, error) {
+// resolveBin splits a slice of command arguments into the binary (i.e. the
+// first argument) and the arguments. It also will resolve the first argument
+// to a binary on the PATH. E.g. `ls` gets replaced with `/bin/ls`.
+func resolveBin(subCommand ...string) (string, []string, error) {
 	bin := subCommand[0]
-
 	binPath, err := exec.LookPath(bin)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 
-	sub := exec.Command(binPath, subCommand[1:]...)
+	verbosef("%q resolved to %q", bin, binPath)
+	return binPath, subCommand[1:], nil
+}
+
+func createSub(pwd, binPath string, args ...string) *exec.Cmd {
+	sub := exec.Command(binPath, args...)
 	sub.Env = os.Environ()
 	sub.Dir = pwd
 	sub.Stdout = os.Stdout
 	sub.Stderr = os.Stderr
-
-	return sub, nil
+	return sub
 }
 
 func runLoop(quit chan os.Signal, pwd string, subCommand ...string) error {
@@ -70,8 +76,8 @@ func runLoop(quit chan os.Signal, pwd string, subCommand ...string) error {
 		select {
 		case <-alarm:
 			break
-		case <-quit:
-			verbosef("received SIGINT during delay, exiting")
+		case s := <-quit:
+			verbosef("received SIGINT (%s) during delay, exiting", s)
 			return nil
 		}
 	}
@@ -82,15 +88,16 @@ func runLoop(quit chan os.Signal, pwd string, subCommand ...string) error {
 	var abort chan struct{}
 	var aborted chan struct{}
 
+	binPath, args, err := resolveBin(subCommand...)
+	if err != nil {
+		return err
+	}
+
 	for {
 		abort = make(chan struct{})
 		aborted = make(chan struct{})
 
-		sub, err = createSub(pwd, subCommand...)
-		if err != nil {
-			return err
-		}
-
+		sub = createSub(pwd, binPath, args...)
 		if err := sub.Start(); err != nil {
 			return err
 		}
@@ -98,8 +105,8 @@ func runLoop(quit chan os.Signal, pwd string, subCommand ...string) error {
 		// kick off monitor
 		go func() {
 			select {
-			case <-quit:
-				verbosef("received SIGINT while sub process is running, killing sub process")
+			case s := <-quit:
+				verbosef("received SIGINT (%s) while sub process is running, killing sub process", s)
 				didQuit = true
 				sub.Process.Kill()
 				return
@@ -130,8 +137,8 @@ func runLoop(quit chan os.Signal, pwd string, subCommand ...string) error {
 			select {
 			case <-alarm:
 				continue
-			case <-quit:
-				verbosef("received SIGINT during wait, exiting")
+			case s := <-quit:
+				verbosef("received SIGINT (%s) during wait, exiting", s)
 				return nil
 			}
 		}
