@@ -9,27 +9,27 @@ import (
 
 // Interface assertions.
 var (
-	_ Job                                = (*JobBuilder)(nil)
-	_ LabelsProvider                     = (*JobBuilder)(nil)
-	_ ScheduleProvider                   = (*JobBuilder)(nil)
-	_ TimeoutProvider                    = (*JobBuilder)(nil)
-	_ ShutdownGracePeriodProvider        = (*JobBuilder)(nil)
-	_ DisabledProvider                   = (*JobBuilder)(nil)
-	_ ShouldSkipLoggerListenersProvider  = (*JobBuilder)(nil)
-	_ ShouldSkipLoggerOutputProvider     = (*JobBuilder)(nil)
-	_ OnStartReceiver                    = (*JobBuilder)(nil)
-	_ OnCancellationReceiver             = (*JobBuilder)(nil)
-	_ OnCompleteReceiver                 = (*JobBuilder)(nil)
-	_ OnFailureReceiver                  = (*JobBuilder)(nil)
-	_ OnBrokenReceiver                   = (*JobBuilder)(nil)
-	_ OnFixedReceiver                    = (*JobBuilder)(nil)
-	_ OnEnabledReceiver                  = (*JobBuilder)(nil)
-	_ OnDisabledReceiver                 = (*JobBuilder)(nil)
-	_ HistoryDisabledProvider            = (*JobBuilder)(nil)
-	_ HistoryPersistenceDisabledProvider = (*JobBuilder)(nil)
-	_ HistoryMaxCountProvider            = (*JobBuilder)(nil)
-	_ HistoryMaxAgeProvider              = (*JobBuilder)(nil)
-	_ HistoryProvider                    = (*JobBuilder)(nil)
+	_ Job                               = (*JobBuilder)(nil)
+	_ LabelsProvider                    = (*JobBuilder)(nil)
+	_ ScheduleProvider                  = (*JobBuilder)(nil)
+	_ TimeoutProvider                   = (*JobBuilder)(nil)
+	_ ShutdownGracePeriodProvider       = (*JobBuilder)(nil)
+	_ DisabledProvider                  = (*JobBuilder)(nil)
+	_ ShouldSkipLoggerListenersProvider = (*JobBuilder)(nil)
+	_ ShouldSkipLoggerOutputProvider    = (*JobBuilder)(nil)
+	_ OnStartReceiver                   = (*JobBuilder)(nil)
+	_ OnCancellationReceiver            = (*JobBuilder)(nil)
+	_ OnCompleteReceiver                = (*JobBuilder)(nil)
+	_ OnFailureReceiver                 = (*JobBuilder)(nil)
+	_ OnBrokenReceiver                  = (*JobBuilder)(nil)
+	_ OnFixedReceiver                   = (*JobBuilder)(nil)
+	_ OnEnabledReceiver                 = (*JobBuilder)(nil)
+	_ OnDisabledReceiver                = (*JobBuilder)(nil)
+	_ HistoryDisabledProvider           = (*JobBuilder)(nil)
+	_ HistoryPersistenceEnabledProvider = (*JobBuilder)(nil)
+	_ HistoryMaxCountProvider           = (*JobBuilder)(nil)
+	_ HistoryMaxAgeProvider             = (*JobBuilder)(nil)
+	_ HistoryProvider                   = (*JobBuilder)(nil)
 )
 
 // NewJob returns a new job builder.
@@ -127,9 +127,9 @@ func OptJobHistoryDisabled(provider func() bool) JobBuilderOption {
 	return func(jb *JobBuilder) { jb.HistoryDisabledProvider = provider }
 }
 
-// OptJobHistoryPersistenceDisabled is a job builder option implementation.
-func OptJobHistoryPersistenceDisabled(provider func() bool) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.HistoryPersistenceDisabledProvider = provider }
+// OptJobHistoryPersistenceEnabled is a job builder option implementation.
+func OptJobHistoryPersistenceEnabled(provider func() bool) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.HistoryPersistenceEnabledProvider = provider }
 }
 
 // OptJobHistoryMaxCount is a job builder option implementation.
@@ -147,17 +147,17 @@ type JobBuilder struct {
 	Action Action
 	Config JobConfig
 
-	LabelsProvider                     func() map[string]string
-	ScheduleProvider                   func() Schedule
-	TimeoutProvider                    func() time.Duration
-	ShutdownGracePeriodProvider        func() time.Duration
-	DisabledProvider                   func() bool
-	ShouldSkipLoggerListenersProvider  func() bool
-	ShouldSkipLoggerOutputProvider     func() bool
-	HistoryDisabledProvider            func() bool
-	HistoryMaxCountProvider            func() int
-	HistoryMaxAgeProvider              func() time.Duration
-	HistoryPersistenceDisabledProvider func() bool
+	LabelsProvider                    func() map[string]string
+	ScheduleProvider                  func() Schedule
+	TimeoutProvider                   func() time.Duration
+	ShutdownGracePeriodProvider       func() time.Duration
+	DisabledProvider                  func() bool
+	ShouldSkipLoggerListenersProvider func() bool
+	ShouldSkipLoggerOutputProvider    func() bool
+	HistoryDisabledProvider           func() bool
+	HistoryMaxCountProvider           func() int
+	HistoryMaxAgeProvider             func() time.Duration
+	HistoryPersistenceEnabledProvider func() bool
 
 	OnStartHandler        func(*JobInvocation)
 	OnCancellationHandler func(*JobInvocation)
@@ -245,12 +245,12 @@ func (jb *JobBuilder) HistoryDisabled() bool {
 	return jb.Config.HistoryDisabledOrDefault()
 }
 
-// HistoryPersistenceDisabled implements the history disabled provider.
-func (jb *JobBuilder) HistoryPersistenceDisabled() bool {
-	if jb.HistoryPersistenceDisabledProvider != nil {
-		return jb.HistoryPersistenceDisabledProvider()
+// HistoryPersistenceEnabled implements the history enabled provider.
+func (jb *JobBuilder) HistoryPersistenceEnabled() bool {
+	if jb.HistoryPersistenceEnabledProvider != nil {
+		return jb.HistoryPersistenceEnabledProvider()
 	}
-	return jb.Config.HistoryPersistenceDisabledOrDefault()
+	return jb.Config.HistoryPersistenceEnabledOrDefault()
 }
 
 // HistoryMaxCount implements the history max count provider.

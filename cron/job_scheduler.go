@@ -65,10 +65,10 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 		js.HistoryDisabledProvider = func() bool { return js.Config.HistoryDisabledOrDefault() }
 	}
 
-	if typed, ok := job.(HistoryPersistenceDisabledProvider); ok {
-		js.HistoryPersistenceDisabledProvider = typed.HistoryPersistenceDisabled
+	if typed, ok := job.(HistoryPersistenceEnabledProvider); ok {
+		js.HistoryPersistenceEnabledProvider = typed.HistoryPersistenceEnabled
 	} else {
-		js.HistoryPersistenceDisabledProvider = func() bool { return js.Config.HistoryPersistenceDisabledOrDefault() }
+		js.HistoryPersistenceEnabledProvider = func() bool { return js.Config.HistoryPersistenceEnabledOrDefault() }
 	}
 
 	if typed, ok := job.(HistoryMaxCountProvider); ok {
@@ -124,17 +124,17 @@ type JobScheduler struct {
 	Last        *JobInvocation
 	History     []JobInvocation
 
-	DescriptionProvider                func() string
-	LabelsProvider                     func() map[string]string
-	DisabledProvider                   func() bool
-	TimeoutProvider                    func() time.Duration
-	ShutdownGracePeriodProvider        func() time.Duration
-	ShouldSkipLoggerListenersProvider  func() bool
-	ShouldSkipLoggerOutputProvider     func() bool
-	HistoryDisabledProvider            func() bool
-	HistoryPersistenceDisabledProvider func() bool
-	HistoryMaxCountProvider            func() int
-	HistoryMaxAgeProvider              func() time.Duration
+	DescriptionProvider               func() string
+	LabelsProvider                    func() map[string]string
+	DisabledProvider                  func() bool
+	TimeoutProvider                   func() time.Duration
+	ShutdownGracePeriodProvider       func() time.Duration
+	ShouldSkipLoggerListenersProvider func() bool
+	ShouldSkipLoggerOutputProvider    func() bool
+	HistoryDisabledProvider           func() bool
+	HistoryPersistenceEnabledProvider func() bool
+	HistoryMaxCountProvider           func() int
+	HistoryMaxAgeProvider             func() time.Duration
 
 	HistoryRestoreProvider func(context.Context) ([]JobInvocation, error)
 	HistoryPersistProvider func(context.Context, []JobInvocation) error
@@ -154,9 +154,10 @@ func (js *JobScheduler) Description() string {
 // automatically added ones like `name`.
 func (js *JobScheduler) Labels() map[string]string {
 	output := map[string]string{
-		"name":   stringutil.Slugify(js.Name()),
-		"state":  string(js.State()),
-		"active": fmt.Sprintf("%v", !js.Idle()),
+		"name":    stringutil.Slugify(js.Name()),
+		"state":   string(js.State()),
+		"active":  fmt.Sprint(!js.Idle()),
+		"enabled": fmt.Sprint(!js.DisabledProvider()),
 	}
 	if js.Last != nil {
 		output["last"] = stringutil.Slugify(string(js.Last.State))
@@ -183,19 +184,19 @@ func (js *JobScheduler) State() JobSchedulerState {
 // Status returns the job scheduler status.
 func (js *JobScheduler) Status() JobSchedulerStatus {
 	status := JobSchedulerStatus{
-		Name:                       js.Name(),
-		State:                      js.State(),
-		Labels:                     js.Labels(),
-		Disabled:                   !js.Enabled(),
-		NextRuntime:                js.NextRuntime,
-		Timeout:                    js.TimeoutProvider(),
-		Current:                    js.Current,
-		Last:                       js.Last,
-		Stats:                      js.Stats(),
-		HistoryDisabled:            js.HistoryDisabledProvider(),
-		HistoryPersistenceDisabled: js.HistoryPersistenceDisabledProvider(),
-		HistoryMaxCount:            js.HistoryMaxCountProvider(),
-		HistoryMaxAge:              js.HistoryMaxAgeProvider(),
+		Name:                      js.Name(),
+		State:                     js.State(),
+		Labels:                    js.Labels(),
+		Disabled:                  !js.Enabled(),
+		NextRuntime:               js.NextRuntime,
+		Timeout:                   js.TimeoutProvider(),
+		Current:                   js.Current,
+		Last:                      js.Last,
+		Stats:                     js.Stats(),
+		HistoryDisabled:           js.HistoryDisabledProvider(),
+		HistoryPersistenceEnabled: js.HistoryPersistenceEnabledProvider(),
+		HistoryMaxCount:           js.HistoryMaxCountProvider(),
+		HistoryMaxAge:             js.HistoryMaxAgeProvider(),
 	}
 	if typed, ok := js.Schedule.(fmt.Stringer); ok {
 		status.Schedule = typed.String()
@@ -266,7 +267,7 @@ func (js *JobScheduler) Stop() error {
 	// signal we are stopping.
 	js.Latch.Stopping()
 
-	ctx, cancel := js.createContextWithTimeout(js.ShutdownGracePeriodProvider())
+	ctx, cancel := js.createContextWithTimeout(context.Background(), js.ShutdownGracePeriodProvider())
 	defer cancel()
 	js.cancelJobInvocation(ctx, js.Current)
 	js.PersistHistory(ctx)
@@ -319,7 +320,7 @@ func (js *JobScheduler) Cancel() error {
 	gracePeriod := js.ShutdownGracePeriodProvider()
 	if gracePeriod > 0 {
 		js.debugf("job cancellation; cancelling with %v grace period", gracePeriod)
-		ctx, cancel := js.createContextWithTimeout(js.ShutdownGracePeriodProvider())
+		ctx, cancel := js.createContextWithTimeout(context.Background(), js.ShutdownGracePeriodProvider())
 		defer cancel()
 
 		js.cancelJobInvocation(ctx, js.Current)
@@ -380,8 +381,14 @@ func (js *JobScheduler) RunLoop() {
 	}
 }
 
-// RunAsync forces the job to run.
+// RunAsync starts a job invocation with a context.Background() as
+// the root context.
 func (js *JobScheduler) RunAsync() (*JobInvocation, error) {
+	return js.RunAsyncContext(context.Background())
+}
+
+// RunAsyncContext starts a job invocation with a given context.
+func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, error) {
 	// if there is already another instance running
 	if !js.Idle() {
 		return nil, ex.New(ErrJobAlreadyRunning, ex.OptMessagef("job: %s", js.Name()))
@@ -392,7 +399,8 @@ func (js *JobScheduler) RunAsync() (*JobInvocation, error) {
 	// create a job invocation, or a record of each
 	// individual execution of a job.
 	ji := NewJobInvocation(js.Name())
-	ji.Context, ji.Cancel = js.createContextWithTimeout(timeout)
+	ji.Context, ji.Cancel = js.createContextWithTimeout(ctx, timeout)
+	ji.Parameters = GetJobParameters(ctx) // pull the parameters off the calling context.
 
 	if timeout > 0 {
 		ji.Timeout = ji.Started.Add(timeout)
@@ -462,9 +470,17 @@ func (js *JobScheduler) RunAsync() (*JobInvocation, error) {
 
 // Run forces the job to run.
 // This call will block.
-// It checks if the job should be allowed to execute.
 func (js *JobScheduler) Run() {
 	ji, err := js.RunAsync()
+	if err != nil {
+		return
+	}
+	<-ji.Done
+}
+
+// RunContext runs a job with a given context as the root context.
+func (js *JobScheduler) RunContext(ctx context.Context) {
+	ji, err := js.RunAsyncContext(ctx)
 	if err != nil {
 		return
 	}
@@ -496,7 +512,7 @@ func (js *JobScheduler) JobInvocation(id string) *JobInvocation {
 
 // RestoreHistory calls the persist handler if it's set.
 func (js *JobScheduler) RestoreHistory(ctx context.Context) error {
-	if js.HistoryPersistenceDisabledProvider() {
+	if !js.HistoryPersistenceEnabledProvider() {
 		return nil
 	}
 	if js.HistoryRestoreProvider != nil {
@@ -515,7 +531,7 @@ func (js *JobScheduler) RestoreHistory(ctx context.Context) error {
 
 // PersistHistory calls the persist handler if it's set.
 func (js *JobScheduler) PersistHistory(ctx context.Context) error {
-	if js.HistoryPersistenceDisabledProvider() {
+	if !js.HistoryPersistenceEnabledProvider() {
 		return nil
 	}
 
@@ -638,11 +654,11 @@ func (js *JobScheduler) safeBackgroundExec(ctx context.Context) chan error {
 	return errors
 }
 
-func (js *JobScheduler) createContextWithTimeout(timeout time.Duration) (context.Context, context.CancelFunc) {
+func (js *JobScheduler) createContextWithTimeout(ctx context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
 	if timeout > 0 {
-		return context.WithTimeout(context.Background(), timeout)
+		return context.WithTimeout(ctx, timeout)
 	}
-	return context.WithCancel(context.Background())
+	return context.WithCancel(ctx)
 }
 
 func (js *JobScheduler) onStart(ctx context.Context, ji *JobInvocation) {
