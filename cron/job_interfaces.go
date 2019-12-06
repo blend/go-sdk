@@ -119,9 +119,9 @@ type HistoryMaxAgeProvider interface {
 	HistoryMaxAge() time.Duration
 }
 
-// HistoryPersistenceDisabledProvider is an optional interface that will allow jobs to control if it should persist history.
-type HistoryPersistenceDisabledProvider interface {
-	HistoryPersistenceDisabled() bool
+// HistoryPersistenceEnabledProvider is an optional interface that will allow jobs to control if it should persist history.
+type HistoryPersistenceEnabledProvider interface {
+	HistoryPersistenceEnabled() bool
 }
 
 // HistoryProvider is a job that can persist and restore its invocation history.

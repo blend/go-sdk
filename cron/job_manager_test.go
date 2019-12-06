@@ -172,47 +172,6 @@ func TestManagerTracer(t *testing.T) {
 	assert.True(errorUnset)
 }
 
-func TestJobManagerRunJobs(t *testing.T) {
-	assert := assert.New(t)
-
-	jm := New()
-	assert.Nil(jm.StartAsync())
-	defer jm.Stop()
-
-	job0 := uuid.V4().String()
-	job1 := uuid.V4().String()
-	job2 := uuid.V4().String()
-
-	var job0ran bool
-	var job1ran bool
-	var job2ran bool
-
-	wg := sync.WaitGroup{}
-	wg.Add(2)
-	assert.Nil(jm.LoadJobs(NewJob(OptJobName(job0), OptJobAction(func(_ context.Context) error {
-		defer wg.Done()
-		job0ran = true
-		return nil
-	}))))
-	assert.Nil(jm.LoadJobs(NewJob(OptJobName(job1), OptJobAction(func(_ context.Context) error {
-		defer wg.Done()
-		job1ran = true
-		return nil
-	}))))
-	assert.Nil(jm.LoadJobs(NewJob(OptJobName(job2), OptJobAction(func(_ context.Context) error {
-		defer wg.Done()
-		job2ran = true
-		return nil
-	}))))
-
-	assert.Nil(jm.RunJobs(job0, job2))
-	wg.Wait()
-
-	assert.True(job0ran)
-	assert.False(job1ran)
-	assert.True(job2ran)
-}
-
 func TestJobManagerJobLifecycle(t *testing.T) {
 	assert := assert.New(t)
 
