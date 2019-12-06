@@ -29,36 +29,120 @@ var (
 const (
 	star             = "*"
 	defaultFileFlags = 0644
+	expand           = "/..."
 )
 
 var reportOutputPath = flag.String("output", "coverage.html", "the path to write the full html coverage report")
 var update = flag.Bool("update", false, "if we should write the current coverage to `COVERAGE` files")
 var enforce = flag.Bool("enforce", false, "if we should enforce coverage minimums defined in `COVERAGE` files")
-var include = flag.String("include", "", "the include file filter in glob form, can be a csv.")
-var exclude = flag.String("exclude", "", "the exclude file filter in glob form, can be a csv.")
 var timeout = flag.String("timeout", "", "the timeout to pass to the package tests.")
-var covermode = flag.String("covermode", "set", "the go test covermode.")
+var race = flag.Bool("race", false, "if we should add -race to test invocations")
+var covermode = flag.String("covermode", "atomic", "the go test covermode.")
 var coverprofile = flag.String("coverprofile", "coverage.cov", "the intermediate cover profile.")
 var keepCoverageOut = flag.Bool("keep-coverage-out", false, "if we should keep coverage.out")
 var v = flag.Bool("v", false, "show verbose output")
 
-func verbose() bool {
-	if v != nil && *v {
-		return true
+var (
+	includes Paths
+	excludes Paths
+)
+
+func main() {
+	flag.Var(&includes, "include", "glob patterns to include explicitly")
+	flag.Var(&excludes, "exclude", "glob patterns to exclude explicitly")
+	flag.Parse()
+
+	pwd, err := os.Getwd()
+	maybeFatal(err)
+
+	fmt.Fprintln(os.Stdout, "coverage starting")
+	fmt.Fprintf(os.Stdout, "using covermode: %s\n", *covermode)
+	fmt.Fprintf(os.Stdout, "using coverprofile: %s\n", *coverprofile)
+	if *timeout != "" {
+		fmt.Fprintf(os.Stdout, "using timeout: %s\n", *timeout)
 	}
-	return false
+	if len(includes) > 0 {
+		fmt.Fprintf(os.Stdout, "using includes: %s\n", strings.Join(includes, ", "))
+	}
+	if len(excludes) > 0 {
+		fmt.Fprintf(os.Stdout, "using excludes: %s\n", strings.Join(excludes, ", "))
+	}
+	if *race {
+		fmt.Fprintln(os.Stdout, "using race detection")
+	}
+
+	//
+	// start
+	//
+
+	fullCoverageData, err := removeAndOpen(*coverprofile)
+	if err != nil {
+		maybeFatal(err)
+	}
+	fmt.Fprintf(fullCoverageData, "mode: %s\n", *covermode)
+
+	paths := flag.Args()
+
+	if len(paths) == 0 {
+		paths = []string{"./..."}
+	}
+
+	for _, path := range paths {
+		fmt.Fprintf(os.Stdout, "walking path: %s\n", path)
+		walkPath(path, fullCoverageData)
+	}
+
+	// close the coverage data handle
+	maybeFatal(fullCoverageData.Close())
+
+	// complete summary steps
+	covered, total, err := parseFullCoverProfile(pwd, *coverprofile)
+	maybeFatal(err)
+	finalCoverage := (float64(covered) / float64(total)) * 100
+	maybeFatal(writeCoverage(pwd, formatCoverage(finalCoverage)))
+
+	fmt.Fprintf(os.Stdout, "final coverage: %s%%\n", colorCoverage(finalCoverage))
+	fmt.Fprintf(os.Stdout, "compiling coverage report: %s\n", *reportOutputPath)
+
+	// compile coverage.html
+	maybeFatal(execCoverageReportCompile())
+
+	if !*keepCoverageOut {
+		maybeFatal(removeIfExists(*coverprofile))
+	}
+
+	fmt.Fprintln(os.Stdout, "coverage complete")
 }
 
-func vf(format string, args ...interface{}) {
-	if verbose() {
-		fmt.Fprintf(os.Stdout, "coverage :: "+format+"\n", args...)
-	}
-}
+func walkPath(walkedPath string, fullCoverageData *os.File) {
+	recursive := strings.HasSuffix(walkedPath, expand)
+	rootPath := filepath.Dir(walkedPath)
 
-func verrf(format string, args ...interface{}) {
-	if verbose() {
-		fmt.Fprintf(os.Stderr, "coverage :: err :: "+format+"\n", args...)
-	}
+	maybeFatal(filepath.Walk(rootPath, func(currentPath string, info os.FileInfo, fileErr error) error {
+		packageCoverReport, err := getPackageCoverage(currentPath, info, fileErr)
+		if err != nil {
+			return err
+		}
+
+		if len(packageCoverReport) == 0 {
+			return nil
+		}
+
+		err = mergeCoverageOutput(packageCoverReport, fullCoverageData)
+		if err != nil {
+			return err
+		}
+
+		err = removeIfExists(packageCoverReport)
+		if err != nil {
+			return err
+		}
+
+		if !recursive && info.IsDir() {
+			return filepath.SkipDir
+		}
+		return nil
+	}))
 }
 
 // gets coverage for a directory and returns the path to the coverage file for that directory
@@ -72,33 +156,33 @@ func getPackageCoverage(currentPath string, info os.FileInfo, err error) (string
 	fileName := info.Name()
 
 	if fileName == ".git" {
-		vf("`%s` skipping dir; .git", currentPath)
+		vf("%q skipping dir; .git", currentPath)
 		return "", filepath.SkipDir
 	}
 	if strings.HasPrefix(fileName, "_") {
-		vf("`%s` skipping dir; '_' prefix", currentPath)
+		vf("%q skipping dir; '_' prefix", currentPath)
 		return "", filepath.SkipDir
 	}
 	if fileName == "vendor" {
-		vf("`%s` skipping dir; vendor", currentPath)
+		vf("%q skipping dir; vendor", currentPath)
 		return "", filepath.SkipDir
 	}
 
 	if !dirHasGlob(currentPath, "*.go") {
-		vf("`%s` skipping dir; no *.go files", currentPath)
+		vf("%q skipping dir; no *.go files", currentPath)
 		return "", nil
 	}
 
-	if len(*include) > 0 {
-		if matches := globAnyMatch(*include, currentPath); !matches {
-			vf("`%s` skipping dir; include no match: %s", currentPath, *include)
+	for _, include := range includes {
+		if matches := glob(include, currentPath); !matches { // note the !
+			vf("%q skipping dir; include no match: %s", currentPath, include)
 			return "", nil
 		}
 	}
 
-	if len(*exclude) > 0 {
-		if matches := globAnyMatch(*exclude, currentPath); matches {
-			vf("`%s` skipping dir; exclude match: %s", currentPath, *exclude)
+	for _, exclude := range excludes {
+		if matches := glob(exclude, currentPath); matches {
+			vf("%q skipping dir; exclude match: %s", currentPath, exclude)
 			return "", nil
 		}
 	}
@@ -129,7 +213,7 @@ func getPackageCoverage(currentPath string, info os.FileInfo, err error) (string
 	}
 
 	if update != nil && *update {
-		fmt.Fprintf(os.Stdout, "%s updating coverage\n", currentPath)
+		fmt.Fprintf(os.Stdout, "%q updating coverage\n", currentPath)
 		err = writeCoverage(currentPath, coverage)
 		if err != nil {
 			return "", err
@@ -139,69 +223,28 @@ func getPackageCoverage(currentPath string, info os.FileInfo, err error) (string
 	return packageCoverReport, nil
 }
 
-func main() {
-	flag.Parse()
-
-	pwd, err := os.Getwd()
-	maybeFatal(err)
-
-	fmt.Fprintln(os.Stdout, "coverage starting")
-	fmt.Fprintf(os.Stdout, "using covermode: %s\n", *covermode)
-	fmt.Fprintf(os.Stdout, "using coverprofile: %s\n", *coverprofile)
-	fullCoverageData, err := removeAndOpen(*coverprofile)
-	if err != nil {
-		maybeFatal(err)
-	}
-	fmt.Fprintln(fullCoverageData, "mode: set")
-
-	maybeFatal(filepath.Walk("./", func(currentPath string, info os.FileInfo, fileErr error) error {
-		packageCoverReport, err := getPackageCoverage(currentPath, info, fileErr)
-		if err != nil {
-			return err
-		}
-
-		if len(packageCoverReport) == 0 {
-			return nil
-		}
-
-		err = mergeCoverageOutput(packageCoverReport, fullCoverageData)
-		if err != nil {
-			return err
-		}
-
-		err = removeIfExists(packageCoverReport)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}))
-
-	// close the coverage data handle
-	maybeFatal(fullCoverageData.Close())
-
-	// complete summary steps
-	covered, total, err := parseFullCoverProfile(pwd, *coverprofile)
-	maybeFatal(err)
-	finalCoverage := (float64(covered) / float64(total)) * 100
-	maybeFatal(writeCoverage(pwd, formatCoverage(finalCoverage)))
-
-	fmt.Fprintf(os.Stdout, "final coverage: %s%%\n", colorCoverage(finalCoverage))
-	fmt.Fprintf(os.Stdout, "compiling coverage report: %s\n", *reportOutputPath)
-
-	// compile coverage.html
-	maybeFatal(execCoverageReportCompile())
-
-	if !*keepCoverageOut {
-		maybeFatal(removeIfExists(*coverprofile))
-	}
-
-	fmt.Fprintln(os.Stdout, "coverage complete")
-}
-
 // --------------------------------------------------------------------------------
 // utilities
 // --------------------------------------------------------------------------------
+
+func verbose() bool {
+	if v != nil && *v {
+		return true
+	}
+	return false
+}
+
+func vf(format string, args ...interface{}) {
+	if verbose() {
+		fmt.Fprintf(os.Stdout, "coverage :: "+format+"\n", args...)
+	}
+}
+
+func verrf(format string, args ...interface{}) {
+	if verbose() {
+		fmt.Fprintf(os.Stderr, "coverage :: err :: "+format+"\n", args...)
+	}
+}
 
 func gopath() string {
 	gopath := os.Getenv("GOPATH")
@@ -209,17 +252,6 @@ func gopath() string {
 		return gopath
 	}
 	return build.Default.GOPATH
-}
-
-// globIncludeMatch tests if a file matches a (potentially) csv of glob filters.
-func globAnyMatch(filter, file string) bool {
-	parts := strings.Split(filter, ",")
-	for _, part := range parts {
-		if matches := glob(strings.TrimSpace(part), file); matches {
-			return true
-		}
-	}
-	return false
 }
 
 func glob(pattern, subj string) bool {
@@ -324,12 +356,19 @@ func gobin() string {
 }
 
 func execCoverage(path string) ([]byte, error) {
-	var cmd *exec.Cmd
-	if *timeout != "" {
-		cmd = exec.Command(gobin(), "test", "-timeout", *timeout, "-short", fmt.Sprintf("-covermode=%s", *covermode), "-coverprofile=profile.cov")
-	} else {
-		cmd = exec.Command(gobin(), "test", "-short", fmt.Sprintf("-covermode=%s", *covermode), "-coverprofile=profile.cov")
+	args := []string{
+		"test",
+		"-short",
+		fmt.Sprintf("-covermode=%s", *covermode),
+		"-coverprofile=profile.cov",
 	}
+	if *timeout != "" {
+		args = append(args, fmt.Sprintf("-timeout=%s", *timeout))
+	}
+	if *race {
+		args = append(args, "-race")
+	}
+	cmd := exec.Command(gobin(), args...)
 	cmd.Env = os.Environ()
 	cmd.Dir = path
 	return cmd.CombinedOutput()
@@ -413,7 +452,7 @@ func packageFilename(pwd, relativePath string) string {
 
 // parseFullCoverProfile parses the final / merged cover output.
 func parseFullCoverProfile(pwd string, path string) (covered, total int, err error) {
-	vf("parsing coverage profile: %s", path)
+	vf("parsing coverage profile: %q", path)
 	files, err := cover.ParseProfiles(path)
 	if err != nil {
 		return
@@ -433,7 +472,7 @@ func parseFullCoverProfile(pwd string, path string) (covered, total int, err err
 			}
 		}
 
-		vf("processing coverage profile: %s result: %s (%d/%d lines)", path, file.FileName, fileCovered, numLines)
+		vf("processing coverage profile: %q result: %s (%d/%d lines)", path, file.FileName, fileCovered, numLines)
 		covered += fileCovered
 	}
 
@@ -514,4 +553,20 @@ func colorCoverage(coverage float64) string {
 
 func formatCoverage(coverage float64) string {
 	return fmt.Sprintf("%.2f", coverage)
+}
+
+// Paths are cli flag input paths.
+type Paths []string
+
+// String returns the param as a string.
+func (p *Paths) String() string {
+	return fmt.Sprint(*p)
+}
+
+// Set sets a value.
+func (p *Paths) Set(value string) error {
+	for _, val := range strings.Split(value, ",") {
+		*p = append(*p, val)
+	}
+	return nil
 }
