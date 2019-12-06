@@ -8,7 +8,7 @@ import (
 
 // ParseCertInfo returns a new cert info from a response from a check.
 func ParseCertInfo(res *http.Response) *CertInfo {
-	if res.TLS == nil && len(res.TLS.PeerCertificates) == 0 {
+	if res == nil || res.TLS == nil || len(res.TLS.PeerCertificates) == 0 {
 		return nil
 	}
 
