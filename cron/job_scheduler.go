@@ -156,8 +156,8 @@ func (js *JobScheduler) Labels() map[string]string {
 	output := map[string]string{
 		"name":    stringutil.Slugify(js.Name()),
 		"state":   string(js.State()),
-		"active":  fmt.Sprintf("%v", !js.Idle()),
-		"enabled": fmt.Sprintf("%v", !js.DisabledProvider()),
+		"active":  fmt.Sprint(!js.Idle()),
+		"enabled": fmt.Sprint(!js.DisabledProvider()),
 	}
 	if js.Last != nil {
 		output["last"] = stringutil.Slugify(string(js.Last.State))

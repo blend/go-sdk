@@ -173,6 +173,8 @@ func TestJobSchedulerLabels(t *testing.T) {
 	}
 
 	labels = js.Labels()
+	assert.Equal("true", labels["enabled"])
+	assert.Equal("false", labels["active"])
 	assert.Equal("not-test", labels["name"])
 	assert.Equal("bar", labels["foo"])
 	assert.Equal("wuzz", labels["fuzz"])
