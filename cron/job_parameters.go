@@ -2,31 +2,7 @@ package cron
 
 import (
 	"context"
-	"encoding/json"
-	"net/url"
 )
-
-// JobParametersFromForm creates a parameter values set from url values.
-func JobParametersFromForm(formValues url.Values) JobParameters {
-	output := make(JobParameters)
-	for key, values := range formValues {
-		if len(values) == 0 {
-			output[key] = ""
-			continue
-		}
-		output[key] = values[0]
-	}
-	return output
-}
-
-// JobParameterValuesFromJSON creates a parameter values set from json data.
-func JobParameterValuesFromJSON(data []byte) (JobParameters, error) {
-	output := make(JobParameters)
-	if err := json.Unmarshal(data, &output); err != nil {
-		return nil, err
-	}
-	return output, nil
-}
 
 // JobParameters is a loose association to map[string]string.
 type JobParameters = map[string]string
