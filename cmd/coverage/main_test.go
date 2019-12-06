@@ -30,14 +30,6 @@ func TestGlob(t *testing.T) {
 	assert.True(glob("*/*/*/testo", "asdf/x/x/testo"))
 }
 
-func TestGlobAnyMatch(t *testing.T) {
-	assert := assert.New(t)
-
-	assert.False(globAnyMatch("", "testo"))
-	assert.True(globAnyMatch("*", "testo"))
-	assert.False(globAnyMatch("x", "testo"))
-}
-
 func TestJoinCoverPath(t *testing.T) {
 	testCases := []coverProfileTestCase{
 		{
