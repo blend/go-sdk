@@ -12,11 +12,11 @@ func ParseCertInfo(res *http.Response) *CertInfo {
 		return nil
 	}
 
-	var earliestExpiration time.Time
+	var earliestNotAfter time.Time
 	var latestNotBefore time.Time
 	for _, cert := range res.TLS.PeerCertificates {
-		if earliestExpiration.IsZero() || earliestExpiration.After(cert.NotAfter) {
-			earliestExpiration = cert.NotAfter
+		if earliestNotAfter.IsZero() || earliestNotAfter.After(cert.NotAfter) {
+			earliestNotAfter = cert.NotAfter
 		}
 		if latestNotBefore.IsZero() || latestNotBefore.Before(cert.NotBefore) {
 			latestNotBefore = cert.NotBefore
@@ -31,7 +31,7 @@ func ParseCertInfo(res *http.Response) *CertInfo {
 
 	return &CertInfo{
 		DNSNames:         firstCert.DNSNames,
-		NotAfter:         earliestExpiration,
+		NotAfter:         earliestNotAfter,
 		NotBefore:        latestNotBefore,
 		IssuerCommonName: firstCert.Issuer.CommonName,
 	}
@@ -49,13 +49,19 @@ type CertInfo struct {
 // IsExpired returns if the certificate is strictly expired
 // and would not be accepted by browsers.
 func (ci CertInfo) IsExpired() bool {
+	return ci.WillBeExpired(time.Now().UTC())
+}
+
+// WillBeExpired returns if the certificate is strictly expired
+// and would not be accepted by browsers at a given time.
+func (ci CertInfo) WillBeExpired(at time.Time) bool {
 	if !ci.NotAfter.IsZero() {
-		if time.Now().UTC().After(ci.NotAfter) {
+		if at.UTC().After(ci.NotAfter) {
 			return true
 		}
 	}
 	if !ci.NotBefore.IsZero() {
-		if time.Now().UTC().Before(ci.NotBefore) {
+		if at.UTC().Before(ci.NotBefore) {
 			return true
 		}
 	}
