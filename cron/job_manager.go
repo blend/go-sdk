@@ -243,8 +243,7 @@ func (jm *JobManager) StartAsync() error {
 	jm.Latch.Starting()
 	logger.MaybeInfo(jm.Log, "job manager starting")
 	for _, job := range jm.Jobs {
-		job.Log = jm.Log
-		job.Tracer = jm.Tracer
+		job.SetLoggerTracer(jm.Log, jm.Tracer)
 		go job.Start()
 		<-job.NotifyStarted()
 	}

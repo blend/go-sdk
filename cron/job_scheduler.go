@@ -579,6 +579,14 @@ func (js *JobScheduler) Idle() (isIdle bool) {
 	return
 }
 
+// SetLoggerTracer sets the logger and tracer on the scheduler.
+func (js *JobScheduler) SetLoggerTracer(log logger.Log, tracer Tracer) {
+	js.Lock()
+	js.Log = log
+	js.Tracer = tracer
+	js.Unlock()
+}
+
 //
 // utility functions
 //
