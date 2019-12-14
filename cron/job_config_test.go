@@ -28,6 +28,6 @@ func TestJobConfig(t *testing.T) {
 	assert.Equal(jc.Timeout, jc.TimeoutOrDefault())
 	assert.Equal(jc.ShutdownGracePeriod, jc.ShutdownGracePeriodOrDefault())
 	assert.Equal(*jc.HistoryEnabled, jc.HistoryEnabledOrDefault())
-	assert.Equal(jc.HistoryMaxCount, jc.HistoryMaxCountOrDefault())
-	assert.Equal(jc.HistoryMaxAge, jc.HistoryMaxAgeOrDefault())
+	assert.Equal(*jc.HistoryMaxCount, jc.HistoryMaxCountOrDefault())
+	assert.Equal(*jc.HistoryMaxAge, jc.HistoryMaxAgeOrDefault())
 }
