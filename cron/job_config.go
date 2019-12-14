@@ -21,9 +21,9 @@ type JobConfig struct {
 	// HistoryPersistenceEnabled determines if we should call the history persister if one is provided.
 	HistoryPersistenceEnabled *bool `json:"historyPersistenceEnabled" yaml:"historyPersistenceEnabled"`
 	// HistoryMaxCount is the maximum number of history items to keep.
-	HistoryMaxCount int `json:"historyMaxCount" yaml:"historyMaxCount"`
+	HistoryMaxCount *int `json:"historyMaxCount" yaml:"historyMaxCount"`
 	// HistoryMaxAge is the maximum age of history items to keep.
-	HistoryMaxAge time.Duration `json:"historyMaxAge" yaml:"historyMaxAge"`
+	HistoryMaxAge *time.Duration `json:"historyMaxAge" yaml:"historyMaxAge"`
 
 	// ShouldSkipLoggerListeners skips triggering logger events if it is set to true.
 	ShouldSkipLoggerListeners *bool `json:"shouldSkipLoggerListeners" yaml:"shouldSkipLoggerListeners"`
@@ -65,18 +65,18 @@ func (jc JobConfig) HistoryEnabledOrDefault() bool {
 
 // HistoryMaxCountOrDefault returns a value or a default.
 func (jc JobConfig) HistoryMaxCountOrDefault() int {
-	if jc.HistoryMaxCount > 0 {
-		return jc.HistoryMaxCount
+	if jc.HistoryMaxCount != nil {
+		return *jc.HistoryMaxCount
 	}
-	return 0
+	return DefaultHistoryMaxCount
 }
 
 // HistoryMaxAgeOrDefault returns a value or a default.
 func (jc JobConfig) HistoryMaxAgeOrDefault() time.Duration {
-	if jc.HistoryMaxAge > 0 {
-		return jc.HistoryMaxAge
+	if jc.HistoryMaxAge != nil {
+		return *jc.HistoryMaxAge
 	}
-	return 0
+	return DefaultHistoryMaxAge
 }
 
 // HistoryPersistenceEnabledOrDefault returns a value or a default.
