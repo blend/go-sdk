@@ -25,7 +25,7 @@ var (
 	_ OnFixedReceiver                   = (*JobBuilder)(nil)
 	_ OnEnabledReceiver                 = (*JobBuilder)(nil)
 	_ OnDisabledReceiver                = (*JobBuilder)(nil)
-	_ HistoryDisabledProvider           = (*JobBuilder)(nil)
+	_ HistoryEnabledProvider            = (*JobBuilder)(nil)
 	_ HistoryPersistenceEnabledProvider = (*JobBuilder)(nil)
 	_ HistoryMaxCountProvider           = (*JobBuilder)(nil)
 	_ HistoryMaxAgeProvider             = (*JobBuilder)(nil)
@@ -122,9 +122,9 @@ func OptJobOnDisabled(handler func(context.Context)) JobBuilderOption {
 	return func(jb *JobBuilder) { jb.OnDisabledHandler = handler }
 }
 
-// OptJobHistoryDisabled is a job builder option implementation.
-func OptJobHistoryDisabled(provider func() bool) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.HistoryDisabledProvider = provider }
+// OptJobHistoryEnabled is a job builder option implementation.
+func OptJobHistoryEnabled(provider func() bool) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.HistoryEnabledProvider = provider }
 }
 
 // OptJobHistoryPersistenceEnabled is a job builder option implementation.
@@ -154,7 +154,7 @@ type JobBuilder struct {
 	DisabledProvider                  func() bool
 	ShouldSkipLoggerListenersProvider func() bool
 	ShouldSkipLoggerOutputProvider    func() bool
-	HistoryDisabledProvider           func() bool
+	HistoryEnabledProvider            func() bool
 	HistoryMaxCountProvider           func() int
 	HistoryMaxAgeProvider             func() time.Duration
 	HistoryPersistenceEnabledProvider func() bool
@@ -237,12 +237,12 @@ func (jb *JobBuilder) ShouldSkipLoggerOutput() bool {
 	return jb.Config.ShouldSkipLoggerOutputOrDefault()
 }
 
-// HistoryDisabled implements the history disabled provider.
-func (jb *JobBuilder) HistoryDisabled() bool {
-	if jb.HistoryDisabledProvider != nil {
-		return jb.HistoryDisabledProvider()
+// HistoryEnabled implements the history disabled provider.
+func (jb *JobBuilder) HistoryEnabled() bool {
+	if jb.HistoryEnabledProvider != nil {
+		return jb.HistoryEnabledProvider()
 	}
-	return jb.Config.HistoryDisabledOrDefault()
+	return jb.Config.HistoryEnabledOrDefault()
 }
 
 // HistoryPersistenceEnabled implements the history enabled provider.

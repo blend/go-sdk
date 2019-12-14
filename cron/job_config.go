@@ -16,8 +16,8 @@ type JobConfig struct {
 	Timeout time.Duration `json:"timeout" yaml:"timeout"`
 	// ShutdownGracePeriod represents the time a job is given to clean itself up.
 	ShutdownGracePeriod time.Duration `json:"shutdownGracePeriod" yaml:"shutdownGracePeriod"`
-	// HistoryDisabled sets if we should save invocation history and restore it.
-	HistoryDisabled *bool `json:"historyDisabled" yaml:"historyDisabled"`
+	// HistoryEnabled sets if we should save invocation history and restore it.
+	HistoryEnabled *bool `json:"historyEnabled" yaml:"historyEnabled"`
 	// HistoryPersistenceEnabled determines if we should call the history persister if one is provided.
 	HistoryPersistenceEnabled *bool `json:"historyPersistenceEnabled" yaml:"historyPersistenceEnabled"`
 	// HistoryMaxCount is the maximum number of history items to keep.
@@ -55,12 +55,12 @@ func (jc JobConfig) ShutdownGracePeriodOrDefault() time.Duration {
 	return DefaultShutdownGracePeriod
 }
 
-// HistoryDisabledOrDefault returns a value or a default.
-func (jc JobConfig) HistoryDisabledOrDefault() bool {
-	if jc.HistoryDisabled != nil {
-		return *jc.HistoryDisabled
+// HistoryEnabledOrDefault returns a value or a default.
+func (jc JobConfig) HistoryEnabledOrDefault() bool {
+	if jc.HistoryEnabled != nil {
+		return *jc.HistoryEnabled
 	}
-	return DefaultHistoryDisabled
+	return DefaultHistoryEnabled
 }
 
 // HistoryMaxCountOrDefault returns a value or a default.

@@ -59,10 +59,10 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 		js.DisabledProvider = func() bool { return js.Config.DisabledOrDefault() }
 	}
 
-	if typed, ok := job.(HistoryDisabledProvider); ok {
-		js.HistoryDisabledProvider = typed.HistoryDisabled
+	if typed, ok := job.(HistoryEnabledProvider); ok {
+		js.HistoryEnabledProvider = typed.HistoryEnabled
 	} else {
-		js.HistoryDisabledProvider = func() bool { return js.Config.HistoryDisabledOrDefault() }
+		js.HistoryEnabledProvider = func() bool { return js.Config.HistoryEnabledOrDefault() }
 	}
 
 	if typed, ok := job.(HistoryPersistenceEnabledProvider); ok {
@@ -131,7 +131,7 @@ type JobScheduler struct {
 	ShutdownGracePeriodProvider       func() time.Duration
 	ShouldSkipLoggerListenersProvider func() bool
 	ShouldSkipLoggerOutputProvider    func() bool
-	HistoryDisabledProvider           func() bool
+	HistoryEnabledProvider            func() bool
 	HistoryPersistenceEnabledProvider func() bool
 	HistoryMaxCountProvider           func() int
 	HistoryMaxAgeProvider             func() time.Duration
@@ -193,7 +193,7 @@ func (js *JobScheduler) Status() JobSchedulerStatus {
 		Current:                   js.Current,
 		Last:                      js.Last,
 		Stats:                     js.Stats(),
-		HistoryDisabled:           js.HistoryDisabledProvider(),
+		HistoryEnabled:            js.HistoryEnabledProvider(),
 		HistoryPersistenceEnabled: js.HistoryPersistenceEnabledProvider(),
 		HistoryMaxCount:           js.HistoryMaxCountProvider(),
 		HistoryMaxAge:             js.HistoryMaxAgeProvider(),
@@ -588,7 +588,7 @@ func (js *JobScheduler) finishCurrent(ji *JobInvocation) {
 	js.Lock()
 	defer js.Unlock()
 
-	if !js.HistoryDisabledProvider() {
+	if !js.HistoryEnabledProvider() {
 		js.History = append(js.cullHistory(), *ji)
 	}
 	js.Current = nil

@@ -104,9 +104,9 @@ type OnEnabledReceiver interface {
 	OnEnabled(context.Context)
 }
 
-// HistoryDisabledProvider is an optional interface that will allow jobs to control if it should track history.
-type HistoryDisabledProvider interface {
-	HistoryDisabled() bool
+// HistoryEnabledProvider is an optional interface that will allow jobs to control if it should track history.
+type HistoryEnabledProvider interface {
+	HistoryEnabled() bool
 }
 
 // HistoryMaxCountProvider is an optional interface that will allow jobs to control how many history items are tracked.
