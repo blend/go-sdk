@@ -588,7 +588,7 @@ func (js *JobScheduler) finishCurrent(ji *JobInvocation) {
 	js.Lock()
 	defer js.Unlock()
 
-	if !js.HistoryEnabledProvider() {
+	if js.HistoryEnabledProvider() {
 		js.History = append(js.cullHistory(), *ji)
 	}
 	js.Current = nil
