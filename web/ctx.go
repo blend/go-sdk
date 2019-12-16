@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/blend/go-sdk/ex"
@@ -264,7 +265,9 @@ func (rc *Ctx) CookieDomain() string {
 		u := webutil.MustParseURL(rc.App.Config.BaseURL)
 		return u.Hostname()
 	}
-	return rc.Request.Host
+	// Strip off the port if the hostname includes it.
+	parts := strings.Split(rc.Request.Host, ":")
+	return parts[0]
 }
 
 // Cookie returns a named cookie from the request.

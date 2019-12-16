@@ -159,7 +159,7 @@ func TestCtxWriteNewCookie(t *testing.T) {
 		HttpOnly: true,
 		Secure:   true,
 	})
-	assert.Equal("foo=bar; Path=/foo/bar; HttpOnly; Secure", context.Response.Header().Get("Set-Cookie"))
+	assert.Equal("foo=bar; Path=/foo/bar; Domain=localhost; HttpOnly; Secure", context.Response.Header().Get("Set-Cookie"))
 }
 
 func TestCtxExtendCookie(t *testing.T) {
@@ -192,7 +192,7 @@ func TestCtxCookieDomain(t *testing.T) {
 	// Fallback to `ctx.Request.Host`
 	ctx := MockCtx("GET", "/")
 	domain := ctx.CookieDomain()
-	assert.Equal("localhost:8080", domain)
+	assert.Equal("localhost", domain)
 	assert.Nil(ctx.App)
 
 	// Use `ctx.App.Config.BaseURL`
