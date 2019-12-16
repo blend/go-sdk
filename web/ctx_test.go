@@ -185,3 +185,20 @@ func TestCtxExtendCookieByDuration(t *testing.T) {
 	cookie := cookies[0]
 	assert.False(cookie.Expires.IsZero())
 }
+
+func TestCtxCookieDomain(t *testing.T) {
+	assert := assert.New(t)
+
+	// Fallback to `ctx.Request.Host`
+	ctx := MockCtx("GET", "/")
+	domain := ctx.CookieDomain()
+	assert.Equal("localhost", domain)
+	assert.Nil(ctx.App)
+
+	// Use `ctx.App.Config.BaseURL`
+	cfg := Config{BaseURL: "http://localhost:8080"}
+	app := MustNew(OptConfig(cfg))
+	ctx = MockCtx("GET", "/", OptCtxApp(app))
+	domain = ctx.CookieDomain()
+	assert.Equal("localhost", domain)
+}

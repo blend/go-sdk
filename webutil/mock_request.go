@@ -12,7 +12,7 @@ func NewMockRequest(method, path string) *http.Request {
 		Proto:      "http",
 		ProtoMajor: 1,
 		ProtoMinor: 1,
-		Host:       "localhost",
+		Host:       "localhost:8080",
 		RemoteAddr: "127.0.0.1:8080",
 		RequestURI: path,
 		Header: http.Header{
