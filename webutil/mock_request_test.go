@@ -11,7 +11,7 @@ func TestNewMockRequest(t *testing.T) {
 
 	req := NewMockRequest("OPTIONS", "/foo")
 	assert.Equal("OPTIONS", req.Method)
-	assert.Equal("localhost", req.Host)
+	assert.Equal("localhost:8080", req.Host)
 	assert.Equal("/foo", req.RequestURI)
 	assert.NotNil(req.URL)
 	assert.Equal("http", req.Proto)
