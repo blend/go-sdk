@@ -200,5 +200,5 @@ func TestCtxCookieDomain(t *testing.T) {
 	app := MustNew(OptConfig(cfg))
 	ctx = MockCtx("GET", "/", OptCtxApp(app))
 	domain = ctx.CookieDomain()
-	assert.Equal("localhost:8080", domain)
+	assert.Equal("localhost", domain)
 }

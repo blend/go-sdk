@@ -261,7 +261,8 @@ func (rc *Ctx) PostBodyAsXML(response interface{}) error {
 // CookieDomain returns the cookie domain for a request.
 func (rc *Ctx) CookieDomain() string {
 	if rc.App != nil && rc.App.Config.BaseURL != "" {
-		return webutil.MustParseURL(rc.App.Config.BaseURL).Host
+		u := webutil.MustParseURL(rc.App.Config.BaseURL)
+		return u.Hostname()
 	}
 	return rc.Request.Host
 }
