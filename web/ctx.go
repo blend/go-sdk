@@ -265,9 +265,7 @@ func (rc *Ctx) CookieDomain() string {
 		u := webutil.MustParseURL(rc.App.Config.BaseURL)
 		return u.Hostname()
 	}
-	// Strip off the port if the hostname includes it.
-	parts := strings.Split(rc.Request.Host, ":")
-	return parts[0]
+	return extractHost(rc.Request.Host)
 }
 
 // Cookie returns a named cookie from the request.
@@ -396,4 +394,22 @@ func (rc *Ctx) loggerAnnotations() logger.Annotations {
 		fields["web.route_parameters"] = rc.RouteParams
 	}
 	return logger.CombineAnnotations(logger.GetAnnotations(rc.Request.Context()), fields)
+}
+
+// extractHost splits a host / port pair (or just a host) and returns the host.
+// This is large borrowed from `net/url.splitHostPort` (as of `go1.13.5`).
+func extractHost(hostport string) string {
+	host := hostport
+
+	colon := strings.LastIndexByte(host, ':')
+	if colon != -1 {
+		host = host[:colon]
+	}
+
+	// If `hostport` is an IPv6 address of the form `[::1]:12801`.
+	if strings.HasPrefix(host, "[") && strings.HasSuffix(host, "]") {
+		host = host[1 : len(host)-1]
+	}
+
+	return host
 }
