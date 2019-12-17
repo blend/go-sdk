@@ -460,8 +460,8 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, er
 		case <-ji.Context.Done():
 			err = ErrJobCancelled
 			return
-		case err = <-js.safeBackgroundExec(ji.Context):
-			return
+		case err = <-js.safeBackgroundExec(ji.Context): // we use a goroutine here
+			return // so that we can enforce the timeout
 		}
 	}()
 	return ji, nil
@@ -579,14 +579,6 @@ func (js *JobScheduler) Idle() (isIdle bool) {
 	return
 }
 
-// SetLoggerTracer sets the logger and tracer on the scheduler.
-func (js *JobScheduler) SetLoggerTracer(log logger.Log, tracer Tracer) {
-	js.Lock()
-	js.Log = log
-	js.Tracer = tracer
-	js.Unlock()
-}
-
 //
 // utility functions
 //
@@ -669,6 +661,9 @@ func (js *JobScheduler) createContextWithTimeout(ctx context.Context, timeout ti
 }
 
 func (js *JobScheduler) onStart(ctx context.Context, ji *JobInvocation) {
+	js.Lock()
+	defer js.Unlock()
+
 	if js.Log != nil && !js.ShouldSkipLoggerListenersProvider() {
 		js.logTrigger(js.logEventContext(ctx), NewEvent(FlagStarted, ji.JobName, OptEventJobInvocation(ji.ID)))
 	}
@@ -678,6 +673,9 @@ func (js *JobScheduler) onStart(ctx context.Context, ji *JobInvocation) {
 }
 
 func (js *JobScheduler) onCancelled(ctx context.Context, ji *JobInvocation) {
+	js.Lock()
+	defer js.Unlock()
+
 	ji.State = JobInvocationStateCancelled
 
 	if js.Log != nil && !js.ShouldSkipLoggerListenersProvider() {
@@ -689,6 +687,9 @@ func (js *JobScheduler) onCancelled(ctx context.Context, ji *JobInvocation) {
 }
 
 func (js *JobScheduler) onComplete(ctx context.Context, ji *JobInvocation) {
+	js.Lock()
+	defer js.Unlock()
+
 	ji.State = JobInvocationStateComplete
 
 	if js.Log != nil && !js.ShouldSkipLoggerListenersProvider() {
@@ -707,6 +708,9 @@ func (js *JobScheduler) onComplete(ctx context.Context, ji *JobInvocation) {
 }
 
 func (js *JobScheduler) onFailure(ctx context.Context, ji *JobInvocation) {
+	js.Lock()
+	defer js.Unlock()
+
 	ji.State = JobInvocationStateFailed
 
 	if js.Log != nil && !js.ShouldSkipLoggerListenersProvider() {

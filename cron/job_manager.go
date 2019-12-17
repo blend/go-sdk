@@ -18,7 +18,7 @@ import (
 func New(options ...JobManagerOption) *JobManager {
 	jm := JobManager{
 		Latch: async.NewLatch(),
-		Jobs:  map[string]*JobScheduler{},
+		Jobs:  make(map[string]*JobScheduler),
 	}
 	for _, option := range options {
 		option(&jm)
@@ -57,7 +57,6 @@ func (jm *JobManager) LoadJobs(jobs ...Job) error {
 			OptJobSchedulerTracer(jm.Tracer),
 			OptJobSchedulerLog(jm.Log),
 		)
-
 		if err := scheduler.RestoreHistory(context.Background()); err != nil {
 			logger.MaybeError(jm.Log, err)
 			continue
@@ -243,7 +242,6 @@ func (jm *JobManager) StartAsync() error {
 	jm.Latch.Starting()
 	logger.MaybeInfo(jm.Log, "job manager starting")
 	for _, job := range jm.Jobs {
-		job.SetLoggerTracer(jm.Log, jm.Tracer)
 		go job.Start()
 		<-job.NotifyStarted()
 	}

@@ -46,7 +46,7 @@ type JobInvocation struct {
 }
 
 // MarshalJSON marshals the invocation as json.
-func (ji JobInvocation) MarshalJSON() ([]byte, error) {
+func (ji *JobInvocation) MarshalJSON() ([]byte, error) {
 	values := map[string]interface{}{
 		"id":      ji.ID,
 		"jobName": ji.JobName,
@@ -107,5 +107,4 @@ func (ji *JobInvocation) UnmarshalJSON(contents []byte) error {
 	ji.Output.Handler = handlers.Handle
 	ji.OutputHandlers = handlers
 	return nil
-
 }
