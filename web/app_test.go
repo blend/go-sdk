@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"syscall"
 	"testing"
 	"time"
 
@@ -15,6 +16,14 @@ import (
 	"github.com/blend/go-sdk/graceful"
 	"github.com/blend/go-sdk/logger"
 )
+
+// BrokenPipe result is a result that always returns a broken pipe error on render.
+type BrokenPipeResult string
+
+// Render renders the result.
+func (br *BrokenPipeResult) Render(ctx *Ctx) error {
+	return syscall.EPIPE
+}
 
 // assert an app is graceful
 var (
@@ -438,6 +447,33 @@ func TestAppNotFound(t *testing.T) {
 	_, err = MockGet(app, "/doesntexist").Discard()
 	assert.Nil(err)
 	wg.Wait()
+}
+
+func TestAppBrokenPipeLog(t *testing.T) {
+	assert := assert.New(t)
+
+	buffer := bytes.NewBuffer(nil)
+	agent := logger.MustNew(logger.OptAll(), logger.OptOutput(buffer))
+
+	app, err := New(OptLog(agent))
+	assert.Nil(err)
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+
+	app.GET("/", func(r *Ctx) Result {
+		defer wg.Done()
+		result := BrokenPipeResult("I'm a broken pipe result!")
+		return &result
+	})
+
+	_, err = MockGet(app, "/").Discard()
+	assert.Nil(err)
+	wg.Wait()
+
+	// Test: verify that the broken pipe error was not logged
+	assert.Nil(agent.Drain())
+	assert.Equal(-1, strings.Index(buffer.String(), ex.New(syscall.EPIPE).Error()))
 }
 
 func TestAppDefaultHeaders(t *testing.T) {

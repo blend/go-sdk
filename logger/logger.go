@@ -254,7 +254,7 @@ func (l *Logger) Close() error {
 	return nil
 }
 
-// Drain stops the evnet listeners, letting them complete their work
+// Drain stops the event listeners, letting them complete their work
 // and then restarts the listeners.
 func (l *Logger) Drain() error {
 	return l.DrainContext(context.Background())

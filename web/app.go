@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"syscall"
 
 	"github.com/blend/go-sdk/async"
 	"github.com/blend/go-sdk/ex"
@@ -414,8 +415,8 @@ func (a *App) RenderAction(action Action) Handler {
 				}
 			}
 
-			// do the render, log any errors emitted
-			if resultErr := result.Render(ctx); resultErr != nil {
+			// do the render, log any errors emitted except broken pipe errors
+			if resultErr := result.Render(ctx); resultErr != nil && !ex.Is(resultErr, syscall.EPIPE) {
 				err = ex.Nest(err, resultErr)
 				a.maybeLogFatal(ctx.Context(), resultErr, ctx.Request)
 			}
