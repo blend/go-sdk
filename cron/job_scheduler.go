@@ -200,6 +200,13 @@ func (js *JobScheduler) Status() JobSchedulerStatus {
 	if typed, ok := js.Schedule.(fmt.Stringer); ok {
 		status.Schedule = typed.String()
 	}
+	status.History = make([]JobSchedulerStatusHistory, len(js.History))
+	for index, ji := range js.History {
+		status.History[index] = JobSchedulerStatusHistory{
+			State:   ji.State,
+			Elapsed: ji.Elapsed,
+		}
+	}
 	return status
 }
 
