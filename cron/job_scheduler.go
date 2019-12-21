@@ -203,6 +203,7 @@ func (js *JobScheduler) Status() JobSchedulerStatus {
 	status.History = make([]JobSchedulerStatusHistory, len(js.History))
 	for index, ji := range js.History {
 		status.History[index] = JobSchedulerStatusHistory{
+			Started: ji.Started,
 			State:   ji.State,
 			Elapsed: ji.Elapsed,
 		}

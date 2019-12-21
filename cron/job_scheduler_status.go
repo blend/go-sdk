@@ -25,6 +25,7 @@ type JobSchedulerStatus struct {
 
 // JobSchedulerStatusHistory is a state and elapsed pair used for graphs.
 type JobSchedulerStatusHistory struct {
+	Started time.Time
 	State   JobInvocationState
 	Elapsed time.Duration
 }
