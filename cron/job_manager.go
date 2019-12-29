@@ -123,10 +123,7 @@ func (jm *JobManager) IsJobDisabled(jobName string) (value bool) {
 	defer jm.Unlock()
 
 	if job, hasJob := jm.Jobs[jobName]; hasJob {
-		value = job.Disabled
-		if job.DisabledProvider != nil {
-			value = value || job.DisabledProvider()
-		}
+		value = job.Disabled()
 	}
 	return
 }

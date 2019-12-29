@@ -84,24 +84,27 @@ func TestJobManagerJobPanicHandling(t *testing.T) {
 }
 
 func TestEnabledProvider(t *testing.T) {
-	a := assert.New(t)
-	a.StartTimeout(2000 * time.Millisecond)
-	defer a.EndTimeout()
+	assert := assert.New(t)
 
 	manager := New()
 	job := &testWithDisabled{
 		disabled: false,
-		action:   func() {},
 	}
 
+	jobName := "testWithEnabled"
+
 	manager.LoadJobs(job)
-	a.False(manager.IsJobDisabled("testWithEnabled"))
-	manager.DisableJobs("testWithEnabled")
-	a.True(manager.IsJobDisabled("testWithEnabled"))
+
+	// test provider
+	assert.False(manager.IsJobDisabled(jobName))
 	job.disabled = true
-	a.True(manager.IsJobDisabled("testWithEnabled"))
-	manager.EnableJobs("testWithEnabled")
-	a.True(manager.IsJobDisabled("testWithEnabled"))
+	assert.True(manager.IsJobDisabled(jobName))
+
+	// test explicit
+	manager.DisableJobs(jobName)
+	assert.True(manager.IsJobDisabled(jobName))
+	manager.EnableJobs(jobName)
+	assert.False(manager.IsJobDisabled(jobName))
 }
 
 func TestFiresErrorOnTaskError(t *testing.T) {
@@ -247,21 +250,17 @@ func TestJobManagerLoadJob(t *testing.T) {
 	assert.Equal("load-job-test-minimum", meta.Name())
 	assert.NotNil(meta.Job)
 
-	assert.NotNil(meta.DisabledProvider)
-	assert.Equal(DefaultDisabled, meta.DisabledProvider())
-	assert.NotNil(meta.TimeoutProvider)
-	assert.Zero(meta.TimeoutProvider())
-	assert.NotNil(meta.ShouldSkipLoggerListenersProvider)
-	assert.Equal(DefaultShouldSkipLoggerListeners, meta.ShouldSkipLoggerListenersProvider())
-	assert.NotNil(meta.ShouldSkipLoggerOutputProvider)
-	assert.Equal(DefaultShouldSkipLoggerOutput, meta.ShouldSkipLoggerOutputProvider())
+	assert.Equal(DefaultDisabled, meta.Disabled())
+	assert.Zero(meta.Timeout())
+	assert.Equal(DefaultShouldSkipLoggerListeners, meta.ShouldSkipLoggerListeners())
+	assert.Equal(DefaultShouldSkipLoggerOutput, meta.ShouldSkipLoggerOutput())
 
 	jm.LoadJobs(&testJobWithTimeout{TimeoutDuration: time.Second})
 
 	meta, err = jm.Job("testJobWithTimeout")
 	assert.Nil(err)
 	assert.NotNil(meta)
-	assert.Equal(time.Second, meta.TimeoutProvider())
+	assert.Equal(time.Second, meta.Timeout())
 }
 
 func TestJobManagerLoadJobs(t *testing.T) {
@@ -379,17 +378,17 @@ func TestJobManagerEnableDisableJob(t *testing.T) {
 
 	j, err := jm.Job(name)
 	assert.Nil(err)
-	assert.False(j.Disabled)
+	assert.False(j.Disabled())
 
 	jm.DisableJobs(name)
 	j, err = jm.Job(name)
 	assert.Nil(err)
-	assert.True(j.Disabled)
+	assert.True(j.Disabled())
 
 	jm.EnableJobs(name)
 	j, err = jm.Job(name)
 	assert.Nil(err)
-	assert.False(j.Disabled)
+	assert.False(j.Disabled())
 }
 
 func TestJobManagerPauseResume(t *testing.T) {
@@ -415,7 +414,7 @@ func TestJobManagerPauseResume(t *testing.T) {
 	job, err := jm.Job(name)
 	assert.Nil(err)
 	assert.NotNil(job)
-	assert.True(job.Latch.IsStopped())
+	assert.True(job.latch.IsStopped())
 
 	assert.Nil(jm.Resume())
 	assert.True(jm.Latch.IsStarted())
@@ -425,5 +424,5 @@ func TestJobManagerPauseResume(t *testing.T) {
 	job, err = jm.Job(name)
 	assert.Nil(err)
 	assert.NotNil(job)
-	assert.True(job.Latch.IsStarted())
+	assert.True(job.latch.IsStarted())
 }

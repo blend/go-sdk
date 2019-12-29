@@ -40,13 +40,15 @@ type JobInvocation struct {
 	State          JobInvocationState
 	Output         *bufferutil.Buffer
 	OutputHandlers *bufferutil.BufferHandlers
-	Context        context.Context
-	Cancel         context.CancelFunc
-	Done           chan struct{}
+
+	// these cannot be json marshaled.
+	Context context.Context
+	Cancel  context.CancelFunc
+	Done    chan struct{}
 }
 
 // MarshalJSON marshals the invocation as json.
-func (ji *JobInvocation) MarshalJSON() ([]byte, error) {
+func (ji JobInvocation) MarshalJSON() ([]byte, error) {
 	values := map[string]interface{}{
 		"id":      ji.ID,
 		"jobName": ji.JobName,

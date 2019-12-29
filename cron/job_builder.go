@@ -142,6 +142,16 @@ func OptJobHistoryMaxAge(provider func() time.Duration) JobBuilderOption {
 	return func(jb *JobBuilder) { jb.HistoryMaxAgeProvider = provider }
 }
 
+// OptJobRestoreHistory is a job builder option implementation.
+func OptJobRestoreHistory(handler func(context.Context) ([]JobInvocation, error)) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.RestoreHistoryHandler = handler }
+}
+
+// OptJobPersistHistory is a job builder option implementation.
+func OptJobPersistHistory(handler func(context.Context, []JobInvocation) error) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.PersistHistoryHandler = handler }
+}
+
 // JobBuilder allows for job creation w/o a fully formed struct.
 type JobBuilder struct {
 	Action Action

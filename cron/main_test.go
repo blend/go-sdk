@@ -103,7 +103,7 @@ var (
 
 type testWithDisabled struct {
 	disabled bool
-	action   func()
+	action   func(context.Context) error
 }
 
 func (twe testWithDisabled) Name() string {
@@ -119,7 +119,9 @@ func (twe testWithDisabled) Disabled() bool {
 }
 
 func (twe testWithDisabled) Execute(ctx context.Context) error {
-	twe.action()
+	if twe.action != nil {
+		return twe.action(ctx)
+	}
 	return nil
 }
 

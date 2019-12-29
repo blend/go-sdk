@@ -8,6 +8,7 @@ import (
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/graceful"
+	"github.com/blend/go-sdk/ref"
 	"github.com/blend/go-sdk/uuid"
 )
 
@@ -19,8 +20,8 @@ func TestJobSchedulerCullHistoryMaxAge(t *testing.T) {
 	assert := assert.New(t)
 
 	js := NewJobScheduler(NewJob())
-	js.HistoryMaxCountProvider = func() int { return 10 }
-	js.HistoryMaxAgeProvider = func() time.Duration { return 6 * time.Hour }
+	js.Config.HistoryMaxCount = ref.Int(10)
+	js.Config.HistoryMaxAge = ref.Duration(6 * time.Hour)
 
 	js.History = []JobInvocation{
 		{ID: uuid.V4().String(), Started: time.Now().Add(-10 * time.Hour)},
@@ -42,9 +43,12 @@ func TestJobSchedulerCullHistoryMaxAge(t *testing.T) {
 func TestJobSchedulerCullHistoryMaxCount(t *testing.T) {
 	assert := assert.New(t)
 
-	js := NewJobScheduler(NewJob())
-	js.HistoryMaxCountProvider = func() int { return 5 }
-	js.HistoryMaxAgeProvider = func() time.Duration { return 6 * time.Hour }
+	js := NewJobScheduler(NewJob(
+		OptJobHistoryEnabled(func() bool { return true }),
+		OptJobHistoryPersistenceEnabled(func() bool { return true }),
+		OptJobHistoryMaxCount(func() int { return 5 }),
+		OptJobHistoryMaxAge(func() time.Duration { return 6 * time.Hour }),
+	))
 
 	js.History = []JobInvocation{
 		{ID: uuid.V4().String(), Started: time.Now().Add(-10 * time.Minute)},
@@ -98,16 +102,13 @@ func TestJobSchedulerEnableDisable(t *testing.T) {
 		),
 	)
 
-	js.HistoryMaxCountProvider = func() int { return 5 }
-	js.HistoryMaxAgeProvider = func() time.Duration { return 6 * time.Hour }
-
 	js.Disable()
-	assert.True(js.Disabled)
+	assert.True(js.Disabled())
 	assert.False(js.CanBeScheduled())
 	assert.True(triggeredOnDisabled)
 
 	js.Enable()
-	assert.False(js.Disabled)
+	assert.False(js.Disabled())
 	assert.True(js.CanBeScheduled())
 	assert.True(triggerdOnEnabled)
 }
@@ -115,40 +116,55 @@ func TestJobSchedulerEnableDisable(t *testing.T) {
 func TestJobSchedulerPersistHistory(t *testing.T) {
 	assert := assert.New(t)
 
-	js := NewJobScheduler(
-		NewJob(OptJobName("foo")),
+	var history [][]JobInvocation
+	job := NewJob(
+		OptJobName("foo"),
+		OptJobHistoryEnabled(ConstBool(true)),
+		OptJobHistoryPersistenceEnabled(ConstBool(true)),
+		OptJobPersistHistory(func(_ context.Context, h []JobInvocation) error {
+			history = append(history, h)
+			return nil
+		}),
+		OptJobRestoreHistory(func(_ context.Context) ([]JobInvocation, error) {
+			return []JobInvocation{
+				*NewJobInvocation("foo"),
+				*NewJobInvocation("foo"),
+				*NewJobInvocation("foo"),
+			}, nil
+		}),
 	)
-	js.HistoryEnabledProvider = func() bool { return true }
-	js.HistoryPersistenceEnabledProvider = func() bool { return true }
+	assert.Empty(history)
+
+	js := NewJobScheduler(job)
 
 	assert.Nil(js.RestoreHistory(context.Background()))
+	assert.Len(js.History, 3)
 	assert.Nil(js.PersistHistory(context.Background()))
 
-	history := make(chan []JobInvocation, 2)
-	js.HistoryPersistProvider = func(_ context.Context, h []JobInvocation) error {
-		history <- h
-		return nil
-	}
-	js.Run()
-	assert.Len(<-history, 1)
-	js.Run()
-	assert.Len(<-history, 2)
+	assert.Len(history, 1)
+	assert.Len(history[0], 3)
 
-	js.HistoryEnabledProvider = func() bool { return false }
 	js.Run()
-	assert.Len(<-history, 2)
+	assert.Len(history[1], 4)
+	assert.Len(history, 2)
+	assert.Len(js.History, 4)
+	js.Run()
+	assert.Len(js.History, 5)
+	assert.Len(history, 3)
+	assert.Len(history[2], 5)
 
-	js.HistoryRestoreProvider = func(_ context.Context) ([]JobInvocation, error) {
-		return []JobInvocation{
-			*NewJobInvocation("foo"),
-			*NewJobInvocation("foo"),
-			*NewJobInvocation("foo"),
-		}, nil
-	}
+	job.HistoryEnabledProvider = ConstBool(false)
+
+	js.Run()
+	assert.Len(history, 3)
+	assert.Len(js.History, 5)
+
 	assert.Nil(js.RestoreHistory(context.Background()))
 	assert.Len(js.History, 3)
 
-	js.HistoryPersistProvider = func(_ context.Context, h []JobInvocation) error {
+	job.HistoryEnabledProvider = ConstBool(true)
+
+	job.PersistHistoryHandler = func(_ context.Context, h []JobInvocation) error {
 		return fmt.Errorf("only a test")
 	}
 	assert.NotNil(js.PersistHistory(context.Background()))
@@ -157,14 +173,15 @@ func TestJobSchedulerPersistHistory(t *testing.T) {
 func TestJobSchedulerLabels(t *testing.T) {
 	assert := assert.New(t)
 
-	js := NewJobScheduler(NewJob(OptJobName("test"), OptJobAction(noop)))
+	job := NewJob(OptJobName("test"), OptJobAction(noop))
+	js := NewJobScheduler(job)
 	js.Last = &JobInvocation{
 		State: JobInvocationStateComplete,
 	}
 	labels := js.Labels()
 	assert.Equal("test", labels["name"])
 
-	js.LabelsProvider = func() map[string]string {
+	job.LabelsProvider = func() map[string]string {
 		return map[string]string{
 			"name": "not-test",
 			"foo":  "bar",

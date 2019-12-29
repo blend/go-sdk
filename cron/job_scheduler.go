@@ -17,10 +17,9 @@ import (
 // NewJobScheduler returns a job scheduler for a given job.
 func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 	js := &JobScheduler{
-		Latch: async.NewLatch(),
+		latch: async.NewLatch(),
 		Job:   job,
 	}
-
 	if typed, ok := job.(JobConfigProvider); ok {
 		js.Config = typed.JobConfig()
 	}
@@ -34,7 +33,6 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 // JobScheduler is a job instance.
 type JobScheduler struct {
 	sync.Mutex
-	Latch *async.Latch
 
 	Job    Job
 	Config JobConfig
@@ -45,6 +43,9 @@ type JobScheduler struct {
 	Current     *JobInvocation
 	Last        *JobInvocation
 	History     []JobInvocation
+
+	latch    *async.Latch
+	disabled *bool
 }
 
 // Name returns the job name.
@@ -65,11 +66,14 @@ func (js *JobScheduler) Description() string {
 	if typed, ok := js.Job.(DescriptionProvider); ok {
 		return typed.Description()
 	}
-	return ""
+	return js.Config.Description
 }
 
 // Disabled returns if the job is disabled or not.
 func (js *JobScheduler) Disabled() bool {
+	if js.disabled != nil {
+		return *js.disabled
+	}
 	if typed, ok := js.Job.(DisabledProvider); ok {
 		return typed.Disabled()
 	}
@@ -169,10 +173,10 @@ func (js *JobScheduler) Labels() map[string]string {
 
 // State returns the job scheduler state.
 func (js *JobScheduler) State() JobSchedulerState {
-	if js.Latch.IsStarted() {
+	if js.latch.IsStarted() {
 		return JobSchedulerStateRunning
 	}
-	if js.Latch.IsStopped() {
+	if js.latch.IsStopped() {
 		return JobSchedulerStateStopped
 	}
 	return JobSchedulerStateUnknown
@@ -253,11 +257,11 @@ func (js *JobScheduler) Stats() JobSchedulerStats {
 // Start starts the scheduler.
 // This call blocks.
 func (js *JobScheduler) Start() error {
-	if !js.Latch.CanStart() {
+	if !js.latch.CanStart() {
 		return fmt.Errorf("already started")
 	}
 	js.infof("scheduler starting")
-	js.Latch.Starting()
+	js.latch.Starting()
 	js.infof("scheduler started")
 	js.RunLoop()
 	js.infof("scheduler exiting")
@@ -266,14 +270,14 @@ func (js *JobScheduler) Start() error {
 
 // Stop stops the scheduler.
 func (js *JobScheduler) Stop() error {
-	if !js.Latch.CanStop() {
+	if !js.latch.CanStop() {
 		return fmt.Errorf("already stopped")
 	}
-	stopped := js.Latch.NotifyStopped()
+	stopped := js.latch.NotifyStopped()
 
 	js.infof("scheduler stopping")
 	// signal we are stopping.
-	js.Latch.Stopping()
+	js.latch.Stopping()
 
 	if js.Current != nil {
 		gracePeriod := js.ShutdownGracePeriod()
@@ -296,17 +300,17 @@ func (js *JobScheduler) Stop() error {
 
 // NotifyStarted notifies the job scheduler has started.
 func (js *JobScheduler) NotifyStarted() <-chan struct{} {
-	return js.Latch.NotifyStarted()
+	return js.latch.NotifyStarted()
 }
 
 // NotifyStopped notifies the job scheduler has stopped.
 func (js *JobScheduler) NotifyStopped() <-chan struct{} {
-	return js.Latch.NotifyStopped()
+	return js.latch.NotifyStopped()
 }
 
 // Enable sets the job as enabled.
 func (js *JobScheduler) Enable() {
-	js.Config.Disabled = ref.Bool(false)
+	js.disabled = ref.Bool(false)
 	if js.Log != nil && !js.ShouldSkipLoggerListeners() {
 		js.Log.Trigger(js.logEventContext(context.Background()), NewEvent(FlagEnabled, js.Name()))
 	}
@@ -317,7 +321,7 @@ func (js *JobScheduler) Enable() {
 
 // Disable sets the job as disabled.
 func (js *JobScheduler) Disable() {
-	js.Config.Disabled = ref.Bool(true)
+	js.disabled = ref.Bool(true)
 	if js.Log != nil && !js.ShouldSkipLoggerListeners() {
 		js.Log.Trigger(js.logEventContext(context.Background()), NewEvent(FlagDisabled, js.Name()))
 	}
@@ -349,9 +353,9 @@ func (js *JobScheduler) Cancel() error {
 // it alarms on the next runtime and forks a new routine to run the job.
 // It can be aborted with the scheduler's async.Latch.
 func (js *JobScheduler) RunLoop() {
-	js.Latch.Started()
+	js.latch.Started()
 	defer func() {
-		js.Latch.Stopped()
+		js.latch.Stopped()
 	}()
 
 	if js.Schedule() != nil {
@@ -367,7 +371,7 @@ func (js *JobScheduler) RunLoop() {
 	// this references the underlying js.Latch
 	// it returns the current latch signal for stopping *before*
 	// the job kicks off.
-	notifyStopping := js.Latch.NotifyStopping()
+	notifyStopping := js.latch.NotifyStopping()
 
 	for {
 		if js.NextRuntime.IsZero() {
@@ -554,6 +558,9 @@ func (js *JobScheduler) RestoreHistory(ctx context.Context) error {
 
 // PersistHistory calls the persist handler if it's set.
 func (js *JobScheduler) PersistHistory(ctx context.Context) error {
+	if !js.HistoryEnabled() {
+		return nil
+	}
 	if !js.HistoryPersistenceEnabled() {
 		return nil
 	}
