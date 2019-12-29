@@ -116,3 +116,10 @@ func ConstDuration(value time.Duration) func() time.Duration {
 		return value
 	}
 }
+
+// ConstLabels returns a value provider for a constant.
+func ConstLabels(labels map[string]string) func() map[string]string {
+	return func() map[string]string {
+		return labels
+	}
+}

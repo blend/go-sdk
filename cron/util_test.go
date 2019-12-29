@@ -22,3 +22,17 @@ func TestMinMax(t *testing.T) {
 	assert.Equal(a, Max(a, b))
 	assert.Equal(a, Max(b, a))
 }
+
+func TestConst(t *testing.T) {
+	assert := assert.New(t)
+
+	assert.Equal(true, ConstBool(true)())
+	assert.Equal(false, ConstBool(false)())
+
+	assert.Equal(123, ConstInt(123)())
+	assert.Equal(6*time.Hour, ConstDuration(6*time.Hour)())
+	assert.Equal("foo", ConstLabels(map[string]string{
+		"bar": "buzz",
+		"moo": "foo",
+	})()["moo"])
+}
