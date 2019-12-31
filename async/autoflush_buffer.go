@@ -65,7 +65,7 @@ func OptAutoflushBufferFlushOnStop(flushOnStop bool) AutoflushBufferOption {
 // A handler should be provided but without one the buffer will just clear.
 // Adds that would cause fixed length flushes do not block on the flush handler.
 type AutoflushBuffer struct {
-	*Latch
+	Latch       *Latch
 	Context     context.Context
 	MaxLen      int
 	Interval    time.Duration
@@ -91,10 +91,10 @@ This call blocks. To call it asynchronously:
 	<-afb.NotifyStarted()
 */
 func (ab *AutoflushBuffer) Start() error {
-	if !ab.CanStart() {
+	if !ab.Latch.CanStart() {
 		return ex.New(ErrCannotStart)
 	}
-	ab.Starting()
+	ab.Latch.Starting()
 	ab.Contents = collections.NewRingBufferWithCapacity(ab.MaxLen)
 	ab.Dispatch()
 	return nil
@@ -102,11 +102,11 @@ func (ab *AutoflushBuffer) Start() error {
 
 // Dispatch is the main run loop.
 func (ab *AutoflushBuffer) Dispatch() {
-	ab.Started()
+	ab.Latch.Started()
 	ticker := time.Tick(ab.Interval)
 	var stopping <-chan struct{}
 	for {
-		stopping = ab.NotifyStopping()
+		stopping = ab.Latch.NotifyStopping()
 		select {
 		case <-ticker:
 			ab.FlushAsync(ab.Background())
@@ -114,7 +114,7 @@ func (ab *AutoflushBuffer) Dispatch() {
 			if ab.FlushOnStop {
 				ab.Flush(ab.Background())
 			}
-			ab.Stopped()
+			ab.Latch.Stopped()
 			return
 		}
 	}
@@ -122,19 +122,29 @@ func (ab *AutoflushBuffer) Dispatch() {
 
 // Stop stops the buffer flusher.
 func (ab *AutoflushBuffer) Stop() error {
-	if !ab.CanStop() {
+	if !ab.Latch.CanStop() {
 		return ex.New(ErrCannotStop)
 	}
-	ab.Stopping()
-	<-ab.NotifyStopped()
+	ab.Latch.Stopping()
+	<-ab.Latch.NotifyStopped()
 	return nil
+}
+
+// NotifyStarted implements graceful.Graceful.
+func (ab *AutoflushBuffer) NotifyStarted() <-chan struct{} {
+	return ab.Latch.NotifyStarted()
+}
+
+// NotifyStopped implements graceful.Graceful.
+func (ab *AutoflushBuffer) NotifyStopped() <-chan struct{} {
+	return ab.Latch.NotifyStopped()
 }
 
 // Add adds a new object to the buffer, blocking if it triggers a flush.
 // If the buffer is full, it will call the flush handler on a separate goroutine.
 func (ab *AutoflushBuffer) Add(obj interface{}) {
-	ab.Lock()
-	defer ab.Unlock()
+	ab.Latch.Lock()
+	defer ab.Latch.Unlock()
 
 	ab.Contents.Enqueue(obj)
 	if ab.Contents.Len() >= ab.MaxLen {
@@ -144,8 +154,8 @@ func (ab *AutoflushBuffer) Add(obj interface{}) {
 
 // AddMany adds many objects to the buffer at once.
 func (ab *AutoflushBuffer) AddMany(objs ...interface{}) {
-	ab.Lock()
-	defer ab.Unlock()
+	ab.Latch.Lock()
+	defer ab.Latch.Unlock()
 
 	for _, obj := range objs {
 		ab.Contents.Enqueue(obj)
@@ -158,16 +168,16 @@ func (ab *AutoflushBuffer) AddMany(objs ...interface{}) {
 // Flush clears the buffer, if a handler is provided it is passed the contents of the buffer.
 // This call is synchronous, in that it will call the flush handler on the same goroutine.
 func (ab *AutoflushBuffer) Flush(ctx context.Context) {
-	ab.Lock()
-	defer ab.Unlock()
+	ab.Latch.Lock()
+	defer ab.Latch.Unlock()
 	ab.flushUnsafe(ctx, ab.Contents.Drain())
 }
 
 // FlushAsync clears the buffer, if a handler is provided it is passed the contents of the buffer.
 // This call is asynchronous, in that it will call the flush handler on its own goroutine.
 func (ab *AutoflushBuffer) FlushAsync(ctx context.Context) {
-	ab.Lock()
-	defer ab.Unlock()
+	ab.Latch.Lock()
+	defer ab.Latch.Unlock()
 	ab.flushUnsafeAsync(ctx, ab.Contents.Drain())
 }
 

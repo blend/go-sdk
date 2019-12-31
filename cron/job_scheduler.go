@@ -294,6 +294,7 @@ func (js *JobScheduler) Stop() error {
 	js.PersistHistory(context.Background())
 
 	<-stopped
+	js.latch.Reset()
 	js.infof("scheduler stopped")
 	return nil
 }

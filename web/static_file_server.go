@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"sync"
 
+	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -111,7 +112,7 @@ func (sc *StaticFileServer) Action(r *Ctx) Result {
 // ServeFile writes the file to the response by reading from disk
 // for each request (i.e. skipping the cache)
 func (sc *StaticFileServer) ServeFile(r *Ctx, filePath string) Result {
-	f, err := sc.ResolveFile(filePath)
+	f, finalPath, err := sc.ResolveFile(filePath)
 	if err != nil {
 		return sc.fileError(r, err)
 	}
@@ -121,6 +122,8 @@ func (sc *StaticFileServer) ServeFile(r *Ctx, filePath string) Result {
 	if err != nil {
 		return sc.fileError(r, err)
 	}
+
+	r.WithContext(logger.WithLabels(r.Context(), logger.Labels{"web.static_file": finalPath}))
 	http.ServeContent(r.Response, r.Request, filePath, finfo.ModTime(), f)
 	return nil
 }
@@ -135,6 +138,8 @@ func (sc *StaticFileServer) ServeCachedFile(r *Ctx, filepath string) Result {
 	if file.ETag != "" {
 		r.Response.Header().Set(webutil.HeaderETag, file.ETag)
 	}
+
+	r.WithContext(logger.WithLabels(r.Context(), logger.Labels{"web.static_file_cached": file.Path}))
 	http.ServeContent(r.Response, r.Request, filepath, file.ModTime, file.Contents)
 	return nil
 }
@@ -142,7 +147,7 @@ func (sc *StaticFileServer) ServeCachedFile(r *Ctx, filepath string) Result {
 // ResolveFile resolves a file from rewrite rules and search paths.
 // First the file path is modified according to the rewrite rules.
 // Then each search path is checked for the resolved file path.
-func (sc *StaticFileServer) ResolveFile(filePath string) (f http.File, err error) {
+func (sc *StaticFileServer) ResolveFile(filePath string) (f http.File, finalPath string, err error) {
 	for _, rule := range sc.RewriteRules {
 		if matched, newFilePath := rule.Apply(filePath); matched {
 			filePath = newFilePath
@@ -150,10 +155,16 @@ func (sc *StaticFileServer) ResolveFile(filePath string) (f http.File, err error
 	}
 	for _, searchPath := range sc.SearchPaths {
 		f, err = searchPath.Open(filePath)
+		if typed, ok := f.(*os.File); ok && typed != nil {
+			finalPath = typed.Name()
+		}
 		if err != nil {
 			if os.IsNotExist(err) {
 				continue
 			}
+			return
+		}
+		if f != nil {
 			return
 		}
 	}
@@ -185,7 +196,7 @@ func (sc *StaticFileServer) ResolveCachedFile(filepath string) (*CachedStaticFil
 		return file, nil
 	}
 
-	diskFile, err := sc.ResolveFile(filepath)
+	diskFile, _, err := sc.ResolveFile(filepath)
 	if err != nil {
 		return nil, err
 	}

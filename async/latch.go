@@ -8,10 +8,10 @@ import (
 // NewLatch creates a new latch.
 func NewLatch() *Latch {
 	return &Latch{
-		starting: make(chan struct{}),
-		started:  make(chan struct{}),
-		stopping: make(chan struct{}),
-		stopped:  make(chan struct{}),
+		starting: make(chan struct{}, 1),
+		started:  make(chan struct{}, 1),
+		stopping: make(chan struct{}, 1),
+		stopped:  make(chan struct{}, 1),
 	}
 }
 
@@ -35,6 +35,17 @@ type Latch struct {
 	started  chan struct{}
 	stopping chan struct{}
 	stopped  chan struct{}
+}
+
+// Reset resets the latch.
+func (l *Latch) Reset() {
+	l.Lock()
+	l.state = LatchStopped
+	l.starting = make(chan struct{}, 1)
+	l.started = make(chan struct{}, 1)
+	l.stopping = make(chan struct{}, 1)
+	l.stopped = make(chan struct{}, 1)
+	l.Unlock()
 }
 
 // CanStart returns if the latch can start.
@@ -106,56 +117,40 @@ func (l *Latch) NotifyStopped() (notifyStopped <-chan struct{}) {
 // Starting signals the latch is starting.
 // This is typically done before you kick off a goroutine.
 func (l *Latch) Starting() {
-	l.Lock()
-	defer l.Unlock()
-
 	if l.IsStarting() {
 		return
 	}
 	atomic.StoreInt32(&l.state, LatchStarting)
-	close(l.starting)
-	l.starting = make(chan struct{})
+	l.starting <- struct{}{}
 }
 
 // Started signals that the latch is started and has entered
 // the `IsStarted` state.
 func (l *Latch) Started() {
-	l.Lock()
-	defer l.Unlock()
-
 	if l.IsStarted() {
 		return
 	}
 	atomic.StoreInt32(&l.state, LatchStarted)
-	close(l.started)
-	l.started = make(chan struct{})
+	l.started <- struct{}{}
 }
 
 // Stopping signals the latch to stop.
 // It could also be thought of as `SignalStopping`.
 func (l *Latch) Stopping() {
-	l.Lock()
-	defer l.Unlock()
-
 	if l.IsStopping() {
 		return
 	}
 	atomic.StoreInt32(&l.state, LatchStopping)
-	close(l.stopping)
-	l.stopping = make(chan struct{})
+	l.stopping <- struct{}{}
 }
 
 // Stopped signals the latch has stopped.
 func (l *Latch) Stopped() {
-	l.Lock()
-	defer l.Unlock()
-
 	if l.IsStopped() {
 		return
 	}
 	atomic.StoreInt32(&l.state, LatchStopped)
-	close(l.stopped)
-	l.stopped = make(chan struct{})
+	l.stopped <- struct{}{}
 }
 
 // WaitStarted triggers `Starting` and waits for the `Started` signal.

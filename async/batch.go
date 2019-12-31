@@ -46,27 +46,34 @@ type Batch struct {
 
 // Process executes the action for all the work items.
 func (b *Batch) Process(ctx context.Context) {
-	// initialize the workers
-	workers := make(chan *Worker, b.Parallelism)
+	allWorkers := make([]*Worker, b.Parallelism)
+	availableWorkers := make(chan *Worker, b.Parallelism)
 
+	// return worker is a local finalizer
+	// that grabs a reference to the workers set.
 	returnWorker := func(ctx context.Context, worker *Worker) error {
-		workers <- worker
+		availableWorkers <- worker
 		return nil
 	}
 
+	// create and start workers.
 	for x := 0; x < b.Parallelism; x++ {
 		worker := NewWorker(b.Action)
 		worker.Errors = b.Errors
 		worker.Finalizer = returnWorker
+
+		workerStarted := worker.NotifyStarted()
 		go worker.Start()
-		<-worker.NotifyStarted()
-		workers <- worker
+		<-workerStarted
+
+		allWorkers[x] = worker
+		availableWorkers <- worker
 	}
 
 	defer func() {
-		for x := 0; x < b.Parallelism; x++ {
-			worker := <-workers
-			worker.Stop()
+		// stop the workers
+		for x := 0; x < len(allWorkers); x++ {
+			allWorkers[x].Stop()
 		}
 	}()
 
@@ -76,10 +83,11 @@ func (b *Batch) Process(ctx context.Context) {
 	for x := 0; x < numWorkItems; x++ {
 		workItem = <-b.Work
 		select {
-		case worker = <-workers:
+		case worker = <-availableWorkers:
 			worker.Enqueue(workItem)
 		case <-ctx.Done():
 			return
 		}
 	}
+
 }

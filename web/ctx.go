@@ -82,7 +82,9 @@ func (rc *Ctx) WithContext(context context.Context) *Ctx {
 
 // Context returns the context.
 func (rc *Ctx) Context() context.Context {
-	return logger.WithAnnotations(logger.WithLabels(rc.Request.Context(), rc.loggerLabels()), rc.loggerAnnotations())
+	ctx := rc.Request.Context()
+	ctx = logger.WithLabels(ctx, rc.loggerLabels())
+	return logger.WithAnnotations(ctx, rc.loggerAnnotations())
 }
 
 // WithStateValue sets the state for a key to an object.

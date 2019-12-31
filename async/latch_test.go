@@ -63,19 +63,4 @@ func TestLatch(t *testing.T) {
 	assert.False(l.IsStopping())
 	assert.False(l.IsStarted())
 	assert.True(l.IsStopped())
-
-	go func() {
-		l.Starting()
-	}()
-	<-l.NotifyStarting()
-
-	assert.True(l.IsStarting())
-	assert.False(l.IsStarted())
-	assert.False(l.IsStopping())
-	assert.False(l.IsStopped())
-
-	go func() {
-		l.Started()
-	}()
-	<-l.NotifyStarted()
 }

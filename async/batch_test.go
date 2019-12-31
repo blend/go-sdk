@@ -25,8 +25,37 @@ func TestBatch(t *testing.T) {
 	}
 
 	errors := make(chan error, 32)
-	NewBatch(action, items, OptBatchErrors(errors)).Process(context.Background())
+	NewBatch(
+		action,
+		items,
+		OptBatchErrors(errors),
+		OptBatchParallelism(4),
+	).Process(context.Background())
 
 	assert.Equal(32, processed)
 	assert.Equal(32, len(errors))
+}
+
+func TestBatchPanic(t *testing.T) {
+	assert := assert.New(t)
+
+	items := make(chan interface{}, 32)
+	for x := 0; x < 32; x++ {
+		items <- "hello" + strconv.Itoa(x)
+	}
+
+	var processed int32
+	action := func(_ context.Context, v interface{}) error {
+		atomic.AddInt32(&processed, 1)
+		if processed == 1 {
+			panic("this is only a test")
+		}
+		return nil
+	}
+
+	errors := make(chan error, 32)
+	NewBatch(action, items, OptBatchErrors(errors)).Process(context.Background())
+
+	assert.Equal(32, processed)
+	assert.Equal(1, len(errors))
 }
