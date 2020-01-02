@@ -37,6 +37,16 @@ type ScheduleProvider interface {
 	Schedule() Schedule
 }
 
+// OnLoadHandler is a job that can run an on load step.
+type OnLoadHandler interface {
+	OnLoad() error
+}
+
+// OnUnloadHandler is a job that can run an on unload step.
+type OnUnloadHandler interface {
+	OnUnload() error
+}
+
 // TimeoutProvider is an interface that allows a task to be timed out.
 type TimeoutProvider interface {
 	Timeout() time.Duration

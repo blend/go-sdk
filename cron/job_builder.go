@@ -12,6 +12,8 @@ var (
 	_ Job                               = (*JobBuilder)(nil)
 	_ LabelsProvider                    = (*JobBuilder)(nil)
 	_ ScheduleProvider                  = (*JobBuilder)(nil)
+	_ OnLoadHandler                     = (*JobBuilder)(nil)
+	_ OnUnloadHandler                   = (*JobBuilder)(nil)
 	_ TimeoutProvider                   = (*JobBuilder)(nil)
 	_ ShutdownGracePeriodProvider       = (*JobBuilder)(nil)
 	_ DisabledProvider                  = (*JobBuilder)(nil)
@@ -55,6 +57,16 @@ func OptJobName(name string) JobBuilderOption {
 // OptJobAction sets the job action.
 func OptJobAction(action func(context.Context) error) JobBuilderOption {
 	return func(jb *JobBuilder) { jb.Action = action }
+}
+
+// OptJobOnLoad sets the job on load handler.
+func OptJobOnLoad(handler func() error) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.OnLoadHandler = handler }
+}
+
+// OptJobOnUnload sets the job on unload handler.
+func OptJobOnUnload(handler func() error) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.OnUnloadHandler = handler }
 }
 
 // OptJobLabels is a job builder sets the job labels.
@@ -169,6 +181,8 @@ type JobBuilder struct {
 	HistoryMaxAgeProvider             func() time.Duration
 	HistoryPersistenceEnabledProvider func() bool
 
+	OnLoadHandler         func() error
+	OnUnloadHandler       func() error
 	OnStartHandler        func(*JobInvocation)
 	OnCancellationHandler func(*JobInvocation)
 	OnCompleteHandler     func(*JobInvocation)
@@ -197,6 +211,22 @@ func (jb *JobBuilder) Labels() map[string]string {
 		return jb.LabelsProvider()
 	}
 	return jb.Config.Labels
+}
+
+// OnLoad implements OnLoadHandler
+func (jb *JobBuilder) OnLoad() error {
+	if jb.OnLoadHandler != nil {
+		return jb.OnLoadHandler()
+	}
+	return nil
+}
+
+// OnUnload implements OnUnloadHandler
+func (jb *JobBuilder) OnUnload() error {
+	if jb.OnUnloadHandler != nil {
+		return jb.OnUnloadHandler()
+	}
+	return nil
 }
 
 // Schedule returns the job schedule if a provider is set.

@@ -262,6 +262,13 @@ func (js *JobScheduler) Start() error {
 	}
 	js.infof("scheduler starting")
 	js.latch.Starting()
+
+	if typed, ok := js.Job.(OnLoadHandler); ok {
+		if err := typed.OnLoad(); err != nil {
+			return err
+		}
+	}
+
 	js.infof("scheduler started")
 	js.RunLoop()
 	js.infof("scheduler exiting")
@@ -273,8 +280,13 @@ func (js *JobScheduler) Stop() error {
 	if !js.latch.CanStop() {
 		return fmt.Errorf("already stopped")
 	}
-	stopped := js.latch.NotifyStopped()
+	if typed, ok := js.Job.(OnUnloadHandler); ok {
+		if err := typed.OnUnload(); err != nil {
+			return err
+		}
+	}
 
+	stopped := js.latch.NotifyStopped()
 	js.infof("scheduler stopping")
 	// signal we are stopping.
 	js.latch.Stopping()
