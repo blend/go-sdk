@@ -49,7 +49,7 @@ func (raj *runAtJob) Execute(ctx context.Context) error {
 }
 
 var (
-	_ OnCancellationReceiver = (*testJobWithTimeout)(nil)
+	_ OnCancellationHandler = (*testJobWithTimeout)(nil)
 )
 
 type testJobWithTimeout struct {
@@ -148,11 +148,11 @@ func (mtf mockTraceFinisher) Finish(ctx context.Context) {
 }
 
 var (
-	_ OnStartReceiver    = (*brokenFixedTest)(nil)
-	_ OnCompleteReceiver = (*brokenFixedTest)(nil)
-	_ OnFailureReceiver  = (*brokenFixedTest)(nil)
-	_ OnBrokenReceiver   = (*brokenFixedTest)(nil)
-	_ OnFixedReceiver    = (*brokenFixedTest)(nil)
+	_ OnBeginHandler    = (*brokenFixedTest)(nil)
+	_ OnCompleteHandler = (*brokenFixedTest)(nil)
+	_ OnFailureHandler  = (*brokenFixedTest)(nil)
+	_ OnBrokenHandler   = (*brokenFixedTest)(nil)
+	_ OnFixedHandler    = (*brokenFixedTest)(nil)
 )
 
 func newBrokenFixedTest(action func(context.Context) error) *brokenFixedTest {
@@ -183,7 +183,7 @@ func (job *brokenFixedTest) Execute(ctx context.Context) error {
 
 func (job *brokenFixedTest) Schedule() Schedule { return nil }
 
-func (job *brokenFixedTest) OnStart(ctx context.Context) {
+func (job *brokenFixedTest) OnBegin(ctx context.Context) {
 	job.Starts++
 }
 

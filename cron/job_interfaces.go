@@ -72,45 +72,45 @@ type DisabledProvider interface {
 	Disabled() bool
 }
 
-// OnStartReceiver is an interface that allows a task to be signaled when it has started.
-type OnStartReceiver interface {
-	OnStart(context.Context)
+// OnBeginHandler is an interface that allows a job invocation to be signaled when it has started.
+type OnBeginHandler interface {
+	OnBegin(context.Context)
 }
 
-// OnCancellationReceiver is an interface that allows a task to be signaled when it has been canceled.
-type OnCancellationReceiver interface {
+// OnCancellationHandler is an interface that allows a task to be signaled when it has been canceled.
+type OnCancellationHandler interface {
 	OnCancellation(context.Context)
 }
 
-// OnCompleteReceiver is an interface that allows a task to be signaled when it has been completed.
-type OnCompleteReceiver interface {
+// OnCompleteHandler is an interface that allows a task to be signaled when it has been completed.
+type OnCompleteHandler interface {
 	OnComplete(context.Context)
 }
 
-// OnFailureReceiver is an interface that allows a task to be signaled when it has been completed.
-type OnFailureReceiver interface {
+// OnFailureHandler is an interface that allows a task to be signaled when it has been completed.
+type OnFailureHandler interface {
 	OnFailure(context.Context)
 }
 
-// OnBrokenReceiver is an interface that allows a job to be signaled when it is a failure that followed
+// OnBrokenHandler is an interface that allows a job to be signaled when it is a failure that followed
 // a previous success.
-type OnBrokenReceiver interface {
+type OnBrokenHandler interface {
 	OnBroken(context.Context)
 }
 
-// OnFixedReceiver is an interface that allows a jbo to be signaled when is a success that followed
+// OnFixedHandler is an interface that allows a jbo to be signaled when is a success that followed
 // a previous failure.
-type OnFixedReceiver interface {
+type OnFixedHandler interface {
 	OnFixed(context.Context)
 }
 
-// OnDisabledReceiver is a lifecycle hook for disabled events.
-type OnDisabledReceiver interface {
+// OnDisabledHandler is a lifecycle hook for disabled events.
+type OnDisabledHandler interface {
 	OnDisabled(context.Context)
 }
 
-// OnEnabledReceiver is a lifecycle hook for enabled events.
-type OnEnabledReceiver interface {
+// OnEnabledHandler is a lifecycle hook for enabled events.
+type OnEnabledHandler interface {
 	OnEnabled(context.Context)
 }
 

@@ -61,7 +61,29 @@ func (jm *JobManager) LoadJobs(jobs ...Job) error {
 			logger.MaybeError(jm.Log, err)
 			continue
 		}
+		if typed, ok := job.(OnLoadHandler); ok {
+			typed.OnLoad()
+		}
 		jm.Jobs[jobName] = scheduler
+	}
+	return nil
+}
+
+// UnloadJobs removes jobs from the manager and stops them.
+func (jm *JobManager) UnloadJobs(jobNames ...string) error {
+	jm.Lock()
+	defer jm.Unlock()
+
+	for _, jobName := range jobNames {
+		if jobScheduler, ok := jm.Jobs[jobName]; ok {
+			if typed, ok := jobScheduler.Job.(OnUnloadHandler); ok {
+				typed.OnUnload()
+			}
+			jobScheduler.Stop()
+			delete(jm.Jobs, jobName)
+		} else {
+			return ex.New(ErrJobNotFound, ex.OptMessagef("job: %s", jobName))
+		}
 	}
 	return nil
 }
@@ -297,8 +319,13 @@ func (jm *JobManager) Stop() error {
 	}
 	jm.Latch.Stopping()
 	logger.MaybeInfo(jm.Log, "job manager shutting down")
-	for _, job := range jm.Jobs {
-		job.Stop()
+	for _, jobScheduler := range jm.Jobs {
+		if typed, ok := jobScheduler.Job.(OnUnloadHandler); ok {
+			if err := typed.OnUnload(); err != nil {
+				return err
+			}
+		}
+		jobScheduler.Stop()
 	}
 	jm.Latch.Stopped()
 	jm.Stopped = time.Now().UTC()

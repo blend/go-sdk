@@ -334,7 +334,7 @@ func TestJobManagerCancelJob(t *testing.T) {
 		case <-ctx.Done():
 			return nil
 		}
-	}), OptJobOnCancellation(func(_ *JobInvocation) {
+	}), OptJobOnCancellation(func(_ context.Context) {
 		close(cancelled)
 	})))
 

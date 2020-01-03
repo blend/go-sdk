@@ -29,8 +29,8 @@ const (
 )
 
 const (
-	// FlagStarted is an event flag.
-	FlagStarted = "cron.started"
+	// FlagBegin is an event flag.
+	FlagBegin = "cron.begin"
 	// FlagFailed is an event flag.
 	FlagFailed = "cron.failed"
 	// FlagCancelled is an event flag.

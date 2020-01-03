@@ -262,13 +262,6 @@ func (js *JobScheduler) Start() error {
 	}
 	js.infof("scheduler starting")
 	js.latch.Starting()
-
-	if typed, ok := js.Job.(OnLoadHandler); ok {
-		if err := typed.OnLoad(); err != nil {
-			return err
-		}
-	}
-
 	js.infof("scheduler started")
 	js.RunLoop()
 	js.infof("scheduler exiting")
@@ -280,12 +273,6 @@ func (js *JobScheduler) Stop() error {
 	if !js.latch.CanStop() {
 		return fmt.Errorf("already stopped")
 	}
-	if typed, ok := js.Job.(OnUnloadHandler); ok {
-		if err := typed.OnUnload(); err != nil {
-			return err
-		}
-	}
-
 	stopped := js.latch.NotifyStopped()
 	js.infof("scheduler stopping")
 	// signal we are stopping.
@@ -327,7 +314,7 @@ func (js *JobScheduler) Enable() {
 	if js.Log != nil && !js.ShouldSkipLoggerListeners() {
 		js.Log.Trigger(js.logEventContext(context.Background()), NewEvent(FlagEnabled, js.Name()))
 	}
-	if typed, ok := js.Job.(OnEnabledReceiver); ok {
+	if typed, ok := js.Job.(OnEnabledHandler); ok {
 		typed.OnEnabled(context.Background())
 	}
 }
@@ -338,7 +325,7 @@ func (js *JobScheduler) Disable() {
 	if js.Log != nil && !js.ShouldSkipLoggerListeners() {
 		js.Log.Trigger(js.logEventContext(context.Background()), NewEvent(FlagDisabled, js.Name()))
 	}
-	if typed, ok := js.Job.(OnDisabledReceiver); ok {
+	if typed, ok := js.Job.(OnDisabledHandler); ok {
 		typed.OnDisabled(context.Background())
 	}
 }
@@ -488,8 +475,8 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, er
 		if js.Tracer != nil {
 			ji.Context, tf = js.Tracer.Start(ji.Context)
 		}
-		// fire the on start event
-		js.onStart(ji.Context, ji)
+		// fire the on begin event
+		js.onBegin(ji.Context, ji)
 
 		// check if the job has been canceled
 		// or if it's finished.
@@ -688,15 +675,15 @@ func (js *JobScheduler) createContextWithTimeout(ctx context.Context, timeout ti
 	return context.WithCancel(ctx)
 }
 
-func (js *JobScheduler) onStart(ctx context.Context, ji *JobInvocation) {
+func (js *JobScheduler) onBegin(ctx context.Context, ji *JobInvocation) {
 	js.Lock()
 	defer js.Unlock()
 
 	if js.Log != nil && !js.ShouldSkipLoggerListeners() {
-		js.logTrigger(js.logEventContext(ctx), NewEvent(FlagStarted, ji.JobName, OptEventJobInvocation(ji.ID)))
+		js.logTrigger(js.logEventContext(ctx), NewEvent(FlagBegin, ji.JobName, OptEventJobInvocation(ji.ID)))
 	}
-	if typed, ok := js.Job.(OnStartReceiver); ok {
-		typed.OnStart(ctx)
+	if typed, ok := js.Job.(OnBeginHandler); ok {
+		typed.OnBegin(ctx)
 	}
 }
 
@@ -709,7 +696,7 @@ func (js *JobScheduler) onCancelled(ctx context.Context, ji *JobInvocation) {
 	if js.Log != nil && !js.ShouldSkipLoggerListeners() {
 		js.logTrigger(js.logEventContext(ctx), NewEvent(FlagCancelled, ji.JobName, OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed)))
 	}
-	if typed, ok := js.Job.(OnCancellationReceiver); ok {
+	if typed, ok := js.Job.(OnCancellationHandler); ok {
 		typed.OnCancellation(ctx)
 	}
 }
@@ -723,13 +710,13 @@ func (js *JobScheduler) onComplete(ctx context.Context, ji *JobInvocation) {
 	if js.Log != nil && !js.ShouldSkipLoggerListeners() {
 		js.logTrigger(js.logEventContext(ctx), NewEvent(FlagComplete, ji.JobName, OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed)))
 	}
-	if typed, ok := js.Job.(OnCompleteReceiver); ok {
+	if typed, ok := js.Job.(OnCompleteHandler); ok {
 		typed.OnComplete(ctx)
 	}
 
 	if js.Last != nil && js.Last.Err != nil {
 		js.logTrigger(js.logEventContext(ctx), NewEvent(FlagFixed, ji.JobName, OptEventElapsed(ji.Elapsed)))
-		if typed, ok := js.Job.(OnFixedReceiver); ok {
+		if typed, ok := js.Job.(OnFixedHandler); ok {
 			typed.OnFixed(ctx)
 		}
 	}
@@ -747,14 +734,14 @@ func (js *JobScheduler) onFailure(ctx context.Context, ji *JobInvocation) {
 	if ji.Err != nil {
 		js.error(ji.Err)
 	}
-	if typed, ok := js.Job.(OnFailureReceiver); ok {
+	if typed, ok := js.Job.(OnFailureHandler); ok {
 		typed.OnFailure(ctx)
 	}
 	if js.Last != nil && js.Last.Err == nil {
 		if js.Log != nil {
 			js.logTrigger(js.logEventContext(ctx), NewEvent(FlagBroken, ji.JobName, OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed)))
 		}
-		if typed, ok := js.Job.(OnBrokenReceiver); ok {
+		if typed, ok := js.Job.(OnBrokenHandler); ok {
 			typed.OnBroken(ctx)
 		}
 	}
