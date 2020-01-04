@@ -47,7 +47,7 @@ type Event struct {
 func (e Event) GetFlag() string { return e.Flag }
 
 // WriteText writes the event to a text writer.
-func (e *Event) WriteText(tf logger.TextFormatter, wr io.Writer) {
+func (e Event) WriteText(tf logger.TextFormatter, wr io.Writer) {
 	if e.Request != nil && e.Response != nil {
 		io.WriteString(wr, fmt.Sprintf("%s %s %s (%v)", e.Request.Method, e.Request.URL.String(), webutil.ColorizeStatusCodeWithFormatter(tf, e.Response.StatusCode), e.Elapsed))
 	} else if e.Request != nil {

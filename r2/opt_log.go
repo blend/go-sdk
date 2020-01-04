@@ -1,23 +1,18 @@
 package r2
 
 import (
-	"net/http"
-
 	"github.com/blend/go-sdk/logger"
 )
 
-const (
-	// maxLogBytes is the maximum number of bytes to log from a response.
-	// it is currently set to 1mb.
-	maxLogBytes = 1 << 20
-)
-
-// OptLog adds an OnRequest listener to log that a call was made.
+// OptLog adds OnRequest and OnResponse listeners to log that a call was made.
 func OptLog(log logger.Log) Option {
-	return OptOnRequest(func(req *http.Request) error {
-		event := NewEvent(Flag,
-			OptEventRequest(req))
-		log.Trigger(req.Context(), event)
+	return func(r *Request) error {
+		if err := OptLogRequest(log)(r); err != nil {
+			return err
+		}
+		if err := OptLogResponse(log)(r); err != nil {
+			return err
+		}
 		return nil
-	})
+	}
 }
