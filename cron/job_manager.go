@@ -4,7 +4,6 @@ package cron
 
 import (
 	"context"
-	"fmt"
 	"sort"
 	"sync"
 	"time"
@@ -269,48 +268,6 @@ func (jm *JobManager) StartAsync() error {
 	return nil
 }
 
-// Pause stops the job manager's job schedulers but does not
-// shut down the job manager.
-func (jm *JobManager) Pause() error {
-	jm.Lock()
-	defer jm.Unlock()
-
-	if !jm.Paused.IsZero() {
-		return fmt.Errorf("cannot pause; already paused")
-	}
-	jm.Paused = time.Now().UTC()
-	logger.MaybeInfo(jm.Log, "job manager pausing")
-	for _, job := range jm.Jobs {
-		job.Stop()
-	}
-
-	logger.MaybeInfo(jm.Log, "job manager paused")
-	return nil
-}
-
-// Resume restarts the job manager's job schedulers.
-// This call is asynchronous and does not block.
-func (jm *JobManager) Resume() error {
-	jm.Lock()
-	defer jm.Unlock()
-
-	if jm.Paused.IsZero() {
-		return fmt.Errorf("cannot resume; not paused")
-	}
-	jm.Paused = time.Time{}
-	logger.MaybeInfo(jm.Log, "job manager pausing")
-	for _, job := range jm.Jobs {
-		go func() {
-			if err := job.Start(); err != nil {
-				logger.MaybeError(jm.Log, err)
-			}
-		}()
-		<-job.NotifyStarted()
-	}
-	logger.MaybeInfo(jm.Log, "job manager resumed")
-	return nil
-}
-
 // Stop stops the schedule runner for a JobManager.
 func (jm *JobManager) Stop() error {
 	if !jm.Latch.CanStop() {
@@ -327,6 +284,7 @@ func (jm *JobManager) Stop() error {
 		jobScheduler.Stop()
 	}
 	jm.Latch.Stopped()
+	jm.Latch.Reset()
 	jm.Stopped = time.Now().UTC()
 	logger.MaybeInfo(jm.Log, "job manager shutdown complete")
 	return nil
