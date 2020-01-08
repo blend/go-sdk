@@ -281,7 +281,9 @@ func (jm *JobManager) Stop() error {
 				return err
 			}
 		}
-		jobScheduler.Stop()
+		if err := jobScheduler.Stop(); err != nil {
+			return err
+		}
 	}
 	jm.Latch.Stopped()
 	jm.Latch.Reset()
