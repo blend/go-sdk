@@ -179,7 +179,6 @@ func TestLocalCacheSetUpdatesLRU(t *testing.T) {
 	// deleted in next sweep
 	time.Sleep(time.Millisecond)
 	c.Set("k1", "v3", OptValueTTL(time.Second))
-
 	assert.Equal("k2", c.LRU.Peek().Key)
 
 	c.Sweep(context.Background())
