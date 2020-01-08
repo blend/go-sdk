@@ -131,8 +131,8 @@ func (lc *LocalCache) Set(key, value interface{}, options ...ValueOption) {
 		lc.Data = make(map[interface{}]*Value)
 	}
 	if value, ok := lc.Data[key]; ok {
-		*value = v
 		lc.LRU.Fix(&v)
+		*value = v
 	} else {
 		lc.Data[key] = &v
 		lc.LRU.Push(&v)
@@ -210,8 +210,8 @@ func (lc *LocalCache) GetOrSet(key interface{}, valueProvider func() (interface{
 
 	// upsert
 	if value, ok := lc.Data[key]; ok {
-		*value = v
 		lc.LRU.Fix(&v)
+		*value = v
 	} else {
 		lc.Data[key] = &v
 		lc.LRU.Push(&v)
