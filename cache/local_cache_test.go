@@ -171,13 +171,12 @@ func TestLocalCacheSetUpdatesLRU(t *testing.T) {
 
 	c := NewLocalCache()
 	c.Set("k1", "v1", OptValueTTL(0))
-	time.Sleep(time.Millisecond)
 	c.Set("k2", "v2", OptValueTTL(0))
 	assert.Equal("k1", c.LRU.Peek().Key)
 
+	time.Sleep(time.Millisecond)
 	// Should trigger sorting of underlying LRU so k2 can be
 	// deleted in next sweep
-	time.Sleep(time.Millisecond)
 	c.Set("k1", "v3", OptValueTTL(time.Second))
 	assert.Equal("k2", c.LRU.Peek().Key)
 
