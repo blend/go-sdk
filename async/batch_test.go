@@ -46,8 +46,7 @@ func TestBatchPanic(t *testing.T) {
 
 	var processed int32
 	action := func(_ context.Context, v interface{}) error {
-		atomic.AddInt32(&processed, 1)
-		if processed == 1 {
+		if result := atomic.AddInt32(&processed, 1); result == 1 {
 			panic("this is only a test")
 		}
 		return nil

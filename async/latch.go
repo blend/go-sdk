@@ -8,6 +8,7 @@ import (
 // NewLatch creates a new latch.
 func NewLatch() *Latch {
 	return &Latch{
+		state:    LatchStopped,
 		starting: make(chan struct{}, 1),
 		started:  make(chan struct{}, 1),
 		stopping: make(chan struct{}, 1),
@@ -25,7 +26,10 @@ The lifecycle is generally as follows:
 	2 - started - goto 3
 	3 - stopping - goto 0
 
-Control flow is coordinated with chan struct{}, which acts as a semaphore.
+Control flow is coordinated with chan struct{}, which acts as a semaphore but can only
+alert (1) listener as it is buffered.
+
+In order to start a `stopped` latch, you must call `.Reset()` first to initialize channels.
 */
 type Latch struct {
 	sync.Mutex

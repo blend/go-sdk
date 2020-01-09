@@ -28,7 +28,7 @@ func (es *EventSource) StartSession() error {
 	es.output.Header().Set(HeaderContentType, "text/event-stream")
 	es.output.Header().Set(HeaderVary, "Content-Type")
 	es.output.WriteHeader(http.StatusOK)
-	return es.pingUnsafe()
+	return es.eventUnsafe("ping")
 }
 
 // Ping sends the ping heartbeat event.
@@ -65,10 +65,6 @@ func (es *EventSource) EventData(name, data string) error {
 //
 // unsafe methods
 //
-
-func (es *EventSource) pingUnsafe() error {
-	return es.eventUnsafe("ping")
-}
 
 func (es *EventSource) eventUnsafe(name string) error {
 	_, err := io.WriteString(es.output, "event: "+name+"\n\n")
