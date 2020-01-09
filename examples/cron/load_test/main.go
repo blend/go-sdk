@@ -41,7 +41,7 @@ var (
 	_ cron.Job                    = (*loadTestJob)(nil)
 	_ cron.ScheduleProvider       = (*loadTestJob)(nil)
 	_ cron.TimeoutProvider        = (*loadTestJob)(nil)
-	_ cron.OnCancellationReceiver = (*loadTestJob)(nil)
+	_ cron.OnCancellationHandler = (*loadTestJob)(nil)
 )
 
 type loadTestJob struct {
