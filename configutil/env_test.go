@@ -3,6 +3,7 @@ package configutil
 import (
 	"testing"
 	"time"
+
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/uuid"

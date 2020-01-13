@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"testing"
 	"strings"
+	"testing"
+
 	"github.com/blend/go-sdk/assert"
 )
 

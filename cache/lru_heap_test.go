@@ -3,6 +3,7 @@ package cache
 import (
 	"testing"
 	"time"
+
 	"github.com/blend/go-sdk/assert"
 )
 

@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"os"
 	"testing"
+
+	_ "github.com/lib/pq"
+
+	"github.com/blend/go-sdk/db"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/stringutil"
-	"github.com/blend/go-sdk/db"
-	_ "github.com/lib/pq"
 )
 
 func TestMain(m *testing.M) {

@@ -2,6 +2,7 @@ package logger
 
 import (
 	"io"
+
 	"github.com/blend/go-sdk/env"
 )
 

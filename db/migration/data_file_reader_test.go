@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"io"
 	"testing"
+
+	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/db"
 	"github.com/blend/go-sdk/logger"
-	"github.com/blend/go-sdk/assert"
 )
 
 func TestDataFileReaderReadLineSingleLine(t *testing.T) {

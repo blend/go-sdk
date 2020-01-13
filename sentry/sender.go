@@ -2,6 +2,7 @@ package sentry
 
 import (
 	"context"
+
 	"github.com/blend/go-sdk/logger"
 )
 

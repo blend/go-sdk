@@ -2,9 +2,11 @@ package grpcutil
 
 import (
 	"net"
+
+	"google.golang.org/grpc"
+
 	"github.com/blend/go-sdk/async"
 	"github.com/blend/go-sdk/logger"
-	"google.golang.org/grpc"
 )
 
 // NewGraceful returns a new graceful host for a grpc server.

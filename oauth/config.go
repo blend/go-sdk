@@ -2,6 +2,7 @@ package oauth
 
 import (
 	"encoding/base64"
+
 	"github.com/blend/go-sdk/env"
 )
 

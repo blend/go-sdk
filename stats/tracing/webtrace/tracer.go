@@ -3,10 +3,12 @@ package webtrace
 import (
 	"strconv"
 	"time"
+
+	opentracing "github.com/opentracing/opentracing-go"
+
 	"github.com/blend/go-sdk/stats/tracing"
 	"github.com/blend/go-sdk/web"
 	"github.com/blend/go-sdk/webutil"
-	opentracing "github.com/opentracing/opentracing-go"
 )
 
 const (

@@ -2,6 +2,7 @@ package reflectutil
 
 import (
 	"testing"
+
 	"github.com/blend/go-sdk/assert"
 )
 

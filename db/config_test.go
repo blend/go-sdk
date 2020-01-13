@@ -2,6 +2,7 @@ package db
 
 import (
 	"testing"
+
 	"github.com/blend/go-sdk/assert"
 )
 

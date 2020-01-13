@@ -2,8 +2,9 @@ package env
 
 import (
 	"fmt"
-	"unicode"
 	"strings"
+	"unicode"
+
 	"github.com/blend/go-sdk/ex"
 )
 

@@ -4,9 +4,11 @@ import (
 	"database/sql"
 	"os"
 	"testing"
-	"github.com/blend/go-sdk/logger"
-	"github.com/blend/go-sdk/db"
+
 	_ "github.com/lib/pq"
+
+	"github.com/blend/go-sdk/db"
+	"github.com/blend/go-sdk/logger"
 )
 
 func TestMain(m *testing.M) {

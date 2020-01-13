@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"sync"
 	"time"
-	"github.com/blend/go-sdk/stringutil"
+
 	"github.com/blend/go-sdk/async"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/mathutil"
+	"github.com/blend/go-sdk/stringutil"
 )
 
 // NewJobScheduler returns a job scheduler for a given job.

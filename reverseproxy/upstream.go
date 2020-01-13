@@ -5,10 +5,12 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"time"
+
+	"golang.org/x/net/http2"
+
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/webutil"
-	"golang.org/x/net/http2"
 )
 
 // NewUpstream returns a new upstram.

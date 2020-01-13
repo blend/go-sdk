@@ -4,10 +4,12 @@ import (
 	"context"
 	"flag"
 	"fmt"
+
+	"google.golang.org/grpc"
+
 	full "github.com/blend/go-sdk/examples/grpcutil/full/protos/v1"
 	"github.com/blend/go-sdk/grpcutil"
 	"github.com/blend/go-sdk/logger"
-	"google.golang.org/grpc"
 )
 
 var (

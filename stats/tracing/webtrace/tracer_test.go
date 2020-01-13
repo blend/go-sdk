@@ -3,11 +3,13 @@ package webtrace
 import (
 	"fmt"
 	"testing"
+
+	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/mocktracer"
+
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/stats/tracing"
 	"github.com/blend/go-sdk/web"
-	opentracing "github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/mocktracer"
 )
 
 func TestStart(t *testing.T) {

@@ -3,8 +3,9 @@ package cron
 import (
 	"testing"
 	"time"
-	"github.com/blend/go-sdk/ref"
+
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/ref"
 )
 
 func TestJobConfig(t *testing.T) {

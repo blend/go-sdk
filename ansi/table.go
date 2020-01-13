@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 	"unicode/utf8"
+
 	"github.com/blend/go-sdk/ex"
 )
 

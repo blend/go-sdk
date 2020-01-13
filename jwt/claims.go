@@ -3,6 +3,7 @@ package jwt
 import (
 	"crypto/subtle"
 	"time"
+
 	"github.com/blend/go-sdk/ex"
 )
 

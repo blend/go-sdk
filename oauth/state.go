@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/gob"
+
 	"github.com/blend/go-sdk/ex"
 )
 

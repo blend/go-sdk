@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"testing"
 	"time"
+
 	"github.com/blend/go-sdk/assert"
 )
 

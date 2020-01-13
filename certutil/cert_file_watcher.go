@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"os"
 	"time"
+
 	"github.com/blend/go-sdk/async"
 	"github.com/blend/go-sdk/ex"
 )

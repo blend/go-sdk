@@ -3,6 +3,7 @@ package configutil
 import (
 	"strconv"
 	"time"
+
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/stringutil"
 )

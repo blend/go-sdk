@@ -3,6 +3,7 @@ package stats
 import (
 	"sort"
 	"time"
+
 	"github.com/blend/go-sdk/ex"
 )
 

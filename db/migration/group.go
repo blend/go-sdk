@@ -3,6 +3,7 @@ package migration
 import (
 	"context"
 	"database/sql"
+
 	"github.com/blend/go-sdk/db"
 	"github.com/blend/go-sdk/ex"
 )

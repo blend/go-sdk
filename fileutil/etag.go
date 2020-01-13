@@ -3,6 +3,7 @@ package fileutil
 import (
 	"crypto/md5"
 	"encoding/hex"
+
 	"github.com/blend/go-sdk/ex"
 )
 

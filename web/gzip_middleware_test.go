@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"io/ioutil"
 	"testing"
+
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/r2"
 )

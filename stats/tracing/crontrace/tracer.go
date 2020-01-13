@@ -3,9 +3,11 @@ package crontrace
 import (
 	"context"
 	"time"
+
+	opentracing "github.com/opentracing/opentracing-go"
+
 	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/stats/tracing"
-	opentracing "github.com/opentracing/opentracing-go"
 )
 
 // Tracer returns a opentracing cron tracer.

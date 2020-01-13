@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/spf13/cobra"
+
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/sh"
 	"github.com/blend/go-sdk/stringutil"
-	"github.com/spf13/cobra"
 )
 
 func command() *cobra.Command {

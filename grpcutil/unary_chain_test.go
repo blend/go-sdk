@@ -3,7 +3,9 @@ package grpcutil
 import (
 	"context"
 	"testing"
+
 	"google.golang.org/grpc"
+
 	"github.com/blend/go-sdk/assert"
 )
 

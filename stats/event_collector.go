@@ -2,6 +2,7 @@ package stats
 
 import (
 	"time"
+
 	"github.com/blend/go-sdk/ex"
 )
 

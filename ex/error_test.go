@@ -3,6 +3,7 @@ package ex
 import (
 	"encoding/json"
 	"testing"
+
 	"github.com/blend/go-sdk/assert"
 )
 

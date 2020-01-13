@@ -4,7 +4,9 @@ import (
 	"net"
 	"strings"
 	"time"
+
 	"google.golang.org/grpc"
+
 	"github.com/blend/go-sdk/ex"
 )
 

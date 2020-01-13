@@ -3,6 +3,7 @@ package yaml_test
 import (
 	"fmt"
 	"log"
+
 	"github.com/blend/go-sdk/yaml"
 )
 

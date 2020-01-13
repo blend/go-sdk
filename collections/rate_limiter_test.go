@@ -3,6 +3,7 @@ package collections
 import (
 	"testing"
 	"time"
+
 	"github.com/blend/go-sdk/assert"
 )
 

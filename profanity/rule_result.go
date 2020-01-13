@@ -3,6 +3,7 @@ package profanity
 import (
 	"fmt"
 	"strings"
+
 	"github.com/blend/go-sdk/ansi"
 )
 

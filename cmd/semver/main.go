@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+
 	"github.com/blend/go-sdk/semver"
 )
 

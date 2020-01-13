@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"sync"
+
 	"github.com/blend/go-sdk/ex"
 )
 

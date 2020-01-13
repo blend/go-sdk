@@ -10,13 +10,15 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/r2"
 	"github.com/blend/go-sdk/stringutil"
 	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/webutil"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 )
 
 // New returns a new manager mutated by a given set of options.

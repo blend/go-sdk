@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+
 	"github.com/blend/go-sdk/certutil"
 	"github.com/blend/go-sdk/uuid"
 )

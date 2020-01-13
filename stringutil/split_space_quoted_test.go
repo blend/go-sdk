@@ -3,6 +3,7 @@ package stringutil
 import (
 	"fmt"
 	"testing"
+
 	"github.com/blend/go-sdk/assert"
 )
 

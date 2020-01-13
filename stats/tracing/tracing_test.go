@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"github.com/blend/go-sdk/assert"
-	"github.com/blend/go-sdk/ex"
+
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/mocktracer"
+
+	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/ex"
 )
 
 func TestStartSpanFromContext(t *testing.T) {

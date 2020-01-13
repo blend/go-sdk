@@ -3,11 +3,13 @@ package oauthtrace
 import (
 	"context"
 	"testing"
+
+	"github.com/opentracing/opentracing-go/mocktracer"
 	"golang.org/x/oauth2"
+
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/oauth"
 	"github.com/blend/go-sdk/stats/tracing"
-	"github.com/opentracing/opentracing-go/mocktracer"
 )
 
 func TestStart(t *testing.T) {

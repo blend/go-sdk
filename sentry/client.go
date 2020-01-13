@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"runtime"
 	"time"
+
 	raven "github.com/getsentry/sentry-go"
+
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 )

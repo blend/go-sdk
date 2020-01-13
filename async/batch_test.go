@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"sync/atomic"
 	"testing"
+
 	"github.com/blend/go-sdk/assert"
 )
 

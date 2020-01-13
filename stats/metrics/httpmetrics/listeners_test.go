@@ -2,6 +2,7 @@ package httpmetrics
 
 import (
 	"testing"
+
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/stats"

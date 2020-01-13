@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+
 	cfg "github.com/blend/go-sdk/configutil"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/ref"

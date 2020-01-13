@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"time"
+
 	"github.com/blend/go-sdk/logger"
 )
 

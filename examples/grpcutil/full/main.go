@@ -8,15 +8,17 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"github.com/blend/go-sdk/env"
-	"github.com/blend/go-sdk/ref"
+
+	"google.golang.org/grpc"
+
 	"github.com/blend/go-sdk/configutil"
+	"github.com/blend/go-sdk/env"
 	full "github.com/blend/go-sdk/examples/grpcutil/full/protos/v2"
 	"github.com/blend/go-sdk/graceful"
 	"github.com/blend/go-sdk/grpcutil"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/proxyprotocol"
-	"google.golang.org/grpc"
+	"github.com/blend/go-sdk/ref"
 )
 
 func customUnary(ctx context.Context, args interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {

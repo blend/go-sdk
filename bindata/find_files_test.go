@@ -3,6 +3,7 @@ package bindata
 import (
 	"regexp"
 	"testing"
+
 	"github.com/blend/go-sdk/assert"
 )
 

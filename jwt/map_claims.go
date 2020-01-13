@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"encoding/json"
+
 	"github.com/blend/go-sdk/ex"
 )
 

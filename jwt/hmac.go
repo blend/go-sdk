@@ -3,6 +3,7 @@ package jwt
 import (
 	"crypto"
 	"crypto/hmac"
+
 	"github.com/blend/go-sdk/ex"
 )
 

@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"reflect"
+
 	"github.com/blend/go-sdk/ex"
 )
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"sync"
+
 	"github.com/blend/go-sdk/ex"
 )
 

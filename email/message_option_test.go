@@ -2,6 +2,7 @@ package email
 
 import (
 	"testing"
+
 	"github.com/blend/go-sdk/assert"
 )
 

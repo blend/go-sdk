@@ -3,6 +3,7 @@ package fileutil
 import (
 	"bufio"
 	"os"
+
 	"github.com/blend/go-sdk/ex"
 )
 

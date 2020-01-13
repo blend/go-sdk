@@ -3,6 +3,7 @@ package httpmetrics
 import (
 	"context"
 	"strconv"
+
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/stats"
 	"github.com/blend/go-sdk/webutil"

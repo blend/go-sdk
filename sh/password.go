@@ -3,6 +3,7 @@ package sh
 import (
 	"fmt"
 	"syscall"
+
 	"golang.org/x/crypto/ssh/terminal"
 )
 

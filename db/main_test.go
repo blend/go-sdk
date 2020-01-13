@@ -7,8 +7,10 @@ import (
 	"os"
 	"testing"
 	"time"
+
 	// tests uses postgres
 	_ "github.com/lib/pq"
+
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/uuid"
 )

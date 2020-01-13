@@ -4,9 +4,11 @@ import (
 	"context"
 	"strconv"
 	"time"
+
+	"github.com/opentracing/opentracing-go"
+
 	"github.com/blend/go-sdk/secrets"
 	"github.com/blend/go-sdk/stats/tracing"
-	"github.com/opentracing/opentracing-go"
 )
 
 // Tracer returns a request tracer that also injects span context into outgoing headers.

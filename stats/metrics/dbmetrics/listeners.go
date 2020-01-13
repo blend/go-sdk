@@ -2,6 +2,7 @@ package dbmetrics
 
 import (
 	"context"
+
 	"github.com/blend/go-sdk/db"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"

@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+
 	"github.com/spf13/cobra"
+
 	"github.com/blend/go-sdk/configutil"
 	"github.com/blend/go-sdk/profanity"
 	"github.com/blend/go-sdk/ref"
