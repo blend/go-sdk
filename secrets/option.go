@@ -86,7 +86,7 @@ func OptToken(token string) Option {
 }
 
 // OptTimeout sets the timeout to vault
-func OptTimeout(timeout time.Duration) Option{
+func OptTimeout(timeout time.Duration) Option {
 	return func(vc *VaultClient) error {
 		vc.Timeout = timeout
 		return nil

@@ -46,10 +46,10 @@ const (
 
 // These types are encryption algorithms that can be used when creating a transit key
 const (
-	TypeAES256GCM96 = "aes256-gcm96"
+	TypeAES256GCM96      = "aes256-gcm96"
 	TypeCHACHA20POLY1305 = "chacha20-poly1305"
-	TypeED25519 = "ed25519"
-	TypeECDSAP256 = "ecdsa-p256"
-	TypeRSA2048 = "rsa-2048"
-	TypeRSA4096 = "rsa-4096"
+	TypeED25519          = "ed25519"
+	TypeECDSAP256        = "ecdsa-p256"
+	TypeRSA2048          = "rsa-2048"
+	TypeRSA4096          = "rsa-4096"
 )

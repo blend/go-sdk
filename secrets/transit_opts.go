@@ -2,13 +2,13 @@ package secrets
 
 import "github.com/blend/go-sdk/ex"
 
-var validTKTypes = map[string]struct{} {
-	TypeAES256GCM96: {},
+var validTKTypes = map[string]struct{}{
+	TypeAES256GCM96:      {},
 	TypeCHACHA20POLY1305: {},
-	TypeED25519: {},
-	TypeECDSAP256: {},
-	TypeRSA2048: {},
-	TypeRSA4096: {},
+	TypeED25519:          {},
+	TypeECDSAP256:        {},
+	TypeRSA2048:          {},
+	TypeRSA4096:          {},
 }
 
 // CreateTransitKeyOption is an option type for transit key creation

@@ -1,14 +1,15 @@
 package secrets
 
 import (
-	"github.com/blend/go-sdk/assert"
 	"testing"
+
+	"github.com/blend/go-sdk/assert"
 )
 
 func TestTransitCreateOptConfig(t *testing.T) {
 	a := assert.New(t)
 	cfg := CreateTransitKeyConfig{
-		Derived: true,
+		Derived:    true,
 		Convergent: true,
 	}
 
@@ -23,7 +24,7 @@ func TestTransitCreateOptConfig(t *testing.T) {
 func TestTransitUpdateOptConfig(t *testing.T) {
 	a := assert.New(t)
 	cfg := UpdateTransitKeyConfig{
-		Exportable: true,
+		Exportable:           true,
 		AllowPlaintextBackup: true,
 	}
 

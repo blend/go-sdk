@@ -2,9 +2,10 @@ package secrets
 
 import (
 	"fmt"
-	"github.com/blend/go-sdk/ex"
 	"net/http"
 	"net/url"
+
+	"github.com/blend/go-sdk/ex"
 )
 
 // MustURL creates a new url and panics on error.

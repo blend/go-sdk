@@ -2,10 +2,11 @@ package migration
 
 import (
 	"fmt"
-	"github.com/blend/go-sdk/logger"
-	"github.com/blend/go-sdk/stringutil"
 	"os"
 	"testing"
+
+	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/stringutil"
 
 	"github.com/blend/go-sdk/db"
 	_ "github.com/lib/pq"

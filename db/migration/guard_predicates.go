@@ -3,8 +3,9 @@ package migration
 import (
 	"database/sql"
 	"fmt"
-	"github.com/blend/go-sdk/db"
 	"strings"
+
+	"github.com/blend/go-sdk/db"
 )
 
 // TableExists returns a guard that ensures a table exists

@@ -1,15 +1,16 @@
 package secrets
 
 import (
-	"github.com/blend/go-sdk/assert"
 	"testing"
+
+	"github.com/blend/go-sdk/assert"
 )
 
 func TestOptTraceConfig(t *testing.T) {
 	a := assert.New(t)
 	var empty SecretTraceConfig
 	config := SecretTraceConfig{
-		KeyName: "A_KEY",
+		KeyName:        "A_KEY",
 		VaultOperation: "k1.put",
 	}
 
@@ -32,7 +33,6 @@ func TestOptTraceKeyName(t *testing.T) {
 	a.Nil(err)
 	a.Equal("A_KEY", ptr.KeyName)
 }
-
 
 func TestOptTraceVaultOperation(t *testing.T) {
 	a := assert.New(t)

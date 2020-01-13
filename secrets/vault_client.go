@@ -58,7 +58,7 @@ func New(options ...Option) (*VaultClient, error) {
 
 	client.Client = &http.Client{
 		Transport: xport,
-		Timeout: client.Timeout,
+		Timeout:   client.Timeout,
 	}
 
 	return client, nil
@@ -86,7 +86,7 @@ type VaultClient struct {
 	Transit    TransitClient
 	Client     HTTPClient
 	CertPool   *CertPool
-	Tracer 	   Tracer
+	Tracer     Tracer
 }
 
 // Put puts a value.
