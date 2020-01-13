@@ -2,7 +2,6 @@ package email
 
 import (
 	"strings"
-
 	"github.com/blend/go-sdk/ex"
 )
 

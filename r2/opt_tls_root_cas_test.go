@@ -4,7 +4,6 @@ import (
 	"crypto/x509"
 	"net/http"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 )
 

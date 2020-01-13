@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-
 	"github.com/blend/go-sdk/ex"
 )
 

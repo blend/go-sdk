@@ -6,7 +6,6 @@ import (
 	"html/template"
 	"net/http"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/ex"
 )

@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"net/http"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 )
 

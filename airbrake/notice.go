@@ -3,7 +3,6 @@ package airbrake
 import (
 	"fmt"
 	"net/http"
-
 	"github.com/airbrake/gobrake"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/webutil"

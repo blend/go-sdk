@@ -2,7 +2,6 @@ package secrets
 
 import (
 	"context"
-
 	"github.com/blend/go-sdk/ex"
 )
 

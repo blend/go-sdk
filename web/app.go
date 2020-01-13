@@ -6,7 +6,6 @@ import (
 	"net"
 	"net/http"
 	"strings"
-
 	"github.com/blend/go-sdk/async"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"

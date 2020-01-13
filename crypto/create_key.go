@@ -3,7 +3,6 @@ package crypto
 import (
 	cryptorand "crypto/rand"
 	"encoding/hex"
-
 	"github.com/blend/go-sdk/ex"
 )
 

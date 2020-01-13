@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"strings"
-
 	"github.com/blend/go-sdk/yaml"
 )
 

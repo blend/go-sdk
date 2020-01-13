@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 )
 

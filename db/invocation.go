@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"strconv"
 	"time"
-
 	"github.com/blend/go-sdk/bufferutil"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"

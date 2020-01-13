@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
-
 	"github.com/blend/go-sdk/db"
 )
 

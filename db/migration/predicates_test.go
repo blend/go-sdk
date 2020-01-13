@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/rand"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/db"
 )

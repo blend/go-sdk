@@ -3,7 +3,6 @@ package bufferutil
 import (
 	"context"
 	"sync"
-
 	"github.com/blend/go-sdk/async"
 )
 

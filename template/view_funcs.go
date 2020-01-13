@@ -22,7 +22,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
 	"github.com/blend/go-sdk/mathutil"
 	"github.com/blend/go-sdk/semver"
 	"github.com/blend/go-sdk/stringutil"

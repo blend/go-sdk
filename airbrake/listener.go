@@ -3,7 +3,6 @@ package airbrake
 import (
 	"context"
 	"net/http"
-
 	"github.com/blend/go-sdk/logger"
 )
 

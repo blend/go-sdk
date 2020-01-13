@@ -4,7 +4,6 @@ import (
 	"crypto/aes"
 	"io"
 	"strings"
-
 	"github.com/blend/go-sdk/ex"
 )
 

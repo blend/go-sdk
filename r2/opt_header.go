@@ -2,7 +2,6 @@ package r2
 
 import (
 	"net/http"
-
 	"github.com/blend/go-sdk/webutil"
 )
 

@@ -2,7 +2,6 @@ package logger
 
 import (
 	"testing"
-
 	"github.com/blend/go-sdk/ansi"
 	"github.com/blend/go-sdk/assert"
 )

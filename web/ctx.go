@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"strings"
 	"time"
-
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/webutil"

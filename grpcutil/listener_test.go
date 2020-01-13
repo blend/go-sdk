@@ -3,7 +3,6 @@ package grpcutil
 import (
 	"fmt"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/uuid"
 )

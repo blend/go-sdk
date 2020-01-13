@@ -8,7 +8,6 @@ import (
 	"sort"
 	"sync"
 	"time"
-
 	"github.com/blend/go-sdk/async"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"

@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"testing"
 	"time"
-
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/ex"
 )

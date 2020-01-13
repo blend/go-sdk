@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
 	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/logger"
 )

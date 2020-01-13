@@ -2,7 +2,6 @@ package reflectutil
 
 import (
 	"reflect"
-
 	"github.com/blend/go-sdk/ex"
 )
 

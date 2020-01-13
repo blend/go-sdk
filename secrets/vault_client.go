@@ -9,11 +9,8 @@ import (
 	"net/url"
 	"path/filepath"
 	"time"
-
 	"github.com/blend/go-sdk/bufferutil"
-
 	"golang.org/x/net/http2"
-
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 )

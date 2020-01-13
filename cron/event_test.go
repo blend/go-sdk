@@ -2,7 +2,6 @@ package cron
 
 import (
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 )
 

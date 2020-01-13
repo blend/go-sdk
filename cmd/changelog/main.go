@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/sh"
 	"github.com/blend/go-sdk/stringutil"

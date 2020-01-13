@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"runtime"
-
 	"github.com/blend/go-sdk/async"
 )
 

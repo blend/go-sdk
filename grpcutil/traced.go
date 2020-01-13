@@ -4,12 +4,9 @@ import (
 	"context"
 	"strings"
 	"time"
-
 	opentracing "github.com/opentracing/opentracing-go"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-
 	"github.com/blend/go-sdk/stats/tracing"
 )
 

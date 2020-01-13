@@ -3,7 +3,6 @@ package web
 import (
 	"crypto/tls"
 	"crypto/x509"
-
 	"github.com/blend/go-sdk/ex"
 )
 

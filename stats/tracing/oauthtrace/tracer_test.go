@@ -3,9 +3,7 @@ package oauthtrace
 import (
 	"context"
 	"testing"
-
 	"golang.org/x/oauth2"
-
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/oauth"
 	"github.com/blend/go-sdk/stats/tracing"

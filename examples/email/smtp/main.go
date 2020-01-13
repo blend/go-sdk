@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-
 	"github.com/blend/go-sdk/configutil"
 	"github.com/blend/go-sdk/email"
 	"github.com/blend/go-sdk/logger"

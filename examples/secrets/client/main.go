@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/secrets"
 )

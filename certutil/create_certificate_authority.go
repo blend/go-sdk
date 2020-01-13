@@ -3,7 +3,6 @@ package certutil
 import (
 	"crypto/rand"
 	"crypto/x509"
-
 	"github.com/blend/go-sdk/ex"
 )
 

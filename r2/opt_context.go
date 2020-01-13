@@ -2,7 +2,6 @@ package r2
 
 import (
 	"context"
-
 	"github.com/blend/go-sdk/webutil"
 )
 

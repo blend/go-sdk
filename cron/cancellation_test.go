@@ -4,7 +4,6 @@ import (
 	"context"
 	"sync"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 )
 

@@ -6,9 +6,7 @@ import (
 	"net/http"
 	"os"
 	"time"
-
 	_ "net/http/pprof"
-
 	"github.com/blend/go-sdk/bufferutil"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/webutil"

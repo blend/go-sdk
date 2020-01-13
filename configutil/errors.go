@@ -2,7 +2,6 @@ package configutil
 
 import (
 	"os"
-
 	"github.com/blend/go-sdk/ex"
 )
 

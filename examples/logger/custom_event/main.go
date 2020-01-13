@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-
 	"github.com/blend/go-sdk/logger"
 )
 

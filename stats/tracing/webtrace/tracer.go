@@ -3,7 +3,6 @@ package webtrace
 import (
 	"strconv"
 	"time"
-
 	"github.com/blend/go-sdk/stats/tracing"
 	"github.com/blend/go-sdk/web"
 	"github.com/blend/go-sdk/webutil"

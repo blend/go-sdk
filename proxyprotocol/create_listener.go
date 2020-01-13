@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"net"
 	"time"
-
 	"github.com/blend/go-sdk/webutil"
 )
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-
 	full "github.com/blend/go-sdk/examples/grpcutil/full/protos/v1"
 	"github.com/blend/go-sdk/grpcutil"
 	"github.com/blend/go-sdk/logger"

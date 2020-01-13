@@ -4,7 +4,6 @@ import (
 	"crypto/ecdsa"
 	"strings"
 	"testing"
-
 	"github.com/blend/go-sdk/jwt"
 	"github.com/blend/go-sdk/jwt/test"
 )

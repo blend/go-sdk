@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-
 	"github.com/blend/go-sdk/db"
 	"github.com/blend/go-sdk/stringutil"
 )

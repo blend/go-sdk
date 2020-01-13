@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
-
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/secrets"
 	"github.com/blend/go-sdk/yaml"

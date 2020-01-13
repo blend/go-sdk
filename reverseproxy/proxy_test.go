@@ -9,7 +9,6 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/webutil"
 )

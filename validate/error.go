@@ -2,7 +2,6 @@ package validate
 
 import (
 	"fmt"
-
 	"github.com/blend/go-sdk/ex"
 )
 

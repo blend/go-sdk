@@ -3,9 +3,7 @@ package main
 import (
 	"log"
 	"sync"
-
 	"github.com/blend/go-sdk/graceful"
-
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/web"
 )

@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
 	"github.com/DataDog/datadog-go/statsd"
-
 	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/stats"
 	"github.com/blend/go-sdk/timeutil"

@@ -2,9 +2,7 @@ package datadog
 
 import (
 	"fmt"
-
 	"github.com/blend/go-sdk/configutil"
-
 	"github.com/blend/go-sdk/env"
 )
 

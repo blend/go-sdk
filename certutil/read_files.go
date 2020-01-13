@@ -2,7 +2,6 @@ package certutil
 
 import (
 	"io/ioutil"
-
 	"github.com/blend/go-sdk/ex"
 )
 

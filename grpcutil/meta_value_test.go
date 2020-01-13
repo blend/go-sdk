@@ -2,7 +2,6 @@ package grpcutil
 
 import (
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 	"google.golang.org/grpc/metadata"
 )

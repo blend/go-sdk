@@ -8,7 +8,6 @@ import (
 	"crypto/sha256"
 	"hash"
 	"io"
-
 	"github.com/blend/go-sdk/ex"
 )
 

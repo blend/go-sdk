@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
 	"github.com/blend/go-sdk/r2"
 	"github.com/blend/go-sdk/stats/tracing"
 	opentracing "github.com/opentracing/opentracing-go"

@@ -3,7 +3,6 @@ package stats
 import (
 	"fmt"
 	"time"
-
 	"github.com/blend/go-sdk/timeutil"
 )
 

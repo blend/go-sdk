@@ -3,7 +3,6 @@ package webutil
 import (
 	"net/http"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 )
 

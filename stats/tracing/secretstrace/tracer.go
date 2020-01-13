@@ -4,7 +4,6 @@ import (
 	"context"
 	"strconv"
 	"time"
-
 	"github.com/blend/go-sdk/secrets"
 	"github.com/blend/go-sdk/stats/tracing"
 	"github.com/opentracing/opentracing-go"

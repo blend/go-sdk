@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-
 	"github.com/blend/go-sdk/graceful"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/web"

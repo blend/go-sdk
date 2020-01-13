@@ -4,9 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-
 	_ "net/http/pprof"
-
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/webutil"
 )

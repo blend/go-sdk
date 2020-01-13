@@ -3,7 +3,6 @@ package r2
 import (
 	"io/ioutil"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 )
 

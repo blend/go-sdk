@@ -3,7 +3,6 @@ package web
 import (
 	"net/http"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 )
 

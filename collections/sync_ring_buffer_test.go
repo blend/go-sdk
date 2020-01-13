@@ -2,7 +2,6 @@ package collections
 
 import (
 	"testing"
-
 	assert "github.com/blend/go-sdk/assert"
 )
 

@@ -2,7 +2,6 @@ package reverseproxy
 
 import (
 	"net/http"
-
 	"github.com/blend/go-sdk/logger"
 )
 

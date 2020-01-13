@@ -3,11 +3,9 @@ package main
 import (
 	"fmt"
 	"time"
-
 	"github.com/blend/go-sdk/ref"
 	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/validate"
-
 	// if you're feeling evil.
 	joi "github.com/blend/go-sdk/validate"
 )

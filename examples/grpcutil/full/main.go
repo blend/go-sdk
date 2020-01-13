@@ -8,10 +8,8 @@ import (
 	"context"
 	"fmt"
 	"os"
-
 	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/ref"
-
 	"github.com/blend/go-sdk/configutil"
 	full "github.com/blend/go-sdk/examples/grpcutil/full/protos/v2"
 	"github.com/blend/go-sdk/graceful"

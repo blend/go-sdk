@@ -3,7 +3,6 @@ package yaml_test
 import (
 	"strconv"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 )
 

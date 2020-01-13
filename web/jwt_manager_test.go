@@ -3,7 +3,6 @@ package web
 import (
 	"testing"
 	"time"
-
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/crypto"
 	"github.com/blend/go-sdk/ex"

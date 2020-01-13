@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"time"
-
 	"github.com/blend/go-sdk/db"
 	"github.com/blend/go-sdk/stats/tracing"
 	opentracing "github.com/opentracing/opentracing-go"

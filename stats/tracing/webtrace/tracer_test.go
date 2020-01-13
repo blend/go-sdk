@@ -3,7 +3,6 @@ package webtrace
 import (
 	"fmt"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/stats/tracing"
 	"github.com/blend/go-sdk/web"

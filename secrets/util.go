@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-
 	"github.com/blend/go-sdk/ex"
 )
 

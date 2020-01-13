@@ -3,9 +3,7 @@ package env
 import (
 	"fmt"
 	"unicode"
-
 	"strings"
-
 	"github.com/blend/go-sdk/ex"
 )
 

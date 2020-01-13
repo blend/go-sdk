@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 )
 

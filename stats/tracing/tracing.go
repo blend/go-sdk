@@ -3,7 +3,6 @@ package tracing
 import (
 	"context"
 	"fmt"
-
 	"github.com/blend/go-sdk/ex"
 	opentracing "github.com/opentracing/opentracing-go"
 )

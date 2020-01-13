@@ -3,7 +3,6 @@ package fileutil
 import (
 	"crypto/rand"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 )
 

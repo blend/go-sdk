@@ -5,7 +5,6 @@ import (
 	"crypto/md5"
 	"hash"
 	"io"
-
 	"github.com/blend/go-sdk/ex"
 )
 

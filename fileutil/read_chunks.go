@@ -3,7 +3,6 @@ package fileutil
 import (
 	"io"
 	"os"
-
 	"github.com/blend/go-sdk/ex"
 )
 

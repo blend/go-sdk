@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
-
 	"github.com/blend/go-sdk/shamir"
 	"github.com/blend/go-sdk/stringutil"
 	"github.com/spf13/cobra"

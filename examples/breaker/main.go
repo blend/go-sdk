@@ -8,10 +8,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"time"
-
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/webutil"
-
 	"github.com/blend/go-sdk/breaker"
 	"github.com/blend/go-sdk/r2"
 )

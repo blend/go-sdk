@@ -3,7 +3,6 @@ package sh
 import (
 	"io"
 	"sync"
-
 	"github.com/blend/go-sdk/ex"
 )
 

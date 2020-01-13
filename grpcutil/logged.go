@@ -3,10 +3,8 @@ package grpcutil
 import (
 	"context"
 	"time"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-
 	"github.com/blend/go-sdk/logger"
 )
 

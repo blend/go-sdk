@@ -2,7 +2,6 @@ package grpcutil
 
 import (
 	"net"
-
 	"github.com/blend/go-sdk/async"
 	"github.com/blend/go-sdk/logger"
 	"google.golang.org/grpc"

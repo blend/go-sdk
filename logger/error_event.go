@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-
 	"github.com/blend/go-sdk/ex"
 )
 

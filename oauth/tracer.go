@@ -2,7 +2,6 @@ package oauth
 
 import (
 	"context"
-
 	"golang.org/x/oauth2"
 )
 

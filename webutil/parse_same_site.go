@@ -2,7 +2,6 @@ package webutil
 
 import (
 	"net/http"
-
 	"github.com/blend/go-sdk/ex"
 )
 

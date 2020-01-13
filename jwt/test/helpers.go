@@ -2,7 +2,6 @@ package test
 
 import (
 	"crypto/rsa"
-
 	"github.com/blend/go-sdk/jwt"
 )
 

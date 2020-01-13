@@ -3,7 +3,6 @@ package email
 import (
 	"encoding/json"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/yaml"

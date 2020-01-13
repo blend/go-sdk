@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"time"
-
 	"github.com/blend/go-sdk/logger"
 )
 

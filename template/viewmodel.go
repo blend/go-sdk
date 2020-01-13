@@ -3,7 +3,6 @@ package template
 import (
 	"fmt"
 	"os"
-
 	"github.com/blend/go-sdk/env"
 )
 

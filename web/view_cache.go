@@ -4,7 +4,6 @@ import (
 	"html/template"
 	"net/http"
 	"sync"
-
 	"github.com/blend/go-sdk/bufferutil"
 	"github.com/blend/go-sdk/ex"
 	templatehelpers "github.com/blend/go-sdk/template"

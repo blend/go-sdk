@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"io/ioutil"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 )
 

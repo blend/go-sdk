@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/r2"
 	"github.com/blend/go-sdk/stringutil"

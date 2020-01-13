@@ -3,7 +3,6 @@ package async
 import (
 	"context"
 	"runtime"
-
 	"github.com/blend/go-sdk/ex"
 )
 

@@ -6,7 +6,6 @@ import (
 	"crypto/x509"
 	"math/big"
 	"time"
-
 	"github.com/blend/go-sdk/ex"
 )
 

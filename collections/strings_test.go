@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 )
 

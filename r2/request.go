@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"strings"
 	"time"
-
 	"github.com/blend/go-sdk/ex"
 )
 

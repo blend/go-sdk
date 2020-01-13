@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/ex"

@@ -7,7 +7,6 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
-
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/graceful"
 )

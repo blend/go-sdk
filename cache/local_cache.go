@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 	"unsafe"
-
 	"github.com/blend/go-sdk/async"
 )
 

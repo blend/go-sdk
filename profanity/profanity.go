@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
 	"github.com/blend/go-sdk/ansi"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/yaml"

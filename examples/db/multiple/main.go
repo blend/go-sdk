@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-
 	"github.com/blend/go-sdk/db"
 	"github.com/blend/go-sdk/db/migration"
 	"github.com/blend/go-sdk/logger"

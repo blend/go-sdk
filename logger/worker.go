@@ -2,7 +2,6 @@ package logger
 
 import (
 	"context"
-
 	"github.com/blend/go-sdk/async"
 	"github.com/blend/go-sdk/ex"
 )

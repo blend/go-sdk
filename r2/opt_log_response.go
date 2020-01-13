@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
-
 	"github.com/blend/go-sdk/logger"
 )
 

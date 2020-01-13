@@ -3,7 +3,6 @@ package async
 import (
 	"context"
 	"time"
-
 	"github.com/blend/go-sdk/collections"
 	"github.com/blend/go-sdk/ex"
 )

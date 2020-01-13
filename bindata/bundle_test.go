@@ -3,10 +3,8 @@ package bindata
 import (
 	"bytes"
 	"testing"
-
 	"go/parser"
 	"go/token"
-
 	"github.com/blend/go-sdk/assert"
 )
 

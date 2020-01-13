@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/stringutil"
 )

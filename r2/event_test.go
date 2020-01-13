@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"testing"
 	"time"
-
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/webutil"

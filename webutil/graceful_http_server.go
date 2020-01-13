@@ -5,7 +5,6 @@ import (
 	"net"
 	"net/http"
 	"time"
-
 	"github.com/blend/go-sdk/async"
 	"github.com/blend/go-sdk/ex"
 )

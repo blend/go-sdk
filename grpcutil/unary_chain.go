@@ -2,7 +2,6 @@ package grpcutil
 
 import (
 	"context"
-
 	"google.golang.org/grpc"
 )
 

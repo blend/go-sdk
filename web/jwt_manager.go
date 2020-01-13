@@ -3,7 +3,6 @@ package web
 import (
 	"context"
 	"time"
-
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/jwt"
 )

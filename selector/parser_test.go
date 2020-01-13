@@ -3,7 +3,6 @@ package selector
 import (
 	"strings"
 	"testing"
-
 	assert "github.com/blend/go-sdk/assert"
 )
 

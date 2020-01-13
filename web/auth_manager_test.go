@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"testing"
 	"time"
-
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/webutil"

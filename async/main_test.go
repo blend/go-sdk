@@ -2,7 +2,6 @@ package async
 
 import (
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 )
 

@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"strings"
 	"testing"
-
 	"github.com/blend/go-sdk/jwt"
 	"github.com/blend/go-sdk/jwt/test"
 )

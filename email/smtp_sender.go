@@ -6,7 +6,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/smtp"
-
 	"github.com/blend/go-sdk/configutil"
 	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/ex"

@@ -3,7 +3,6 @@ package configutil
 import (
 	"bytes"
 	"testing"
-
 	"github.com/blend/go-sdk/assert"
 )
 

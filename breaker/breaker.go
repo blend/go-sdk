@@ -5,7 +5,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-
 	"github.com/blend/go-sdk/ex"
 )
 

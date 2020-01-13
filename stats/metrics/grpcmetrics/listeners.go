@@ -2,7 +2,6 @@ package grpcmetrics
 
 import (
 	"context"
-
 	"github.com/blend/go-sdk/grpcutil"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/stats"

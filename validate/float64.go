@@ -2,7 +2,6 @@ package validate
 
 import (
 	"math"
-
 	"github.com/blend/go-sdk/ex"
 )
 
