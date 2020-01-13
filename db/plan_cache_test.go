@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	assert "github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/assert"
 )
 
 func TestPlanCache(t *testing.T) {

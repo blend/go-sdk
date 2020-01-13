@@ -10,7 +10,7 @@ import (
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/graceful"
-	logger "github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/uuid"
 )
 

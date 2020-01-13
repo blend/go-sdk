@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	assert "github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/assert"
 )
 
 func TestParserIsWhitespace(t *testing.T) {
