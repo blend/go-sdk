@@ -2,6 +2,7 @@ package async
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/blend/go-sdk/collections"
@@ -65,6 +66,7 @@ func OptAutoflushBufferFlushOnStop(flushOnStop bool) AutoflushBufferOption {
 // A handler should be provided but without one the buffer will just clear.
 // Adds that would cause fixed length flushes do not block on the flush handler.
 type AutoflushBuffer struct {
+	sync.Mutex
 	Latch       *Latch
 	Context     context.Context
 	MaxLen      int
@@ -143,8 +145,8 @@ func (ab *AutoflushBuffer) NotifyStopped() <-chan struct{} {
 // Add adds a new object to the buffer, blocking if it triggers a flush.
 // If the buffer is full, it will call the flush handler on a separate goroutine.
 func (ab *AutoflushBuffer) Add(obj interface{}) {
-	ab.Latch.Lock()
-	defer ab.Latch.Unlock()
+	ab.Lock()
+	defer ab.Unlock()
 
 	ab.Contents.Enqueue(obj)
 	if ab.Contents.Len() >= ab.MaxLen {
@@ -154,8 +156,8 @@ func (ab *AutoflushBuffer) Add(obj interface{}) {
 
 // AddMany adds many objects to the buffer at once.
 func (ab *AutoflushBuffer) AddMany(objs ...interface{}) {
-	ab.Latch.Lock()
-	defer ab.Latch.Unlock()
+	ab.Lock()
+	defer ab.Unlock()
 
 	for _, obj := range objs {
 		ab.Contents.Enqueue(obj)
@@ -168,16 +170,16 @@ func (ab *AutoflushBuffer) AddMany(objs ...interface{}) {
 // Flush clears the buffer, if a handler is provided it is passed the contents of the buffer.
 // This call is synchronous, in that it will call the flush handler on the same goroutine.
 func (ab *AutoflushBuffer) Flush(ctx context.Context) {
-	ab.Latch.Lock()
-	defer ab.Latch.Unlock()
+	ab.Lock()
+	defer ab.Unlock()
 	ab.flushUnsafe(ctx, ab.Contents.Drain())
 }
 
 // FlushAsync clears the buffer, if a handler is provided it is passed the contents of the buffer.
 // This call is asynchronous, in that it will call the flush handler on its own goroutine.
 func (ab *AutoflushBuffer) FlushAsync(ctx context.Context) {
-	ab.Latch.Lock()
-	defer ab.Latch.Unlock()
+	ab.Lock()
+	defer ab.Unlock()
 	ab.flushUnsafeAsync(ctx, ab.Contents.Drain())
 }
 
