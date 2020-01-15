@@ -102,7 +102,7 @@ func TestErrEventFingerprintDefault(t *testing.T) {
 
 	assert.NotNil(event)
 	assert.NotEmpty(event.Fingerprint)
-	assert.Equal("this is a test", event.Fingerprint[0])
+	assert.Equal([]string{"this is a test"}, event.Fingerprint)
 }
 
 func TestErrEventFingerprintPath(t *testing.T) {
