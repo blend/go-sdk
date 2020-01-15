@@ -59,11 +59,12 @@ func (c Client) Notify(ctx context.Context, ee logger.ErrorEvent) {
 
 func errEvent(ctx context.Context, ee logger.ErrorEvent) *raven.Event {
 	return &raven.Event{
-		Timestamp: logger.GetEventTimestamp(ctx, ee).Unix(),
-		Level:     raven.Level(ee.GetFlag()),
-		Tags:      errTags(ctx),
-		Extra:     errExtra(ctx),
-		Platform:  "go",
+		Timestamp:   logger.GetEventTimestamp(ctx, ee).Unix(),
+		Fingerprint: errFingerprint(ctx, ex.ErrClass(ee.Err).Error()),
+		Level:       raven.Level(ee.GetFlag()),
+		Tags:        errTags(ctx),
+		Extra:       errExtra(ctx),
+		Platform:    "go",
 		Sdk: raven.SdkInfo{
 			Name:    SDK,
 			Version: raven.Version,
@@ -82,6 +83,13 @@ func errEvent(ctx context.Context, ee logger.ErrorEvent) *raven.Event {
 			},
 		},
 	}
+}
+
+func errFingerprint(ctx context.Context, extra ...string) []string {
+	if fingerprint := GetFingerprint(ctx); fingerprint != nil {
+		return fingerprint
+	}
+	return append(logger.GetPath(ctx), extra...)
 }
 
 func errTags(ctx context.Context) map[string]string {
