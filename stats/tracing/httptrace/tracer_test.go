@@ -1,6 +1,7 @@
 package httptrace_test
 
 import (
+	"net/http"
 	"testing"
 
 	opentracing "github.com/opentracing/opentracing-go"
@@ -36,4 +37,31 @@ func TestStart(t *testing.T) {
 	}
 	assert.Equal(expectedTags, mockSpan.Tags())
 	assert.True(mockSpan.FinishTime.IsZero())
+}
+
+func applyIncomingSpan(req *http.Request, t opentracing.Tracer, s opentracing.Span) {
+	t.Inject(
+		s.Context(),
+		opentracing.HTTPHeaders,
+		opentracing.HTTPHeadersCarrier(req.Header),
+	)
+}
+
+func TestStartWithParentSpan(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	httpTracer := httptrace.Tracer(mockTracer)
+
+	parentSpan := mockTracer.StartSpan("test_op")
+	path := "/test-resource"
+	req := webutil.NewMockRequest("GET", path)
+	applyIncomingSpan(req, mockTracer, parentSpan)
+	_, req = httpTracer.Start(req)
+
+	span := opentracing.SpanFromContext(req.Context())
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal(tracing.OperationHTTPRequest, mockSpan.OperationName)
+
+	mockParentSpan := parentSpan.(*mocktracer.MockSpan)
+	assert.Equal(mockSpan.ParentID, mockParentSpan.SpanContext.SpanID)
 }
