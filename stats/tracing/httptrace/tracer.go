@@ -28,7 +28,7 @@ type httpTracer struct {
 
 // StartHTTPSpan opens a span and creates a new request with a modified
 // context, based on the span that was opened.
-func StartHTTPSpan(ctx context.Context, tracer opentracing.Tracer, req *http.Request, resource string, startTime time.Time) (opentracing.Span, *http.Request) {
+func StartHTTPSpan(ctx context.Context, tracer opentracing.Tracer, req *http.Request, resource string, startTime time.Time, extra ...opentracing.StartSpanOption) (opentracing.Span, *http.Request) {
 	// set up basic start options (these are mostly tags).
 	startOptions := []opentracing.StartSpanOption{
 		opentracing.Tag{Key: tracing.TagKeyResourceName, Value: resource},
@@ -40,6 +40,7 @@ func StartHTTPSpan(ctx context.Context, tracer opentracing.Tracer, req *http.Req
 		opentracing.Tag{Key: "http.user_agent", Value: webutil.GetUserAgent(req)},
 		opentracing.StartTime(startTime),
 	}
+	startOptions = append(startOptions, extra...)
 
 	// try to extract an incoming span context
 	// this is typically done if we're a service being called in a chain from another (more ancestral)

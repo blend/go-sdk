@@ -24,7 +24,14 @@ func TestStartHTTPSpan(t *testing.T) {
 	req := webutil.NewMockRequest("GET", path)
 	resource := "/:id"
 	startTime := time.Now().Add(-10 * time.Second)
-	span, req := httptrace.StartHTTPSpan(context.TODO(), mockTracer, req, resource, startTime)
+	span, req := httptrace.StartHTTPSpan(
+		context.TODO(),
+		mockTracer,
+		req,
+		resource,
+		startTime,
+		opentracing.Tag{Key: "http.route", Value: resource},
+	)
 
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal(tracing.OperationHTTPRequest, mockSpan.OperationName)
@@ -37,6 +44,7 @@ func TestStartHTTPSpan(t *testing.T) {
 		"http.remote_addr":         "127.0.0.1",
 		"http.host":                "localhost",
 		"http.user_agent":          "go-sdk test",
+		"http.route":               resource,
 	}
 	assert.Equal(expectedTags, mockSpan.Tags())
 	assert.Equal(startTime, mockSpan.StartTime)
