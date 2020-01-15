@@ -85,3 +85,63 @@ func TestErrFrames(t *testing.T) {
 	err := ex.New("this is only a test")
 	assert.NotEmpty(errFrames(err))
 }
+
+func TestErrEventFingerprintDefault(t *testing.T) {
+	assert := assert.New(t)
+
+	event := errEvent(context.Background(), logger.ErrorEvent{
+		Flag: logger.Fatal,
+		Err:  ex.New("this is a test", ex.OptMessage("a message")),
+		State: &http.Request{
+			Method: "POST",
+			Host:   "example.org",
+			TLS:    &tls.ConnectionState{},
+			URL:    webutil.MustParseURL("https://example.org/foo"),
+		},
+	})
+
+	assert.NotNil(event)
+	assert.NotEmpty(event.Fingerprint)
+	assert.Equal("this is a test", event.Fingerprint[0])
+}
+
+func TestErrEventFingerprintPath(t *testing.T) {
+	assert := assert.New(t)
+
+	ctx := logger.WithPath(context.Background(), "foo", "bar")
+
+	event := errEvent(ctx, logger.ErrorEvent{
+		Flag: logger.Fatal,
+		Err:  ex.New("this is a test", ex.OptMessage("a message")),
+		State: &http.Request{
+			Method: "POST",
+			Host:   "example.org",
+			TLS:    &tls.ConnectionState{},
+			URL:    webutil.MustParseURL("https://example.org/foo"),
+		},
+	})
+
+	assert.NotNil(event)
+	assert.NotEmpty(event.Fingerprint)
+	assert.Equal([]string{"foo", "bar", "this is a test"}, event.Fingerprint)
+}
+
+func TestErrEventFingerprintOverride(t *testing.T) {
+	assert := assert.New(t)
+
+	ctx := WithFingerprint(context.Background(), "test", "fingerprint")
+
+	event := errEvent(ctx, logger.ErrorEvent{
+		Flag: logger.Fatal,
+		Err:  ex.New("this is a test", ex.OptMessage("a message")),
+		State: &http.Request{
+			Method: "POST",
+			Host:   "example.org",
+			TLS:    &tls.ConnectionState{},
+			URL:    webutil.MustParseURL("https://example.org/foo"),
+		},
+	})
+	assert.NotNil(event)
+	assert.NotEmpty(event.Fingerprint)
+	assert.Equal([]string{"test", "fingerprint"}, event.Fingerprint)
+}

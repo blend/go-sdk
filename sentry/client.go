@@ -86,6 +86,9 @@ func errEvent(ctx context.Context, ee logger.ErrorEvent) *raven.Event {
 }
 
 func errFingerprint(ctx context.Context, extra ...string) []string {
+	if fingerprint := GetFingerprint(ctx); fingerprint != nil {
+		return fingerprint
+	}
 	return append(logger.GetPath(ctx), extra...)
 }
 
