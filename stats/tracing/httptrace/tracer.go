@@ -8,17 +8,16 @@ import (
 	opentracing "github.com/opentracing/opentracing-go"
 
 	"github.com/blend/go-sdk/stats/tracing"
-	"github.com/blend/go-sdk/web"
 	"github.com/blend/go-sdk/webutil"
 )
 
 var (
-	_ web.HTTPTracer        = (*httpTracer)(nil)
-	_ web.HTTPTraceFinisher = (*httpTraceFinisher)(nil)
+	_ webutil.HTTPTracer        = (*httpTracer)(nil)
+	_ webutil.HTTPTraceFinisher = (*httpTraceFinisher)(nil)
 )
 
 // Tracer returns an HTTP tracer.
-func Tracer(tracer opentracing.Tracer) web.HTTPTracer {
+func Tracer(tracer opentracing.Tracer) webutil.HTTPTracer {
 	return &httpTracer{tracer: tracer}
 }
 
@@ -58,7 +57,7 @@ func StartHTTPSpan(ctx context.Context, tracer opentracing.Tracer, req *http.Req
 
 // Start opens a span and creates a new request with a modified context, based
 // on the span that was opened.
-func (ht httpTracer) Start(req *http.Request) (web.HTTPTraceFinisher, *http.Request) {
+func (ht httpTracer) Start(req *http.Request) (webutil.HTTPTraceFinisher, *http.Request) {
 	resource := req.URL.Path
 	startTime := time.Now().UTC()
 	span, newReq := StartHTTPSpan(req.Context(), ht.tracer, req, resource, startTime)
