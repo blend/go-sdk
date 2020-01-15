@@ -1,6 +1,7 @@
 package httptrace_test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -23,7 +24,7 @@ func TestStartHTTPSpan(t *testing.T) {
 	req := webutil.NewMockRequest("GET", path)
 	resource := "/:id"
 	startTime := time.Now().Add(-10 * time.Second)
-	span, req := httptrace.StartHTTPSpan(mockTracer, req, resource, startTime)
+	span, req := httptrace.StartHTTPSpan(context.TODO(), mockTracer, req, resource, startTime)
 
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal(tracing.OperationHTTPRequest, mockSpan.OperationName)

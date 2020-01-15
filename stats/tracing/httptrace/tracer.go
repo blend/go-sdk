@@ -1,6 +1,7 @@
 package httptrace
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -27,7 +28,7 @@ type httpTracer struct {
 
 // StartHTTPSpan opens a span and creates a new request with a modified
 // context, based on the span that was opened.
-func StartHTTPSpan(tracer opentracing.Tracer, req *http.Request, resource string, startTime time.Time) (opentracing.Span, *http.Request) {
+func StartHTTPSpan(ctx context.Context, tracer opentracing.Tracer, req *http.Request, resource string, startTime time.Time) (opentracing.Span, *http.Request) {
 	// set up basic start options (these are mostly tags).
 	startOptions := []opentracing.StartSpanOption{
 		opentracing.Tag{Key: tracing.TagKeyResourceName, Value: resource},
@@ -48,7 +49,7 @@ func StartHTTPSpan(tracer opentracing.Tracer, req *http.Request, resource string
 		startOptions = append(startOptions, opentracing.ChildOf(spanContext))
 	}
 	// start the span.
-	span, spanCtx := tracing.StartSpanFromContext(req.Context(), tracer, tracing.OperationHTTPRequest, startOptions...)
+	span, spanCtx := tracing.StartSpanFromContext(ctx, tracer, tracing.OperationHTTPRequest, startOptions...)
 	// inject the new context
 	newReq := req.WithContext(spanCtx)
 	return span, newReq
@@ -59,7 +60,7 @@ func StartHTTPSpan(tracer opentracing.Tracer, req *http.Request, resource string
 func (ht httpTracer) Start(req *http.Request) (web.HTTPTraceFinisher, *http.Request) {
 	resource := req.URL.Path
 	startTime := time.Now().UTC()
-	span, newReq := StartHTTPSpan(ht.tracer, req, resource, startTime)
+	span, newReq := StartHTTPSpan(req.Context(), ht.tracer, req, resource, startTime)
 	return &httpTraceFinisher{span: span}, newReq
 }
 
