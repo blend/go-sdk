@@ -46,6 +46,16 @@ func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 	}()
 
+	var err error
+	if p.Tracer != nil {
+		var tf webutil.HTTPTraceFinisher
+		tf, req = p.Tracer.Start(req)
+		// NOTE: It is crucial to use `err` in a closure from current scope,
+		//       **not** as an argument. This way updates to `err` will be
+		//       reflected on exit.
+		defer func() { tf.Finish(err) }()
+	}
+
 	// set the default resolver if unset.
 	if p.Resolver == nil {
 		p.Resolver = RoundRobinResolver(p.Upstreams)
