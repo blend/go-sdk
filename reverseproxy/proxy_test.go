@@ -14,6 +14,12 @@ import (
 	"github.com/blend/go-sdk/webutil"
 )
 
+// NOTE: Ensure `mockHTTPTracer` satisfies `web.HTTPTracer`.
+var (
+	_ webutil.HTTPTracer        = (*mockHTTPTracer)(nil)
+	_ webutil.HTTPTraceFinisher = (*mockHTTPTraceFinisher)(nil)
+)
+
 func TestProxy(t *testing.T) {
 	assert := assert.New(t)
 
@@ -52,6 +58,37 @@ func TestProxy(t *testing.T) {
 	mockedContents := string(fullBody)
 	assert.Equal(http.StatusOK, res.StatusCode)
 	assert.Equal("Ok!", mockedContents)
+}
+
+func TestProxyTracer(t *testing.T) {
+	it := assert.New(t)
+
+	target, err := url.Parse("http://web.invalid:9876")
+	it.Nil(err)
+
+	tracer := &mockHTTPTracer{}
+	proxy := NewProxy(
+		OptProxyUpstream(NewUpstream(target)),
+		OptProxySetHeaderValue(webutil.HeaderXForwardedProto, webutil.SchemeHTTP),
+		OptProxyTracer(tracer),
+	)
+	mockedProxy := httptest.NewServer(proxy)
+
+	res, err := http.Get(mockedProxy.URL)
+	it.Nil(err)
+	defer res.Body.Close()
+
+	it.Equal(http.StatusBadGateway, res.StatusCode)
+
+	req := tracer.Request
+	it.NotNil(req)
+	it.Equal("GET", req.Method)
+	it.Equal("/", req.URL.String())
+	it.Equal(mockedProxy.URL, "http://"+req.Host)
+
+	tf := tracer.Finisher
+	it.NotNil(tf)
+	it.Nil(tf.Error)
 }
 
 // Referencing https://golang.org/src/net/http/httputil/reverseproxy_test.go
@@ -109,4 +146,24 @@ func TestReverseProxyWebSocket(t *testing.T) {
 	got := bs.Text()
 	want := `backend got "Hello"`
 	assert.Equal(got, want)
+}
+
+type mockHTTPTracer struct {
+	Request  *http.Request
+	Finisher *mockHTTPTraceFinisher
+}
+
+func (mht *mockHTTPTracer) Start(req *http.Request) (webutil.HTTPTraceFinisher, *http.Request) {
+	mht.Request = req
+	mht.Finisher = &mockHTTPTraceFinisher{}
+	return mht.Finisher, req
+}
+
+type mockHTTPTraceFinisher struct {
+	Error error
+}
+
+func (mhtf *mockHTTPTraceFinisher) Finish(err error) {
+	mhtf.Error = err
+	return
 }
