@@ -31,6 +31,7 @@ type Proxy struct {
 	Log       logger.Log
 	Upstreams []*Upstream
 	Resolver  Resolver
+	Tracer    webutil.HTTPTracer
 }
 
 // ServeHTTP is the http entrypoint.
