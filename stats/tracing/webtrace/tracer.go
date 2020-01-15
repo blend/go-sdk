@@ -7,8 +7,8 @@ import (
 	opentracing "github.com/opentracing/opentracing-go"
 
 	"github.com/blend/go-sdk/stats/tracing"
+	"github.com/blend/go-sdk/stats/tracing/httptrace"
 	"github.com/blend/go-sdk/web"
-	"github.com/blend/go-sdk/webutil"
 )
 
 const (
@@ -34,39 +34,24 @@ type webTracer struct {
 
 func (wt webTracer) Start(ctx *web.Ctx) web.TraceFinisher {
 	var resource string
+	extra := []opentracing.StartSpanOption{}
 	if ctx.Route != nil {
 		resource = ctx.Route.String()
+		extra = append(extra, opentracing.Tag{Key: "http.route", Value: ctx.Route.String()})
 	} else {
 		resource = ctx.Request.URL.Path
 	}
+	span, newReq := httptrace.StartHTTPSpan(
+		ctx.Context(),
+		wt.tracer,
+		ctx.Request,
+		resource,
+		ctx.RequestStart,
+		extra...,
+	)
 
-	// set up basic start options (these are mostly tags).
-	startOptions := []opentracing.StartSpanOption{
-		opentracing.Tag{Key: tracing.TagKeyResourceName, Value: resource},
-		opentracing.Tag{Key: tracing.TagKeySpanType, Value: tracing.SpanTypeWeb},
-		opentracing.Tag{Key: tracing.TagKeyHTTPMethod, Value: ctx.Request.Method},
-		opentracing.Tag{Key: tracing.TagKeyHTTPURL, Value: ctx.Request.URL.Path},
-		opentracing.Tag{Key: "http.remote_addr", Value: webutil.GetRemoteAddr(ctx.Request)},
-		opentracing.Tag{Key: "http.host", Value: webutil.GetHost(ctx.Request)},
-		opentracing.Tag{Key: "http.user_agent", Value: webutil.GetUserAgent(ctx.Request)},
-		opentracing.StartTime(ctx.RequestStart),
-	}
-	if ctx.Route != nil {
-		startOptions = append(startOptions, opentracing.Tag{Key: "http.route", Value: ctx.Route.String()})
-	}
-
-	// try to extract an incoming span context
-	// this is typically done if we're a service being called in a chain from another (more ancestral)
-	// span context.
-	spanContext, _ := wt.tracer.Extract(opentracing.TextMap, opentracing.HTTPHeadersCarrier(ctx.Request.Header))
-	if spanContext != nil {
-		startOptions = append(startOptions, opentracing.ChildOf(spanContext))
-	}
-	// start the span.
-	span, spanCtx := tracing.StartSpanFromContext(ctx.Context(), wt.tracer, tracing.OperationHTTPRequest, startOptions...)
-	// inject the new context
-	ctx.Request = ctx.Request.WithContext(spanCtx)
-	ctx.WithContext(spanCtx)
+	ctx.Request = newReq
+	ctx.WithContext(newReq.Context())
 	return &webTraceFinisher{span: span}
 }
 
