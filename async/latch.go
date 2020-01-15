@@ -76,6 +76,7 @@ func (l *Latch) IsStopped() (isStopped bool) {
 
 // NotifyStarting returns the starting signal.
 // It is used to coordinate the transition from stopped -> starting.
+// There can only be (1) effective listener at a time for these events.
 func (l *Latch) NotifyStarting() (notifyStarting <-chan struct{}) {
 	notifyStarting = l.starting
 	return
@@ -83,6 +84,7 @@ func (l *Latch) NotifyStarting() (notifyStarting <-chan struct{}) {
 
 // NotifyStarted returns the started signal.
 // It is used to coordinate the transition from starting -> started.
+// There can only be (1) effective listener at a time for these events.
 func (l *Latch) NotifyStarted() (notifyStarted <-chan struct{}) {
 	notifyStarted = l.started
 	return
@@ -90,6 +92,7 @@ func (l *Latch) NotifyStarted() (notifyStarted <-chan struct{}) {
 
 // NotifyStopping returns the should stop signal.
 // It is used to trigger the transition from running -> stopping -> stopped.
+// There can only be (1) effective listener at a time for these events.
 func (l *Latch) NotifyStopping() (notifyStopping <-chan struct{}) {
 	notifyStopping = l.stopping
 	return
@@ -97,6 +100,7 @@ func (l *Latch) NotifyStopping() (notifyStopping <-chan struct{}) {
 
 // NotifyStopped returns the stopped signal.
 // It is used to coordinate the transition from stopping -> stopped.
+// There can only be (1) effective listener at a time for these events.
 func (l *Latch) NotifyStopped() (notifyStopped <-chan struct{}) {
 	notifyStopped = l.stopped
 	return
