@@ -21,7 +21,7 @@ func TestStart(t *testing.T) {
 
 	path := "/test-resource"
 	req := webutil.NewMockRequest("GET", path)
-	_, req = httpTracer.Start(req)
+	_, req = httpTracer.Start(req, "")
 
 	span := opentracing.SpanFromContext(req.Context())
 	mockSpan := span.(*mocktracer.MockSpan)
@@ -29,6 +29,32 @@ func TestStart(t *testing.T) {
 
 	expectedTags := map[string]interface{}{
 		tracing.TagKeyResourceName: path,
+		tracing.TagKeySpanType:     tracing.SpanTypeWeb,
+		tracing.TagKeyHTTPMethod:   "GET",
+		tracing.TagKeyHTTPURL:      path,
+		"http.remote_addr":         "127.0.0.1",
+		"http.host":                "localhost",
+		"http.user_agent":          "go-sdk test",
+	}
+	assert.Equal(expectedTags, mockSpan.Tags())
+	assert.True(mockSpan.FinishTime.IsZero())
+}
+
+func TestStartWithResource(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	httpTracer := httptrace.Tracer(mockTracer)
+
+	path := "/test-resource"
+	req := webutil.NewMockRequest("GET", path)
+	_, req = httpTracer.Start(req, "/:id")
+
+	span := opentracing.SpanFromContext(req.Context())
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal(tracing.OperationHTTPRequest, mockSpan.OperationName)
+
+	expectedTags := map[string]interface{}{
+		tracing.TagKeyResourceName: "/:id",
 		tracing.TagKeySpanType:     tracing.SpanTypeWeb,
 		tracing.TagKeyHTTPMethod:   "GET",
 		tracing.TagKeyHTTPURL:      path,
@@ -57,7 +83,7 @@ func TestStartWithParentSpan(t *testing.T) {
 	path := "/test-resource"
 	req := webutil.NewMockRequest("GET", path)
 	applyIncomingSpan(req, mockTracer, parentSpan)
-	_, req = httpTracer.Start(req)
+	_, req = httpTracer.Start(req, "")
 
 	span := opentracing.SpanFromContext(req.Context())
 	mockSpan := span.(*mocktracer.MockSpan)
@@ -74,7 +100,7 @@ func TestFinish(t *testing.T) {
 
 	path := "/test-resource"
 	req := webutil.NewMockRequest("GET", path)
-	tf, req := httpTracer.Start(req)
+	tf, req := httpTracer.Start(req, "")
 
 	tf.Finish(req, nil)
 
@@ -90,7 +116,7 @@ func TestFinishError(t *testing.T) {
 
 	path := "/test-resource"
 	req := webutil.NewMockRequest("GET", path)
-	tf, req := httpTracer.Start(req)
+	tf, req := httpTracer.Start(req, "")
 
 	tf.Finish(req, fmt.Errorf("error"))
 
