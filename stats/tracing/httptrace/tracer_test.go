@@ -65,3 +65,19 @@ func TestStartWithParentSpan(t *testing.T) {
 	mockParentSpan := parentSpan.(*mocktracer.MockSpan)
 	assert.Equal(mockSpan.ParentID, mockParentSpan.SpanContext.SpanID)
 }
+
+func TestFinish(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	httpTracer := httptrace.Tracer(mockTracer)
+
+	path := "/test-resource"
+	req := webutil.NewMockRequest("GET", path)
+	tf, req := httpTracer.Start(req)
+
+	tf.Finish(req, nil)
+
+	span := opentracing.SpanFromContext(req.Context())
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.False(mockSpan.FinishTime.IsZero())
+}
