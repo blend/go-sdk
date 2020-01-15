@@ -1,6 +1,7 @@
 package httptrace_test
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -79,5 +80,22 @@ func TestFinish(t *testing.T) {
 
 	span := opentracing.SpanFromContext(req.Context())
 	mockSpan := span.(*mocktracer.MockSpan)
+	assert.False(mockSpan.FinishTime.IsZero())
+}
+
+func TestFinishError(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	httpTracer := httptrace.Tracer(mockTracer)
+
+	path := "/test-resource"
+	req := webutil.NewMockRequest("GET", path)
+	tf, req := httpTracer.Start(req)
+
+	tf.Finish(req, fmt.Errorf("error"))
+
+	span := opentracing.SpanFromContext(req.Context())
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal("error", mockSpan.Tags()[tracing.TagKeyError])
 	assert.False(mockSpan.FinishTime.IsZero())
 }
