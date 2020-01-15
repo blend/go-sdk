@@ -27,11 +27,14 @@ type httpTracer struct {
 
 // Start opens a span and creates a new request with a modified context, based
 // on the span that was opened.
-func (ht httpTracer) Start(req *http.Request, resource string) (web.HTTPTraceFinisher, *http.Request) {
+func (ht httpTracer) Start(req *http.Request, resource string, startTime *time.Time) (web.HTTPTraceFinisher, *http.Request) {
 	if resource == "" {
 		resource = req.URL.Path
 	}
-	startTime := time.Now().UTC()
+	if startTime == nil {
+		now := time.Now().UTC()
+		startTime = &now
+	}
 	// set up basic start options (these are mostly tags).
 	startOptions := []opentracing.StartSpanOption{
 		opentracing.Tag{Key: tracing.TagKeyResourceName, Value: resource},
@@ -41,7 +44,7 @@ func (ht httpTracer) Start(req *http.Request, resource string) (web.HTTPTraceFin
 		opentracing.Tag{Key: "http.remote_addr", Value: webutil.GetRemoteAddr(req)},
 		opentracing.Tag{Key: "http.host", Value: webutil.GetHost(req)},
 		opentracing.Tag{Key: "http.user_agent", Value: webutil.GetUserAgent(req)},
-		opentracing.StartTime(startTime),
+		opentracing.StartTime(*startTime),
 	}
 
 	// try to extract an incoming span context

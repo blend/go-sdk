@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/mocktracer"
@@ -21,7 +22,7 @@ func TestStart(t *testing.T) {
 
 	path := "/test-resource"
 	req := webutil.NewMockRequest("GET", path)
-	_, req = httpTracer.Start(req, "")
+	_, req = httpTracer.Start(req, "", nil)
 
 	span := opentracing.SpanFromContext(req.Context())
 	mockSpan := span.(*mocktracer.MockSpan)
@@ -47,7 +48,7 @@ func TestStartWithResource(t *testing.T) {
 
 	path := "/test-resource"
 	req := webutil.NewMockRequest("GET", path)
-	_, req = httpTracer.Start(req, "/:id")
+	_, req = httpTracer.Start(req, "/:id", nil)
 
 	span := opentracing.SpanFromContext(req.Context())
 	mockSpan := span.(*mocktracer.MockSpan)
@@ -63,6 +64,35 @@ func TestStartWithResource(t *testing.T) {
 		"http.user_agent":          "go-sdk test",
 	}
 	assert.Equal(expectedTags, mockSpan.Tags())
+	assert.True(mockSpan.FinishTime.IsZero())
+}
+
+func TestStartWithStartTime(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	httpTracer := httptrace.Tracer(mockTracer)
+
+	path := "/test-resource"
+	req := webutil.NewMockRequest("GET", path)
+	now := time.Now()
+	startTime := now.Add(-10 * time.Second)
+	_, req = httpTracer.Start(req, "", &startTime)
+
+	span := opentracing.SpanFromContext(req.Context())
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal(tracing.OperationHTTPRequest, mockSpan.OperationName)
+
+	expectedTags := map[string]interface{}{
+		tracing.TagKeyResourceName: path,
+		tracing.TagKeySpanType:     tracing.SpanTypeWeb,
+		tracing.TagKeyHTTPMethod:   "GET",
+		tracing.TagKeyHTTPURL:      path,
+		"http.remote_addr":         "127.0.0.1",
+		"http.host":                "localhost",
+		"http.user_agent":          "go-sdk test",
+	}
+	assert.Equal(expectedTags, mockSpan.Tags())
+	assert.Equal(startTime, mockSpan.StartTime)
 	assert.True(mockSpan.FinishTime.IsZero())
 }
 
@@ -83,7 +113,7 @@ func TestStartWithParentSpan(t *testing.T) {
 	path := "/test-resource"
 	req := webutil.NewMockRequest("GET", path)
 	applyIncomingSpan(req, mockTracer, parentSpan)
-	_, req = httpTracer.Start(req, "")
+	_, req = httpTracer.Start(req, "", nil)
 
 	span := opentracing.SpanFromContext(req.Context())
 	mockSpan := span.(*mocktracer.MockSpan)
@@ -100,7 +130,7 @@ func TestFinish(t *testing.T) {
 
 	path := "/test-resource"
 	req := webutil.NewMockRequest("GET", path)
-	tf, req := httpTracer.Start(req, "")
+	tf, req := httpTracer.Start(req, "", nil)
 
 	tf.Finish(req, nil)
 
@@ -116,7 +146,7 @@ func TestFinishError(t *testing.T) {
 
 	path := "/test-resource"
 	req := webutil.NewMockRequest("GET", path)
-	tf, req := httpTracer.Start(req, "")
+	tf, req := httpTracer.Start(req, "", nil)
 
 	tf.Finish(req, fmt.Errorf("error"))
 

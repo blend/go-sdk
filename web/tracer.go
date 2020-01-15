@@ -2,6 +2,7 @@ package web
 
 import (
 	"net/http"
+	"time"
 )
 
 // Tracer is a type that traces complete requests.
@@ -28,7 +29,7 @@ type ViewTraceFinisher interface {
 // `(net/http).Request`. It returns a "new" request the request context may
 // be modified after opening a span.
 type HTTPTracer interface {
-	Start(*http.Request, string) (HTTPTraceFinisher, *http.Request)
+	Start(*http.Request, string, *time.Time) (HTTPTraceFinisher, *http.Request)
 }
 
 // HTTPTraceFinisher is a simplified version of `TraceFinisher` intended for a
