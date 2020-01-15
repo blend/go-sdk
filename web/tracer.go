@@ -32,8 +32,7 @@ type HTTPTracer interface {
 	Start(*http.Request, string, *time.Time) (HTTPTraceFinisher, *http.Request)
 }
 
-// HTTPTraceFinisher is a simplified version of `TraceFinisher` intended for a
-// raw `(net/http).Request`.
+// HTTPTraceFinisher is a simplified version of `TraceFinisher`.
 type HTTPTraceFinisher interface {
-	Finish(*http.Request, error)
+	Finish(error)
 }

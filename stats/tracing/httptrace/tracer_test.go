@@ -132,7 +132,7 @@ func TestFinish(t *testing.T) {
 	req := webutil.NewMockRequest("GET", path)
 	tf, req := httpTracer.Start(req, "", nil)
 
-	tf.Finish(req, nil)
+	tf.Finish(nil)
 
 	span := opentracing.SpanFromContext(req.Context())
 	mockSpan := span.(*mocktracer.MockSpan)
@@ -148,7 +148,7 @@ func TestFinishError(t *testing.T) {
 	req := webutil.NewMockRequest("GET", path)
 	tf, req := httpTracer.Start(req, "", nil)
 
-	tf.Finish(req, fmt.Errorf("error"))
+	tf.Finish(fmt.Errorf("error"))
 
 	span := opentracing.SpanFromContext(req.Context())
 	mockSpan := span.(*mocktracer.MockSpan)

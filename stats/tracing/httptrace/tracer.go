@@ -65,7 +65,7 @@ type httpTraceFinisher struct {
 	span opentracing.Span
 }
 
-func (htf httpTraceFinisher) Finish(req *http.Request, err error) {
+func (htf httpTraceFinisher) Finish(err error) {
 	if htf.span == nil {
 		return
 	}
