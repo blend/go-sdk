@@ -25,16 +25,9 @@ type httpTracer struct {
 	tracer opentracing.Tracer
 }
 
-// Start opens a span and creates a new request with a modified context, based
-// on the span that was opened.
-func (ht httpTracer) Start(req *http.Request, resource string, startTime *time.Time) (web.HTTPTraceFinisher, *http.Request) {
-	if resource == "" {
-		resource = req.URL.Path
-	}
-	if startTime == nil {
-		now := time.Now().UTC()
-		startTime = &now
-	}
+// StartHTTPSpan opens a span and creates a new request with a modified
+// context, based on the span that was opened.
+func StartHTTPSpan(tracer opentracing.Tracer, req *http.Request, resource string, startTime time.Time) (opentracing.Span, *http.Request) {
 	// set up basic start options (these are mostly tags).
 	startOptions := []opentracing.StartSpanOption{
 		opentracing.Tag{Key: tracing.TagKeyResourceName, Value: resource},
@@ -44,20 +37,29 @@ func (ht httpTracer) Start(req *http.Request, resource string, startTime *time.T
 		opentracing.Tag{Key: "http.remote_addr", Value: webutil.GetRemoteAddr(req)},
 		opentracing.Tag{Key: "http.host", Value: webutil.GetHost(req)},
 		opentracing.Tag{Key: "http.user_agent", Value: webutil.GetUserAgent(req)},
-		opentracing.StartTime(*startTime),
+		opentracing.StartTime(startTime),
 	}
 
 	// try to extract an incoming span context
 	// this is typically done if we're a service being called in a chain from another (more ancestral)
 	// span context.
-	spanContext, _ := ht.tracer.Extract(opentracing.TextMap, opentracing.HTTPHeadersCarrier(req.Header))
+	spanContext, _ := tracer.Extract(opentracing.TextMap, opentracing.HTTPHeadersCarrier(req.Header))
 	if spanContext != nil {
 		startOptions = append(startOptions, opentracing.ChildOf(spanContext))
 	}
 	// start the span.
-	span, spanCtx := tracing.StartSpanFromContext(req.Context(), ht.tracer, tracing.OperationHTTPRequest, startOptions...)
+	span, spanCtx := tracing.StartSpanFromContext(req.Context(), tracer, tracing.OperationHTTPRequest, startOptions...)
 	// inject the new context
 	newReq := req.WithContext(spanCtx)
+	return span, newReq
+}
+
+// Start opens a span and creates a new request with a modified context, based
+// on the span that was opened.
+func (ht httpTracer) Start(req *http.Request) (web.HTTPTraceFinisher, *http.Request) {
+	resource := req.URL.Path
+	startTime := time.Now().UTC()
+	span, newReq := StartHTTPSpan(ht.tracer, req, resource, startTime)
 	return &httpTraceFinisher{span: span}, newReq
 }
 
