@@ -15,10 +15,14 @@ import (
 
 // NewUpstream returns a new upstram.
 func NewUpstream(target *url.URL) *Upstream {
-	return &Upstream{
+	rp := httputil.NewSingleHostReverseProxy(target)
+	u := &Upstream{
 		URL:          target,
-		ReverseProxy: httputil.NewSingleHostReverseProxy(target),
+		ReverseProxy: rp,
 	}
+	// NOTE: This creates a reference cycle `u -> rp -> u`.
+	rp.ErrorHandler = u.errorHandler
+	return u
 }
 
 // Upstream represents a proxyable server.
@@ -73,4 +77,12 @@ func (u *Upstream) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	u.ReverseProxy.ServeHTTP(w, req)
+}
+
+// errorHandler is intended to be used as an `(net/http/httputil).ReverseProxy.ErrorHandler`
+// This implementation is based on:
+// https://github.com/golang/go/blob/go1.13.6/src/net/http/httputil/reverseproxy.go#L151-L154
+func (u *Upstream) errorHandler(rw http.ResponseWriter, req *http.Request, err error) {
+	logger.MaybeErrorfContext(req.Context(), u.Log, "http: proxy error: %v", err)
+	rw.WriteHeader(http.StatusBadGateway)
 }
