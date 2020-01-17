@@ -70,3 +70,11 @@ func OptProxyTracer(tracer webutil.HTTPTracer) ProxyOption {
 		return nil
 	}
 }
+
+// OptProxyTransformRequest sets the `TransformRequest` on a `Proxy`.
+func OptProxyTransformRequest(tr TransformRequest) ProxyOption {
+	return func(p *Proxy) error {
+		p.TransformRequest = tr
+		return nil
+	}
+}
