@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/webutil"
 )
@@ -36,24 +37,38 @@ type Proxy struct {
 
 // ServeHTTP is the http entrypoint.
 func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	var err error
+	var tf webutil.HTTPTraceFinisher
 	defer func() {
-		if r := recover(); r != nil {
-			if p.Log != nil {
-				p.Log.Fatalf("%v", r)
-			} else {
-				fmt.Fprintf(os.Stderr, "%v\n", r)
-			}
+		// NOTE: This uses the outer scope's `err` by design. This way updates
+		//       to `err` will be reflected on (deferred) exit.
+		r := recover()
+
+		// Wrap the error with the reason for the panic.
+		if rErr, ok := r.(error); ok {
+			err = ex.Nest(err, rErr)
+		} else {
+			err = ex.Nest(err, ex.New(r))
+		}
+
+		// Finish the span, if open
+		if tf != nil {
+			tf.Finish(err)
+		}
+
+		// Log or print the cause of the panic.
+		if r == nil {
+			return
+		}
+		if p.Log != nil {
+			p.Log.Fatalf("%v", r)
+		} else {
+			fmt.Fprintf(os.Stderr, "%v\n", r)
 		}
 	}()
 
-	var err error
 	if p.Tracer != nil {
-		var tf webutil.HTTPTraceFinisher
 		tf, req = p.Tracer.Start(req)
-		// NOTE: It is crucial to use `err` in a closure from current scope,
-		//       **not** as an argument. This way updates to `err` will be
-		//       reflected on exit.
-		defer func() { tf.Finish(err) }()
 	}
 
 	// set the default resolver if unset.
