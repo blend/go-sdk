@@ -9,5 +9,5 @@ type Tracer interface {
 
 // TraceFinisher is a finisher for traces.
 type TraceFinisher interface {
-	Finish(context.Context)
+	Finish(context.Context, error)
 }

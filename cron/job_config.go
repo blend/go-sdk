@@ -4,8 +4,6 @@ import "time"
 
 // JobConfig is a configuration set for a job.
 type JobConfig struct {
-	// Name sets the job name.
-	Name string `json:"name" yaml:"name"`
 	// Disabled determines if the job should be automatically scheduled or not.
 	Disabled *bool `json:"disabled" yaml:"disabled"`
 	// Description is an optional string to describe what the job does.
@@ -24,7 +22,6 @@ type JobConfig struct {
 	HistoryMaxCount *int `json:"historyMaxCount" yaml:"historyMaxCount"`
 	// HistoryMaxAge is the maximum age of history items to keep.
 	HistoryMaxAge *time.Duration `json:"historyMaxAge" yaml:"historyMaxAge"`
-
 	// ShouldSkipLoggerListeners skips triggering logger events if it is set to true.
 	ShouldSkipLoggerListeners *bool `json:"shouldSkipLoggerListeners" yaml:"shouldSkipLoggerListeners"`
 	// ShouldSkipLoggerOutput skips writing logger output if it is set to true.

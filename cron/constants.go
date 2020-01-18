@@ -31,8 +31,8 @@ const (
 const (
 	// FlagBegin is an event flag.
 	FlagBegin = "cron.begin"
-	// FlagFailed is an event flag.
-	FlagFailed = "cron.failed"
+	// FlagErrored is an event flag.
+	FlagErrored = "cron.errored"
 	// FlagCancelled is an event flag.
 	FlagCancelled = "cron.cancelled"
 	// FlagComplete is an event flag.
@@ -54,7 +54,6 @@ type JobManagerState string
 const (
 	JobManagerStateUnknown JobManagerState = "unknown"
 	JobManagerStateRunning JobManagerState = "started"
-	JobManagerStatePaused  JobManagerState = "paused"
 	JobManagerStateStopped JobManagerState = "stopped"
 )
 
@@ -68,13 +67,13 @@ const (
 	JobSchedulerStateStopped JobSchedulerState = "stopped"
 )
 
-// JobInvocationState is a job status.
-type JobInvocationState string
+// JobInvocationStatus is a job status.
+type JobInvocationStatus string
 
 // JobInvocationState values.
 const (
-	JobInvocationStateRunning   JobInvocationState = "running"
-	JobInvocationStateCancelled JobInvocationState = "cancelled"
-	JobInvocationStateFailed    JobInvocationState = "failed"
-	JobInvocationStateComplete  JobInvocationState = "complete"
+	JobInvocationStatusRunning   JobInvocationStatus = "running"
+	JobInvocationStatusCancelled JobInvocationStatus = "cancelled"
+	JobInvocationStatusErrored   JobInvocationStatus = "errored"
+	JobInvocationStatusComplete  JobInvocationStatus = "complete"
 )

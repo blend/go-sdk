@@ -19,10 +19,10 @@ var (
 func TestJobSchedulerCullHistoryMaxAge(t *testing.T) {
 	assert := assert.New(t)
 
-	js := NewJobScheduler(NewJob())
-	js.Config.HistoryMaxCount = ref.Int(10)
-	js.Config.HistoryMaxAge = ref.Duration(6 * time.Hour)
-
+	js := NewJobScheduler(NewJob(
+		OptJobHistoryMaxCount(10),
+		OptJobHistoryMaxAge(6*time.Hour),
+	))
 	js.History = []JobInvocation{
 		{ID: uuid.V4().String(), Started: time.Now().Add(-10 * time.Hour)},
 		{ID: uuid.V4().String(), Started: time.Now().Add(-9 * time.Hour)},
@@ -44,10 +44,10 @@ func TestJobSchedulerCullHistoryMaxCount(t *testing.T) {
 	assert := assert.New(t)
 
 	js := NewJobScheduler(NewJob(
-		OptJobHistoryEnabled(func() bool { return true }),
-		OptJobHistoryPersistenceEnabled(func() bool { return true }),
-		OptJobHistoryMaxCount(func() int { return 5 }),
-		OptJobHistoryMaxAge(func() time.Duration { return 6 * time.Hour }),
+		OptJobHistoryEnabled(true),
+		OptJobHistoryPersistenceEnabled(true),
+		OptJobHistoryMaxCount(5),
+		OptJobHistoryMaxAge(6*time.Hour),
 	))
 
 	js.History = []JobInvocation{
@@ -86,7 +86,7 @@ func TestJobSchedulerJobInvocation(t *testing.T) {
 		{ID: uuid.V4().String(), Started: time.Now().Add(-1 * time.Minute)},
 	}
 
-	ji := js.JobInvocation(id7)
+	ji := js.GetJobInvocationByID(id7)
 	assert.NotNil(ji.Err)
 }
 
@@ -94,7 +94,6 @@ func TestJobSchedulerEnableDisable(t *testing.T) {
 	assert := assert.New(t)
 
 	var triggerdOnEnabled, triggeredOnDisabled bool
-
 	js := NewJobScheduler(
 		NewJob(
 			OptJobOnDisabled(func(_ context.Context) { triggeredOnDisabled = true }),
@@ -119,8 +118,8 @@ func TestJobSchedulerPersistHistory(t *testing.T) {
 	var history [][]JobInvocation
 	job := NewJob(
 		OptJobName("foo"),
-		OptJobHistoryEnabled(ConstBool(true)),
-		OptJobHistoryPersistenceEnabled(ConstBool(true)),
+		OptJobHistoryEnabled(true),
+		OptJobHistoryPersistenceEnabled(true),
 		OptJobPersistHistory(func(_ context.Context, h []JobInvocation) error {
 			history = append(history, h)
 			return nil
@@ -153,7 +152,7 @@ func TestJobSchedulerPersistHistory(t *testing.T) {
 	assert.Len(history, 3)
 	assert.Len(history[2], 5)
 
-	job.HistoryEnabledProvider = ConstBool(false)
+	job.JobConfig.HistoryEnabled = ref.Bool(false)
 
 	js.Run()
 	assert.Len(history, 3)
@@ -162,9 +161,9 @@ func TestJobSchedulerPersistHistory(t *testing.T) {
 	assert.Nil(js.RestoreHistory(context.Background()))
 	assert.Len(js.History, 3)
 
-	job.HistoryEnabledProvider = ConstBool(true)
+	job.JobConfig.HistoryEnabled = ref.Bool(true)
 
-	job.PersistHistoryHandler = func(_ context.Context, h []JobInvocation) error {
+	job.JobLifecycle.PersistHistory = func(_ context.Context, h []JobInvocation) error {
 		return fmt.Errorf("only a test")
 	}
 	assert.NotNil(js.PersistHistory(context.Background()))
@@ -176,17 +175,15 @@ func TestJobSchedulerLabels(t *testing.T) {
 	job := NewJob(OptJobName("test"), OptJobAction(noop))
 	js := NewJobScheduler(job)
 	js.Last = &JobInvocation{
-		State: JobInvocationStateComplete,
+		Status: JobInvocationStatusComplete,
 	}
 	labels := js.Labels()
 	assert.Equal("test", labels["name"])
 
-	job.LabelsProvider = func() map[string]string {
-		return map[string]string{
-			"name": "not-test",
-			"foo":  "bar",
-			"fuzz": "wuzz",
-		}
+	job.JobConfig.Labels = map[string]string{
+		"name": "not-test",
+		"foo":  "bar",
+		"fuzz": "wuzz",
 	}
 
 	labels = js.Labels()
@@ -195,36 +192,7 @@ func TestJobSchedulerLabels(t *testing.T) {
 	assert.Equal("not-test", labels["name"])
 	assert.Equal("bar", labels["foo"])
 	assert.Equal("wuzz", labels["fuzz"])
-	assert.Equal(JobInvocationStateComplete, labels["last"])
-}
-
-func TestJobSchedulerStats(t *testing.T) {
-	assert := assert.New(t)
-
-	js := NewJobScheduler(NewJob(OptJobName("test"), OptJobAction(noop)))
-	js.History = []JobInvocation{
-		{State: JobInvocationStateComplete, Elapsed: 2 * time.Second},
-		{State: JobInvocationStateComplete, Elapsed: 4 * time.Second},
-		{State: JobInvocationStateComplete, Elapsed: 6 * time.Second},
-		{State: JobInvocationStateComplete, Elapsed: 8 * time.Second},
-		{State: JobInvocationStateFailed, Elapsed: 10 * time.Second},
-		{State: JobInvocationStateFailed, Elapsed: 12 * time.Second},
-		{State: JobInvocationStateCancelled, Elapsed: 14 * time.Second},
-		{State: JobInvocationStateCancelled, Timeout: time.Now().UTC(), Elapsed: 16 * time.Second},
-	}
-
-	stats := js.Stats()
-	assert.NotNil(stats)
-	assert.Equal(0.5, stats.SuccessRate)
-	assert.Equal(8, stats.RunsTotal)
-	assert.Equal(4, stats.RunsSuccessful)
-	assert.Equal(2, stats.RunsFailed)
-	assert.Equal(1, stats.RunsCancelled)
-	assert.Equal(1, stats.RunsTimedOut)
-
-	assert.Equal(16*time.Second, stats.ElapsedMax)
-	assert.Equal(16*time.Second, stats.Elapsed95th)
-	assert.Equal(9*time.Second, stats.Elapsed50th)
+	assert.Equal(JobInvocationStatusComplete, labels["last"])
 }
 
 func TestJobSchedulerJobParameters(t *testing.T) {

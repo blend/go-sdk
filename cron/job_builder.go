@@ -4,34 +4,16 @@ import (
 	"context"
 	"time"
 
+	"github.com/blend/go-sdk/ref"
 	"github.com/blend/go-sdk/stringutil"
 )
 
 // Interface assertions.
 var (
-	_ Job                               = (*JobBuilder)(nil)
-	_ LabelsProvider                    = (*JobBuilder)(nil)
-	_ ScheduleProvider                  = (*JobBuilder)(nil)
-	_ OnLoadHandler                     = (*JobBuilder)(nil)
-	_ OnUnloadHandler                   = (*JobBuilder)(nil)
-	_ TimeoutProvider                   = (*JobBuilder)(nil)
-	_ ShutdownGracePeriodProvider       = (*JobBuilder)(nil)
-	_ DisabledProvider                  = (*JobBuilder)(nil)
-	_ ShouldSkipLoggerListenersProvider = (*JobBuilder)(nil)
-	_ ShouldSkipLoggerOutputProvider    = (*JobBuilder)(nil)
-	_ OnBeginHandler                    = (*JobBuilder)(nil)
-	_ OnCancellationHandler             = (*JobBuilder)(nil)
-	_ OnCompleteHandler                 = (*JobBuilder)(nil)
-	_ OnFailureHandler                  = (*JobBuilder)(nil)
-	_ OnBrokenHandler                   = (*JobBuilder)(nil)
-	_ OnFixedHandler                    = (*JobBuilder)(nil)
-	_ OnEnabledHandler                  = (*JobBuilder)(nil)
-	_ OnDisabledHandler                 = (*JobBuilder)(nil)
-	_ HistoryEnabledProvider            = (*JobBuilder)(nil)
-	_ HistoryPersistenceEnabledProvider = (*JobBuilder)(nil)
-	_ HistoryMaxCountProvider           = (*JobBuilder)(nil)
-	_ HistoryMaxAgeProvider             = (*JobBuilder)(nil)
-	_ HistoryProvider                   = (*JobBuilder)(nil)
+	_ Job               = (*JobBuilder)(nil)
+	_ ScheduleProvider  = (*JobBuilder)(nil)
+	_ LifecycleProvider = (*JobBuilder)(nil)
+	_ ConfigProvider    = (*JobBuilder)(nil)
 )
 
 // NewJob returns a new job builder.
@@ -40,8 +22,8 @@ func NewJob(options ...JobBuilderOption) *JobBuilder {
 	for _, option := range options {
 		option(&jb)
 	}
-	if jb.Config.Name == "" {
-		jb.Config.Name = stringutil.Random(stringutil.LowerLetters, 16)
+	if jb.JobName == "" {
+		jb.JobName = stringutil.Random(stringutil.LowerLetters, 16)
 	}
 	return &jb
 }
@@ -51,340 +33,145 @@ type JobBuilderOption func(*JobBuilder)
 
 // OptJobName sets the job name.
 func OptJobName(name string) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.Config.Name = name }
+	return func(jb *JobBuilder) { jb.JobName = name }
 }
 
 // OptJobAction sets the job action.
 func OptJobAction(action func(context.Context) error) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.Action = action }
-}
-
-// OptJobOnLoad sets the job on load handler.
-func OptJobOnLoad(handler func() error) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.OnLoadHandler = handler }
-}
-
-// OptJobOnUnload sets the job on unload handler.
-func OptJobOnUnload(handler func() error) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.OnUnloadHandler = handler }
+	return func(jb *JobBuilder) { jb.JobAction = action }
 }
 
 // OptJobLabels is a job builder sets the job labels.
 func OptJobLabels(labels map[string]string) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.LabelsProvider = func() map[string]string { return labels } }
+	return func(jb *JobBuilder) { jb.JobConfig.Labels = labels }
 }
 
 // OptJobSchedule is a job builder sets the job schedule provder.
 func OptJobSchedule(schedule Schedule) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.ScheduleProvider = func() Schedule { return schedule } }
+	return func(jb *JobBuilder) { jb.JobScheduleProvider = func() Schedule { return schedule } }
 }
 
 // OptJobTimeout is a job builder sets the job timeout provder.
 func OptJobTimeout(d time.Duration) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.TimeoutProvider = func() time.Duration { return d } }
+	return func(jb *JobBuilder) { jb.JobConfig.Timeout = d }
 }
 
 // OptJobShutdownGracePeriod is a job builder sets the job shutdown grace period provder.
 func OptJobShutdownGracePeriod(d time.Duration) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.ShutdownGracePeriodProvider = func() time.Duration { return d } }
+	return func(jb *JobBuilder) { jb.JobConfig.ShutdownGracePeriod = d }
 }
 
 // OptJobDisabled is a job builder sets the job timeout provder.
-func OptJobDisabled(provider func() bool) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.DisabledProvider = provider }
-}
-
-// OptJobOnBegin is a job builder option implementation.
-func OptJobOnBegin(handler func(context.Context)) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.OnBeginHandler = handler }
-}
-
-// OptJobOnCancellation is a job builder option implementation.
-func OptJobOnCancellation(handler func(context.Context)) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.OnCancellationHandler = handler }
-}
-
-// OptJobOnComplete is a job builder option implementation.
-func OptJobOnComplete(handler func(context.Context)) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.OnCompleteHandler = handler }
-}
-
-// OptJobOnFailure is a job builder option implementation.
-func OptJobOnFailure(handler func(context.Context)) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.OnFailureHandler = handler }
-}
-
-// OptJobOnBroken is a job builder option implementation.
-func OptJobOnBroken(handler func(context.Context)) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.OnBrokenHandler = handler }
-}
-
-// OptJobOnFixed is a job builder option implementation.
-func OptJobOnFixed(handler func(context.Context)) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.OnFixedHandler = handler }
-}
-
-// OptJobOnEnabled is a job builder option implementation.
-func OptJobOnEnabled(handler func(context.Context)) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.OnEnabledHandler = handler }
-}
-
-// OptJobOnDisabled is a job builder option implementation.
-func OptJobOnDisabled(handler func(context.Context)) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.OnDisabledHandler = handler }
+func OptJobDisabled(disabled bool) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.JobConfig.Disabled = ref.Bool(disabled) }
 }
 
 // OptJobHistoryEnabled is a job builder option implementation.
-func OptJobHistoryEnabled(provider func() bool) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.HistoryEnabledProvider = provider }
+func OptJobHistoryEnabled(enabled bool) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.JobConfig.HistoryEnabled = ref.Bool(enabled) }
 }
 
 // OptJobHistoryPersistenceEnabled is a job builder option implementation.
-func OptJobHistoryPersistenceEnabled(provider func() bool) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.HistoryPersistenceEnabledProvider = provider }
+func OptJobHistoryPersistenceEnabled(enabled bool) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.JobConfig.HistoryPersistenceEnabled = ref.Bool(enabled) }
 }
 
 // OptJobHistoryMaxCount is a job builder option implementation.
-func OptJobHistoryMaxCount(provider func() int) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.HistoryMaxCountProvider = provider }
+func OptJobHistoryMaxCount(maxCount int) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.JobConfig.HistoryMaxCount = ref.Int(maxCount) }
 }
 
 // OptJobHistoryMaxAge is a job builder option implementation.
-func OptJobHistoryMaxAge(provider func() time.Duration) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.HistoryMaxAgeProvider = provider }
+func OptJobHistoryMaxAge(maxAge time.Duration) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.JobConfig.HistoryMaxAge = ref.Duration(maxAge) }
 }
 
-// OptJobRestoreHistory is a job builder option implementation.
-func OptJobRestoreHistory(handler func(context.Context) ([]JobInvocation, error)) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.RestoreHistoryHandler = handler }
+// OptJobOnBegin sets a lifecycle hook.
+func OptJobOnBegin(handler func(context.Context)) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.JobLifecycle.OnBegin = handler }
 }
 
-// OptJobPersistHistory is a job builder option implementation.
-func OptJobPersistHistory(handler func(context.Context, []JobInvocation) error) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.PersistHistoryHandler = handler }
+// OptJobOnComplete sets a lifecycle hook.
+func OptJobOnComplete(handler func(context.Context)) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.JobLifecycle.OnComplete = handler }
+}
+
+// OptJobOnError sets a lifecycle hook.
+func OptJobOnError(handler func(context.Context)) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.JobLifecycle.OnError = handler }
+}
+
+// OptJobOnCancellation sets a lifecycle hook.
+func OptJobOnCancellation(handler func(context.Context)) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.JobLifecycle.OnCancellation = handler }
+}
+
+// OptJobOnBroken sets a lifecycle hook.
+func OptJobOnBroken(handler func(context.Context)) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.JobLifecycle.OnBroken = handler }
+}
+
+// OptJobOnFixed sets a lifecycle hook.
+func OptJobOnFixed(handler func(context.Context)) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.JobLifecycle.OnFixed = handler }
+}
+
+// OptJobOnEnabled sets a lifecycle hook.
+func OptJobOnEnabled(handler func(context.Context)) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.JobLifecycle.OnEnabled = handler }
+}
+
+// OptJobOnDisabled sets a lifecycle hook.
+func OptJobOnDisabled(handler func(context.Context)) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.JobLifecycle.OnDisabled = handler }
+}
+
+// OptJobRestoreHistory sets a lifecycle hook.
+func OptJobRestoreHistory(implementation func(context.Context) ([]JobInvocation, error)) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.JobLifecycle.RestoreHistory = implementation }
+}
+
+// OptJobPersistHistory sets a lifecycle hook.
+func OptJobPersistHistory(implementation func(context.Context, []JobInvocation) error) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.JobLifecycle.PersistHistory = implementation }
 }
 
 // JobBuilder allows for job creation w/o a fully formed struct.
 type JobBuilder struct {
-	Action Action
-	Config JobConfig
-
-	LabelsProvider                    func() map[string]string
-	ScheduleProvider                  func() Schedule
-	TimeoutProvider                   func() time.Duration
-	ShutdownGracePeriodProvider       func() time.Duration
-	DisabledProvider                  func() bool
-	ShouldSkipLoggerListenersProvider func() bool
-	ShouldSkipLoggerOutputProvider    func() bool
-	HistoryEnabledProvider            func() bool
-	HistoryMaxCountProvider           func() int
-	HistoryMaxAgeProvider             func() time.Duration
-	HistoryPersistenceEnabledProvider func() bool
-
-	OnLoadHandler         func() error
-	OnUnloadHandler       func() error
-	OnBeginHandler        func(context.Context)
-	OnCancellationHandler func(context.Context)
-	OnCompleteHandler     func(context.Context)
-	OnFailureHandler      func(context.Context)
-	OnBrokenHandler       func(context.Context)
-	OnFixedHandler        func(context.Context)
-	OnEnabledHandler      func(context.Context)
-	OnDisabledHandler     func(context.Context)
-
-	RestoreHistoryHandler func(context.Context) ([]JobInvocation, error)
-	PersistHistoryHandler func(context.Context, []JobInvocation) error
+	JobName             string
+	JobConfig           JobConfig
+	JobLifecycle        JobLifecycle
+	JobAction           Action
+	JobScheduleProvider func() Schedule
 }
-
-//
-// implementations of interface methods
-//
 
 // Name returns the job name.
 func (jb *JobBuilder) Name() string {
-	return jb.Config.Name
-}
-
-// Labels returns the job labels.
-func (jb *JobBuilder) Labels() map[string]string {
-	if jb.LabelsProvider != nil {
-		return jb.LabelsProvider()
-	}
-	return jb.Config.Labels
-}
-
-// OnLoad implements OnLoadHandler
-func (jb *JobBuilder) OnLoad() error {
-	if jb.OnLoadHandler != nil {
-		return jb.OnLoadHandler()
-	}
-	return nil
-}
-
-// OnUnload implements OnUnloadHandler
-func (jb *JobBuilder) OnUnload() error {
-	if jb.OnUnloadHandler != nil {
-		return jb.OnUnloadHandler()
-	}
-	return nil
+	return jb.JobName
 }
 
 // Schedule returns the job schedule if a provider is set.
 func (jb *JobBuilder) Schedule() Schedule {
-	if jb.ScheduleProvider != nil {
-		return jb.ScheduleProvider()
+	if jb.JobScheduleProvider != nil {
+		return jb.JobScheduleProvider()
 	}
 	return nil
 }
 
-// Timeout returns the job timeout.
-func (jb *JobBuilder) Timeout() time.Duration {
-	if jb.TimeoutProvider != nil {
-		return jb.TimeoutProvider()
-	}
-	return jb.Config.TimeoutOrDefault()
+// Config returns the job config.
+func (jb *JobBuilder) Config() JobConfig {
+	return jb.JobConfig
 }
 
-// ShutdownGracePeriod returns the shutdown grace period.
-func (jb *JobBuilder) ShutdownGracePeriod() time.Duration {
-	if jb.ShutdownGracePeriodProvider != nil {
-		return jb.ShutdownGracePeriodProvider()
-	}
-	return jb.Config.ShutdownGracePeriodOrDefault()
-}
-
-// Disabled returns if the job is enabled.
-func (jb *JobBuilder) Disabled() bool {
-	if jb.DisabledProvider != nil {
-		return jb.DisabledProvider()
-	}
-	return jb.Config.DisabledOrDefault()
-}
-
-// ShouldSkipLoggerListeners implements the should skip logger listeners provider.
-func (jb *JobBuilder) ShouldSkipLoggerListeners() bool {
-	if jb.ShouldSkipLoggerListenersProvider != nil {
-		return jb.ShouldSkipLoggerListenersProvider()
-	}
-	return jb.Config.ShouldSkipLoggerListenersOrDefault()
-}
-
-// ShouldSkipLoggerOutput implements the should skip logger output provider.
-func (jb *JobBuilder) ShouldSkipLoggerOutput() bool {
-	if jb.ShouldSkipLoggerOutputProvider != nil {
-		return jb.ShouldSkipLoggerOutputProvider()
-	}
-	return jb.Config.ShouldSkipLoggerOutputOrDefault()
-}
-
-// HistoryEnabled implements the history disabled provider.
-func (jb *JobBuilder) HistoryEnabled() bool {
-	if jb.HistoryEnabledProvider != nil {
-		return jb.HistoryEnabledProvider()
-	}
-	return jb.Config.HistoryEnabledOrDefault()
-}
-
-// HistoryPersistenceEnabled implements the history enabled provider.
-func (jb *JobBuilder) HistoryPersistenceEnabled() bool {
-	if jb.HistoryPersistenceEnabledProvider != nil {
-		return jb.HistoryPersistenceEnabledProvider()
-	}
-	return jb.Config.HistoryPersistenceEnabledOrDefault()
-}
-
-// HistoryMaxCount implements the history max count provider.
-func (jb *JobBuilder) HistoryMaxCount() int {
-	if jb.HistoryMaxCountProvider != nil {
-		return jb.HistoryMaxCountProvider()
-	}
-	return jb.Config.HistoryMaxCountOrDefault()
-}
-
-// HistoryMaxAge implements the history max count provider.
-func (jb *JobBuilder) HistoryMaxAge() time.Duration {
-	if jb.HistoryMaxAgeProvider != nil {
-		return jb.HistoryMaxAgeProvider()
-	}
-	return jb.Config.HistoryMaxAgeOrDefault()
-}
-
-// OnBegin is a lifecycle hook.
-func (jb *JobBuilder) OnBegin(ctx context.Context) {
-	if jb.OnBeginHandler != nil {
-		jb.OnBeginHandler(ctx)
-	}
-}
-
-// OnCancellation is a lifecycle hook.
-func (jb *JobBuilder) OnCancellation(ctx context.Context) {
-	if jb.OnCancellationHandler != nil {
-		jb.OnCancellationHandler(ctx)
-	}
-}
-
-// OnComplete is a lifecycle hook.
-func (jb *JobBuilder) OnComplete(ctx context.Context) {
-	if jb.OnCompleteHandler != nil {
-		jb.OnCompleteHandler(ctx)
-	}
-}
-
-// OnFailure is a lifecycle hook.
-func (jb *JobBuilder) OnFailure(ctx context.Context) {
-	if jb.OnFailureHandler != nil {
-		jb.OnFailureHandler(ctx)
-	}
-}
-
-// OnFixed is a lifecycle hook.
-func (jb *JobBuilder) OnFixed(ctx context.Context) {
-	if jb.OnFixedHandler != nil {
-		jb.OnFixedHandler(ctx)
-	}
-}
-
-// OnBroken is a lifecycle hook.
-func (jb *JobBuilder) OnBroken(ctx context.Context) {
-	if jb.OnBrokenHandler != nil {
-		jb.OnBrokenHandler(ctx)
-	}
-}
-
-// OnEnabled is a lifecycle hook.
-func (jb *JobBuilder) OnEnabled(ctx context.Context) {
-	if jb.OnEnabledHandler != nil {
-		jb.OnEnabledHandler(ctx)
-	}
-}
-
-// OnDisabled is a lifecycle hook.
-func (jb *JobBuilder) OnDisabled(ctx context.Context) {
-	if jb.OnDisabledHandler != nil {
-		jb.OnDisabledHandler(ctx)
-	}
-}
-
-// RestoreHistory calls the restore history handler if it's set.
-func (jb *JobBuilder) RestoreHistory(ctx context.Context) ([]JobInvocation, error) {
-	if jb.RestoreHistoryHandler != nil {
-		return jb.RestoreHistoryHandler(ctx)
-	}
-	return nil, nil
-}
-
-// PersistHistory calls the persist history handler if it's set.
-func (jb *JobBuilder) PersistHistory(ctx context.Context, history []JobInvocation) error {
-	if jb.PersistHistoryHandler != nil {
-		return jb.PersistHistoryHandler(ctx, history)
-	}
-	return nil
+// Lifecycle returns the job lifecycle hooks.
+func (jb *JobBuilder) Lifecycle() JobLifecycle {
+	return jb.JobLifecycle
 }
 
 // Execute runs the job action if it's set.
 func (jb *JobBuilder) Execute(ctx context.Context) error {
-	if jb.Action != nil {
-		return jb.Action(ctx)
+	if jb.JobAction != nil {
+		return jb.JobAction(ctx)
 	}
 	return nil
 }

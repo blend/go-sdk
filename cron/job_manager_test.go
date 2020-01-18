@@ -109,13 +109,13 @@ func TestEnabledProvider(t *testing.T) {
 
 func TestFiresErrorOnTaskError(t *testing.T) {
 	a := assert.New(t)
-	a.StartTimeout(2000 * time.Millisecond)
-	defer a.EndTimeout()
 
 	agent := logger.All(logger.OptOutput(ioutil.Discard))
 	defer agent.Close()
 
-	manager := New(OptLog(agent))
+	manager := New(
+		OptLog(agent),
+	)
 	defer manager.Stop()
 
 	var errorDidFire bool
@@ -132,11 +132,13 @@ func TestFiresErrorOnTaskError(t *testing.T) {
 			}
 		}
 	})
-
-	manager.LoadJobs(NewJob(OptJobName("error_test"), OptJobAction(func(ctx context.Context) error {
-		defer wg.Done()
-		return fmt.Errorf("this is only a test")
-	})))
+	manager.LoadJobs(NewJob(
+		OptJobName("error_test"),
+		OptJobAction(func(ctx context.Context) error {
+			defer wg.Done()
+			return fmt.Errorf("this is only a test")
+		}),
+	))
 	manager.RunJob("error_test")
 	wg.Wait()
 
@@ -157,11 +159,11 @@ func TestManagerTracer(t *testing.T) {
 			didCallStart = true
 			startTaskCorrect = GetJobInvocation(ctx).JobName == "tracer-test"
 		},
-		OnFinish: func(ctx context.Context) {
+		OnFinish: func(ctx context.Context, err error) {
 			defer wg.Done()
 			didCallFinish = true
 			finishTaskCorrect = GetJobInvocation(ctx).JobName == "tracer-test"
-			errorUnset = GetJobInvocation(ctx).Err == nil
+			errorUnset = err == nil
 		},
 	}))
 
@@ -183,7 +185,7 @@ func TestJobManagerJobLifecycle(t *testing.T) {
 	defer jm.Stop()
 
 	var shouldFail bool
-	j := newBrokenFixedTest(func(_ context.Context) error {
+	j := newLifecycleTest(func(_ context.Context) error {
 		defer func() {
 			shouldFail = !shouldFail
 		}()
@@ -195,19 +197,19 @@ func TestJobManagerJobLifecycle(t *testing.T) {
 	jm.LoadJobs(j)
 
 	completeSignal := j.CompleteSignal
-	ji, err := jm.RunJob("broken-fixed")
+	ji, err := jm.RunJob("lifecycle-test")
 	assert.Nil(err)
 	<-ji.Done
 	<-completeSignal
 
 	brokenSignal := j.BrokenSignal
-	ji, err = jm.RunJob("broken-fixed")
+	ji, err = jm.RunJob("lifecycle-test")
 	assert.Nil(err)
 	<-ji.Done
 	<-brokenSignal
 
 	fixedSignal := j.FixedSignal
-	ji, err = jm.RunJob("broken-fixed")
+	ji, err = jm.RunJob("lifecycle-test")
 	assert.Nil(err)
 	<-ji.Done
 	<-fixedSignal
@@ -221,7 +223,7 @@ func TestJobManagerJob(t *testing.T) {
 	assert := assert.New(t)
 
 	jm := New()
-	j := newBrokenFixedTest(func(_ context.Context) error {
+	j := newLifecycleTest(func(_ context.Context) error {
 		return nil
 	})
 	jm.LoadJobs(j)
@@ -243,24 +245,24 @@ func TestJobManagerLoadJob(t *testing.T) {
 
 	assert.True(jm.HasJob("load-job-test-minimum"))
 
-	meta, err := jm.Job("load-job-test-minimum")
+	jobScheduler, err := jm.Job("load-job-test-minimum")
 	assert.Nil(err)
-	assert.NotNil(meta)
+	assert.NotNil(jobScheduler)
 
-	assert.Equal("load-job-test-minimum", meta.Name())
-	assert.NotNil(meta.Job)
+	assert.Equal("load-job-test-minimum", jobScheduler.Name())
+	assert.NotNil(jobScheduler.Job)
 
-	assert.Equal(DefaultDisabled, meta.Disabled())
-	assert.Zero(meta.Timeout())
-	assert.Equal(DefaultShouldSkipLoggerListeners, meta.ShouldSkipLoggerListeners())
-	assert.Equal(DefaultShouldSkipLoggerOutput, meta.ShouldSkipLoggerOutput())
+	assert.Equal(DefaultDisabled, jobScheduler.Disabled())
+	assert.Zero(jobScheduler.Config().TimeoutOrDefault())
+	assert.Equal(DefaultShouldSkipLoggerListeners, jobScheduler.Config().ShouldSkipLoggerListenersOrDefault())
+	assert.Equal(DefaultShouldSkipLoggerOutput, jobScheduler.Config().ShouldSkipLoggerOutputOrDefault())
 
 	jm.LoadJobs(&testJobWithTimeout{TimeoutDuration: time.Second})
 
-	meta, err = jm.Job("testJobWithTimeout")
+	jobScheduler, err = jm.Job("testJobWithTimeout")
 	assert.Nil(err)
-	assert.NotNil(meta)
-	assert.Equal(time.Second, meta.Timeout())
+	assert.NotNil(jobScheduler)
+	assert.Equal(time.Second, jobScheduler.Config().TimeoutOrDefault())
 }
 
 func TestJobManagerLoadJobs(t *testing.T) {
@@ -330,10 +332,8 @@ func TestJobManagerCancelJob(t *testing.T) {
 	cancelled := make(chan struct{})
 	jm.LoadJobs(NewJob(OptJobName("is-running-test"), OptJobAction(func(ctx context.Context) error {
 		close(proceed)
-		select {
-		case <-ctx.Done():
-			return nil
-		}
+		<-ctx.Done()
+		return nil
 	}), OptJobOnCancellation(func(_ context.Context) {
 		close(cancelled)
 	})))

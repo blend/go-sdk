@@ -32,14 +32,66 @@ type JobManager struct {
 	Tracer  Tracer
 	Log     logger.Log
 	Started time.Time
-	Paused  time.Time
 	Stopped time.Time
 	Jobs    map[string]*JobScheduler
 }
 
-// --------------------------------------------------------------------------------
-// Core Methods
-// --------------------------------------------------------------------------------
+//
+// Life Cycle
+//
+
+// Start starts the job manager and blocks.
+func (jm *JobManager) Start() error {
+	if err := jm.StartAsync(); err != nil {
+		return err
+	}
+	<-jm.Latch.NotifyStopped()
+	return nil
+}
+
+// StartAsync starts the job manager and the loaded jobs.
+// It does not block.
+func (jm *JobManager) StartAsync() error {
+	if !jm.Latch.CanStart() {
+		return async.ErrCannotStart
+	}
+	jm.Latch.Starting()
+	logger.MaybeInfo(jm.Log, "job manager starting")
+	for _, job := range jm.Jobs {
+		go job.Start()
+		<-job.NotifyStarted()
+	}
+	jm.Latch.Started()
+	jm.Started = time.Now().UTC()
+	logger.MaybeInfo(jm.Log, "job manager started")
+	return nil
+}
+
+// Stop stops the schedule runner for a JobManager.
+func (jm *JobManager) Stop() error {
+	if !jm.Latch.CanStop() {
+		return async.ErrCannotStop
+	}
+	jm.Latch.Stopping()
+	logger.MaybeInfo(jm.Log, "job manager shutting down")
+	for _, jobScheduler := range jm.Jobs {
+		if err := jobScheduler.OnUnload(); err != nil {
+			return err
+		}
+		if err := jobScheduler.Stop(); err != nil {
+			return err
+		}
+	}
+	jm.Latch.Stopped()
+	jm.Latch.Reset()
+	jm.Stopped = time.Now().UTC()
+	logger.MaybeInfo(jm.Log, "job manager shutdown complete")
+	return nil
+}
+
+//
+// job management
+//
 
 // LoadJobs loads a variadic list of jobs.
 func (jm *JobManager) LoadJobs(jobs ...Job) error {
@@ -52,18 +104,15 @@ func (jm *JobManager) LoadJobs(jobs ...Job) error {
 			return ex.New(ErrJobAlreadyLoaded, ex.OptMessagef("job: %s", job.Name()))
 		}
 
-		scheduler := NewJobScheduler(job,
-			OptJobSchedulerTracer(jm.Tracer),
+		jobScheduler := NewJobScheduler(
+			job,
 			OptJobSchedulerLog(jm.Log),
+			OptJobSchedulerTracer(jm.Tracer),
 		)
-		if err := scheduler.RestoreHistory(context.Background()); err != nil {
-			logger.MaybeError(jm.Log, err)
-			continue
+		if err := jobScheduler.OnLoad(); err != nil {
+			return err
 		}
-		if typed, ok := job.(OnLoadHandler); ok {
-			typed.OnLoad()
-		}
-		jm.Jobs[jobName] = scheduler
+		jm.Jobs[jobName] = jobScheduler
 	}
 	return nil
 }
@@ -75,8 +124,8 @@ func (jm *JobManager) UnloadJobs(jobNames ...string) error {
 
 	for _, jobName := range jobNames {
 		if jobScheduler, ok := jm.Jobs[jobName]; ok {
-			if typed, ok := jobScheduler.Job.(OnUnloadHandler); ok {
-				typed.OnUnload()
+			if err := jobScheduler.OnUnload(); err != nil {
+				return err
 			}
 			jobScheduler.Stop()
 			delete(jm.Jobs, jobName)
@@ -155,7 +204,7 @@ func (jm *JobManager) IsJobRunning(jobName string) (isRunning bool) {
 	defer jm.Unlock()
 
 	if job, ok := jm.Jobs[jobName]; ok {
-		isRunning = !job.Idle()
+		isRunning = !job.IsIdle()
 	}
 	return
 }
@@ -198,12 +247,13 @@ func (jm *JobManager) CancelJob(jobName string) (err error) {
 	return
 }
 
+//
+// status and state
+//
+
 // State returns the job manager state.
 func (jm *JobManager) State() JobManagerState {
 	if jm.Latch.IsStarted() {
-		if !jm.Paused.IsZero() {
-			return JobManagerStatePaused
-		}
 		return JobManagerStateRunning
 	} else if jm.Latch.IsStopped() {
 		return JobManagerStateStopped
@@ -235,59 +285,4 @@ func (jm *JobManager) Status() JobManagerStatus {
 	}
 	sort.Sort(JobSchedulerStatusesByJobNameAsc(status.Jobs))
 	return status
-}
-
-//
-// Life Cycle
-//
-
-// Start starts the job manager and blocks.
-func (jm *JobManager) Start() error {
-	if err := jm.StartAsync(); err != nil {
-		return err
-	}
-	<-jm.Latch.NotifyStopped()
-	return nil
-}
-
-// StartAsync starts the job manager and the loaded jobs.
-// It does not block.
-func (jm *JobManager) StartAsync() error {
-	if !jm.Latch.CanStart() {
-		return async.ErrCannotStart
-	}
-	jm.Latch.Starting()
-	logger.MaybeInfo(jm.Log, "job manager starting")
-	for _, job := range jm.Jobs {
-		go job.Start()
-		<-job.NotifyStarted()
-	}
-	jm.Latch.Started()
-	jm.Started = time.Now().UTC()
-	logger.MaybeInfo(jm.Log, "job manager started")
-	return nil
-}
-
-// Stop stops the schedule runner for a JobManager.
-func (jm *JobManager) Stop() error {
-	if !jm.Latch.CanStop() {
-		return async.ErrCannotStop
-	}
-	jm.Latch.Stopping()
-	logger.MaybeInfo(jm.Log, "job manager shutting down")
-	for _, jobScheduler := range jm.Jobs {
-		if typed, ok := jobScheduler.Job.(OnUnloadHandler); ok {
-			if err := typed.OnUnload(); err != nil {
-				return err
-			}
-		}
-		if err := jobScheduler.Stop(); err != nil {
-			return err
-		}
-	}
-	jm.Latch.Stopped()
-	jm.Latch.Reset()
-	jm.Stopped = time.Now().UTC()
-	logger.MaybeInfo(jm.Log, "job manager shutdown complete")
-	return nil
 }
