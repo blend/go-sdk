@@ -33,7 +33,7 @@ type JobInvocation struct {
 	Cancelled time.Time `json:"cancelled"`
 	Timeout   time.Time `json:"timeout"`
 	Errored   time.Time `json:"errored"`
-	Err       error     `json:"err"`
+	Err       error     `json:"-"`
 
 	Parameters JobParameters       `json:"parameters"`
 	Status     JobInvocationStatus `json:"status"`
@@ -54,7 +54,7 @@ func (ji JobInvocation) Elapsed() time.Duration {
 	} else if !ji.Timeout.IsZero() {
 		return ji.Timeout.Sub(ji.Started)
 	} else if !ji.Errored.IsZero() {
-		return ji.Timeout.Sub(ji.Started)
+		return ji.Errored.Sub(ji.Started)
 	}
 	return 0
 }
