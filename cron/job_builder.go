@@ -66,26 +66,6 @@ func OptJobDisabled(disabled bool) JobBuilderOption {
 	return func(jb *JobBuilder) { jb.JobConfig.Disabled = ref.Bool(disabled) }
 }
 
-// OptJobHistoryEnabled is a job builder option implementation.
-func OptJobHistoryEnabled(enabled bool) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.JobConfig.HistoryEnabled = ref.Bool(enabled) }
-}
-
-// OptJobHistoryPersistenceEnabled is a job builder option implementation.
-func OptJobHistoryPersistenceEnabled(enabled bool) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.JobConfig.HistoryPersistenceEnabled = ref.Bool(enabled) }
-}
-
-// OptJobHistoryMaxCount is a job builder option implementation.
-func OptJobHistoryMaxCount(maxCount int) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.JobConfig.HistoryMaxCount = ref.Int(maxCount) }
-}
-
-// OptJobHistoryMaxAge is a job builder option implementation.
-func OptJobHistoryMaxAge(maxAge time.Duration) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.JobConfig.HistoryMaxAge = ref.Duration(maxAge) }
-}
-
 // OptJobOnBegin sets a lifecycle hook.
 func OptJobOnBegin(handler func(context.Context)) JobBuilderOption {
 	return func(jb *JobBuilder) { jb.JobLifecycle.OnBegin = handler }
@@ -106,6 +86,11 @@ func OptJobOnCancellation(handler func(context.Context)) JobBuilderOption {
 	return func(jb *JobBuilder) { jb.JobLifecycle.OnCancellation = handler }
 }
 
+// OptJobOnSuccess sets a lifecycle hook.
+func OptJobOnSuccess(handler func(context.Context)) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.JobLifecycle.OnSuccess = handler }
+}
+
 // OptJobOnBroken sets a lifecycle hook.
 func OptJobOnBroken(handler func(context.Context)) JobBuilderOption {
 	return func(jb *JobBuilder) { jb.JobLifecycle.OnBroken = handler }
@@ -124,16 +109,6 @@ func OptJobOnEnabled(handler func(context.Context)) JobBuilderOption {
 // OptJobOnDisabled sets a lifecycle hook.
 func OptJobOnDisabled(handler func(context.Context)) JobBuilderOption {
 	return func(jb *JobBuilder) { jb.JobLifecycle.OnDisabled = handler }
-}
-
-// OptJobRestoreHistory sets a lifecycle hook.
-func OptJobRestoreHistory(implementation func(context.Context) ([]JobInvocation, error)) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.JobLifecycle.RestoreHistory = implementation }
-}
-
-// OptJobPersistHistory sets a lifecycle hook.
-func OptJobPersistHistory(implementation func(context.Context, []JobInvocation) error) JobBuilderOption {
-	return func(jb *JobBuilder) { jb.JobLifecycle.PersistHistory = implementation }
 }
 
 // JobBuilder allows for job creation w/o a fully formed struct.

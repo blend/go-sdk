@@ -8,15 +8,29 @@ type JobLifecycle struct {
 	OnLoad   func() error
 	OnUnload func() error
 
-	OnBegin        func(context.Context)
-	OnCancellation func(context.Context)
-	OnError        func(context.Context)
-	OnComplete     func(context.Context)
-	OnBroken       func(context.Context)
-	OnFixed        func(context.Context)
-	OnEnabled      func(context.Context)
-	OnDisabled     func(context.Context)
+	// OnBegin fires whenever a job is started.
+	OnBegin func(context.Context)
+	// OnComplete fires whenever a job finishes, regardless of status.
+	OnComplete func(context.Context)
 
-	RestoreHistory func(context.Context) ([]JobInvocation, error)
-	PersistHistory func(context.Context, []JobInvocation) error
+	// OnCancellation is called if the job is cancelled explicitly
+	// or it sets a timeout in the .Config() and exceeds that timeout.
+	OnCancellation func(context.Context)
+	// OnError is called if the job returns an error or panics during
+	// execution, but will not be called if the job is canceled.
+	OnError func(context.Context)
+	// OnSuccess is called if the job completes without an error.
+	OnSuccess func(context.Context)
+
+	// OnBroken is called if the job errors after having completed successfully
+	// the previous invocation.
+	OnBroken func(context.Context)
+	// OnFixed is called if the job completes successfully after having
+	// returned an error on the previous invocation.
+	OnFixed func(context.Context)
+
+	// OnEnabled is called if the job is explicitly enabled.
+	OnEnabled func(context.Context)
+	// OnDisabled is called if the job is explicitly disabled.
+	OnDisabled func(context.Context)
 }

@@ -12,7 +12,7 @@ func NewJobInvocation(jobName string) *JobInvocation {
 	return &JobInvocation{
 		ID:      NewJobInvocationID(),
 		Started: Now(),
-		Status:  JobInvocationStatusRunning,
+		Status:  JobInvocationStatusIdle,
 		JobName: jobName,
 		Done:    make(chan struct{}),
 	}

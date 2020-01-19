@@ -37,7 +37,6 @@ type JobScheduler struct {
 	NextRuntime time.Time
 	Current     *JobInvocation
 	Last        *JobInvocation
-	History     []JobInvocation
 
 	disabled *bool
 }
@@ -116,18 +115,14 @@ func (js *JobScheduler) State() JobSchedulerState {
 // Status returns the job scheduler status.
 func (js *JobScheduler) Status() JobSchedulerStatus {
 	status := JobSchedulerStatus{
-		Name:                      js.Name(),
-		State:                     js.State(),
-		Labels:                    js.Labels(),
-		Disabled:                  js.Disabled(),
-		Timeout:                   js.Config().TimeoutOrDefault(),
-		NextRuntime:               js.NextRuntime,
-		Current:                   js.Current,
-		Last:                      js.Last,
-		HistoryEnabled:            js.Config().HistoryEnabledOrDefault(),
-		HistoryPersistenceEnabled: js.Config().HistoryPersistenceEnabledOrDefault(),
-		HistoryMaxCount:           js.Config().HistoryMaxCountOrDefault(),
-		HistoryMaxAge:             js.Config().HistoryMaxAgeOrDefault(),
+		Name:        js.Name(),
+		State:       js.State(),
+		Labels:      js.Labels(),
+		Disabled:    js.Disabled(),
+		Timeout:     js.Config().TimeoutOrDefault(),
+		NextRuntime: js.NextRuntime,
+		Current:     js.Current,
+		Last:        js.Last,
 	}
 	if js.Schedule() != nil {
 		if typed, ok := js.Schedule().(fmt.Stringer); ok {
@@ -166,7 +161,6 @@ func (js *JobScheduler) Stop() error {
 			js.cancelJobInvocation(context.Background(), js.Current)
 		}
 	}
-	js.PersistHistory(context.Background())
 	<-stopped
 	js.Latch.Reset()
 	return nil
@@ -342,16 +336,17 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, er
 				tracer.Finish(ji.Context, err)
 			}
 
+			js.onJobComplete(ji.Context, ji)
+
 			if err != nil && IsJobCancelled(err) {
 				js.onJobCancelled(ji.Context, ji)
 			} else if err != nil {
 				ji.Err = err
 				js.onJobError(ji.Context, ji)
 			} else {
-				js.onJobComplete(ji.Context, ji)
+				js.onJobSuccess(ji.Context, ji)
 			}
 			js.setLast(ji)
-			js.PersistHistory(ji.Context)
 		}()
 
 		if js.Tracer != nil {
@@ -393,25 +388,6 @@ func (js *JobScheduler) RunContext(ctx context.Context) {
 // exported utility methods
 //
 
-// GetJobInvocationByID returns an invocation by id.
-func (js *JobScheduler) GetJobInvocationByID(id string) *JobInvocation {
-	js.Lock()
-	defer js.Unlock()
-
-	if js.Current != nil && js.Current.ID == id {
-		return js.Current
-	}
-	if js.Last != nil && js.Last.ID == id {
-		return js.Last
-	}
-	for _, ji := range js.History {
-		if ji.ID == id {
-			return &ji
-		}
-	}
-	return nil
-}
-
 // CanBeScheduled returns if a job will be triggered automatically
 // and isn't already in flight and set to be serial.
 func (js *JobScheduler) CanBeScheduled() bool {
@@ -426,52 +402,6 @@ func (js *JobScheduler) IsIdle() (isIdle bool) {
 	return
 }
 
-// History functions
-
-// RestoreHistory calls the persist handler if it's set.
-func (js *JobScheduler) RestoreHistory(ctx context.Context) error {
-	if !js.Config().HistoryPersistenceEnabledOrDefault() {
-		return nil
-	}
-	if js.Lifecycle().RestoreHistory == nil {
-		return nil
-	}
-
-	js.Lock()
-	defer js.Unlock()
-	var err error
-	if js.History, err = js.Lifecycle().RestoreHistory(ctx); err != nil {
-		return js.error(ctx, err)
-	}
-	if len(js.History) > 0 {
-		js.Last = &js.History[len(js.History)-1]
-	}
-	return nil
-}
-
-// PersistHistory calls the persist handler if it's set.
-func (js *JobScheduler) PersistHistory(ctx context.Context) error {
-	if !js.Config().HistoryEnabledOrDefault() {
-		return nil
-	}
-	if !js.Config().HistoryPersistenceEnabledOrDefault() {
-		return nil
-	}
-	if js.Lifecycle().PersistHistory == nil {
-		return nil
-	}
-
-	js.Lock()
-	defer js.Unlock()
-
-	historyCopy := make([]JobInvocation, len(js.History))
-	copy(historyCopy, js.History)
-	if err := js.Lifecycle().PersistHistory(ctx, historyCopy); err != nil {
-		return js.error(ctx, err)
-	}
-	return nil
-}
-
 //
 // utility functions
 //
@@ -479,10 +409,6 @@ func (js *JobScheduler) PersistHistory(ctx context.Context) error {
 func (js *JobScheduler) setLast(ji *JobInvocation) {
 	js.Lock()
 	defer js.Unlock()
-
-	if js.Config().HistoryEnabledOrDefault() {
-		js.History = append(js.cullHistory(), *ji)
-	}
 	js.Current = nil
 	js.Last = ji
 	close(ji.Done)
@@ -492,29 +418,6 @@ func (js *JobScheduler) setCurrent(ji *JobInvocation) {
 	js.Lock()
 	js.Current = ji
 	js.Unlock()
-}
-
-func (js *JobScheduler) cullHistory() []JobInvocation {
-	count := len(js.History)
-	maxCount := js.Config().HistoryMaxCountOrDefault()
-	maxAge := js.Config().HistoryMaxAgeOrDefault()
-
-	now := time.Now().UTC()
-	var filtered []JobInvocation
-	for index, h := range js.History {
-		if maxCount > 0 {
-			if index < (count - maxCount) {
-				continue
-			}
-		}
-		if maxAge > 0 {
-			if now.Sub(h.Started) > maxAge {
-				continue
-			}
-		}
-		filtered = append(filtered, h)
-	}
-	return filtered
 }
 
 func (js *JobScheduler) cancelJobInvocation(ctx context.Context, ji *JobInvocation) {
@@ -555,11 +458,6 @@ func (js *JobScheduler) createContextWithTimeout(ctx context.Context, timeout ti
 // job lifecycle hooks
 
 func (js *JobScheduler) onJobBegin(ctx context.Context, ji *JobInvocation) {
-	js.Lock()
-	defer js.Unlock()
-
-	ji.Status = JobInvocationStatusRunning
-
 	if js.Log != nil && !js.Config().ShouldSkipLoggerListenersOrDefault() {
 		js.logTrigger(ctx, NewEvent(FlagBegin, ji.JobName, OptEventJobInvocation(ji.ID)))
 	}
@@ -568,12 +466,15 @@ func (js *JobScheduler) onJobBegin(ctx context.Context, ji *JobInvocation) {
 	}
 }
 
+func (js *JobScheduler) onJobComplete(ctx context.Context, ji *JobInvocation) {
+	if lifecycle := js.Lifecycle(); lifecycle.OnComplete != nil {
+		lifecycle.OnComplete(ctx)
+	}
+	js.logTrigger(ctx, NewEvent(FlagComplete, ji.JobName, OptEventElapsed(ji.Elapsed())))
+}
+
 func (js *JobScheduler) onJobCancelled(ctx context.Context, ji *JobInvocation) {
-	js.Lock()
-	defer js.Unlock()
-
 	ji.Status = JobInvocationStatusCancelled
-
 	if js.Log != nil && !js.Config().ShouldSkipLoggerListenersOrDefault() {
 		js.logTrigger(ctx, NewEvent(FlagCancelled, ji.JobName, OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed())))
 	}
@@ -582,19 +483,14 @@ func (js *JobScheduler) onJobCancelled(ctx context.Context, ji *JobInvocation) {
 	}
 }
 
-func (js *JobScheduler) onJobComplete(ctx context.Context, ji *JobInvocation) {
-	js.Lock()
-	defer js.Unlock()
-
-	ji.Status = JobInvocationStatusComplete
-
+func (js *JobScheduler) onJobSuccess(ctx context.Context, ji *JobInvocation) {
+	ji.Status = JobInvocationStatusSuccess
 	if js.Log != nil && !js.Config().ShouldSkipLoggerListenersOrDefault() {
-		js.logTrigger(ctx, NewEvent(FlagComplete, ji.JobName, OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed())))
+		js.logTrigger(ctx, NewEvent(FlagSuccess, ji.JobName, OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed())))
 	}
 	if lifecycle := js.Lifecycle(); lifecycle.OnComplete != nil {
-		lifecycle.OnComplete(ctx)
+		lifecycle.OnSuccess(ctx)
 	}
-
 	if js.Last != nil && js.Last.Err != nil {
 		if lifecycle := js.Lifecycle(); lifecycle.OnFixed != nil {
 			lifecycle.OnFixed(ctx)

@@ -31,12 +31,14 @@ const (
 const (
 	// FlagBegin is an event flag.
 	FlagBegin = "cron.begin"
+	// FlagComplete is an event flag.
+	FlagComplete = "cron.complete"
+	// FlagSuccess is an event flag.
+	FlagSuccess = "cron.success"
 	// FlagErrored is an event flag.
 	FlagErrored = "cron.errored"
 	// FlagCancelled is an event flag.
 	FlagCancelled = "cron.cancelled"
-	// FlagComplete is an event flag.
-	FlagComplete = "cron.complete"
 	// FlagBroken is an event flag.
 	FlagBroken = "cron.broken"
 	// FlagFixed is an event flag.
@@ -72,8 +74,9 @@ type JobInvocationStatus string
 
 // JobInvocationState values.
 const (
+	JobInvocationStatusIdle      JobInvocationStatus = "idle"
 	JobInvocationStatusRunning   JobInvocationStatus = "running"
 	JobInvocationStatusCancelled JobInvocationStatus = "cancelled"
 	JobInvocationStatusErrored   JobInvocationStatus = "errored"
-	JobInvocationStatusComplete  JobInvocationStatus = "complete"
+	JobInvocationStatusSuccess   JobInvocationStatus = "success"
 )
