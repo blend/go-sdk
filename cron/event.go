@@ -6,7 +6,6 @@ import (
 	"io"
 	"time"
 
-	"github.com/blend/go-sdk/ansi"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/timeutil"
 )
@@ -77,12 +76,6 @@ func (e Event) Complete() bool {
 
 // WriteText implements logger.TextWritable.
 func (e Event) WriteText(tf logger.TextFormatter, wr io.Writer) {
-	if e.JobInvocation != "" {
-		io.WriteString(wr, fmt.Sprintf("[%s > %s]", tf.Colorize(e.JobName, ansi.ColorBlue), tf.Colorize(e.JobInvocation, ansi.ColorBlue)))
-	} else {
-		io.WriteString(wr, fmt.Sprintf("[%s]", tf.Colorize(e.JobName, ansi.ColorBlue)))
-	}
-
 	if e.Elapsed > 0 {
 		io.WriteString(wr, logger.Space)
 		io.WriteString(wr, fmt.Sprintf("(%v)", e.Elapsed))

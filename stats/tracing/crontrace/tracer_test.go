@@ -43,7 +43,7 @@ func TestFinish(t *testing.T) {
 	ctx := cron.WithJobInvocation(context.Background(), ji)
 	ctx, tf := cronTracer.Start(ctx)
 
-	tf.Finish(ctx)
+	tf.Finish(ctx, nil)
 	span := opentracing.SpanFromContext(ctx)
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.True(testStartTime.Before(mockSpan.FinishTime))
@@ -64,7 +64,7 @@ func TestFinishError(t *testing.T) {
 	// Start Span from Background Context
 	ctx, tf := cronTracer.Start(ctx)
 
-	tf.Finish(ctx)
+	tf.Finish(ctx, ji.Err)
 	span := opentracing.SpanFromContext(ctx)
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.True(testStartTime.Before(mockSpan.FinishTime))
@@ -76,6 +76,6 @@ func TestFinishNilSpan(t *testing.T) {
 	assert := assert.New(t)
 
 	ctx := context.Background()
-	traceFinisher{}.Finish(ctx)
+	traceFinisher{}.Finish(ctx, nil)
 	assert.Nil(opentracing.SpanFromContext(ctx))
 }

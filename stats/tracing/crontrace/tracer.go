@@ -33,10 +33,10 @@ type traceFinisher struct {
 	span opentracing.Span
 }
 
-func (tf traceFinisher) Finish(ctx context.Context) {
+func (tf traceFinisher) Finish(ctx context.Context, err error) {
 	if tf.span == nil {
 		return
 	}
-	tracing.SpanError(tf.span, cron.GetJobInvocation(ctx).Err)
+	tracing.SpanError(tf.span, err)
 	tf.span.Finish()
 }

@@ -14,7 +14,7 @@ import (
 
 const (
 	// N is the number of jobs to load.
-	N = 2048
+	N = 32
 
 	// Q is the total simulation time.
 	Q = 10 * time.Second
@@ -38,10 +38,10 @@ var expectedTimeoutCount int32
 var timeoutCount int32
 
 var (
-	_ cron.Job                    = (*loadTestJob)(nil)
-	_ cron.ScheduleProvider       = (*loadTestJob)(nil)
-	_ cron.TimeoutProvider        = (*loadTestJob)(nil)
-	_ cron.OnCancellationHandler = (*loadTestJob)(nil)
+	_ cron.Job               = (*loadTestJob)(nil)
+	_ cron.ScheduleProvider  = (*loadTestJob)(nil)
+	_ cron.ConfigProvider    = (*loadTestJob)(nil)
+	_ cron.LifecycleProvider = (*loadTestJob)(nil)
 )
 
 type loadTestJob struct {
@@ -50,12 +50,22 @@ type loadTestJob struct {
 	started time.Time
 }
 
-func (j *loadTestJob) Timeout() time.Duration {
-	return JobTimeout
-}
-
 func (j *loadTestJob) Name() string {
 	return fmt.Sprintf("loadTestJob_%d", j.id)
+}
+
+// Config returns a job config.
+func (j *loadTestJob) Config() cron.JobConfig {
+	return cron.JobConfig{
+		Timeout: JobTimeout,
+	}
+}
+
+// Lifecycle implements cron.LifecycleProvider.
+func (j *loadTestJob) Lifecycle() cron.JobLifecycle {
+	return cron.JobLifecycle{
+		OnCancellation: j.OnCancellation,
+	}
 }
 
 func (j *loadTestJob) Execute(ctx context.Context) error {
@@ -71,9 +81,9 @@ func (j *loadTestJob) Execute(ctx context.Context) error {
 		runFor = JobLongRunTime
 	}
 
-	alarm := time.After(runFor)
+	runForElapsed := time.After(runFor)
 	select {
-	case <-alarm:
+	case <-runForElapsed:
 		j.running = false
 		atomic.AddInt32(&completeCount, 1)
 		return nil
@@ -100,7 +110,9 @@ func (j *loadTestJob) Schedule() cron.Schedule {
 }
 
 func main() {
-	jm := cron.New()
+	jm := cron.New(
+		cron.OptLog(logger.Prod()),
+	)
 	defer func() {
 		jm.Stop()
 	}()
@@ -114,13 +126,22 @@ func main() {
 	for x := 0; x < N; x++ {
 		jm.LoadJobs(&loadTestJob{id: x})
 	}
-	fmt.Printf("Loaded %d Job Instances.\n\n", N)
+	fmt.Printf("Loaded %d Job Instances.\n", N)
+	fmt.Printf("Jobs run every %v\n", JobRunEvery)
+	fmt.Printf("Jobs run for %v/%v\n", JobShortRunTime, JobLongRunTime)
+	fmt.Printf("Jobs timeout %v\n", JobTimeout)
+	fmt.Println()
 
 	if err := jm.StartAsync(); err != nil {
 		logger.FatalExit(err)
 	}
 
 	time.Sleep(Q)
+
+	if err := jm.Stop(); err != nil {
+		fmt.Fprintf(os.Stderr, "error stopping job manager: %+v\n", err)
+		os.Exit(1)
+	}
 
 	// given 30 seconds total
 	// and running every 5 seconds
@@ -129,7 +150,7 @@ func main() {
 	expectedStarted := N * ((int64(Q) / int64(JobRunEvery)) - 1)
 	expectedCompleted := expectedStarted >> 1
 
-	fmt.Printf("\nExpected Jobs Started:   %d\n", expectedStarted)
+	fmt.Printf("Expected Jobs Started:   %d\n", expectedStarted)
 	fmt.Printf("Actual Jobs Started:     %d\n\n", startedCount)
 
 	fmt.Printf("Expected Jobs Completed: %d\n", expectedCompleted)
