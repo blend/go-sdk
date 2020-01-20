@@ -215,8 +215,9 @@ func TestJobManagerJobLifecycle(t *testing.T) {
 	<-fixedSignal
 
 	assert.Equal(3, j.Starts)
+	assert.Equal(3, j.Completes)
 	assert.Equal(1, j.Failures)
-	assert.Equal(2, j.Completes)
+	assert.Equal(2, j.Successes)
 }
 
 func TestJobManagerJob(t *testing.T) {

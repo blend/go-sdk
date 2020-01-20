@@ -169,6 +169,7 @@ var (
 func newLifecycleTest(action func(context.Context) error) *lifecycleTest {
 	return &lifecycleTest{
 		CompleteSignal: make(chan struct{}),
+		SuccessSignal:  make(chan struct{}),
 		BrokenSignal:   make(chan struct{}),
 		FixedSignal:    make(chan struct{}),
 		Action:         action,
@@ -179,8 +180,10 @@ type lifecycleTest struct {
 	sync.Mutex
 	Starts         int
 	Completes      int
+	Successes      int
 	Failures       int
 	CompleteSignal chan struct{}
+	SuccessSignal  chan struct{}
 	BrokenSignal   chan struct{}
 	FixedSignal    chan struct{}
 	Action         func(context.Context) error
@@ -195,8 +198,9 @@ func (job *lifecycleTest) Execute(ctx context.Context) error {
 func (job *lifecycleTest) Lifecycle() JobLifecycle {
 	return JobLifecycle{
 		OnBegin:    job.OnBegin,
-		OnError:    job.OnError,
 		OnComplete: job.OnComplete,
+		OnSuccess:  job.OnSuccess,
+		OnError:    job.OnError,
 		OnBroken:   job.OnBroken,
 		OnFixed:    job.OnFixed,
 	}
@@ -215,6 +219,14 @@ func (job *lifecycleTest) OnComplete(ctx context.Context) {
 	job.CompleteSignal = make(chan struct{})
 	job.Completes++
 }
+func (job *lifecycleTest) OnSuccess(ctx context.Context) {
+	job.Lock()
+	defer job.Unlock()
+	close(job.SuccessSignal)
+	job.SuccessSignal = make(chan struct{})
+	job.Successes++
+}
+
 func (job *lifecycleTest) OnBroken(ctx context.Context) {
 	job.Lock()
 	defer job.Unlock()

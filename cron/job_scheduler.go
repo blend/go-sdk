@@ -488,7 +488,7 @@ func (js *JobScheduler) onJobSuccess(ctx context.Context, ji *JobInvocation) {
 	if js.Log != nil && !js.Config().ShouldSkipLoggerListenersOrDefault() {
 		js.logTrigger(ctx, NewEvent(FlagSuccess, ji.JobName, OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed())))
 	}
-	if lifecycle := js.Lifecycle(); lifecycle.OnComplete != nil {
+	if lifecycle := js.Lifecycle(); lifecycle.OnSuccess != nil {
 		lifecycle.OnSuccess(ctx)
 	}
 	if js.Last != nil && js.Last.Err != nil {
