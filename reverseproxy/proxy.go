@@ -107,7 +107,7 @@ func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 	if p.TransformRequest != nil {
-		err := p.TransformRequest(req)
+		err = p.TransformRequest(req)
 		if err != nil {
 			logger.MaybeError(p.Log, err)
 		}
