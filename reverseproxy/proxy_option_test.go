@@ -15,9 +15,8 @@ func TestOptProxyTransformRequest(t *testing.T) {
 	it := assert.New(t)
 
 	var requests []*http.Request
-	tr := func(req *http.Request) error {
+	tr := func(req *http.Request) {
 		requests = append(requests, req)
-		return nil
 	}
 
 	target, err := url.Parse("http://web.invalid:9876")
