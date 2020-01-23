@@ -75,10 +75,11 @@ func (jm *JobManager) Stop() error {
 	jm.Latch.Stopping()
 	logger.MaybeInfo(jm.Log, "job manager shutting down")
 	for _, jobScheduler := range jm.Jobs {
-		logger.MaybeInfof(jm.Log, "stopping scheduler `%s`", jobScheduler.Name())
+		logger.MaybeInfof(jm.Log, "unloading scheduler `%s`", jobScheduler.Name())
 		if err := jobScheduler.OnUnload(context.Background()); err != nil {
 			return err
 		}
+		logger.MaybeInfof(jm.Log, "stopping scheduler `%s`", jobScheduler.Name())
 		if err := jobScheduler.Stop(); err != nil {
 			return err
 		}
