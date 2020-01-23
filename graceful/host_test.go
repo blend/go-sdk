@@ -55,7 +55,7 @@ func TestGracefulShutdown(t *testing.T) {
 	var err error
 	done := make(chan struct{})
 	go func() {
-		err = ShutdownBySignal([]Graceful{hosted}, OptSignal(terminateSignal))
+		err = Host([]Graceful{hosted}, OptShutdownSignal(terminateSignal))
 		close(done)
 	}()
 	<-hosted.NotifyStarted()
@@ -81,7 +81,7 @@ func TestGracefulShutdownMany(t *testing.T) {
 	done := make(chan struct{})
 
 	go func() {
-		err = ShutdownBySignal(workers, OptSignal(terminateSignal))
+		err = Host(workers, OptShutdownSignal(terminateSignal))
 		close(done)
 	}()
 
