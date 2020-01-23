@@ -155,14 +155,18 @@ func (js *JobScheduler) Stop() error {
 	if js.Current != nil {
 		gracePeriod := js.Config().ShutdownGracePeriodOrDefault()
 		if gracePeriod > 0 {
+			js.debugf(js.withLogContext(context.Background(), nil), "Stopping: current is active, cancelling with grace period %v", gracePeriod)
 			ctx, cancel := js.withTimeout(context.Background(), gracePeriod)
 			defer cancel()
 			js.waitCancelled(ctx, js.Current)
 		}
+		js.debugf(js.withLogContext(context.Background(), nil), "Stopping: Current is active, cancelling")
 		js.Current.Cancel()
 	}
 	<-stopped
 	js.Latch.Reset()
+
+	js.debugf(js.withLogContext(context.Background(), nil), "Stopping Complete")
 	return nil
 }
 
@@ -583,6 +587,13 @@ func (js *JobScheduler) logTrigger(ctx context.Context, e logger.Event) {
 		return
 	}
 	js.Log.Trigger(ctx, e)
+}
+
+func (js *JobScheduler) debugf(ctx context.Context, format string, args ...interface{}) {
+	if js.Log == nil {
+		return
+	}
+	js.Log.WithContext(ctx).Debugf(format, args...)
 }
 
 func (js *JobScheduler) error(ctx context.Context, err error) error {
