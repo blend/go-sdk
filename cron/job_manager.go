@@ -76,7 +76,7 @@ func (jm *JobManager) Stop() error {
 	logger.MaybeInfo(jm.Log, "job manager shutting down")
 	for _, jobScheduler := range jm.Jobs {
 		logger.MaybeInfof(jm.Log, "stopping scheduler `%s`", jobScheduler.Name())
-		if err := jobScheduler.OnUnload(); err != nil {
+		if err := jobScheduler.OnUnload(context.Background()); err != nil {
 			return err
 		}
 		if err := jobScheduler.Stop(); err != nil {
@@ -111,7 +111,7 @@ func (jm *JobManager) LoadJobs(jobs ...Job) error {
 			OptJobSchedulerLog(jm.Log),
 			OptJobSchedulerTracer(jm.Tracer),
 		)
-		if err := jobScheduler.OnLoad(); err != nil {
+		if err := jobScheduler.OnLoad(context.Background()); err != nil {
 			return err
 		}
 		jm.Jobs[jobName] = jobScheduler
@@ -126,7 +126,7 @@ func (jm *JobManager) UnloadJobs(jobNames ...string) error {
 
 	for _, jobName := range jobNames {
 		if jobScheduler, ok := jm.Jobs[jobName]; ok {
-			if err := jobScheduler.OnUnload(); err != nil {
+			if err := jobScheduler.OnUnload(context.Background()); err != nil {
 				return err
 			}
 			jobScheduler.Stop()

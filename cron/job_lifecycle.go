@@ -5,8 +5,11 @@ import "context"
 // JobLifecycle is a suite of lifeycle hooks
 // you can set for a given job.
 type JobLifecycle struct {
-	OnLoad   func() error
-	OnUnload func() error
+	// OnLoad is called when the job is loaded into the job manager.
+	OnLoad func(context.Context) error
+	// OnUnload is called when the job is unloaded from the manager
+	// or the job manager is stopped.
+	OnUnload func(context.Context) error
 
 	// OnBegin fires whenever a job is started.
 	OnBegin func(context.Context)

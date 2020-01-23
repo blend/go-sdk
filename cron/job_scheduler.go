@@ -155,7 +155,7 @@ func (js *JobScheduler) Stop() error {
 	if js.Current != nil {
 		gracePeriod := js.Config().ShutdownGracePeriodOrDefault()
 		if gracePeriod > 0 {
-			ctx, cancel := js.createContextWithTimeout(context.Background(), gracePeriod)
+			ctx, cancel := js.withTimeout(context.Background(), gracePeriod)
 			defer cancel()
 			js.waitCancelled(ctx, js.Current)
 		}
@@ -167,14 +167,15 @@ func (js *JobScheduler) Stop() error {
 }
 
 // OnLoad triggers the on load even on the job lifecycle handler.
-func (js *JobScheduler) OnLoad() error {
+func (js *JobScheduler) OnLoad(ctx context.Context) error {
+	ctx = js.withLogContext(ctx, nil)
 	if js.JobLifecycle.OnLoad != nil {
-		if err := js.JobLifecycle.OnLoad(); err != nil {
+		if err := js.JobLifecycle.OnLoad(ctx); err != nil {
 			return err
 		}
 	}
 	if js.Lifecycle().OnLoad != nil {
-		if err := js.Lifecycle().OnLoad(); err != nil {
+		if err := js.Lifecycle().OnLoad(ctx); err != nil {
 			return err
 		}
 	}
@@ -182,9 +183,10 @@ func (js *JobScheduler) OnLoad() error {
 }
 
 // OnUnload triggers the on unload even on the job lifecycle handler.
-func (js *JobScheduler) OnUnload() error {
+func (js *JobScheduler) OnUnload(ctx context.Context) error {
+	ctx = js.withLogContext(ctx, nil)
 	if js.Lifecycle().OnUnload != nil {
-		return js.Lifecycle().OnUnload()
+		return js.Lifecycle().OnUnload(ctx)
 	}
 	return nil
 }
@@ -201,23 +203,25 @@ func (js *JobScheduler) NotifyStopped() <-chan struct{} {
 
 // Enable sets the job as enabled.
 func (js *JobScheduler) Enable() {
+	ctx := js.withLogContext(context.Background(), nil)
 	js.JobConfig.Disabled = ref.Bool(false)
 	if lifecycle := js.Lifecycle(); lifecycle.OnEnabled != nil {
-		lifecycle.OnEnabled(js.logEventContext(context.Background(), nil))
+		lifecycle.OnEnabled(ctx)
 	}
 	if js.Log != nil && !js.Config().ShouldSkipLoggerListenersOrDefault() {
-		js.Log.Trigger(js.logEventContext(context.Background(), nil), NewEvent(FlagEnabled, js.Name()))
+		js.Log.Trigger(ctx, NewEvent(FlagEnabled, js.Name()))
 	}
 }
 
 // Disable sets the job as disabled.
 func (js *JobScheduler) Disable() {
+	ctx := js.withLogContext(context.Background(), nil)
 	js.JobConfig.Disabled = ref.Bool(true)
 	if lifecycle := js.Lifecycle(); lifecycle.OnDisabled != nil {
-		lifecycle.OnDisabled(js.logEventContext(context.Background(), nil))
+		lifecycle.OnDisabled(ctx)
 	}
 	if js.Log != nil && !js.Config().ShouldSkipLoggerListenersOrDefault() {
-		js.Log.Trigger(js.logEventContext(context.Background(), nil), NewEvent(FlagDisabled, js.Name()))
+		js.Log.Trigger(ctx, NewEvent(FlagDisabled, js.Name()))
 	}
 }
 
@@ -228,7 +232,7 @@ func (js *JobScheduler) Cancel() error {
 	}
 	gracePeriod := js.Config().ShutdownGracePeriodOrDefault()
 	if gracePeriod > 0 {
-		ctx, cancel := js.createContextWithTimeout(context.Background(), gracePeriod)
+		ctx, cancel := js.withTimeout(context.Background(), gracePeriod)
 		defer cancel()
 		js.waitCancelled(ctx, js.Current)
 	}
@@ -269,7 +273,7 @@ func (js *JobScheduler) RunLoop() {
 			if js.CanBeScheduled() {
 				// start the job invocation
 				if _, err := js.RunAsync(); err != nil {
-					js.error(js.logEventContext(context.Background(), nil), err)
+					js.error(js.withLogContext(context.Background(), nil), err)
 				}
 			}
 
@@ -307,8 +311,8 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, er
 	// create a job invocation, or a record of each
 	// individual execution of a job.
 	ji := NewJobInvocation(js.Name())
-	ctx = js.logEventContext(ctx, ji)
-	ji.Context, ji.Cancel = js.createContextWithTimeout(ctx, timeout)
+	ctx = js.withLogContext(ctx, ji)
+	ji.Context, ji.Cancel = js.withTimeout(ctx, timeout)
 	ji.Parameters = GetJobParameters(ctx) // pull the parameters off the calling context.
 	js.setCurrent(ji)
 
@@ -446,7 +450,7 @@ func (js *JobScheduler) safeBackgroundExec(ctx context.Context) chan error {
 	return errors
 }
 
-func (js *JobScheduler) createContextWithTimeout(ctx context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
+func (js *JobScheduler) withTimeout(ctx context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
 	if timeout > 0 {
 		return context.WithTimeout(ctx, timeout)
 	}
@@ -562,7 +566,7 @@ func (js *JobScheduler) onJobError(ctx context.Context, ji *JobInvocation) {
 // logging helpers
 //
 
-func (js *JobScheduler) logEventContext(parent context.Context, ji *JobInvocation) context.Context {
+func (js *JobScheduler) withLogContext(parent context.Context, ji *JobInvocation) context.Context {
 	if ji != nil {
 		parent = logger.WithPath(parent, js.Name(), ji.ID)
 	} else {
