@@ -326,9 +326,6 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, er
 		// it rotates the current and last references
 		// it fires lifecycle events
 		defer func() {
-			if r := recover(); r != nil {
-				err = ex.New(err)
-			}
 			if ji.Cancel != nil {
 				ji.Cancel()
 			}
@@ -345,6 +342,7 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, er
 			} else {
 				js.onJobSuccess(ji.Context, ji)
 			}
+
 			js.setLast(ji)
 		}()
 
@@ -458,6 +456,12 @@ func (js *JobScheduler) createContextWithTimeout(ctx context.Context, timeout ti
 // job lifecycle hooks
 
 func (js *JobScheduler) onJobBegin(ctx context.Context, ji *JobInvocation) {
+	defer func() {
+		if r := recover(); r != nil {
+			js.error(ctx, ex.New(r))
+		}
+	}()
+
 	ji.Started = time.Now().UTC()
 	ji.Status = JobInvocationStatusRunning
 	if lifecycle := js.Lifecycle(); lifecycle.OnBegin != nil {
@@ -469,6 +473,12 @@ func (js *JobScheduler) onJobBegin(ctx context.Context, ji *JobInvocation) {
 }
 
 func (js *JobScheduler) onJobComplete(ctx context.Context, ji *JobInvocation) {
+	defer func() {
+		if r := recover(); r != nil {
+			js.error(ctx, ex.New(r))
+		}
+	}()
+
 	ji.Complete = time.Now().UTC()
 	close(ji.Done)
 	if lifecycle := js.Lifecycle(); lifecycle.OnComplete != nil {
@@ -480,6 +490,12 @@ func (js *JobScheduler) onJobComplete(ctx context.Context, ji *JobInvocation) {
 }
 
 func (js *JobScheduler) onJobCancelled(ctx context.Context, ji *JobInvocation) {
+	defer func() {
+		if r := recover(); r != nil {
+			js.error(ctx, ex.New(r))
+		}
+	}()
+
 	ji.Status = JobInvocationStatusCancelled
 	if lifecycle := js.Lifecycle(); lifecycle.OnCancellation != nil {
 		lifecycle.OnCancellation(ctx)
@@ -490,6 +506,12 @@ func (js *JobScheduler) onJobCancelled(ctx context.Context, ji *JobInvocation) {
 }
 
 func (js *JobScheduler) onJobSuccess(ctx context.Context, ji *JobInvocation) {
+	defer func() {
+		if r := recover(); r != nil {
+			js.error(ctx, ex.New(r))
+		}
+	}()
+
 	ji.Status = JobInvocationStatusSuccess
 	if lifecycle := js.Lifecycle(); lifecycle.OnSuccess != nil {
 		lifecycle.OnSuccess(ctx)
@@ -508,6 +530,12 @@ func (js *JobScheduler) onJobSuccess(ctx context.Context, ji *JobInvocation) {
 }
 
 func (js *JobScheduler) onJobError(ctx context.Context, ji *JobInvocation) {
+	defer func() {
+		if r := recover(); r != nil {
+			js.error(ctx, ex.New(r))
+		}
+	}()
+
 	ji.Status = JobInvocationStatusErrored
 
 	if lifecycle := js.Lifecycle(); lifecycle.OnError != nil {

@@ -41,6 +41,11 @@ func OptJobAction(action func(context.Context) error) JobBuilderOption {
 	return func(jb *JobBuilder) { jb.JobAction = action }
 }
 
+// OptJobConfig sets the job config.
+func OptJobConfig(cfg JobConfig) JobBuilderOption {
+	return func(jb *JobBuilder) { jb.JobConfig = cfg }
+}
+
 // OptJobLabels is a job builder sets the job labels.
 func OptJobLabels(labels map[string]string) JobBuilderOption {
 	return func(jb *JobBuilder) { jb.JobConfig.Labels = labels }
