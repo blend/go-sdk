@@ -3,6 +3,7 @@ package cron
 import (
 	"context"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -258,4 +259,37 @@ func TestJobSchedulerJobParameters(t *testing.T) {
 	<-done
 	assert.Equal(testParameters, contextParameters)
 	assert.Equal(testParameters, invocationParameters)
+}
+
+func TestSchedulerImediatelyThen(t *testing.T) {
+	assert := assert.New(t)
+
+	wg := sync.WaitGroup{}
+	wg.Add(6)
+	var runCount int
+	var durations []time.Duration
+	last := time.Now().UTC()
+	job := NewJob(
+		OptJobSchedule(Immediately().Then(Times(5, Every(time.Millisecond)))),
+		OptJobAction(func(ctx context.Context) error {
+			defer wg.Done()
+			now := time.Now().UTC()
+			runCount++
+			durations = append(durations, now.Sub(last))
+			last = now
+			return nil
+		}),
+	)
+	js := NewJobScheduler(job)
+	go js.Start()
+	<-js.NotifyStarted()
+
+	wg.Wait()
+	assert.Equal(6, runCount)
+	assert.Len(durations, 6)
+	assert.True(durations[0] < time.Millisecond)
+	for x := 1; x < 6; x++ {
+		assert.True(durations[x] < 2*time.Millisecond, durations[x].String())
+		assert.True(durations[x] > 500*time.Microsecond, durations[x].String())
+	}
 }
