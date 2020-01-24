@@ -40,8 +40,7 @@ func (i *ImmediateSchedule) Then(then Schedule) Schedule {
 
 // Next implements Schedule.
 func (i *ImmediateSchedule) Next(after time.Time) time.Time {
-	if atomic.LoadInt32(&i.didRun) == 0 {
-		i.didRun = 1
+	if atomic.CompareAndSwapInt32(&i.didRun, 0, 1) {
 		return Now()
 	}
 	if i.then != nil {
