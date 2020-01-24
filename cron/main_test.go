@@ -244,3 +244,17 @@ type loadJobTestMinimum struct{}
 
 func (job loadJobTestMinimum) Name() string                    { return "load-job-test-minimum" }
 func (job loadJobTestMinimum) Execute(_ context.Context) error { return nil }
+
+var (
+	_ Job              = (*scheduleProvider)(nil)
+	_ ScheduleProvider = (*scheduleProvider)(nil)
+)
+
+type scheduleProvider struct {
+	ScheduleProvider func() Schedule
+	Action           func(context.Context) error
+}
+
+func (job scheduleProvider) Name() string                      { return "schedule-provider" }
+func (job scheduleProvider) Schedule() Schedule                { return job.ScheduleProvider() }
+func (job scheduleProvider) Execute(ctx context.Context) error { return job.Action(ctx) }

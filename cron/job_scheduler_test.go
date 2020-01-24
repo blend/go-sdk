@@ -100,25 +100,29 @@ func TestSchedulerImediatelyThen(t *testing.T) {
 
 	wg := sync.WaitGroup{}
 	wg.Add(6)
-	var runCount int
+	var runCount, scheduleCallCount int
 	var durations []time.Duration
 	last := time.Now().UTC()
-	job := NewJob(
-		OptJobSchedule(Immediately().Then(Times(5, Every(time.Millisecond)))),
-		OptJobAction(func(ctx context.Context) error {
+	job := scheduleProvider{
+		ScheduleProvider: func() Schedule {
+			scheduleCallCount++
+			return Immediately().Then(Times(5, Every(time.Millisecond)))
+		},
+		Action: func(ctx context.Context) error {
 			defer wg.Done()
 			now := time.Now().UTC()
 			runCount++
 			durations = append(durations, now.Sub(last))
 			last = now
 			return nil
-		}),
-	)
+		},
+	}
 	js := NewJobScheduler(job)
 	go js.Start()
 	<-js.NotifyStarted()
 
 	wg.Wait()
+	assert.Equal(1, scheduleCallCount)
 	assert.Equal(6, runCount)
 	assert.Len(durations, 6)
 	assert.True(durations[0] < time.Millisecond)
