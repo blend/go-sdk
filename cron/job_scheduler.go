@@ -133,36 +133,34 @@ func (js *JobScheduler) Status() JobSchedulerStatus {
 // This call blocks.
 func (js *JobScheduler) Start() error {
 	if !js.Latch.CanStart() {
-		return fmt.Errorf("already started")
+		return async.ErrCannotStart
 	}
 	js.Latch.Starting()
-	js.RunLoop()
+	js.RunLoop() // BIG NOTE; this call *should* block
 	return nil
 }
 
 // Stop stops the scheduler.
 func (js *JobScheduler) Stop() error {
 	if !js.Latch.CanStop() {
-		return fmt.Errorf("already stopped")
+		return async.ErrCannotStop
 	}
-	stopped := js.Latch.NotifyStopped()
+
+	ctx := js.withLogContext(context.Background(), nil)
 	js.Latch.Stopping()
 
 	if js.Current != nil {
 		gracePeriod := js.Config().ShutdownGracePeriodOrDefault()
 		if gracePeriod > 0 {
-			js.debugf(js.withLogContext(context.Background(), nil), "Stopping: current is active, cancelling with grace period %v", gracePeriod)
-			ctx, cancel := js.withTimeout(context.Background(), gracePeriod)
+			var cancel func()
+			ctx, cancel = js.withTimeout(ctx, gracePeriod)
 			defer cancel()
 			js.waitCancelled(ctx, js.Current)
 		}
-		js.debugf(js.withLogContext(context.Background(), nil), "Stopping: Current is active, cancelling")
 		js.Current.Cancel()
 	}
-	<-stopped
+	<-js.Latch.NotifyStopped()
 	js.Latch.Reset()
-
-	js.debugf(js.withLogContext(context.Background(), nil), "Stopping Complete")
 	return nil
 }
 
@@ -249,6 +247,8 @@ func (js *JobScheduler) RunLoop() {
 		js.Latch.Stopped()
 	}()
 
+	js.debugf(js.withLogContext(context.Background(), nil), "RunLoop: entered running state")
+
 	if js.JobSchedule != nil {
 		js.NextRuntime = js.JobSchedule.Next(js.NextRuntime)
 	}
@@ -257,6 +257,7 @@ func (js *JobScheduler) RunLoop() {
 	// it should be interpretted as *not* to automatically
 	// schedule the job to be run.
 	if js.NextRuntime.IsZero() {
+		js.debugf(js.withLogContext(context.Background(), nil), "RunLoop: next runtime is unset, returning")
 		return
 	}
 

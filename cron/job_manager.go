@@ -61,6 +61,7 @@ func (jm *JobManager) StartAsync() error {
 		go job.Start()
 		<-job.NotifyStarted()
 	}
+
 	jm.Latch.Started()
 	jm.Started = time.Now().UTC()
 	logger.MaybeInfo(jm.Log, "job manager started")
@@ -73,22 +74,19 @@ func (jm *JobManager) Stop() error {
 		return async.ErrCannotStop
 	}
 	jm.Latch.Stopping()
-	logger.MaybeInfo(jm.Log, "job manager shutting down")
+	defer func() {
+		jm.Stopped = time.Now().UTC()
+		jm.Latch.Stopped()
+		jm.Latch.Reset()
+	}()
 	for _, jobScheduler := range jm.Jobs {
-		logger.MaybeInfof(jm.Log, "unloading scheduler `%s`", jobScheduler.Name())
 		if err := jobScheduler.OnUnload(context.Background()); err != nil {
 			return err
 		}
-		logger.MaybeInfof(jm.Log, "stopping scheduler `%s`", jobScheduler.Name())
 		if err := jobScheduler.Stop(); err != nil {
 			return err
 		}
-		logger.MaybeInfof(jm.Log, "stopped scheduler `%s`", jobScheduler.Name())
 	}
-	jm.Latch.Stopped()
-	jm.Latch.Reset()
-	jm.Stopped = time.Now().UTC()
-	logger.MaybeInfo(jm.Log, "job manager shutdown complete")
 	return nil
 }
 
