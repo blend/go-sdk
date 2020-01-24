@@ -34,7 +34,7 @@ func NewConfigFromEnv() *Config {
 // InfrequentTask extends the lease on vault token.
 type InfrequentTask struct {
 	Config *Config
-	Log    *logger.Logger
+	Log    logger.Log
 }
 
 // Name returns the job name.
