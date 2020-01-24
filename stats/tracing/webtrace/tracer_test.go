@@ -201,3 +201,11 @@ func TestFinishView(t *testing.T) {
 	assert.Nil(mockSpan.Tags()[tracing.TagKeyError])
 	assert.False(mockSpan.FinishTime.IsZero())
 }
+
+func TestFinishViewNilSpan(t *testing.T) {
+	assert := assert.New(t)
+
+	ctx := web.MockCtx("GET", "/test-resource")
+	webViewTraceFinisher{}.FinishView(ctx, nil, nil)
+	assert.Nil(opentracing.SpanFromContext(ctx.Context()))
+}

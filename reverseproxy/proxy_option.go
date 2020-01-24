@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/webutil"
 )
 
 // ProxyOption is a function that mutates a proxy.
@@ -58,6 +59,22 @@ func OptProxyDeleteHeader(key string) ProxyOption {
 			p.Headers = http.Header{}
 		}
 		p.Headers.Del(key)
+		return nil
+	}
+}
+
+// OptProxyTracer adds a proxy tracer.
+func OptProxyTracer(tracer webutil.HTTPTracer) ProxyOption {
+	return func(p *Proxy) error {
+		p.Tracer = tracer
+		return nil
+	}
+}
+
+// OptProxyTransformRequest sets the `TransformRequest` on a `Proxy`.
+func OptProxyTransformRequest(tr TransformRequest) ProxyOption {
+	return func(p *Proxy) error {
+		p.TransformRequest = tr
 		return nil
 	}
 }
