@@ -4,8 +4,7 @@ package graceful
 // It will return any errors returned by Start() that are not caused by shutting down the server.
 // A "Graceful" processes *must* block on start.
 func Shutdown(hosted ...Graceful) error {
-	return Host(hosted,
-		OptShutdownGracePeriod(0),
-		OptShutdownSignal(Notify(DefaultShutdownSignals...)),
+	return ShutdownBySignal(hosted,
+		OptDefaultShutdownSignal(),
 	)
 }

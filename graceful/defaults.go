@@ -9,8 +9,3 @@ import (
 var DefaultShutdownSignals = []os.Signal{
 	os.Interrupt, syscall.SIGTERM,
 }
-
-// DefaultUpdateSignals are the default os signals to capture for updates.
-var DefaultUpdateSignals = []os.Signal{
-	syscall.SIGHUP,
-}

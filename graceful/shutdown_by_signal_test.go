@@ -46,7 +46,7 @@ func (h *hosted) NotifyStopped() <-chan struct{} {
 	return h.stopped
 }
 
-func TestGracefulShutdown(t *testing.T) {
+func TestShutdownBySignal(t *testing.T) {
 	assert := assert.New(t)
 
 	hosted := newHosted()
@@ -55,7 +55,7 @@ func TestGracefulShutdown(t *testing.T) {
 	var err error
 	done := make(chan struct{})
 	go func() {
-		err = Host([]Graceful{hosted}, OptShutdownSignal(terminateSignal))
+		err = ShutdownBySignal([]Graceful{hosted}, OptShutdownSignal(terminateSignal))
 		close(done)
 	}()
 	<-hosted.NotifyStarted()
@@ -65,7 +65,7 @@ func TestGracefulShutdown(t *testing.T) {
 	assert.Nil(err)
 }
 
-func TestGracefulShutdownMany(t *testing.T) {
+func TestShutdownBySignalMany(t *testing.T) {
 	assert := assert.New(t)
 
 	workers := []Graceful{
@@ -81,7 +81,7 @@ func TestGracefulShutdownMany(t *testing.T) {
 	done := make(chan struct{})
 
 	go func() {
-		err = Host(workers, OptShutdownSignal(terminateSignal))
+		err = ShutdownBySignal(workers, OptShutdownSignal(terminateSignal))
 		close(done)
 	}()
 

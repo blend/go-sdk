@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/webutil"
 )
 
 func TestVaultClientBackendKV(t *testing.T) {
@@ -216,4 +219,40 @@ func TestVaultDeleteTransitKey(t *testing.T) {
 
 	err = client.DeleteTransitKey(todo, "key")
 	assert.Nil(err)
+}
+
+func TestVaultHandleRedirects(t *testing.T) {
+	assert := assert.New(t)
+
+	rawResponse := "{\"status\":\"ok!\"}\n"
+
+	inner := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set(webutil.HeaderContentType, webutil.ContentTypeApplicationJSON)
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, rawResponse)
+		return
+	}))
+	defer inner.Close()
+	outer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, inner.URL, http.StatusTemporaryRedirect)
+		return
+	}))
+	defer outer.Close()
+
+	client, err := New(
+		OptRemote(outer.URL),
+	)
+	assert.Nil(err)
+	assert.NotNil(client)
+
+	rawURL, err := url.Parse(outer.URL)
+	assert.Nil(err)
+	res, err := client.Client.Do(&http.Request{URL: rawURL})
+	assert.Nil(err)
+	defer res.Body.Close()
+	assert.Equal(http.StatusOK, res.StatusCode)
+
+	contents, err := ioutil.ReadAll(res.Body)
+	assert.Nil(err)
+	assert.Equal(rawResponse, string(contents))
 }

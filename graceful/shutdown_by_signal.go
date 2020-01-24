@@ -7,18 +7,17 @@ import (
 	"github.com/blend/go-sdk/ex"
 )
 
-// Host gracefully stops a set hosted processes based on a set of variadic options.
+// ShutdownBySignal gracefully stops a set hosted processes based on a set of variadic options.
 // A "Graceful" processes *must* block on start.
 // Fatal errors will be returned, that is, errors that are returned by either .Start() or .Stop().
 // Panics are not caught by graceful, and it is assumed that your .Start() or .Stop methods will catch relevant panics.
-func Host(hosted []Graceful, opts ...Option) error {
-	var options Options
+func ShutdownBySignal(hosted []Graceful, opts ...ShutdownOption) error {
+	var options ShutdownOptions
 	for _, opt := range opts {
 		opt(&options)
 	}
 
-	shutdown := make(chan struct{})
-	abortWaitShutdown := make(chan struct{})
+	shouldShutdown := make(chan struct{})
 	serverExited := make(chan struct{})
 
 	waitShutdownComplete := sync.WaitGroup{}
@@ -46,40 +45,26 @@ func Host(hosted []Graceful, opts ...Option) error {
 		go func(instance Graceful) {
 			defer waitShutdownComplete.Done()
 			select {
-			case <-shutdown: // tell the hosted process to stop "gracefully"
+			case <-shouldShutdown: // tell the hosted process to stop "gracefully"
 				if err := instance.Stop(); err != nil {
 					errors <- err
 				}
 				return
-			case <-abortWaitShutdown: // a server has exited on its own
-				return // clean up this goroutine
 			}
 		}(hostedInstance)
 	}
 
 	select {
 	case <-options.ShutdownSignal: // if we've issued a shutdown, wait for the server to exit
-		signal.Stop(options.ShutdownSignal)
-		close(shutdown)
+		signal.Stop(options.ShutdownSignal) // unhook the process signal redirects, the next ^c will crash the process etc.
+		close(shouldShutdown)
 		waitShutdownComplete.Wait()
 		waitServerExited.Wait()
 
-	case <-options.UpdateSignal:
-		for _, h := range hosted {
-			if typed, ok := h.(Updater); ok {
-				go func(u Updater) {
-					if err := u.Update(); err != nil {
-						if options.UpdateErrors != nil {
-							options.UpdateErrors <- err
-						}
-					}
-				}(typed)
-			}
-		}
-
 	case <-serverExited: // if any of the servers exited on their own
-		close(abortWaitShutdown) // quit the signal listener
+		close(shouldShutdown) // quit the signal listener
 		waitShutdownComplete.Wait()
+
 	}
 	if len(errors) > 0 {
 		return <-errors
