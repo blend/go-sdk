@@ -2,16 +2,9 @@ package cron
 
 import (
 	"context"
-
-	"github.com/blend/go-sdk/uuid"
 )
 
 type jobInvocationKey struct{}
-
-// NewJobInvocationID returns a new pseudo-unique job invocation identifier.
-func NewJobInvocationID() string {
-	return uuid.V4().String()
-}
 
 // WithJobInvocation adds a job invocation to a context as a value.
 func WithJobInvocation(ctx context.Context, ji *JobInvocation) context.Context {

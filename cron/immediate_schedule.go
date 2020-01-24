@@ -48,6 +48,7 @@ func (i *ImmediateSchedule) Next(after time.Time) time.Time {
 		i.didRun = true
 		return Now()
 	}
+
 	if i.then != nil {
 		return i.then.Next(after)
 	}

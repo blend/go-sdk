@@ -21,8 +21,8 @@ func TestJobSchedulerCullHistoryMaxAge(t *testing.T) {
 	assert := assert.New(t)
 
 	js := NewJobScheduler(NewJob())
-	js.Config.HistoryMaxCount = ref.Int(10)
-	js.Config.HistoryMaxAge = ref.Duration(6 * time.Hour)
+	js.JobConfig.HistoryMaxCount = ref.Int(10)
+	js.JobConfig.HistoryMaxAge = ref.Duration(6 * time.Hour)
 
 	js.History = []JobInvocation{
 		{ID: uuid.V4().String(), Started: time.Now().Add(-10 * time.Hour)},
@@ -292,4 +292,8 @@ func TestSchedulerImediatelyThen(t *testing.T) {
 		assert.True(durations[x] < 2*time.Millisecond, durations[x].String())
 		assert.True(durations[x] > 500*time.Microsecond, durations[x].String())
 	}
+	assert.NotNil(js.JobSchedule)
+	typed, ok := js.JobSchedule.(*ImmediateSchedule)
+	assert.True(ok)
+	assert.True(typed.didRun)
 }

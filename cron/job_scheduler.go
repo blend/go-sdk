@@ -20,8 +20,13 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 		latch: async.NewLatch(),
 		Job:   job,
 	}
+	// the schedule can be stateful, we must memoize the
+	// the schedule here.
+	if typed, ok := js.Job.(ScheduleProvider); ok {
+		js.JobSchedule = typed.Schedule()
+	}
 	if typed, ok := job.(JobConfigProvider); ok {
-		js.Config = typed.JobConfig()
+		js.JobConfig = typed.JobConfig()
 	}
 	for _, option := range options {
 		option(js)
@@ -34,8 +39,10 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 type JobScheduler struct {
 	sync.Mutex
 
-	Job    Job
-	Config JobConfig
+	Job         Job
+	JobSchedule Schedule
+	JobConfig   JobConfig
+
 	Tracer Tracer
 	Log    logger.Log
 
@@ -53,20 +60,12 @@ func (js *JobScheduler) Name() string {
 	return js.Job.Name()
 }
 
-// Schedule returns the job schedule.
-func (js *JobScheduler) Schedule() Schedule {
-	if typed, ok := js.Job.(ScheduleProvider); ok {
-		return typed.Schedule()
-	}
-	return nil
-}
-
 // Description returns the description.
 func (js *JobScheduler) Description() string {
 	if typed, ok := js.Job.(DescriptionProvider); ok {
 		return typed.Description()
 	}
-	return js.Config.Description
+	return js.JobConfig.Description
 }
 
 // Disabled returns if the job is disabled or not.
@@ -77,7 +76,7 @@ func (js *JobScheduler) Disabled() bool {
 	if typed, ok := js.Job.(DisabledProvider); ok {
 		return typed.Disabled()
 	}
-	return js.Config.DisabledOrDefault()
+	return js.JobConfig.DisabledOrDefault()
 }
 
 // Timeout returns the timeout or a default.
@@ -85,7 +84,7 @@ func (js *JobScheduler) Timeout() time.Duration {
 	if typed, ok := js.Job.(TimeoutProvider); ok {
 		return typed.Timeout()
 	}
-	return js.Config.TimeoutOrDefault()
+	return js.JobConfig.TimeoutOrDefault()
 }
 
 // ShutdownGracePeriod returns the job cancellation or stop grace period.
@@ -93,7 +92,7 @@ func (js *JobScheduler) ShutdownGracePeriod() time.Duration {
 	if typed, ok := js.Job.(ShutdownGracePeriodProvider); ok {
 		return typed.ShutdownGracePeriod()
 	}
-	return js.Config.ShutdownGracePeriodOrDefault()
+	return js.JobConfig.ShutdownGracePeriodOrDefault()
 }
 
 // HistoryEnabled returns if the job should track history.
@@ -101,7 +100,7 @@ func (js *JobScheduler) HistoryEnabled() bool {
 	if typed, ok := js.Job.(HistoryEnabledProvider); ok {
 		return typed.HistoryEnabled()
 	}
-	return js.Config.HistoryEnabledOrDefault()
+	return js.JobConfig.HistoryEnabledOrDefault()
 }
 
 // HistoryPersistenceEnabled returns if the job should call the job persistence handlers.
@@ -109,7 +108,7 @@ func (js *JobScheduler) HistoryPersistenceEnabled() bool {
 	if typed, ok := js.Job.(HistoryPersistenceEnabledProvider); ok {
 		return typed.HistoryPersistenceEnabled()
 	}
-	return js.Config.HistoryPersistenceEnabledOrDefault()
+	return js.JobConfig.HistoryPersistenceEnabledOrDefault()
 }
 
 // HistoryMaxCount returns the maximum number of history items to keep in memory.
@@ -118,7 +117,7 @@ func (js *JobScheduler) HistoryMaxCount() int {
 	if typed, ok := js.Job.(HistoryMaxCountProvider); ok {
 		return typed.HistoryMaxCount()
 	}
-	return js.Config.HistoryMaxCountOrDefault()
+	return js.JobConfig.HistoryMaxCountOrDefault()
 }
 
 // HistoryMaxAge returns the maximum age of history items to keep in memory.
@@ -127,7 +126,7 @@ func (js *JobScheduler) HistoryMaxAge() time.Duration {
 	if typed, ok := js.Job.(HistoryMaxAgeProvider); ok {
 		return typed.HistoryMaxAge()
 	}
-	return js.Config.HistoryMaxAgeOrDefault()
+	return js.JobConfig.HistoryMaxAgeOrDefault()
 }
 
 // ShouldSkipLoggerListeners returns if we should skip firing logger listeners.
@@ -135,7 +134,7 @@ func (js *JobScheduler) ShouldSkipLoggerListeners() bool {
 	if typed, ok := js.Job.(ShouldSkipLoggerListenersProvider); ok {
 		return typed.ShouldSkipLoggerListeners()
 	}
-	return js.Config.ShouldSkipLoggerListenersOrDefault()
+	return js.JobConfig.ShouldSkipLoggerListenersOrDefault()
 }
 
 // ShouldSkipLoggerOutput returns if we should have logger events skip writing to output.
@@ -144,7 +143,7 @@ func (js *JobScheduler) ShouldSkipLoggerOutput() bool {
 	if typed, ok := js.Job.(ShouldSkipLoggerOutputProvider); ok {
 		return typed.ShouldSkipLoggerOutput()
 	}
-	return js.Config.ShouldSkipLoggerOutputOrDefault()
+	return js.JobConfig.ShouldSkipLoggerOutputOrDefault()
 }
 
 // Labels returns the job labels, including
@@ -160,7 +159,7 @@ func (js *JobScheduler) Labels() map[string]string {
 		output["last"] = stringutil.Slugify(string(js.Last.State))
 	}
 	// config labels
-	for key, value := range js.Config.Labels {
+	for key, value := range js.JobConfig.Labels {
 		output[key] = value
 	}
 	if typed, ok := js.Job.(LabelsProvider); ok {
@@ -199,8 +198,8 @@ func (js *JobScheduler) Status() JobSchedulerStatus {
 		HistoryMaxCount:           js.HistoryMaxCount(),
 		HistoryMaxAge:             js.HistoryMaxAge(),
 	}
-	if js.Schedule() != nil {
-		if typed, ok := js.Schedule().(fmt.Stringer); ok {
+	if js.JobSchedule != nil {
+		if typed, ok := js.JobSchedule.(fmt.Stringer); ok {
 			status.Schedule = typed.String()
 		}
 	}
@@ -358,9 +357,10 @@ func (js *JobScheduler) RunLoop() {
 		js.latch.Stopped()
 	}()
 
-	if js.Schedule() != nil {
-		js.NextRuntime = js.Schedule().Next(js.NextRuntime)
+	if js.JobSchedule != nil {
+		js.NextRuntime = js.JobSchedule.Next(js.NextRuntime)
 	}
+
 	// if the schedule returns a zero timestamp
 	// it should be interpretted as *not* to automatically
 	// schedule the job to be run.
@@ -389,10 +389,10 @@ func (js *JobScheduler) RunLoop() {
 			}
 
 			// set up the next runtime.
-			if js.Schedule() != nil {
-				js.NextRuntime = js.Schedule().Next(js.NextRuntime)
+			if js.JobSchedule != nil {
+				js.NextRuntime = js.JobSchedule.Next(js.NextRuntime)
 			} else {
-				js.NextRuntime = time.Time{}
+				js.NextRuntime = Zero
 			}
 
 		case <-notifyStopping:

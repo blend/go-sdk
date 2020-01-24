@@ -8,6 +8,7 @@ import (
 
 	"github.com/blend/go-sdk/bufferutil"
 	"github.com/blend/go-sdk/ex"
+	"github.com/blend/go-sdk/uuid"
 )
 
 // NewJobInvocation returns a new job invocation.
@@ -24,6 +25,11 @@ func NewJobInvocation(jobName string) *JobInvocation {
 		OutputHandlers: handlers,
 		Done:           make(chan struct{}),
 	}
+}
+
+// NewJobInvocationID returns a new pseudo-unique job invocation identifier.
+func NewJobInvocationID() string {
+	return uuid.V4().String()
 }
 
 // JobInvocation is metadata for a job invocation (or instance of a job running).
