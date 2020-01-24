@@ -19,6 +19,9 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 		Latch: async.NewLatch(),
 		Job:   job,
 	}
+	if typed, ok := job.(ScheduleProvider); ok {
+		js.JobSchedule = typed.Schedule()
+	}
 	for _, option := range options {
 		option(js)
 	}
@@ -32,6 +35,7 @@ type JobScheduler struct {
 
 	Job          Job
 	JobConfig    JobConfig
+	JobSchedule  Schedule
 	JobLifecycle JobLifecycle
 
 	Tracer Tracer
@@ -45,14 +49,6 @@ type JobScheduler struct {
 // Name returns the job name.
 func (js *JobScheduler) Name() string {
 	return js.Job.Name()
-}
-
-// Schedule returns the job schedule.
-func (js *JobScheduler) Schedule() Schedule {
-	if typed, ok := js.Job.(ScheduleProvider); ok {
-		return typed.Schedule()
-	}
-	return nil
 }
 
 // Config returns the job config provided by a job or an empty config.
@@ -125,8 +121,8 @@ func (js *JobScheduler) Status() JobSchedulerStatus {
 		Current:     js.Current,
 		Last:        js.Last,
 	}
-	if js.Schedule() != nil {
-		if typed, ok := js.Schedule().(fmt.Stringer); ok {
+	if js.JobSchedule != nil {
+		if typed, ok := js.JobSchedule.(fmt.Stringer); ok {
 			status.Schedule = typed.String()
 		}
 	}
@@ -253,8 +249,8 @@ func (js *JobScheduler) RunLoop() {
 		js.Latch.Stopped()
 	}()
 
-	if js.Schedule() != nil {
-		js.NextRuntime = js.Schedule().Next(js.NextRuntime)
+	if js.JobSchedule != nil {
+		js.NextRuntime = js.JobSchedule.Next(js.NextRuntime)
 	}
 
 	// if the schedule returns a zero timestamp
@@ -282,10 +278,10 @@ func (js *JobScheduler) RunLoop() {
 			}
 
 			// set up the next runtime.
-			if js.Schedule() != nil {
-				js.NextRuntime = js.Schedule().Next(js.NextRuntime)
+			if js.JobSchedule != nil {
+				js.NextRuntime = js.JobSchedule.Next(js.NextRuntime)
 			} else {
-				js.NextRuntime = time.Time{}
+				js.NextRuntime = Zero
 			}
 
 		case <-js.Latch.NotifyStopping():
