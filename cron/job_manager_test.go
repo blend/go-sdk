@@ -297,33 +297,6 @@ func TestJobManagerIsRunning(t *testing.T) {
 	assert.False(jm.IsJobRunning(uuid.V4().String()))
 }
 
-func TestJobManagerStatus(t *testing.T) {
-	assert := assert.New(t)
-
-	jm := New()
-
-	jm.LoadJobs(NewJob(OptJobName("test-0")))
-	jm.LoadJobs(NewJob(OptJobName("test-1")))
-
-	checked := make(chan struct{})
-	proceed := make(chan struct{})
-	jm.LoadJobs(NewJob(OptJobName("is-running-test"), OptJobAction(func(_ context.Context) error {
-		close(proceed)
-		<-checked
-		return nil
-	})))
-
-	jm.RunJob("is-running-test")
-	<-proceed
-
-	status := jm.Status()
-	close(checked)
-
-	assert.NotNil(status)
-	assert.Len(status.Jobs, 3)
-	assert.Len(status.Running, 1)
-}
-
 func TestJobManagerCancelJob(t *testing.T) {
 	assert := assert.New(t)
 
@@ -344,30 +317,6 @@ func TestJobManagerCancelJob(t *testing.T) {
 	assert.Nil(jm.CancelJob("is-running-test"))
 	<-cancelled
 	assert.False(jm.IsJobRunning("is-running-test"))
-}
-
-func TestJobManagerStatusRunning(t *testing.T) {
-	assert := assert.New(t)
-
-	jobDidRun := make(chan struct{})
-	jobStarted := make(chan struct{})
-	jobShouldProceed := make(chan struct{})
-	jm := New()
-	jm.LoadJobs(NewJob(OptJobName("status-running-test"), OptJobAction(func(_ context.Context) error {
-		defer close(jobDidRun)
-		close(jobStarted)
-		<-jobShouldProceed
-		return nil
-	})))
-
-	status := jm.Status()
-	assert.Empty(status.Running)
-	jm.RunJob("status-running-test")
-	<-jobStarted
-	status = jm.Status()
-	assert.Len(status.Running, 1)
-	close(jobShouldProceed)
-	<-jobDidRun
 }
 
 func TestJobManagerEnableDisableJob(t *testing.T) {

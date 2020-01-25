@@ -4,7 +4,6 @@ package cron
 
 import (
 	"context"
-	"sort"
 	"sync"
 	"time"
 
@@ -260,30 +259,4 @@ func (jm *JobManager) State() JobManagerState {
 		return JobManagerStateStopped
 	}
 	return JobManagerStateUnknown
-}
-
-// Status returns a status object.
-func (jm *JobManager) Status() JobManagerStatus {
-	jm.Lock()
-	defer jm.Unlock()
-
-	status := JobManagerStatus{
-		State:   jm.State(),
-		Started: jm.Started,
-		Stopped: jm.Stopped,
-		Running: map[string]JobInvocation{},
-	}
-	for _, job := range jm.Jobs {
-		status.Jobs = append(status.Jobs, job.Status())
-		if job.Last != nil {
-			if job.Last.Started.After(status.JobLastStarted) {
-				status.JobLastStarted = job.Last.Started
-			}
-		}
-		if job.Current != nil {
-			status.Running[job.Name()] = *job.Current
-		}
-	}
-	sort.Sort(JobSchedulerStatusesByJobNameAsc(status.Jobs))
-	return status
 }

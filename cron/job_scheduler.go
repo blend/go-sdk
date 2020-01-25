@@ -109,26 +109,6 @@ func (js *JobScheduler) State() JobSchedulerState {
 	return JobSchedulerStateUnknown
 }
 
-// Status returns the job scheduler status.
-func (js *JobScheduler) Status() JobSchedulerStatus {
-	status := JobSchedulerStatus{
-		Name:        js.Name(),
-		State:       js.State(),
-		Labels:      js.Labels(),
-		Disabled:    js.Disabled(),
-		Timeout:     js.Config().TimeoutOrDefault(),
-		NextRuntime: js.NextRuntime,
-		Current:     js.Current,
-		Last:        js.Last,
-	}
-	if js.JobSchedule != nil {
-		if typed, ok := js.JobSchedule.(fmt.Stringer); ok {
-			status.Schedule = typed.String()
-		}
-	}
-	return status
-}
-
 // Start starts the scheduler.
 // This call blocks.
 func (js *JobScheduler) Start() error {
