@@ -9,17 +9,29 @@ type JobParameters = map[string]string
 
 type contextKeyJobParameters struct{}
 
-// WithJobParameters adds job invocation parameter values to a context.
-func WithJobParameters(ctx context.Context, values JobParameters) context.Context {
+// WithJobParameterValues adds job invocation parameter values to a context.
+func WithJobParameterValues(ctx context.Context, values JobParameters) context.Context {
 	return context.WithValue(ctx, contextKeyJobParameters{}, values)
 }
 
-// GetJobParameters gets parameter values from a given context.
-func GetJobParameters(ctx context.Context) JobParameters {
+// GetJobParameterValues gets parameter values from a given context.
+func GetJobParameterValues(ctx context.Context) JobParameters {
 	if value := ctx.Value(contextKeyJobParameters{}); value != nil {
 		if typed, ok := value.(JobParameters); ok {
 			return typed
 		}
 	}
 	return nil
+}
+
+// MergeJobParameterValues merges values from many sources.
+// The order is important for which value set's keys take precedence.
+func MergeJobParameterValues(values ...JobParameters) JobParameters {
+	output := make(JobParameters)
+	for _, set := range values {
+		for key, value := range set {
+			output[key] = value
+		}
+	}
+	return output
 }

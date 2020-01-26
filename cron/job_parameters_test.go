@@ -10,12 +10,12 @@ import (
 func Test_JobParametersContext(t *testing.T) {
 	assert := assert.New(t)
 
-	final := GetJobParameters(WithJobParameters(context.Background(), JobParameters{
+	final := GetJobParameterValues(WithJobParameterValues(context.Background(), JobParameters{
 		"foo":  "bar",
 		"buzz": "fuzz",
 	}))
 	assert.Equal("bar", final["foo"])
 	assert.Equal("fuzz", final["buzz"])
 
-	assert.Empty(GetJobParameters(context.Background()))
+	assert.Empty(GetJobParameterValues(context.Background()))
 }

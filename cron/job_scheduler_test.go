@@ -62,7 +62,7 @@ func TestJobSchedulerLabels(t *testing.T) {
 	assert.Equal(JobInvocationStatusSuccess, labels["last"])
 }
 
-func TestJobSchedulerJobParameters(t *testing.T) {
+func TestJobSchedulerJobParameterValues(t *testing.T) {
 	assert := assert.New(t)
 
 	var contextParameters, invocationParameters JobParameters
@@ -75,7 +75,7 @@ func TestJobSchedulerJobParameters(t *testing.T) {
 				defer close(done)
 				ji := GetJobInvocation(ctx)
 				invocationParameters = ji.Parameters
-				contextParameters = GetJobParameters(ctx)
+				contextParameters = GetJobParameterValues(ctx)
 				return nil
 			}),
 		),
@@ -87,12 +87,56 @@ func TestJobSchedulerJobParameters(t *testing.T) {
 		"bailey": "dog",
 	}
 
-	ji, err := js.RunAsyncContext(WithJobParameters(context.Background(), testParameters))
+	ji, err := js.RunAsyncContext(WithJobParameterValues(context.Background(), testParameters))
 	assert.Nil(err)
 	assert.Equal(testParameters, ji.Parameters)
 	<-done
 	assert.Equal(testParameters, contextParameters)
 	assert.Equal(testParameters, invocationParameters)
+}
+
+func TestJobSchedulerJobParameterValuesDefault(t *testing.T) {
+	assert := assert.New(t)
+
+	var contextParameters, invocationParameters JobParameters
+
+	defaultParameters := JobParameters{
+		"bailey":  "woof",
+		"default": "value",
+	}
+
+	done := make(chan struct{})
+	js := NewJobScheduler(
+		NewJob(
+			OptJobName("test"),
+			OptJobAction(func(ctx context.Context) error {
+				defer close(done)
+				ji := GetJobInvocation(ctx)
+				invocationParameters = ji.Parameters
+				contextParameters = GetJobParameterValues(ctx)
+				return nil
+			}),
+			OptJobConfig(JobConfig{
+				Parameters: defaultParameters,
+			}),
+		),
+	)
+	assert.Equal("woof", js.Config().Parameters["bailey"])
+
+	runParameters := JobParameters{
+		"foo":    "bar",
+		"moo":    "loo",
+		"bailey": "dog",
+	}
+
+	ji, err := js.RunAsyncContext(WithJobParameterValues(context.Background(), runParameters))
+	assert.Nil(err)
+	assert.Equal("dog", ji.Parameters["bailey"])
+	assert.Equal("value", ji.Parameters["default"])
+	assert.Equal("bar", ji.Parameters["foo"])
+	assert.Equal("loo", ji.Parameters["moo"])
+	<-done
+	assert.Equal(invocationParameters, contextParameters)
 }
 
 func TestSchedulerImediatelyThen(t *testing.T) {

@@ -122,6 +122,9 @@ func (js *JobScheduler) Start() error {
 
 // Stop stops the scheduler.
 func (js *JobScheduler) Stop() error {
+	js.Lock()
+	defer js.Unlock()
+
 	if !js.Latch.CanStop() {
 		return async.ErrCannotStop
 	}
@@ -139,8 +142,10 @@ func (js *JobScheduler) Stop() error {
 		}
 		js.Current.Cancel()
 	}
+
 	<-js.Latch.NotifyStopped()
 	js.Latch.Reset()
+	js.NextRuntime = Zero
 	return nil
 }
 
@@ -225,6 +230,7 @@ func (js *JobScheduler) RunLoop() {
 	js.Latch.Started()
 	defer func() {
 		js.Latch.Stopped()
+		js.Latch.Reset()
 	}()
 
 	js.debugf(js.withLogContext(context.Background(), nil), "RunLoop: entered running state")
@@ -236,6 +242,7 @@ func (js *JobScheduler) RunLoop() {
 	// if the schedule returns a zero timestamp
 	// it should be interpretted as *not* to automatically
 	// schedule the job to be run.
+	// The run loop will return and the job scheduler will be interpretted as stopped.
 	if js.NextRuntime.IsZero() {
 		js.debugf(js.withLogContext(context.Background(), nil), "RunLoop: next runtime is unset, returning")
 		return
@@ -293,17 +300,14 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, er
 	// individual execution of a job.
 	ji := NewJobInvocation(js.Name())
 	ctx = js.withLogContext(ctx, ji)
+	ji.Parameters = MergeJobParameterValues(js.Config().Parameters, GetJobParameterValues(ctx)) // pull the parameters off the calling context.
 	ji.Context, ji.Cancel = js.withTimeout(ctx, timeout)
-	ji.Parameters = GetJobParameters(ctx) // pull the parameters off the calling context.
+	ji.Context = WithJobParameterValues(ji.Context, ji.Parameters)
+	ji.Context = WithJobInvocation(ji.Context, ji) // this is confusing but we need to do it
 	js.setCurrent(ji)
 
 	var err error
 	var tracer TraceFinisher
-	// load the job invocation into the context for the job invocation.
-	// this will let us pull the job invocation off the context
-	// within the job action.
-	ji.Context = WithJobInvocation(ji.Context, ji)
-
 	go func() {
 		// this defer runs all cleanup actions
 		// it recovers panics
@@ -318,7 +322,6 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, er
 				tracer.Finish(ji.Context, err)
 			}
 
-			js.onJobComplete(ji.Context, ji)
 			if err != nil && IsJobCancelled(err) {
 				js.onJobCancelled(ji.Context, ji)
 			} else if err != nil {
@@ -327,7 +330,7 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, er
 			} else {
 				js.onJobSuccess(ji.Context, ji)
 			}
-
+			js.onJobComplete(ji.Context, ji)
 			js.setLast(ji)
 		}()
 
@@ -462,10 +465,10 @@ func (js *JobScheduler) onJobComplete(ctx context.Context, ji *JobInvocation) {
 		if r := recover(); r != nil {
 			js.error(ctx, ex.New(r))
 		}
+		ji.Complete = time.Now().UTC()
+		close(ji.Done)
 	}()
 
-	ji.Complete = time.Now().UTC()
-	close(ji.Done)
 	if lifecycle := js.Lifecycle(); lifecycle.OnComplete != nil {
 		lifecycle.OnComplete(ctx)
 	}

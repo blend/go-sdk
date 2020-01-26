@@ -57,8 +57,18 @@ func (jm *JobManager) StartAsync() error {
 	jm.Latch.Starting()
 	logger.MaybeInfo(jm.Log, "job manager starting")
 	for _, job := range jm.Jobs {
-		go job.Start()
-		<-job.NotifyStarted()
+		errors := make(chan error)
+		go func() {
+			errors <- job.Start()
+		}()
+		logger.MaybeDebugf(jm.Log, "job manager starting job %s", job.Name())
+		select {
+		case err := <-errors:
+			logger.MaybeError(jm.Log, err)
+		case <-job.NotifyStarted():
+			logger.MaybeDebugf(jm.Log, "job manager starting job %s complete", job.Name())
+			continue
+		}
 	}
 
 	jm.Latch.Started()
@@ -73,17 +83,19 @@ func (jm *JobManager) Stop() error {
 		return async.ErrCannotStop
 	}
 	jm.Latch.Stopping()
+	logger.MaybeInfo(jm.Log, "job manager stopping")
 	defer func() {
 		jm.Stopped = time.Now().UTC()
 		jm.Latch.Stopped()
 		jm.Latch.Reset()
+		logger.MaybeInfo(jm.Log, "job manager stopping complete")
 	}()
 	for _, jobScheduler := range jm.Jobs {
 		if err := jobScheduler.OnUnload(context.Background()); err != nil {
-			return err
+			logger.MaybeError(jm.Log, err)
 		}
 		if err := jobScheduler.Stop(); err != nil {
-			return err
+			logger.MaybeError(jm.Log, err)
 		}
 	}
 	return nil
