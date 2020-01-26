@@ -152,12 +152,8 @@ func (js *JobScheduler) Stop() error {
 // OnLoad triggers the on load even on the job lifecycle handler.
 func (js *JobScheduler) OnLoad(ctx context.Context) error {
 	ctx = js.withLogContext(ctx, nil)
-	if js.JobLifecycle.OnLoad != nil {
-		if err := js.JobLifecycle.OnLoad(ctx); err != nil {
-			return err
-		}
-	}
 	if js.Lifecycle().OnLoad != nil {
+		js.debugf(ctx, "OnLoad: calling job load handler")
 		if err := js.Lifecycle().OnLoad(ctx); err != nil {
 			return err
 		}
@@ -169,6 +165,7 @@ func (js *JobScheduler) OnLoad(ctx context.Context) error {
 func (js *JobScheduler) OnUnload(ctx context.Context) error {
 	ctx = js.withLogContext(ctx, nil)
 	if js.Lifecycle().OnUnload != nil {
+		js.debugf(ctx, "OnUnload: calling job unload handler")
 		return js.Lifecycle().OnUnload(ctx)
 	}
 	return nil
@@ -233,7 +230,8 @@ func (js *JobScheduler) RunLoop() {
 		js.Latch.Reset()
 	}()
 
-	js.debugf(js.withLogContext(context.Background(), nil), "RunLoop: entered running state")
+	ctx := js.withLogContext(context.Background(), nil)
+	js.debugf(ctx, "RunLoop: entered running state")
 
 	if js.JobSchedule != nil {
 		js.NextRuntime = js.JobSchedule.Next(js.NextRuntime)
@@ -244,7 +242,7 @@ func (js *JobScheduler) RunLoop() {
 	// schedule the job to be run.
 	// The run loop will return and the job scheduler will be interpretted as stopped.
 	if js.NextRuntime.IsZero() {
-		js.debugf(js.withLogContext(context.Background(), nil), "RunLoop: next runtime is unset, returning")
+		js.debugf(ctx, "RunLoop: next runtime is unset, returning")
 		return
 	}
 
@@ -261,7 +259,7 @@ func (js *JobScheduler) RunLoop() {
 			if js.CanBeScheduled() {
 				// start the job invocation
 				if _, err := js.RunAsync(); err != nil {
-					js.error(js.withLogContext(context.Background(), nil), err)
+					js.error(ctx, err)
 				}
 			}
 
@@ -299,9 +297,9 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, er
 	// create a job invocation, or a record of each
 	// individual execution of a job.
 	ji := NewJobInvocation(js.Name())
-	ctx = js.withLogContext(ctx, ji)
-	ji.Parameters = MergeJobParameterValues(js.Config().ParameterValues, GetJobParameterValues(ctx)) // pull the parameters off the calling context.
-	ji.Context, ji.Cancel = js.withTimeout(ctx, timeout)
+	ji.Context = js.withLogContext(ctx, ji)
+	ji.Parameters = MergeJobParameterValues(js.Config().ParameterValues, GetJobParameterValues(ji.Context)) // pull the parameters off the calling context.
+	ji.Context, ji.Cancel = js.withTimeout(ji.Context, timeout)
 	ji.Context = WithJobParameterValues(ji.Context, ji.Parameters)
 	ji.Context = WithJobInvocation(ji.Context, ji) // this is confusing but we need to do it
 	js.setCurrent(ji)
@@ -452,6 +450,7 @@ func (js *JobScheduler) onJobBegin(ctx context.Context, ji *JobInvocation) {
 
 	ji.Started = time.Now().UTC()
 	ji.Status = JobInvocationStatusRunning
+
 	if lifecycle := js.Lifecycle(); lifecycle.OnBegin != nil {
 		lifecycle.OnBegin(ctx)
 	}
@@ -465,10 +464,11 @@ func (js *JobScheduler) onJobComplete(ctx context.Context, ji *JobInvocation) {
 		if r := recover(); r != nil {
 			js.error(ctx, ex.New(r))
 		}
-		ji.Complete = time.Now().UTC()
 		close(ji.Done)
 	}()
 
+	// this must be set here so the handlers pick it up
+	ji.Complete = time.Now().UTC()
 	if lifecycle := js.Lifecycle(); lifecycle.OnComplete != nil {
 		lifecycle.OnComplete(ctx)
 	}
