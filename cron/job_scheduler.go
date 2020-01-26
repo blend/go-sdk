@@ -153,7 +153,6 @@ func (js *JobScheduler) Stop() error {
 func (js *JobScheduler) OnLoad(ctx context.Context) error {
 	ctx = js.withLogContext(ctx, nil)
 	if js.Lifecycle().OnLoad != nil {
-		js.debugf(ctx, "OnLoad: calling job load handler")
 		if err := js.Lifecycle().OnLoad(ctx); err != nil {
 			return err
 		}
@@ -165,7 +164,6 @@ func (js *JobScheduler) OnLoad(ctx context.Context) error {
 func (js *JobScheduler) OnUnload(ctx context.Context) error {
 	ctx = js.withLogContext(ctx, nil)
 	if js.Lifecycle().OnUnload != nil {
-		js.debugf(ctx, "OnUnload: calling job unload handler")
 		return js.Lifecycle().OnUnload(ctx)
 	}
 	return nil
