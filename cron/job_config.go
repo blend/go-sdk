@@ -10,8 +10,8 @@ type JobConfig struct {
 	Description string `json:"description" yaml:"description"`
 	// Labels define extra metadata that can be used to filter jobs.
 	Labels map[string]string `json:"labels" yaml:"labels"`
-	// Parameters act as default parameters for a given job.
-	Parameters JobParameters `json:"parameters" yaml:"parameters"`
+	// ParameterValues act as default parameters for a given job.
+	ParameterValues JobParameters `json:"parameterValues" yaml:"parameterValues"`
 	// Timeout represents the abort threshold for the job.
 	Timeout time.Duration `json:"timeout" yaml:"timeout"`
 	// ShutdownGracePeriod represents the time a job is given to clean itself up.

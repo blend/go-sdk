@@ -117,11 +117,11 @@ func TestJobSchedulerJobParameterValuesDefault(t *testing.T) {
 				return nil
 			}),
 			OptJobConfig(JobConfig{
-				Parameters: defaultParameters,
+				ParameterValues: defaultParameters,
 			}),
 		),
 	)
-	assert.Equal("woof", js.Config().Parameters["bailey"])
+	assert.Equal("woof", js.Config().ParameterValues["bailey"])
 
 	runParameters := JobParameters{
 		"foo":    "bar",

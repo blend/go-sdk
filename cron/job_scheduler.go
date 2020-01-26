@@ -300,7 +300,7 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, er
 	// individual execution of a job.
 	ji := NewJobInvocation(js.Name())
 	ctx = js.withLogContext(ctx, ji)
-	ji.Parameters = MergeJobParameterValues(js.Config().Parameters, GetJobParameterValues(ctx)) // pull the parameters off the calling context.
+	ji.Parameters = MergeJobParameterValues(js.Config().ParameterValues, GetJobParameterValues(ctx)) // pull the parameters off the calling context.
 	ji.Context, ji.Cancel = js.withTimeout(ctx, timeout)
 	ji.Context = WithJobParameterValues(ji.Context, ji.Parameters)
 	ji.Context = WithJobInvocation(ji.Context, ji) // this is confusing but we need to do it
