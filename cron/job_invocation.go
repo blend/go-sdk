@@ -24,21 +24,21 @@ func NewJobInvocationID() string {
 
 // JobInvocation is metadata for a job invocation (or instance of a job running).
 type JobInvocation struct {
-	ID      string
-	JobName string
+	ID      string `json:"id"`
+	JobName string `json:"jobName"`
 
-	Started  time.Time
-	Complete time.Time
-	Err      error
+	Started  time.Time `json:"started"`
+	Complete time.Time `json:"complete"`
+	Err      error     `json:"err"`
 
-	Parameters JobParameters
-	Status     JobInvocationStatus
-	State      interface{}
+	Parameters JobParameters       `json:"parameters"`
+	Status     JobInvocationStatus `json:"status"`
 
 	// these cannot be json marshaled.
-	Context context.Context
-	Cancel  context.CancelFunc
-	Done    chan struct{}
+	State   interface{}        `json:"-"`
+	Context context.Context    `json:"-"`
+	Cancel  context.CancelFunc `json:"-"`
+	Done    chan struct{}      `json:"-"`
 }
 
 // Elapsed returns the elapsed time for the invocation.
