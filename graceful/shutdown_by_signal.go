@@ -44,13 +44,11 @@ func ShutdownBySignal(hosted []Graceful, opts ...ShutdownOption) error {
 		// wait to stop the instance
 		go func(instance Graceful) {
 			defer waitShutdownComplete.Done()
-			select {
-			case <-shouldShutdown: // tell the hosted process to stop "gracefully"
-				if err := instance.Stop(); err != nil {
-					errors <- err
-				}
-				return
+			<-shouldShutdown // tell the hosted process to stop "gracefully"
+			if err := instance.Stop(); err != nil {
+				errors <- err
 			}
+			return
 		}(hostedInstance)
 	}
 
@@ -64,7 +62,6 @@ func ShutdownBySignal(hosted []Graceful, opts ...ShutdownOption) error {
 	case <-serverExited: // if any of the servers exited on their own
 		close(shouldShutdown) // quit the signal listener
 		waitShutdownComplete.Wait()
-
 	}
 	if len(errors) > 0 {
 		return <-errors

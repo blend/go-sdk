@@ -85,10 +85,6 @@ func TestShutdownBySignalMany(t *testing.T) {
 		close(done)
 	}()
 
-	for _, h := range workers {
-		<-h.(*hosted).NotifyStarted()
-	}
-
 	close(terminateSignal)
 	<-done
 	assert.Nil(err)
