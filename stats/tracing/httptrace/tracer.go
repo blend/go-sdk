@@ -57,10 +57,15 @@ func StartHTTPSpan(ctx context.Context, tracer opentracing.Tracer, req *http.Req
 
 // Start opens a span and creates a new request with a modified context, based
 // on the span that was opened.
-func (ht httpTracer) Start(req *http.Request) (webutil.HTTPTraceFinisher, *http.Request) {
+func (ht httpTracer) Start(req *http.Request, extraKV ...webutil.TagKV) (webutil.HTTPTraceFinisher, *http.Request) {
 	resource := req.URL.Path
 	startTime := time.Now().UTC()
-	span, newReq := StartHTTPSpan(req.Context(), ht.tracer, req, resource, startTime)
+
+	extra := make([]opentracing.StartSpanOption, 0, len(extraKV))
+	for _, pair := range extraKV {
+		extra = append(extra, opentracing.Tag{Key: pair.Key, Value: pair.Value})
+	}
+	span, newReq := StartHTTPSpan(req.Context(), ht.tracer, req, resource, startTime, extra...)
 	return &httpTraceFinisher{span: span}, newReq
 }
 

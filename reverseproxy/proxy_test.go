@@ -153,7 +153,7 @@ type mockHTTPTracer struct {
 	Finisher *mockHTTPTraceFinisher
 }
 
-func (mht *mockHTTPTracer) Start(req *http.Request) (webutil.HTTPTraceFinisher, *http.Request) {
+func (mht *mockHTTPTracer) Start(req *http.Request, extraKV ...webutil.TagKV) (webutil.HTTPTraceFinisher, *http.Request) {
 	mht.Request = req
 	mht.Finisher = &mockHTTPTraceFinisher{}
 	return mht.Finisher, req

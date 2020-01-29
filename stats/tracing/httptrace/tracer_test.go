@@ -104,6 +104,32 @@ func TestStartWithParentSpan(t *testing.T) {
 	assert.Equal(mockSpan.ParentID, mockParentSpan.SpanContext.SpanID)
 }
 
+func TestStartWithExtra(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	httpTracer := httptrace.Tracer(mockTracer)
+
+	path := "/test-resource"
+	req := webutil.NewMockRequest("GET", path)
+	_, req = httpTracer.Start(req, webutil.TagKV{Key: "also", Value: "here"})
+
+	span := opentracing.SpanFromContext(req.Context())
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal(tracing.OperationHTTPRequest, mockSpan.OperationName)
+
+	expectedTags := map[string]interface{}{
+		tracing.TagKeyResourceName: path,
+		tracing.TagKeySpanType:     tracing.SpanTypeWeb,
+		tracing.TagKeyHTTPMethod:   "GET",
+		tracing.TagKeyHTTPURL:      path,
+		"http.remote_addr":         "127.0.0.1",
+		"http.host":                "localhost",
+		"http.user_agent":          "go-sdk test",
+		"also":                     "here",
+	}
+	assert.Equal(expectedTags, mockSpan.Tags())
+	assert.True(mockSpan.FinishTime.IsZero())
+}
 func TestFinish(t *testing.T) {
 	assert := assert.New(t)
 	mockTracer := mocktracer.New()
