@@ -95,6 +95,11 @@ func (dc *Collector) TimeInMilliseconds(name string, value time.Duration, tags .
 	return dc.client.TimeInMilliseconds(name, timeutil.Milliseconds(value), dc.tags(tags...), 1.0)
 }
 
+// Flush forces a flush of all the queued statsd payloads.
+func (dc *Collector) Flush() error {
+	return dc.client.Flush()
+}
+
 // SimpleEvent sends an event w/ title and text
 func (dc *Collector) SimpleEvent(title, text string) error {
 	return dc.client.SimpleEvent(title, text)
