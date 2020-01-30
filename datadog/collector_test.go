@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/DataDog/datadog-go/statsd"
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/stats"
 	"github.com/blend/go-sdk/uuid"
@@ -34,4 +35,20 @@ func TestConvertEvent(t *testing.T) {
 	assert.Equal(original.SourceTypeName, converted.SourceTypeName)
 	assert.Equal(original.AlertType, converted.AlertType)
 	assert.Equal(original.Tags, converted.Tags)
+}
+
+func TestCollectorFlush(t *testing.T) {
+	it := assert.New(t)
+
+	// `client` is `nil`
+	c := Collector{}
+	it.Nil(c.Flush())
+
+	// `client` is not `nil`
+	client, err := statsd.New("localhost:8125")
+	it.Nil(err)
+	defer client.Close()
+
+	c = Collector{client: client}
+	it.Nil(c.Flush())
 }

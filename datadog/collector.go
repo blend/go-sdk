@@ -97,6 +97,9 @@ func (dc *Collector) TimeInMilliseconds(name string, value time.Duration, tags .
 
 // Flush forces a flush of all the queued statsd payloads.
 func (dc *Collector) Flush() error {
+	if dc.client == nil {
+		return nil
+	}
 	return dc.client.Flush()
 }
 
