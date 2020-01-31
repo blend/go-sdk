@@ -93,7 +93,7 @@ func createTestMigrations(testSchemaName string) []*Group {
 				ColumnNotExists("table_test_foo", "created_foo"),
 				Statements(fmt.Sprintf("ALTER TABLE %s.table_test_foo ADD COLUMN created_foo timestamp not null;", testSchemaName)),
 			)),
-		NewGroup(OptSkipTransaction(), OptActions(
+		NewGroup(OptGroupSkipTransaction(), OptGroupActions(
 			NewStep(
 				IndexNotExists("table_test_foo", "idx_created_foo"),
 				Statements(fmt.Sprintf("CREATE INDEX CONCURRENTLY idx_created_foo ON %s.table_test_foo(created_foo);", testSchemaName)),

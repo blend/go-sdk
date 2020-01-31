@@ -691,7 +691,7 @@ func (i *Invocation) Finish(statement string, r interface{}, res sql.Result, err
 		i.TraceFinisher.FinishQuery(i.Context, res, err)
 	}
 	if err != nil {
-		err = Error(err)
+		err = Error(err, ex.OptMessage(statement))
 	}
 	return err
 }

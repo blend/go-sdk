@@ -72,12 +72,9 @@ func IsPlanCacheKeyUnset(err error) bool {
 
 // Error returns a new exception by parsing (potentially)
 // a driver error into relevant pieces.
-func Error(err error) error {
+func Error(err error, options ...ex.Option) error {
 	if err == nil {
 		return nil
 	}
-	if ex := ex.As(err); ex != nil {
-		return ex
-	}
-	return ex.New(err)
+	return ex.New(err, options...)
 }

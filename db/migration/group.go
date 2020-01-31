@@ -19,12 +19,14 @@ func NewGroup(options ...GroupOption) *Group {
 
 // NewGroupWithActions is a helper for "migrations.NewGroup(migrations.OptActions(actions ...migration.Actionable))"
 func NewGroupWithActions(actions ...Actionable) *Group {
-	return NewGroup(OptActions(actions...))
+	return NewGroup(OptGroupActions(actions...))
 }
 
 // NewGroupWithAction returns a new group with a single action.
-func NewGroupWithAction(guard GuardFunc, action Action) *Group {
-	return NewGroup(OptActions(NewStep(guard, action)))
+func NewGroupWithAction(guard GuardFunc, action Action, options ...GroupOption) *Group {
+	return NewGroup(
+		append([]GroupOption{OptGroupActions(NewStep(guard, action))}, options...)...,
+	)
 }
 
 // Group is an series of migration actions.
@@ -33,21 +35,20 @@ func NewGroupWithAction(guard GuardFunc, action Action) *Group {
 // postgres will not allow within a transaction.
 type Group struct {
 	Actions         []Actionable
+	Tx              *sql.Tx
 	SkipTransaction bool
 }
 
 // Action runs the groups actions within a transaction.
 func (ga *Group) Action(ctx context.Context, c *db.Connection) (err error) {
 	var tx *sql.Tx
-	if !ga.SkipTransaction {
+	if ga.Tx != nil { // if we have a transaction provided to us
+		tx = ga.Tx
+	} else if !ga.SkipTransaction { // if we aren't told to skip transactions
 		tx, err = c.Begin()
 		if err != nil {
 			return
 		}
-	}
-
-	// commit or rollback the transaction if this is a transactional operation
-	if tx != nil {
 		defer func() {
 			if err != nil {
 				if txErr := tx.Rollback(); txErr != nil {

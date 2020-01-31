@@ -228,8 +228,8 @@ func (js *JobScheduler) RunLoop() {
 		js.Latch.Reset()
 	}()
 
-	ctx := js.withLogContext(context.Background(), nil)
-	js.debugf(ctx, "RunLoop: entered running state")
+	loggingCtx := js.withLogContext(context.Background(), nil)
+	js.debugf(loggingCtx, "RunLoop: entered running state")
 
 	if js.JobSchedule != nil {
 		js.NextRuntime = js.JobSchedule.Next(js.NextRuntime)
@@ -240,7 +240,7 @@ func (js *JobScheduler) RunLoop() {
 	// schedule the job to be run.
 	// The run loop will return and the job scheduler will be interpretted as stopped.
 	if js.NextRuntime.IsZero() {
-		js.debugf(ctx, "RunLoop: next runtime is unset, returning")
+		js.debugf(loggingCtx, "RunLoop: next runtime is unset, returning")
 		return
 	}
 
@@ -257,7 +257,7 @@ func (js *JobScheduler) RunLoop() {
 			if js.CanBeScheduled() {
 				// start the job invocation
 				if _, err := js.RunAsync(); err != nil {
-					js.error(ctx, err)
+					js.error(loggingCtx, err)
 				}
 			}
 
@@ -295,11 +295,15 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, er
 	// create a job invocation, or a record of each
 	// individual execution of a job.
 	ji := NewJobInvocation(js.Name())
+	// set up the invocation context, which is held
+	// on the job invocation itself. cycles everywhere.
 	ji.Context = js.withLogContext(ctx, ji)
 	ji.Parameters = MergeJobParameterValues(js.Config().ParameterValues, GetJobParameterValues(ji.Context)) // pull the parameters off the calling context.
 	ji.Context, ji.Cancel = js.withTimeout(ji.Context, timeout)
 	ji.Context = WithJobParameterValues(ji.Context, ji.Parameters)
-	ji.Context = WithJobInvocation(ji.Context, ji) // this is confusing but we need to do it
+	// this is confusing but we need to do it so we can pull the invocation
+	ji.Context = WithJobInvocation(ji.Context, ji)
+	// interlocked set that we're currently executing
 	js.setCurrent(ji)
 
 	var err error
@@ -311,13 +315,6 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, er
 		// it rotates the current and last references
 		// it fires lifecycle events
 		defer func() {
-			if ji.Cancel != nil {
-				ji.Cancel()
-			}
-			if tracer != nil {
-				tracer.Finish(ji.Context, err)
-			}
-
 			if err != nil && IsJobCancelled(err) {
 				js.onJobCancelled(ji.Context, ji)
 			} else if err != nil {
@@ -327,6 +324,16 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, er
 				js.onJobSuccess(ji.Context, ji)
 			}
 			js.onJobComplete(ji.Context, ji)
+
+			// trigger finish at the last possible moment.
+			if tracer != nil {
+				tracer.Finish(ji.Context, err)
+			}
+			// usage note; the ctx will be unusable
+			// after we cancel the ctx
+			if ji.Cancel != nil {
+				ji.Cancel()
+			}
 			js.setLast(ji)
 		}()
 
@@ -389,10 +396,9 @@ func (js *JobScheduler) IsIdle() (isIdle bool) {
 
 func (js *JobScheduler) setLast(ji *JobInvocation) {
 	js.Lock()
-	defer js.Unlock()
-
 	js.Current = nil
 	js.Last = ji
+	js.Unlock()
 }
 
 func (js *JobScheduler) setCurrent(ji *JobInvocation) {
@@ -442,7 +448,7 @@ func (js *JobScheduler) withTimeout(ctx context.Context, timeout time.Duration) 
 func (js *JobScheduler) onJobBegin(ctx context.Context, ji *JobInvocation) {
 	defer func() {
 		if r := recover(); r != nil {
-			js.error(ctx, ex.New(r))
+			js.error(ctx, ex.New(r, ex.OptMessagef("panic recovery in onJobBegin")))
 		}
 	}()
 
@@ -460,7 +466,7 @@ func (js *JobScheduler) onJobBegin(ctx context.Context, ji *JobInvocation) {
 func (js *JobScheduler) onJobComplete(ctx context.Context, ji *JobInvocation) {
 	defer func() {
 		if r := recover(); r != nil {
-			js.error(ctx, ex.New(r))
+			js.error(ctx, ex.New(r, ex.OptMessagef("panic recovery in onJobComplete")))
 		}
 		close(ji.Done)
 	}()
@@ -478,7 +484,7 @@ func (js *JobScheduler) onJobComplete(ctx context.Context, ji *JobInvocation) {
 func (js *JobScheduler) onJobCancelled(ctx context.Context, ji *JobInvocation) {
 	defer func() {
 		if r := recover(); r != nil {
-			js.error(ctx, ex.New(r))
+			js.error(ctx, ex.New(r, ex.OptMessagef("panic recovery in onJobCanceled")))
 		}
 	}()
 
@@ -494,7 +500,7 @@ func (js *JobScheduler) onJobCancelled(ctx context.Context, ji *JobInvocation) {
 func (js *JobScheduler) onJobSuccess(ctx context.Context, ji *JobInvocation) {
 	defer func() {
 		if r := recover(); r != nil {
-			js.error(ctx, ex.New(r))
+			js.error(ctx, ex.New(r, ex.OptMessagef("panic recovery in onJobSuccess")))
 		}
 	}()
 
@@ -518,7 +524,7 @@ func (js *JobScheduler) onJobSuccess(ctx context.Context, ji *JobInvocation) {
 func (js *JobScheduler) onJobError(ctx context.Context, ji *JobInvocation) {
 	defer func() {
 		if r := recover(); r != nil {
-			js.error(ctx, ex.New(r))
+			js.error(ctx, ex.New(r, ex.OptMessagef("panic recovery in onJobError")))
 		}
 	}()
 

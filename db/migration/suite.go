@@ -19,8 +19,15 @@ func New(options ...SuiteOption) *Suite {
 }
 
 // NewWithGroups is a helper for "New(OptGroups(groups ...*Group))"
-func NewWithGroups(actions ...*Group) *Suite {
-	return New(OptGroups(actions...))
+func NewWithGroups(groups ...*Group) *Suite {
+	return New(OptGroups(groups...))
+}
+
+// NewWithActions returns a new suite, with a new group, made up of given actions.
+func NewWithActions(actions ...Actionable) *Suite {
+	return NewWithGroups(
+		NewGroupWithActions(actions...),
+	)
 }
 
 // Suite is a migration suite.
