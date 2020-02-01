@@ -136,8 +136,16 @@ func TestOptBodyBytes(t *testing.T) {
 
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	assert.Nil(err)
-	assert.Equal(bodyBytes, body)
+	assert.Equal(body, bodyBytes)
 	assert.Equal(r.ContentLength, 6)
+	// Also validate that `GetBody()` returns a reader for the body.
+	assert.NotNil(r.GetBody)
+	bodyRC, err := r.GetBody()
+	assert.Nil(err)
+	defer bodyRC.Close()
+	bodyBytes, err = ioutil.ReadAll(bodyRC)
+	assert.Nil(err)
+	assert.Equal(body, bodyBytes)
 }
 
 func TestOptJSONBody(t *testing.T) {

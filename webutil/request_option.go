@@ -193,6 +193,9 @@ func OptBody(contents io.ReadCloser) RequestOption {
 func OptBodyBytes(body []byte) RequestOption {
 	return func(r *http.Request) error {
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		r.GetBody = func() (io.ReadCloser, error) {
+			return ioutil.NopCloser(bytes.NewReader(body)), nil
+		}
 		r.ContentLength = int64(len(body))
 		return nil
 	}
