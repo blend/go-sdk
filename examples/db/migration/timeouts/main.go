@@ -12,7 +12,7 @@ import (
 
 func main() {
 	suite := migration.New(migration.OptGroups(
-		migration.NewGroup(migration.OptActions(
+		migration.NewGroup(migration.OptGroupActions(
 			migration.NewStep(
 				migration.Always(),
 				func(ctx context.Context, connection *db.Connection, tx *sql.Tx) error {

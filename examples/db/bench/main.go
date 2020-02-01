@@ -28,7 +28,7 @@ func createTable(tableName string, log logger.Log, conn *db.Connection) error {
 			fmt.Sprintf("CREATE TABLE %s (id serial not null primary key, name varchar(255))", tableName)),
 	)
 
-	suite := migration.New(migration.OptGroups(migration.NewGroup(migration.OptActions(action))))
+	suite := migration.New(migration.OptGroups(migration.NewGroup(migration.OptGroupActions(action))))
 	suite.Log = log
 	return suite.Apply(context.TODO(), conn)
 }
@@ -42,7 +42,7 @@ func dropTable(tableName string, log logger.Log, conn *db.Connection) error {
 		),
 	)
 
-	suite := migration.New(migration.OptGroups(migration.NewGroup(migration.OptActions(action))))
+	suite := migration.New(migration.OptGroups(migration.NewGroup(migration.OptGroupActions(action))))
 	suite.Log = log
 	return suite.Apply(context.TODO(), conn)
 }

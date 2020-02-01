@@ -25,6 +25,7 @@ func (h *hosted) Start() error {
 	h.state = 1
 	h.stopped = make(chan struct{})
 	close(h.started)
+	<-h.stopped
 	return nil
 }
 
@@ -85,7 +86,18 @@ func TestShutdownBySignalMany(t *testing.T) {
 		close(done)
 	}()
 
+	// wait for the workers to start
+	for _, h := range workers {
+		<-h.(*hosted).started
+	}
+	for _, h := range workers {
+		assert.Equal(1, h.(*hosted).state)
+	}
+
 	close(terminateSignal)
 	<-done
 	assert.Nil(err)
+	for _, h := range workers {
+		assert.Equal(0, h.(*hosted).state)
+	}
 }
