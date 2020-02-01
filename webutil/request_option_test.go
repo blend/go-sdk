@@ -140,14 +140,7 @@ func TestOptBodyBytes(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(body, bodyBytes)
 	assert.Equal(r.ContentLength, 6)
-	// Also validate that `GetBody()` returns a reader for the body.
-	assert.NotNil(r.GetBody)
-	bodyRC, err := r.GetBody()
-	assert.Nil(err)
-	defer bodyRC.Close()
-	bodyBytes, err = ioutil.ReadAll(bodyRC)
-	assert.Nil(err)
-	assert.Equal(body, bodyBytes)
+	validateGetBody(assert, r, body)
 }
 
 func TestOptPostedFiles(t *testing.T) {
@@ -181,14 +174,7 @@ func TestOptPostedFiles(t *testing.T) {
 	)
 	assert.Equal([]byte(expected), bodyBytes)
 	assert.Equal(r.ContentLength, len(expected))
-	// Also validate that `GetBody()` returns a reader for the body.
-	assert.NotNil(r.GetBody)
-	bodyRC, err := r.GetBody()
-	assert.Nil(err)
-	defer bodyRC.Close()
-	bodyBytes, err = ioutil.ReadAll(bodyRC)
-	assert.Nil(err)
-	assert.Equal(expected, bodyBytes)
+	validateGetBody(assert, r, []byte(expected))
 }
 
 func TestOptJSONBody(t *testing.T) {
@@ -207,14 +193,7 @@ func TestOptJSONBody(t *testing.T) {
 	expected := []byte(`{"x":1.25,"y":-5.75}`)
 	assert.Equal(expected, bodyBytes)
 	assert.Equal(r.ContentLength, 20)
-	// Also validate that `GetBody()` returns a reader for the body.
-	assert.NotNil(r.GetBody)
-	bodyRC, err := r.GetBody()
-	assert.Nil(err)
-	defer bodyRC.Close()
-	bodyBytes, err = ioutil.ReadAll(bodyRC)
-	assert.Nil(err)
-	assert.Equal(expected, bodyBytes)
+	validateGetBody(assert, r, expected)
 }
 
 func TestOptXMLBody(t *testing.T) {
@@ -238,4 +217,14 @@ func getBoundary(assert *assert.Assertions, h http.Header) string {
 	ct := h.Get(HeaderContentType)
 	assert.True(strings.HasPrefix(ct, boundaryPrefix))
 	return strings.TrimPrefix(ct, boundaryPrefix)
+}
+
+func validateGetBody(assert *assert.Assertions, r *http.Request, expected []byte) {
+	assert.NotNil(r.GetBody)
+	bodyRC, err := r.GetBody()
+	assert.Nil(err)
+	defer bodyRC.Close()
+	bodyBytes, err := ioutil.ReadAll(bodyRC)
+	assert.Nil(err)
+	assert.Equal(expected, bodyBytes)
 }
