@@ -208,8 +208,10 @@ func TestOptXMLBody(t *testing.T) {
 	assert.Equal(r.Header, http.Header{HeaderContentType: []string{ContentTypeApplicationXML}})
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	assert.Nil(err)
-	assert.Equal(bodyBytes, []byte("<xmlBody><x>hello</x><y>goodbye</y></xmlBody>"))
+	expected := []byte("<xmlBody><x>hello</x><y>goodbye</y></xmlBody>")
+	assert.Equal(expected, bodyBytes)
 	assert.Equal(r.ContentLength, 45)
+	validateGetBody(assert, r, expected)
 }
 
 func getBoundary(assert *assert.Assertions, h http.Header) string {
