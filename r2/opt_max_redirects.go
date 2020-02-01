@@ -6,9 +6,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/blend/go-sdk/logger"
-
 	"github.com/blend/go-sdk/ex"
+	"github.com/blend/go-sdk/logger"
 )
 
 // OptMaxRedirects tells the http client to only follow a given
