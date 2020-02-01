@@ -238,6 +238,9 @@ func OptJSONBody(obj interface{}) RequestOption {
 		}
 		r.Header.Set(HeaderContentType, ContentTypeApplicationJSON)
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(contents))
+		r.GetBody = func() (io.ReadCloser, error) {
+			return ioutil.NopCloser(bytes.NewReader(contents)), nil
+		}
 		r.ContentLength = int64(len(contents))
 		return nil
 	}

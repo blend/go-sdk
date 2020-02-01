@@ -151,9 +151,19 @@ func TestOptJSONBody(t *testing.T) {
 
 	assert.Equal(r.Header, http.Header{HeaderContentType: []string{ContentTypeApplicationJSON}})
 	bodyBytes, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
 	assert.Nil(err)
-	assert.Equal(bodyBytes, []byte(`{"x":1.25,"y":-5.75}`))
+	expected := []byte(`{"x":1.25,"y":-5.75}`)
+	assert.Equal(expected, bodyBytes)
 	assert.Equal(r.ContentLength, 20)
+	// Also validate that `GetBody()` returns a reader for the body.
+	assert.NotNil(r.GetBody)
+	bodyRC, err := r.GetBody()
+	assert.Nil(err)
+	defer bodyRC.Close()
+	bodyBytes, err = ioutil.ReadAll(bodyRC)
+	assert.Nil(err)
+	assert.Equal(expected, bodyBytes)
 }
 
 func TestOptXMLBody(t *testing.T) {
