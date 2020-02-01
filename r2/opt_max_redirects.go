@@ -11,7 +11,7 @@ import (
 )
 
 // OptMaxRedirects tells the http client to only follow a given
-// set of redirects, overriding the standard library default of 10.
+// number of redirects, overriding the standard library default of 10.
 // If a maximum number of redirects is reached, an exception of class `http.ErrUseLastResponse`
 // will be returned, with the redirect history as the exception message.
 // NOTE: that will make the exception message incredibly large.
