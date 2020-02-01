@@ -3,9 +3,11 @@ package webutil
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
@@ -148,6 +150,47 @@ func TestOptBodyBytes(t *testing.T) {
 	assert.Equal(body, bodyBytes)
 }
 
+func TestOptPostedFiles(t *testing.T) {
+	assert := assert.New(t)
+	file1 := PostedFile{Key: "a", FileName: "b.txt", Contents: []byte("hey")}
+	file2 := PostedFile{Key: "c", FileName: "d.txt", Contents: []byte("bye")}
+	opt := OptPostedFiles(file1, file2)
+
+	r := &http.Request{}
+	err := opt(r)
+	assert.Nil(err)
+
+	boundary := getBoundary(assert, r.Header)
+	ct := fmt.Sprintf("multipart/form-data; boundary=%s", boundary)
+	assert.Equal(r.Header, http.Header{HeaderContentType: []string{ct}})
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	assert.Nil(err)
+	expected := fmt.Sprintf(
+		"--%[1]s\r\nContent-Disposition: form-data; name=%[2]q; filename=%[3]q\r\n"+
+			"Content-Type: application/octet-stream\r\n\r\n%[4]s\r\n"+
+			"--%[1]s\r\nContent-Disposition: form-data; name=%[5]q; filename=%[6]q\r\n"+
+			"Content-Type: application/octet-stream\r\n\r\n%[7]s\r\n--%[1]s--\r\n",
+		boundary,
+		file1.Key,
+		file1.FileName,
+		file1.Contents,
+		file2.Key,
+		file2.FileName,
+		file2.Contents,
+	)
+	assert.Equal([]byte(expected), bodyBytes)
+	assert.Equal(r.ContentLength, len(expected))
+	// Also validate that `GetBody()` returns a reader for the body.
+	assert.NotNil(r.GetBody)
+	bodyRC, err := r.GetBody()
+	assert.Nil(err)
+	defer bodyRC.Close()
+	bodyBytes, err = ioutil.ReadAll(bodyRC)
+	assert.Nil(err)
+	assert.Equal(expected, bodyBytes)
+}
+
 func TestOptJSONBody(t *testing.T) {
 	assert := assert.New(t)
 	payload := map[string]float64{"x": 1.25, "y": -5.75}
@@ -188,4 +231,11 @@ func TestOptXMLBody(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(bodyBytes, []byte("<xmlBody><x>hello</x><y>goodbye</y></xmlBody>"))
 	assert.Equal(r.ContentLength, 45)
+}
+
+func getBoundary(assert *assert.Assertions, h http.Header) string {
+	boundaryPrefix := "multipart/form-data; boundary="
+	ct := h.Get(HeaderContentType)
+	assert.True(strings.HasPrefix(ct, boundaryPrefix))
+	return strings.TrimPrefix(ct, boundaryPrefix)
 }

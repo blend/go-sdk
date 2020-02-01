@@ -224,7 +224,13 @@ func OptPostedFiles(files ...PostedFile) RequestOption {
 		if err := w.Close(); err != nil {
 			return err
 		}
-		r.Body = ioutil.NopCloser(b)
+
+		bb := b.Bytes()
+		r.Body = ioutil.NopCloser(bytes.NewReader(bb))
+		r.GetBody = func() (io.ReadCloser, error) {
+			return ioutil.NopCloser(bytes.NewReader(bb)), nil
+		}
+		r.ContentLength = int64(len(bb))
 		return nil
 	}
 }
