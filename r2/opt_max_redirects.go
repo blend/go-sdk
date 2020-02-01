@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/blend/go-sdk/ex"
-	"github.com/blend/go-sdk/logger"
 )
 
 // OptMaxRedirects tells the http client to only follow a given
@@ -22,9 +21,6 @@ func OptMaxRedirects(maxRedirects int) Option {
 		}
 		r.Client.CheckRedirect = func(r *http.Request, via []*http.Request) error {
 			if len(via) >= maxRedirects {
-				r = r.WithContext(logger.WithAnnotations(r.Context(), logger.Annotations{
-					"via": urlStrings(via),
-				}))
 				return ex.New(http.ErrUseLastResponse)
 			}
 			return nil
