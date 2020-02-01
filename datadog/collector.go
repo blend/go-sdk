@@ -19,14 +19,13 @@ var (
 )
 
 // New returns a new stats collector from a config.
-func New(cfg Config) (*Collector, error) {
+func New(cfg Config, opts ...statsd.Option) (*Collector, error) {
 	var client *statsd.Client
 	var err error
 	if cfg.BufferedOrDefault() {
-		client, err = statsd.NewBuffered(cfg.GetHost(), cfg.BufferDepthOrDefault())
-	} else {
-		client, err = statsd.New(cfg.GetHost())
+		opts = append(opts, statsd.WithMaxMessagesPerPayload(cfg.BufferDepthOrDefault()))
 	}
+	client, err = statsd.New(cfg.GetHost(), opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -93,6 +92,14 @@ func (dc *Collector) Histogram(name string, value float64, tags ...string) error
 // TimeInMilliseconds sets a timing value.
 func (dc *Collector) TimeInMilliseconds(name string, value time.Duration, tags ...string) error {
 	return dc.client.TimeInMilliseconds(name, timeutil.Milliseconds(value), dc.tags(tags...), 1.0)
+}
+
+// Flush forces a flush of all the queued statsd payloads.
+func (dc *Collector) Flush() error {
+	if dc.client == nil {
+		return nil
+	}
+	return dc.client.Flush()
 }
 
 // SimpleEvent sends an event w/ title and text
