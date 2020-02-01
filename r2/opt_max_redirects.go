@@ -11,9 +11,8 @@ import (
 
 // OptMaxRedirects tells the http client to only follow a given
 // number of redirects, overriding the standard library default of 10.
-// If a maximum number of redirects is reached, an exception of class `http.ErrUseLastResponse`
-// will be returned, with the redirect history as the exception message.
-// NOTE: that will make the exception message incredibly large.
+// Use the companion helper `ErrIsTooManyRedirects` to test if the returned error
+// from a call indicates the redirect limit was reached.
 func OptMaxRedirects(maxRedirects int) Option {
 	return func(r *Request) error {
 		if r.Client == nil {
