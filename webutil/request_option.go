@@ -193,6 +193,9 @@ func OptBody(contents io.ReadCloser) RequestOption {
 func OptBodyBytes(body []byte) RequestOption {
 	return func(r *http.Request) error {
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		r.GetBody = func() (io.ReadCloser, error) {
+			return ioutil.NopCloser(bytes.NewReader(body)), nil
+		}
 		r.ContentLength = int64(len(body))
 		return nil
 	}
@@ -221,7 +224,13 @@ func OptPostedFiles(files ...PostedFile) RequestOption {
 		if err := w.Close(); err != nil {
 			return err
 		}
-		r.Body = ioutil.NopCloser(b)
+
+		bb := b.Bytes()
+		r.Body = ioutil.NopCloser(bytes.NewReader(bb))
+		r.GetBody = func() (io.ReadCloser, error) {
+			return ioutil.NopCloser(bytes.NewReader(bb)), nil
+		}
+		r.ContentLength = int64(len(bb))
 		return nil
 	}
 }
@@ -238,6 +247,9 @@ func OptJSONBody(obj interface{}) RequestOption {
 		}
 		r.Header.Set(HeaderContentType, ContentTypeApplicationJSON)
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(contents))
+		r.GetBody = func() (io.ReadCloser, error) {
+			return ioutil.NopCloser(bytes.NewReader(contents)), nil
+		}
 		r.ContentLength = int64(len(contents))
 		return nil
 	}
@@ -255,6 +267,9 @@ func OptXMLBody(obj interface{}) RequestOption {
 		}
 		r.Header.Set(HeaderContentType, ContentTypeApplicationXML)
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(contents))
+		r.GetBody = func() (io.ReadCloser, error) {
+			return ioutil.NopCloser(bytes.NewReader(contents)), nil
+		}
 		r.ContentLength = int64(len(contents))
 		return nil
 	}
