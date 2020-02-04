@@ -25,6 +25,7 @@ func (h *hosted) Start() error {
 	h.state = 1
 	h.stopped = make(chan struct{})
 	close(h.started)
+	<-h.stopped
 	return nil
 }
 
@@ -46,7 +47,7 @@ func (h *hosted) NotifyStopped() <-chan struct{} {
 	return h.stopped
 }
 
-func TestGracefulShutdown(t *testing.T) {
+func TestShutdownBySignal(t *testing.T) {
 	assert := assert.New(t)
 
 	hosted := newHosted()
@@ -55,7 +56,7 @@ func TestGracefulShutdown(t *testing.T) {
 	var err error
 	done := make(chan struct{})
 	go func() {
-		err = ShutdownBySignal(terminateSignal, hosted)
+		err = ShutdownBySignal([]Graceful{hosted}, OptShutdownSignal(terminateSignal))
 		close(done)
 	}()
 	<-hosted.NotifyStarted()
@@ -65,7 +66,7 @@ func TestGracefulShutdown(t *testing.T) {
 	assert.Nil(err)
 }
 
-func TestGracefulShutdownMany(t *testing.T) {
+func TestShutdownBySignalMany(t *testing.T) {
 	assert := assert.New(t)
 
 	workers := []Graceful{
@@ -81,15 +82,22 @@ func TestGracefulShutdownMany(t *testing.T) {
 	done := make(chan struct{})
 
 	go func() {
-		err = ShutdownBySignal(terminateSignal, workers...)
+		err = ShutdownBySignal(workers, OptShutdownSignal(terminateSignal))
 		close(done)
 	}()
 
+	// wait for the workers to start
 	for _, h := range workers {
-		<-h.(*hosted).NotifyStarted()
+		<-h.(*hosted).started
+	}
+	for _, h := range workers {
+		assert.Equal(1, h.(*hosted).state)
 	}
 
 	close(terminateSignal)
 	<-done
 	assert.Nil(err)
+	for _, h := range workers {
+		assert.Equal(0, h.(*hosted).state)
+	}
 }
