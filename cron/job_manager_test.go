@@ -109,8 +109,6 @@ func TestEnabledProvider(t *testing.T) {
 
 func TestFiresErrorOnTaskError(t *testing.T) {
 	a := assert.New(t)
-	a.StartTimeout(2000 * time.Millisecond)
-	defer a.EndTimeout()
 
 	agent := logger.All(logger.OptOutput(ioutil.Discard))
 	defer agent.Close()

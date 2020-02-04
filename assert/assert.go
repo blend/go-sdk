@@ -62,9 +62,7 @@ func Empty(opts ...Option) *Assertions {
 // New returns a new instance of `Assertions`.
 func New(t *testing.T, opts ...Option) *Assertions {
 	a := Assertions{
-		T:            t,
-		timerAbort:   make(chan bool),
-		timerAborted: make(chan bool),
+		T: t,
 	}
 	for _, opt := range opts {
 		opt(&a)
@@ -84,10 +82,8 @@ func OptOutput(wr io.Writer) Option {
 
 // Assertions is the main entry point for using the assertions library.
 type Assertions struct {
-	Output       io.Writer
-	T            *testing.T
-	timerAbort   chan bool
-	timerAborted chan bool
+	Output io.Writer
+	T      *testing.T
 }
 
 // assertion represents the actions to take for *each* assertion.
@@ -352,27 +348,6 @@ func (a *Assertions) NoneOfString(target []string, predicate PredicateOfString, 
 // FailNow forces a test failure (useful for debugging).
 func (a *Assertions) FailNow(userMessageComponents ...interface{}) {
 	failNow(a.Output, a.T, "Fatal Assertion Failed", userMessageComponents...)
-}
-
-// StartTimeout starts a timed block.
-func (a *Assertions) StartTimeout(timeout time.Duration, userMessageComponents ...interface{}) {
-	ticker := time.NewTimer(timeout)
-	go func() {
-		select {
-		case <-ticker.C:
-			a.T.Errorf("Timeout Reached")
-			a.T.FailNow()
-		case <-a.timerAbort:
-			a.timerAborted <- true
-			return
-		}
-	}()
-}
-
-// EndTimeout marks a timed block as complete.
-func (a *Assertions) EndTimeout() {
-	a.timerAbort <- true
-	<-a.timerAborted
 }
 
 // Optional is an assertion type that does not stop a test if an assertion fails, simply outputs the error.
