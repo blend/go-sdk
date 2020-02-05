@@ -21,6 +21,7 @@ func NewAutoflushBuffer(handler AutoflushAction, options ...AutoflushBufferOptio
 	for _, option := range options {
 		option(&afb)
 	}
+	afb.Contents = collections.NewRingBufferWithCapacity(afb.MaxLen)
 	return &afb
 }
 
@@ -97,7 +98,6 @@ func (ab *AutoflushBuffer) Start() error {
 		return ex.New(ErrCannotStart)
 	}
 	ab.Latch.Starting()
-	ab.Contents = collections.NewRingBufferWithCapacity(ab.MaxLen)
 	ab.Dispatch()
 	return nil
 }
