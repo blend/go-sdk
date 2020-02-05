@@ -108,20 +108,23 @@ func (dbc *Connection) Open() error {
 }
 
 // Begin starts a new transaction.
-func (dbc *Connection) Begin(opts ...*sql.TxOptions) (*sql.Tx, error) {
+func (dbc *Connection) Begin(opts ...func(*sql.TxOptions)) (*sql.Tx, error) {
+	if dbc.Connection == nil {
+		return nil, ex.New(ErrConnectionClosed)
+	}
 	return dbc.BeginContext(context.Background(), opts...)
 }
 
 // BeginContext starts a new transaction in a givent context.
-func (dbc *Connection) BeginContext(context context.Context, opts ...*sql.TxOptions) (*sql.Tx, error) {
+func (dbc *Connection) BeginContext(context context.Context, opts ...func(*sql.TxOptions)) (*sql.Tx, error) {
 	if dbc.Connection == nil {
 		return nil, ex.New(ErrConnectionClosed)
 	}
-	if len(opts) > 0 {
-		tx, err := dbc.Connection.BeginTx(context, opts[0])
-		return tx, Error(err)
+	var txOptions sql.TxOptions
+	for _, opt := range opts {
+		opt(&txOptions)
 	}
-	tx, err := dbc.Connection.BeginTx(context, nil)
+	tx, err := dbc.Connection.BeginTx(context, &txOptions)
 	return tx, Error(err)
 }
 
