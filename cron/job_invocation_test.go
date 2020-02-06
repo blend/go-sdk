@@ -12,12 +12,12 @@ func TestJobInvocationElapsed(t *testing.T) {
 
 	started := time.Now().UTC()
 
-	assert.Equal(200*time.Millisecond, JobInvocation{
+	assert.Equal(200*time.Millisecond, (&JobInvocation{
 		Started:  started,
 		Complete: started.Add(200 * time.Millisecond),
-	}.Elapsed())
+	}).Elapsed())
 
-	assert.Zero(JobInvocation{
+	assert.Zero((&JobInvocation{
 		Started: started,
-	}.Elapsed())
+	}).Elapsed())
 }
