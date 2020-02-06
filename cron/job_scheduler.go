@@ -116,18 +116,17 @@ func (js *JobScheduler) Start() error {
 		return async.ErrCannotStart
 	}
 	js.Latch.Starting()
-	js.RunLoop() // BIG NOTE; this call *should* block
+	js.RunLoop()
 	return nil
 }
 
 // Stop stops the scheduler.
 func (js *JobScheduler) Stop() error {
-	js.Lock()
-	defer js.Unlock()
-
 	if !js.Latch.CanStop() {
 		return async.ErrCannotStop
 	}
+	js.Lock()
+	defer js.Unlock()
 
 	ctx := js.withLogContext(context.Background(), nil)
 	js.Latch.Stopping()
@@ -219,20 +218,25 @@ func (js *JobScheduler) Cancel() error {
 }
 
 // RunLoop is the main scheduler loop.
-// it alarms on the next runtime and forks a new routine to run the job.
-// It can be aborted with the scheduler's async.Latch.
+// This call blocks.
+// It alarms on the next runtime and forks a new routine to run the job.
+// It can be aborted with the scheduler's async.Latch, or calling `.Stop()`.
+// If this function exits for any reason, it will mark the scheduler as stopped.
 func (js *JobScheduler) RunLoop() {
+	loggingCtx := js.withLogContext(context.Background(), nil)
+
 	js.Latch.Started()
 	defer func() {
 		js.Latch.Stopped()
 		js.Latch.Reset()
+		js.debugf(loggingCtx, "RunLoop: exiting")
 	}()
 
-	loggingCtx := js.withLogContext(context.Background(), nil)
 	js.debugf(loggingCtx, "RunLoop: entered running state")
 
 	if js.JobSchedule != nil {
 		js.NextRuntime = js.JobSchedule.Next(js.NextRuntime)
+		js.debugf(loggingCtx, "RunLoop: setting next runtime `%s`", js.NextRuntime.Format(time.RFC3339Nano))
 	}
 
 	// if the schedule returns a zero timestamp
@@ -264,11 +268,14 @@ func (js *JobScheduler) RunLoop() {
 			// set up the next runtime.
 			if js.JobSchedule != nil {
 				js.NextRuntime = js.JobSchedule.Next(js.NextRuntime)
+				js.debugf(loggingCtx, "RunLoop: setting next runtime `%s`", js.NextRuntime.Format(time.RFC3339Nano))
 			} else {
 				js.NextRuntime = Zero
+				js.debugf(loggingCtx, "RunLoop: zeroing next runtime")
 			}
 
 		case <-js.Latch.NotifyStopping():
+			js.debugf(loggingCtx, "RunLoop: stop signal received")
 			// note: we bail hard here
 			// because the job executions in flight are
 			// handled by the context cancellation.
