@@ -255,7 +255,7 @@ func (jm *JobManager) CancelJob(jobName string) (err error) {
 		err = ex.New(ErrJobNotFound, ex.OptMessagef("job: %s", jobName))
 		return
 	}
-	jobScheduler.Cancel()
+	err = jobScheduler.Cancel()
 	return
 }
 

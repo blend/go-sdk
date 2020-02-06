@@ -140,13 +140,13 @@ func (twe testWithDisabled) Execute(ctx context.Context) error {
 }
 
 type mockTracer struct {
-	OnStart  func(context.Context)
+	OnStart  func(context.Context, string)
 	OnFinish func(context.Context, error)
 }
 
-func (mt mockTracer) Start(ctx context.Context) (context.Context, TraceFinisher) {
+func (mt mockTracer) Start(ctx context.Context, jobName string) (context.Context, TraceFinisher) {
 	if mt.OnStart != nil {
-		mt.OnStart(ctx)
+		mt.OnStart(ctx, jobName)
 	}
 	return ctx, &mockTraceFinisher{Parent: &mt}
 }

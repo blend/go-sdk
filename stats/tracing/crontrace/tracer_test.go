@@ -10,7 +10,6 @@ import (
 	"github.com/opentracing/opentracing-go/mocktracer"
 
 	"github.com/blend/go-sdk/assert"
-	"github.com/blend/go-sdk/cron"
 	"github.com/blend/go-sdk/stats/tracing"
 )
 
@@ -19,9 +18,8 @@ func TestStart(t *testing.T) {
 	mockTracer := mocktracer.New()
 	cronTracer := Tracer(mockTracer)
 
-	ji := cron.NewJobInvocation("test_job")
-	ctx := cron.WithJobInvocation(context.Background(), ji)
-	ctx, _ = cronTracer.Start(ctx)
+	ctx := context.Background()
+	ctx, _ = cronTracer.Start(ctx, "test_job")
 
 	span := opentracing.SpanFromContext(ctx)
 	mockSpan := span.(*mocktracer.MockSpan)
@@ -39,9 +37,8 @@ func TestFinish(t *testing.T) {
 	cronTracer := Tracer(mockTracer)
 	testStartTime := time.Now()
 
-	ji := cron.NewJobInvocation("test_job")
-	ctx := cron.WithJobInvocation(context.Background(), ji)
-	ctx, tf := cronTracer.Start(ctx)
+	ctx := context.Background()
+	ctx, tf := cronTracer.Start(ctx, "tracer-test")
 
 	tf.Finish(ctx, nil)
 	span := opentracing.SpanFromContext(ctx)
@@ -57,14 +54,11 @@ func TestFinishError(t *testing.T) {
 	cronTracer := Tracer(mockTracer)
 	testStartTime := time.Now()
 
-	ji := cron.NewJobInvocation("test_job")
-	ji.Err = fmt.Errorf("error")
-
-	ctx := cron.WithJobInvocation(context.Background(), ji)
+	ctx := context.Background()
 	// Start Span from Background Context
-	ctx, tf := cronTracer.Start(ctx)
+	ctx, tf := cronTracer.Start(ctx, "tracer-test")
 
-	tf.Finish(ctx, ji.Err)
+	tf.Finish(ctx, fmt.Errorf("error"))
 	span := opentracing.SpanFromContext(ctx)
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.True(testStartTime.Before(mockSpan.FinishTime))

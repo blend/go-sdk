@@ -30,7 +30,6 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 
 // JobScheduler is a job instance.
 type JobScheduler struct {
-	sync.Mutex
 	Latch *async.Latch
 
 	Job          Job
@@ -42,7 +41,9 @@ type JobScheduler struct {
 	Log    logger.Log
 
 	NextRuntime time.Time
+	CurrentLock sync.Mutex
 	Current     *JobInvocation
+	LastLock    sync.Mutex
 	Last        *JobInvocation
 }
 
@@ -125,8 +126,6 @@ func (js *JobScheduler) Stop() error {
 	if !js.Latch.CanStop() {
 		return async.ErrCannotStop
 	}
-	js.Lock()
-	defer js.Unlock()
 
 	ctx := js.withLogContext(context.Background())
 	js.Latch.Stopping()
@@ -137,9 +136,11 @@ func (js *JobScheduler) Stop() error {
 			var cancel func()
 			ctx, cancel = js.withTimeout(ctx, gracePeriod)
 			defer cancel()
-			js.waitCancelled(ctx, js.Current)
+
+			js.waitCurrentDone(ctx)
+		} else {
+			js.Current.Cancel()
 		}
-		js.Current.Cancel()
 	}
 
 	<-js.Latch.NotifyStopped()
@@ -211,9 +212,10 @@ func (js *JobScheduler) Cancel() error {
 	if gracePeriod > 0 {
 		ctx, cancel := js.withTimeout(context.Background(), gracePeriod)
 		defer cancel()
-		js.waitCancelled(ctx, js.Current)
+		js.waitCurrentDone(ctx)
+	} else {
+		js.Current.Cancel()
 	}
-	js.Current.Cancel()
 	return nil
 }
 
@@ -292,58 +294,40 @@ func (js *JobScheduler) RunAsync() (*JobInvocation, error) {
 
 // RunAsyncContext starts a job invocation with a given context.
 func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, error) {
-	// if there is already another instance running
 	if !js.IsIdle() {
 		return nil, ex.New(ErrJobAlreadyRunning, ex.OptMessagef("job: %s", js.Name()))
 	}
 
 	ji := NewJobInvocation(js.Name())
-	ji.Parameters = MergeJobParameterValues(js.Config().ParameterValues, GetJobParameterValues(ctx)) // pull the parameters off the calling context.
+	ji.Parameters = MergeJobParameterValues(js.Config().ParameterValues, GetJobParameterValues(ctx))
 	ctx = js.withInvocationLogContext(ctx, ji)
 	ctx, ji.Cancel = js.withTimeout(ctx, js.Config().TimeoutOrDefault())
-	ctx = WithJobParameterValues(ctx, ji.Parameters)
-	// this is confusing but we need to do it so we can pull the invocation
 	ctx = WithJobInvocation(ctx, ji)
-	// interlocked set that we're currently executing
 	js.setCurrent(ji)
 
 	var err error
 	var tracer TraceFinisher
 	go func() {
-		// this defer runs all cleanup actions
-		// it recovers panics
-		// it cancels the timeout (if relevant)
-		// it rotates the current and last references
-		// it fires lifecycle events
 		defer func() {
 			if err != nil && IsJobCancelled(err) {
-				js.onJobCancelled(ctx, ji)
+				js.onJobCancelled(ctx)
 			} else if err != nil {
-				ji.Err = err
-				js.onJobError(ctx, ji)
+				js.onJobError(ctx, err)
 			} else {
-				js.onJobSuccess(ctx, ji)
+				js.onJobSuccess(ctx)
 			}
-
-			js.onJobComplete(ctx, ji)
-
-			// trigger finish at the last possible moment.
+			js.onJobComplete(ctx)
 			if tracer != nil {
 				tracer.Finish(ctx, err)
 			}
-			// usage note; the ctx will be unusable
-			// after we cancel the ctx
-			if ji.Cancel != nil {
-				ji.Cancel()
-			}
+			ji.Cancel()
 			js.setLast(ji)
 		}()
 
 		if js.Tracer != nil {
-			ctx, tracer = js.Tracer.Start(ctx)
+			ctx, tracer = js.Tracer.Start(ctx, js.Name())
 		}
-
-		js.onJobBegin(ctx, ji)
+		js.onJobBegin(ctx)
 
 		select {
 		case <-ctx.Done():
@@ -353,6 +337,7 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, er
 			return
 		}
 	}()
+
 	return ji, nil
 }
 
@@ -387,9 +372,9 @@ func (js *JobScheduler) CanBeScheduled() bool {
 
 // IsIdle returns if the job is not currently running.
 func (js *JobScheduler) IsIdle() (isIdle bool) {
-	js.Lock()
+	js.CurrentLock.Lock()
 	isIdle = js.Current == nil
-	js.Unlock()
+	js.CurrentLock.Unlock()
 	return
 }
 
@@ -398,29 +383,32 @@ func (js *JobScheduler) IsIdle() (isIdle bool) {
 //
 
 func (js *JobScheduler) setLast(ji *JobInvocation) {
-	js.Lock()
+	js.LastLock.Lock()
+	js.CurrentLock.Lock()
 	js.Current = nil
 	js.Last = ji
-	js.Unlock()
+	js.CurrentLock.Unlock()
+	js.LastLock.Unlock()
 }
 
 func (js *JobScheduler) setCurrent(ji *JobInvocation) {
-	js.Lock()
+	js.CurrentLock.Lock()
 	js.Current = ji
-	js.Unlock()
+	js.CurrentLock.Unlock()
 }
 
-func (js *JobScheduler) waitCancelled(ctx context.Context, ji *JobInvocation) {
+func (js *JobScheduler) waitCurrentDone(ctx context.Context) {
 	deadlinePoll := time.Tick(500 * time.Millisecond)
 	for {
-		if ji == nil || ji.Status != JobInvocationStatusRunning {
+		if js.Current == nil || js.Current.Status != JobInvocationStatusRunning {
 			return
 		}
 		select {
-		case <-ctx.Done():
-			ji.Cancel()
+		case <-ctx.Done(): // if the outer context cancels (this is typically a parent timeout)
+			js.Current.Cancel()
 			return
 		case <-deadlinePoll:
+			// tick over the loop to check if the current job is complete
 			continue
 		}
 	}
@@ -448,115 +436,125 @@ func (js *JobScheduler) withTimeout(ctx context.Context, timeout time.Duration) 
 
 // job lifecycle hooks
 
-func (js *JobScheduler) onJobBegin(ctx context.Context, ji *JobInvocation) {
+func (js *JobScheduler) onJobBegin(ctx context.Context) {
 	defer func() {
 		if r := recover(); r != nil {
 			js.error(ctx, ex.New(r, ex.OptMessagef("panic recovery in onJobBegin")))
 		}
 	}()
-	ji.Lock()
-	defer ji.Unlock()
 
-	ji.Started = time.Now().UTC()
-	ji.Status = JobInvocationStatusRunning
+	js.CurrentLock.Lock()
+	js.Current.Started = time.Now().UTC()
+	js.Current.Status = JobInvocationStatusRunning
+	id := js.Current.ID
+	js.CurrentLock.Unlock()
 
 	if lifecycle := js.Lifecycle(); lifecycle.OnBegin != nil {
 		lifecycle.OnBegin(ctx)
 	}
 	if js.Log != nil && !js.Config().ShouldSkipLoggerListenersOrDefault() {
-		js.logTrigger(ctx, NewEvent(FlagBegin, js.Name(), OptEventJobInvocation(ji.ID)))
+		js.logTrigger(ctx, NewEvent(FlagBegin, js.Name(), OptEventJobInvocation(id)))
 	}
 }
 
-func (js *JobScheduler) onJobComplete(ctx context.Context, ji *JobInvocation) {
+func (js *JobScheduler) onJobComplete(ctx context.Context) {
 	defer func() {
 		if r := recover(); r != nil {
 			js.error(ctx, ex.New(r, ex.OptMessagef("panic recovery in onJobComplete")))
 		}
-		close(ji.Done)
+		close(js.Current.Done)
 	}()
 
-	ji.Lock()
-	defer ji.Unlock()
-
-	ji.Complete = time.Now().UTC()
+	js.CurrentLock.Lock()
+	js.Current.Complete = time.Now().UTC()
+	id := js.Current.ID
+	elapsed := js.Current.Elapsed()
+	js.CurrentLock.Unlock()
 
 	if lifecycle := js.Lifecycle(); lifecycle.OnComplete != nil {
 		lifecycle.OnComplete(ctx)
 	}
 	if js.Log != nil && !js.Config().ShouldSkipLoggerListenersOrDefault() {
-		js.logTrigger(ctx, NewEvent(FlagComplete, js.Name(), OptEventElapsed(ji.Elapsed())))
+		js.logTrigger(ctx, NewEvent(FlagComplete, js.Name(), OptEventJobInvocation(id), OptEventElapsed(elapsed)))
 	}
 }
 
-func (js *JobScheduler) onJobCancelled(ctx context.Context, ji *JobInvocation) {
+func (js *JobScheduler) onJobCancelled(ctx context.Context) {
 	defer func() {
 		if r := recover(); r != nil {
 			js.error(ctx, ex.New(r, ex.OptMessagef("panic recovery in onJobCanceled")))
 		}
 	}()
 
-	ji.Lock()
-	defer ji.Unlock()
-
-	ji.Status = JobInvocationStatusCancelled
+	js.CurrentLock.Lock()
+	js.Current.Status = JobInvocationStatusCancelled
+	id := js.Current.ID
+	elapsed := js.Current.Elapsed()
+	js.CurrentLock.Unlock()
 
 	if lifecycle := js.Lifecycle(); lifecycle.OnCancellation != nil {
 		lifecycle.OnCancellation(ctx)
 	}
 	if js.Log != nil && !js.Config().ShouldSkipLoggerListenersOrDefault() {
-		js.logTrigger(ctx, NewEvent(FlagCancelled, js.Name(), OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed())))
+		js.logTrigger(ctx, NewEvent(FlagCancelled, js.Name(), OptEventJobInvocation(id), OptEventElapsed(elapsed)))
 	}
 }
 
-func (js *JobScheduler) onJobSuccess(ctx context.Context, ji *JobInvocation) {
+func (js *JobScheduler) onJobSuccess(ctx context.Context) {
 	defer func() {
 		if r := recover(); r != nil {
 			js.error(ctx, ex.New(r, ex.OptMessagef("panic recovery in onJobSuccess")))
 		}
 	}()
 
-	ji.Lock()
-	defer ji.Unlock()
-
-	ji.Status = JobInvocationStatusSuccess
+	js.CurrentLock.Lock()
+	js.Current.Status = JobInvocationStatusSuccess
+	id := js.Current.ID
+	elapsed := js.Current.Elapsed()
+	js.CurrentLock.Unlock()
 
 	if lifecycle := js.Lifecycle(); lifecycle.OnSuccess != nil {
 		lifecycle.OnSuccess(ctx)
 	}
 	if js.Log != nil && !js.Config().ShouldSkipLoggerListenersOrDefault() {
-		js.logTrigger(ctx, NewEvent(FlagSuccess, js.Name(), OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed())))
+		js.logTrigger(ctx, NewEvent(FlagSuccess, js.Name(), OptEventJobInvocation(id), OptEventElapsed(elapsed)))
 	}
 	if js.Last != nil && js.Last.Err != nil {
 		if lifecycle := js.Lifecycle(); lifecycle.OnFixed != nil {
 			lifecycle.OnFixed(ctx)
 		}
 		if js.Log != nil && !js.Config().ShouldSkipLoggerListenersOrDefault() {
-			js.logTrigger(ctx, NewEvent(FlagFixed, js.Name(), OptEventElapsed(ji.Elapsed())))
+			js.logTrigger(ctx, NewEvent(FlagFixed, js.Name(), OptEventJobInvocation(id), OptEventElapsed(elapsed)))
 		}
 	}
 }
 
-func (js *JobScheduler) onJobError(ctx context.Context, ji *JobInvocation) {
+func (js *JobScheduler) onJobError(ctx context.Context, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			js.error(ctx, ex.New(r, ex.OptMessagef("panic recovery in onJobError")))
 		}
 	}()
 
-	ji.Lock()
-	defer ji.Unlock()
-
-	ji.Status = JobInvocationStatusErrored
+	js.CurrentLock.Lock()
+	js.Current.Status = JobInvocationStatusErrored
+	js.Current.Err = err
+	id := js.Current.ID
+	elapsed := js.Current.Elapsed()
+	js.CurrentLock.Unlock()
 
 	if lifecycle := js.Lifecycle(); lifecycle.OnError != nil {
 		lifecycle.OnError(ctx)
 	}
 	if js.Log != nil && !js.Config().ShouldSkipLoggerListenersOrDefault() {
-		js.logTrigger(ctx, NewEvent(FlagErrored, js.Name(), OptEventErr(ji.Err), OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed())))
+		js.logTrigger(ctx, NewEvent(FlagErrored, js.Name(),
+			OptEventJobInvocation(id),
+			OptEventErr(err),
+			OptEventElapsed(elapsed),
+		))
 	}
-	if ji.Err != nil {
-		js.error(ctx, ji.Err)
+	if err != nil {
+		js.error(ctx, err)
 	}
 
 	if js.Last != nil && js.Last.Err == nil {
@@ -564,7 +562,11 @@ func (js *JobScheduler) onJobError(ctx context.Context, ji *JobInvocation) {
 			lifecycle.OnBroken(ctx)
 		}
 		if js.Log != nil && !js.Config().ShouldSkipLoggerListenersOrDefault() {
-			js.logTrigger(ctx, NewEvent(FlagBroken, js.Name(), OptEventJobInvocation(ji.ID), OptEventElapsed(ji.Elapsed())))
+			js.logTrigger(ctx, NewEvent(FlagBroken, js.Name(),
+				OptEventJobInvocation(id),
+				OptEventErr(err),
+				OptEventElapsed(elapsed)),
+			)
 		}
 	}
 }

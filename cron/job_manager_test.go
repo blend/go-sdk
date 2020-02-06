@@ -152,17 +152,17 @@ func TestManagerTracer(t *testing.T) {
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 	var didCallStart, didCallFinish bool
-	var startTaskCorrect, finishTaskCorrect, errorUnset bool
+	var errorUnset bool
+	var foundJobName string
 	manager := New(OptTracer(&mockTracer{
-		OnStart: func(ctx context.Context) {
+		OnStart: func(ctx context.Context, jobName string) {
 			defer wg.Done()
 			didCallStart = true
-			startTaskCorrect = GetJobInvocation(ctx).JobName == "tracer-test"
+			foundJobName = jobName
 		},
 		OnFinish: func(ctx context.Context, err error) {
 			defer wg.Done()
 			didCallFinish = true
-			finishTaskCorrect = GetJobInvocation(ctx).JobName == "tracer-test"
 			errorUnset = err == nil
 		},
 	}))
@@ -172,9 +172,8 @@ func TestManagerTracer(t *testing.T) {
 	wg.Wait()
 	assert.True(didCallStart)
 	assert.True(didCallFinish)
-	assert.True(startTaskCorrect)
-	assert.True(finishTaskCorrect)
 	assert.True(errorUnset)
+	assert.Equal("tracer-test", foundJobName)
 }
 
 func TestJobManagerJobLifecycle(t *testing.T) {

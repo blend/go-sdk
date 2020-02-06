@@ -2,7 +2,6 @@ package cron
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/blend/go-sdk/uuid"
@@ -18,6 +17,23 @@ func NewJobInvocation(jobName string) *JobInvocation {
 	}
 }
 
+type contextKeyJobInvocation struct{}
+
+// WithJobInvocation adds job invocation to a context.
+func WithJobInvocation(ctx context.Context, ji *JobInvocation) context.Context {
+	return context.WithValue(ctx, contextKeyJobInvocation{}, ji)
+}
+
+// GetJobInvocation gets the job invocation from a given context.
+func GetJobInvocation(ctx context.Context) *JobInvocation {
+	if value := ctx.Value(contextKeyJobInvocation{}); value != nil {
+		if typed, ok := value.(*JobInvocation); ok {
+			return typed
+		}
+	}
+	return nil
+}
+
 // NewJobInvocationID returns a new pseudo-unique job invocation identifier.
 func NewJobInvocationID() string {
 	return uuid.V4().String()
@@ -25,8 +41,6 @@ func NewJobInvocationID() string {
 
 // JobInvocation is metadata for a job invocation (or instance of a job running).
 type JobInvocation struct {
-	sync.Mutex `json:"-"`
-
 	ID      string `json:"id"`
 	JobName string `json:"jobName"`
 

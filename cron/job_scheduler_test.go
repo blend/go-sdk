@@ -65,7 +65,7 @@ func TestJobSchedulerLabels(t *testing.T) {
 func TestJobSchedulerJobParameterValues(t *testing.T) {
 	assert := assert.New(t)
 
-	var contextParameters, invocationParameters JobParameters
+	var contextParameters JobParameters
 
 	done := make(chan struct{})
 	js := NewJobScheduler(
@@ -73,8 +73,6 @@ func TestJobSchedulerJobParameterValues(t *testing.T) {
 			OptJobName("test"),
 			OptJobAction(func(ctx context.Context) error {
 				defer close(done)
-				ji := GetJobInvocation(ctx)
-				invocationParameters = ji.Parameters
 				contextParameters = GetJobParameterValues(ctx)
 				return nil
 			}),
@@ -92,13 +90,12 @@ func TestJobSchedulerJobParameterValues(t *testing.T) {
 	assert.Equal(testParameters, ji.Parameters)
 	<-done
 	assert.Equal(testParameters, contextParameters)
-	assert.Equal(testParameters, invocationParameters)
 }
 
 func TestJobSchedulerJobParameterValuesDefault(t *testing.T) {
 	assert := assert.New(t)
 
-	var contextParameters, invocationParameters JobParameters
+	var contextParameters JobParameters
 
 	defaultParameters := JobParameters{
 		"bailey":  "woof",
@@ -111,9 +108,7 @@ func TestJobSchedulerJobParameterValuesDefault(t *testing.T) {
 			OptJobName("test"),
 			OptJobAction(func(ctx context.Context) error {
 				defer close(done)
-				ji := GetJobInvocation(ctx)
-				invocationParameters = ji.Parameters
-				contextParameters = GetJobParameterValues(ctx)
+				contextParameters = GetJobInvocation(ctx).Parameters
 				return nil
 			}),
 			OptJobConfig(JobConfig{
@@ -136,7 +131,11 @@ func TestJobSchedulerJobParameterValuesDefault(t *testing.T) {
 	assert.Equal("bar", ji.Parameters["foo"])
 	assert.Equal("loo", ji.Parameters["moo"])
 	<-done
-	assert.Equal(invocationParameters, contextParameters)
+	assert.NotEmpty(contextParameters)
+	assert.Equal("dog", contextParameters["bailey"])
+	assert.Equal("value", contextParameters["default"])
+	assert.Equal("bar", contextParameters["foo"])
+	assert.Equal("loo", contextParameters["moo"])
 }
 
 func TestSchedulerImediatelyThen(t *testing.T) {
