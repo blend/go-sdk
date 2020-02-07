@@ -190,11 +190,9 @@ type lifecycleTest struct {
 }
 
 func (job *lifecycleTest) Name() string { return "lifecycle-test" }
-
 func (job *lifecycleTest) Execute(ctx context.Context) error {
 	return job.Action(ctx)
 }
-
 func (job *lifecycleTest) Lifecycle() JobLifecycle {
 	return JobLifecycle{
 		OnBegin:    job.OnBegin,
@@ -205,7 +203,6 @@ func (job *lifecycleTest) Lifecycle() JobLifecycle {
 		OnFixed:    job.OnFixed,
 	}
 }
-
 func (job *lifecycleTest) OnBegin(ctx context.Context) {
 	job.Starts++
 }
@@ -226,7 +223,6 @@ func (job *lifecycleTest) OnSuccess(ctx context.Context) {
 	job.SuccessSignal = make(chan struct{})
 	job.Successes++
 }
-
 func (job *lifecycleTest) OnBroken(ctx context.Context) {
 	job.Lock()
 	defer job.Unlock()

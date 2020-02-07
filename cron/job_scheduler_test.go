@@ -41,7 +41,7 @@ func TestJobSchedulerLabels(t *testing.T) {
 
 	job := NewJob(OptJobName("test"), OptJobAction(noop))
 	js := NewJobScheduler(job)
-	js.Last = &JobInvocation{
+	js.last = &JobInvocation{
 		Status: JobInvocationStatusSuccess,
 	}
 	labels := js.Labels()
@@ -67,12 +67,10 @@ func TestJobSchedulerJobParameterValues(t *testing.T) {
 
 	var contextParameters JobParameters
 
-	done := make(chan struct{})
 	js := NewJobScheduler(
 		NewJob(
 			OptJobName("test"),
 			OptJobAction(func(ctx context.Context) error {
-				defer close(done)
 				contextParameters = GetJobParameterValues(ctx)
 				return nil
 			}),
@@ -85,7 +83,7 @@ func TestJobSchedulerJobParameterValues(t *testing.T) {
 		"bailey": "dog",
 	}
 
-	ji, err := js.RunAsyncContext(WithJobParameterValues(context.Background(), testParameters))
+	ji, done, err := js.RunAsyncContext(WithJobParameterValues(context.Background(), testParameters))
 	assert.Nil(err)
 	assert.Equal(testParameters, ji.Parameters)
 	<-done
@@ -102,12 +100,10 @@ func TestJobSchedulerJobParameterValuesDefault(t *testing.T) {
 		"default": "value",
 	}
 
-	done := make(chan struct{})
 	js := NewJobScheduler(
 		NewJob(
 			OptJobName("test"),
 			OptJobAction(func(ctx context.Context) error {
-				defer close(done)
 				contextParameters = GetJobInvocation(ctx).Parameters
 				return nil
 			}),
@@ -124,8 +120,9 @@ func TestJobSchedulerJobParameterValuesDefault(t *testing.T) {
 		"bailey": "dog",
 	}
 
-	ji, err := js.RunAsyncContext(WithJobParameterValues(context.Background(), runParameters))
+	ji, done, err := js.RunAsyncContext(WithJobParameterValues(context.Background(), runParameters))
 	assert.Nil(err)
+	assert.NotNil(done)
 	assert.Equal("dog", ji.Parameters["bailey"])
 	assert.Equal("value", ji.Parameters["default"])
 	assert.Equal("bar", ji.Parameters["foo"])

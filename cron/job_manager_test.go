@@ -123,7 +123,7 @@ func TestFiresErrorOnTaskError(t *testing.T) {
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 
-	agent.Listen(logger.Error, "foo", func(_ context.Context, e logger.Event) {
+	agent.Listen(logger.Error, uuid.V4().String(), func(_ context.Context, e logger.Event) {
 		defer wg.Done()
 		errorDidFire = true
 		if typed, isTyped := e.(logger.ErrorEvent); isTyped {
@@ -132,18 +132,21 @@ func TestFiresErrorOnTaskError(t *testing.T) {
 			}
 		}
 	})
-	manager.LoadJobs(NewJob(
+	job := NewJob(
 		OptJobName("error_test"),
 		OptJobAction(func(ctx context.Context) error {
 			defer wg.Done()
 			return fmt.Errorf("this is only a test")
 		}),
-	))
-	manager.RunJob("error_test")
+	)
+	manager.LoadJobs(job)
+	_, done, err := manager.RunJob(job.Name())
+	a.Nil(err)
 	wg.Wait()
 
 	a.True(errorDidFire)
 	a.True(errorMatched)
+	<-done
 }
 
 func TestManagerTracer(t *testing.T) {
@@ -184,7 +187,7 @@ func TestJobManagerJobLifecycle(t *testing.T) {
 	defer jm.Stop()
 
 	var shouldFail bool
-	j := newLifecycleTest(func(_ context.Context) error {
+	j := newLifecycleTest(func(ctx context.Context) error {
 		defer func() {
 			shouldFail = !shouldFail
 		}()
@@ -195,22 +198,22 @@ func TestJobManagerJobLifecycle(t *testing.T) {
 	})
 	jm.LoadJobs(j)
 
-	completeSignal := j.CompleteSignal
-	ji, err := jm.RunJob("lifecycle-test")
+	successSignal := j.SuccessSignal
+	_, done, err := jm.RunJob(j.Name())
 	assert.Nil(err)
-	<-ji.Done
-	<-completeSignal
+	<-done
+	<-successSignal
 
 	brokenSignal := j.BrokenSignal
-	ji, err = jm.RunJob("lifecycle-test")
+	_, done, err = jm.RunJob(j.Name())
 	assert.Nil(err)
-	<-ji.Done
+	<-done
 	<-brokenSignal
 
 	fixedSignal := j.FixedSignal
-	ji, err = jm.RunJob("lifecycle-test")
+	_, done, err = jm.RunJob(j.Name())
 	assert.Nil(err)
-	<-ji.Done
+	<-done
 	<-fixedSignal
 
 	assert.Equal(3, j.Starts)
@@ -299,23 +302,26 @@ func TestJobManagerIsRunning(t *testing.T) {
 func TestJobManagerCancelJob(t *testing.T) {
 	assert := assert.New(t)
 
-	jm := New()
-
 	proceed := make(chan struct{})
 	cancelled := make(chan struct{})
-	jm.LoadJobs(NewJob(OptJobName("is-running-test"), OptJobAction(func(ctx context.Context) error {
-		close(proceed)
-		<-ctx.Done()
-		return nil
-	}), OptJobOnCancellation(func(_ context.Context) {
-		close(cancelled)
-	})))
 
-	jm.RunJob("is-running-test")
+	jm := New()
+	job := NewJob(OptJobName("is-running-test"), OptJobAction(func(ctx context.Context) error {
+		close(proceed)
+		<-ctx.Done() // if the job cancels
+		return nil   // return nothing
+	}), OptJobOnCancellation(func(_ context.Context) {
+		close(cancelled) // but signal on the lifecycle event
+	}))
+	jm.LoadJobs(job)
+
+	_, done, err := jm.RunJob(job.Name())
+	assert.Nil(err)
 	<-proceed
-	assert.Nil(jm.CancelJob("is-running-test"))
+	assert.Nil(jm.CancelJob(job.Name()))
 	<-cancelled
-	assert.False(jm.IsJobRunning("is-running-test"))
+	assert.False(jm.IsJobRunning(job.Name()))
+	<-done
 }
 
 func TestJobManagerEnableDisableJob(t *testing.T) {

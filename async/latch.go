@@ -1,6 +1,7 @@
 package async
 
 import (
+	"sync"
 	"sync/atomic"
 )
 
@@ -27,6 +28,8 @@ alert (1) listener as it is buffered.
 In order to start a `stopped` latch, you must call `.Reset()` first to initialize channels.
 */
 type Latch struct {
+	sync.Mutex
+
 	state int32
 
 	starting chan struct{}
@@ -37,11 +40,13 @@ type Latch struct {
 
 // Reset resets the latch.
 func (l *Latch) Reset() {
-	l.state = LatchStopped
+	l.Lock()
+	atomic.StoreInt32(&l.state, LatchStopped)
 	l.starting = make(chan struct{}, 1)
 	l.started = make(chan struct{}, 1)
 	l.stopping = make(chan struct{}, 1)
 	l.stopped = make(chan struct{}, 1)
+	l.Unlock()
 }
 
 // CanStart returns if the latch can start.
@@ -78,7 +83,9 @@ func (l *Latch) IsStopped() (isStopped bool) {
 // It is used to coordinate the transition from stopped -> starting.
 // There can only be (1) effective listener at a time for these events.
 func (l *Latch) NotifyStarting() (notifyStarting <-chan struct{}) {
+	l.Lock()
 	notifyStarting = l.starting
+	l.Unlock()
 	return
 }
 
@@ -86,7 +93,9 @@ func (l *Latch) NotifyStarting() (notifyStarting <-chan struct{}) {
 // It is used to coordinate the transition from starting -> started.
 // There can only be (1) effective listener at a time for these events.
 func (l *Latch) NotifyStarted() (notifyStarted <-chan struct{}) {
+	l.Lock()
 	notifyStarted = l.started
+	l.Unlock()
 	return
 }
 
@@ -94,7 +103,9 @@ func (l *Latch) NotifyStarted() (notifyStarted <-chan struct{}) {
 // It is used to trigger the transition from running -> stopping -> stopped.
 // There can only be (1) effective listener at a time for these events.
 func (l *Latch) NotifyStopping() (notifyStopping <-chan struct{}) {
+	l.Lock()
 	notifyStopping = l.stopping
+	l.Unlock()
 	return
 }
 
@@ -102,7 +113,9 @@ func (l *Latch) NotifyStopping() (notifyStopping <-chan struct{}) {
 // It is used to coordinate the transition from stopping -> stopped.
 // There can only be (1) effective listener at a time for these events.
 func (l *Latch) NotifyStopped() (notifyStopped <-chan struct{}) {
+	l.Lock()
 	notifyStopped = l.stopped
+	l.Unlock()
 	return
 }
 

@@ -13,7 +13,6 @@ func NewJobInvocation(jobName string) *JobInvocation {
 		ID:      NewJobInvocationID(),
 		Status:  JobInvocationStatusIdle,
 		JobName: jobName,
-		Done:    make(chan struct{}),
 	}
 }
 
@@ -53,7 +52,6 @@ type JobInvocation struct {
 	State      interface{}         `json:"-"`
 
 	Cancel context.CancelFunc `json:"-"`
-	Done   chan struct{}      `json:"-"`
 }
 
 // Elapsed returns the elapsed time for the invocation.
@@ -77,5 +75,7 @@ func (ji *JobInvocation) Clone() *JobInvocation {
 		Parameters: ji.Parameters,
 		Status:     ji.Status,
 		State:      ji.State,
+
+		Cancel: ji.Cancel,
 	}
 }

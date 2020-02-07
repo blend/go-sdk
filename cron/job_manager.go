@@ -189,9 +189,9 @@ func (jm *JobManager) HasJob(jobName string) (hasJob bool) {
 // Job returns a job metadata by name.
 func (jm *JobManager) Job(jobName string) (job *JobScheduler, err error) {
 	jm.Lock()
-	defer jm.Unlock()
-
-	if jobScheduler, hasJob := jm.Jobs[jobName]; hasJob {
+	jobScheduler, hasJob := jm.Jobs[jobName]
+	jm.Unlock()
+	if hasJob {
 		job = jobScheduler
 	} else {
 		err = ex.New(ErrJobNotLoaded, ex.OptMessagef("job: %s", jobName))
@@ -202,10 +202,10 @@ func (jm *JobManager) Job(jobName string) (job *JobScheduler, err error) {
 // IsJobDisabled returns if a job is disabled.
 func (jm *JobManager) IsJobDisabled(jobName string) (value bool) {
 	jm.Lock()
-	defer jm.Unlock()
-
-	if job, hasJob := jm.Jobs[jobName]; hasJob {
-		value = job.Disabled()
+	jobScheduler, hasJob := jm.Jobs[jobName]
+	jm.Unlock()
+	if hasJob {
+		value = jobScheduler.Disabled()
 	}
 	return
 }
@@ -213,44 +213,41 @@ func (jm *JobManager) IsJobDisabled(jobName string) (value bool) {
 // IsJobRunning returns if a job is currently running.
 func (jm *JobManager) IsJobRunning(jobName string) (isRunning bool) {
 	jm.Lock()
-	defer jm.Unlock()
-
-	if job, ok := jm.Jobs[jobName]; ok {
-		isRunning = !job.IsIdle()
+	jobScheduler, ok := jm.Jobs[jobName]
+	jm.Unlock()
+	if ok {
+		isRunning = !jobScheduler.IsIdle()
 	}
 	return
 }
 
 // RunJob runs a job by jobName on demand.
-func (jm *JobManager) RunJob(jobName string) (*JobInvocation, error) {
+func (jm *JobManager) RunJob(jobName string) (*JobInvocation, <-chan struct{}, error) {
 	jm.Lock()
-	defer jm.Unlock()
-
-	job, ok := jm.Jobs[jobName]
+	jobScheduler, ok := jm.Jobs[jobName]
+	jm.Unlock()
 	if !ok {
-		return nil, ex.New(ErrJobNotLoaded, ex.OptMessagef("job: %s", jobName))
+		return nil, nil, ex.New(ErrJobNotLoaded, ex.OptMessagef("job: %s", jobName))
 	}
-	return job.RunAsync()
+	return jobScheduler.RunAsync()
 }
 
 // RunJobContext runs a job by jobName on demand with a given context.
-func (jm *JobManager) RunJobContext(ctx context.Context, jobName string) (*JobInvocation, error) {
+func (jm *JobManager) RunJobContext(ctx context.Context, jobName string) (*JobInvocation, <-chan struct{}, error) {
 	jm.Lock()
-	defer jm.Unlock()
-
-	job, ok := jm.Jobs[jobName]
+	jobScheduler, ok := jm.Jobs[jobName]
+	jm.Unlock()
 	if !ok {
-		return nil, ex.New(ErrJobNotLoaded, ex.OptMessagef("job: %s", jobName))
+		return nil, nil, ex.New(ErrJobNotLoaded, ex.OptMessagef("job: %s", jobName))
 	}
-	return job.RunAsyncContext(ctx)
+	return jobScheduler.RunAsyncContext(ctx)
 }
 
 // CancelJob cancels (sends the cancellation signal) to a running job.
 func (jm *JobManager) CancelJob(jobName string) (err error) {
 	jm.Lock()
-	defer jm.Unlock()
-
 	jobScheduler, ok := jm.Jobs[jobName]
+	jm.Unlock()
 	if !ok {
 		err = ex.New(ErrJobNotFound, ex.OptMessagef("job: %s", jobName))
 		return
