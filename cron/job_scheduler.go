@@ -302,7 +302,7 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, <-
 
 	ctx, ji := js.createInvocation(ctx)
 	done := make(chan struct{})
-	js.setCurrent(ji)
+	js.SetCurrent(ji)
 
 	var err error
 	var tracer TraceFinisher
@@ -322,8 +322,8 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, <-
 			}
 			ji.Cancel() // if the job was created with a timeout, end the timeout
 
-			close(done)  // signal callers the job is done
-			js.setLast() // rotate in the current to the last result
+			close(done)              // signal callers the job is done
+			js.assignCurrentToLast() // rotate in the current to the last result
 		}()
 
 		if js.Tracer != nil {
@@ -391,6 +391,13 @@ func (js *JobScheduler) Current() (current *JobInvocation) {
 	return
 }
 
+// SetCurrent sets the current invocation, it is useful for tests etc.
+func (js *JobScheduler) SetCurrent(ji *JobInvocation) {
+	js.currentLock.Lock()
+	js.current = ji
+	js.currentLock.Unlock()
+}
+
 // Last returns the last job invocation.
 func (js *JobScheduler) Last() (last *JobInvocation) {
 	js.lastLock.Lock()
@@ -401,19 +408,20 @@ func (js *JobScheduler) Last() (last *JobInvocation) {
 	return
 }
 
-func (js *JobScheduler) setLast() {
+// SetLast sets the last invocation, it is useful for tests etc.
+func (js *JobScheduler) SetLast(ji *JobInvocation) {
+	js.lastLock.Lock()
+	js.last = ji
+	js.lastLock.Unlock()
+}
+
+func (js *JobScheduler) assignCurrentToLast() {
 	js.lastLock.Lock()
 	js.currentLock.Lock()
 	js.last = js.current
 	js.current = nil
 	js.currentLock.Unlock()
 	js.lastLock.Unlock()
-}
-
-func (js *JobScheduler) setCurrent(ji *JobInvocation) {
-	js.currentLock.Lock()
-	js.current = ji
-	js.currentLock.Unlock()
 }
 
 func (js *JobScheduler) createInvocation(ctx context.Context) (context.Context, *JobInvocation) {
