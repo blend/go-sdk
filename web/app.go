@@ -52,6 +52,7 @@ type App struct {
 	Views                   *ViewCache
 	TLSConfig               *tls.Config
 	Server                  *http.Server
+	ServerOptions           []webutil.HTTPServerOption
 	Listener                *net.TCPListener
 	DefaultHeaders          http.Header
 	Statics                 map[string]*StaticFileServer
@@ -94,6 +95,12 @@ func (a *App) StartupTasks() error {
 func (a *App) Start() (err error) {
 	// set up the underlying server.
 	a.Server = a.CreateServer()
+
+	for _, opt := range a.ServerOptions {
+		if err = opt(a.Server); err != nil {
+			return err
+		}
+	}
 
 	// initialize the view cache.
 	err = a.StartupTasks()

@@ -85,6 +85,8 @@ func main() {
 
 	log.Info("making an insecure request")
 	if _, err := r2.New("https://localhost:5000", r2.OptTLSRootCAs(caPool)).Discard(); err != nil {
-		fatal(log, err)
+		log.Error(err)
 	}
+
+	select {}
 }

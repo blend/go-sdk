@@ -16,17 +16,17 @@ func TestTimeout(t *testing.T) {
 		OptUse(WithTimeout(1*time.Millisecond)),
 	)
 
-	var didFinish bool
+	var didShortFinish, didLongFinish bool
 	app.GET("/panic", func(_ *Ctx) Result {
 		panic("test")
 	})
 	app.GET("/long", func(_ *Ctx) Result {
 		time.Sleep(4 * time.Millisecond)
-		didFinish = true
+		didLongFinish = true
 		return NoContent
 	})
 	app.GET("/short", func(_ *Ctx) Result {
-		didFinish = true
+		didShortFinish = true
 		return NoContent
 	})
 
@@ -36,13 +36,12 @@ func TestTimeout(t *testing.T) {
 
 	_, err := http.Get("http://" + app.Listener.Addr().String() + "/panic")
 	assert.Nil(err)
-	assert.False(didFinish)
 
 	_, err = http.Get("http://" + app.Listener.Addr().String() + "/long")
 	assert.Nil(err)
-	assert.False(didFinish)
+	assert.False(didLongFinish)
 
 	_, err = http.Get("http://" + app.Listener.Addr().String() + "/short")
 	assert.Nil(err)
-	assert.True(didFinish)
+	assert.True(didShortFinish)
 }

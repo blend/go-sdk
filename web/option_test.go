@@ -1,6 +1,9 @@
 package web
 
 import (
+	"io/ioutil"
+	"log"
+	"net/http"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
@@ -38,4 +41,21 @@ func TestOptLog(t *testing.T) {
 	var app App
 	assert.Nil(OptLog(logger.None())(&app))
 	assert.NotNil(app.Log)
+}
+
+func TestOptServerOptions(t *testing.T) {
+	assert := assert.New(t)
+
+	app, err := New(OptServerOptions(
+		func(s *http.Server) error {
+			s.ErrorLog = log.New(ioutil.Discard, "", log.LstdFlags)
+			return nil
+		},
+	))
+	assert.Nil(err)
+
+	app.Start()
+	defer app.Stop()
+	<-app.NotifyStarted()
+	assert.NotNil(app.Server.ErrorLog)
 }

@@ -97,19 +97,19 @@ test-circleci:
 
 test:
 	@echo "$(VERSION)/$(GIT_REF) >> tests"
-	@go test $(PKGS) -timeout 15s
+	@go test $(PKGS) -timeout 15s -race
 
 test-verbose:
 	@echo "$(VERSION)/$(GIT_REF) >> tests"
-	@go test -v $(PKGS)
+	@go test -v $(PKGS) -timeout 15s -race
 
 cover:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
-	@go run cmd/coverage/main.go --exclude="examples/*,cmd/*" --timeout="10s"
+	@go run cmd/coverage/main.go --exclude="examples/*,cmd/*" --timeout="10s" --race
 
 cover-ci:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
-	@go run cmd/coverage/main.go --keep-coverage-out --covermode=atomic --coverprofile=coverage.txt --exclude="examples/*,cmd/*" --timeout="10s"
+	@go run cmd/coverage/main.go --keep-coverage-out --covermode=atomic --coverprofile=coverage.txt --exclude="examples/*,cmd/*" --timeout="10s" --race
 
 cover-enforce:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
