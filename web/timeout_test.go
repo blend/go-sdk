@@ -2,6 +2,7 @@ package web
 
 import (
 	"net/http"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -16,17 +17,17 @@ func TestTimeout(t *testing.T) {
 		OptUse(WithTimeout(1*time.Millisecond)),
 	)
 
-	var didShortFinish, didLongFinish bool
+	var didShortFinish, didLongFinish int32
 	app.GET("/panic", func(_ *Ctx) Result {
 		panic("test")
 	})
 	app.GET("/long", func(_ *Ctx) Result {
-		time.Sleep(4 * time.Millisecond)
-		didLongFinish = true
+		time.Sleep(5 * time.Millisecond)
+		atomic.StoreInt32(&didLongFinish, 1)
 		return NoContent
 	})
 	app.GET("/short", func(_ *Ctx) Result {
-		didShortFinish = true
+		atomic.StoreInt32(&didShortFinish, 1)
 		return NoContent
 	})
 
@@ -34,14 +35,17 @@ func TestTimeout(t *testing.T) {
 	defer app.Stop()
 	<-app.NotifyStarted()
 
-	_, err := http.Get("http://" + app.Listener.Addr().String() + "/panic")
+	res, err := http.Get("http://" + app.Listener.Addr().String() + "/panic")
 	assert.Nil(err)
+	assert.Nil(res.Body.Close())
 
-	_, err = http.Get("http://" + app.Listener.Addr().String() + "/long")
+	res, err = http.Get("http://" + app.Listener.Addr().String() + "/long")
 	assert.Nil(err)
-	assert.False(didLongFinish)
+	assert.Nil(res.Body.Close())
+	assert.Zero(atomic.LoadInt32(&didLongFinish))
 
-	_, err = http.Get("http://" + app.Listener.Addr().String() + "/short")
+	res, err = http.Get("http://" + app.Listener.Addr().String() + "/short")
 	assert.Nil(err)
-	assert.True(didShortFinish)
+	assert.Nil(res.Body.Close())
+	assert.Equal(1, atomic.LoadInt32(&didShortFinish))
 }

@@ -73,7 +73,14 @@ func (a *App) Use(middleware Middleware) {
 
 // Start starts the server and binds to the given address.
 func (a *App) Start() (err error) {
-	// initialize the view cache.
+	// check if we can start
+	if !a.Latch.CanStart() {
+		return ex.New(async.ErrCannotStart)
+	}
+	err = a.SetupServer()
+	if err != nil {
+		return
+	}
 	err = a.StartupTasks()
 	if err != nil {
 		return
@@ -445,10 +452,9 @@ func (a *App) NestMiddleware(action Action, middleware ...Middleware) Action {
 //
 
 // StartupTasks runs common startup tasks.
+// These tasks include anything outside setting up the underlying server itself.
+// Right now, this is limited to initializing the view cache if relevant.
 func (a *App) StartupTasks() (err error) {
-	if err = a.SetupServer(); err != nil {
-		return
-	}
 	if err = a.Views.Initialize(); err != nil {
 		return
 	}

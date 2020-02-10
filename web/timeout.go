@@ -11,7 +11,7 @@ func WithTimeout(d time.Duration) Middleware {
 	return func(action Action) Action {
 		return func(r *Ctx) Result {
 			ctx, cancel := context.WithTimeout(r.Context(), d)
-			defer func() { cancel() }()
+			defer cancel()
 
 			r.Request = r.Request.WithContext(ctx)
 

@@ -46,6 +46,12 @@ func TestOptLog(t *testing.T) {
 func TestOptHTTPServerOptions(t *testing.T) {
 	assert := assert.New(t)
 
+	baseline, baselineErr := New()
+	assert.Nil(baselineErr)
+	assert.NotNil(baseline)
+	assert.NotNil(baseline.Server)
+	assert.Nil(baseline.Server.ErrorLog)
+
 	app, err := New(
 		OptHTTPServerOptions(
 			func(s *http.Server) error {
