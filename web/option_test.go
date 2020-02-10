@@ -43,10 +43,10 @@ func TestOptLog(t *testing.T) {
 	assert.NotNil(app.Log)
 }
 
-func TestOptServerOptions(t *testing.T) {
+func TestOptHTTPServerOptions(t *testing.T) {
 	assert := assert.New(t)
 
-	app, err := New(OptServerOptions(
+	app, err := New(OptHTTPServerOptions(
 		func(s *http.Server) error {
 			s.ErrorLog = log.New(ioutil.Discard, "", log.LstdFlags)
 			return nil

@@ -27,6 +27,7 @@ func New(options ...Option) (*App, error) {
 	views := NewViewCache()
 	a := App{
 		Latch:           async.NewLatch(),
+		Server:          &http.Server{},
 		State:           &SyncState{},
 		Statics:         map[string]*StaticFileServer{},
 		DefaultHeaders:  CopyHeaders(DefaultHeaders),
@@ -52,7 +53,6 @@ type App struct {
 	Views                   *ViewCache
 	TLSConfig               *tls.Config
 	Server                  *http.Server
-	ServerOptions           []webutil.HTTPServerOption
 	Listener                *net.TCPListener
 	DefaultHeaders          http.Header
 	Statics                 map[string]*StaticFileServer
@@ -66,42 +66,13 @@ type App struct {
 	State                   *SyncState
 }
 
-// CreateServer creates a new http.Server for the app.
-// This is ultimately what is started when you call `.Start()`.
-func (a *App) CreateServer() *http.Server {
-	return &http.Server{
-		Handler:           a,
-		TLSConfig:         a.TLSConfig,
-		Addr:              a.Config.BindAddrOrDefault(),
-		MaxHeaderBytes:    a.Config.MaxHeaderBytesOrDefault(),
-		ReadTimeout:       a.Config.ReadTimeoutOrDefault(),
-		ReadHeaderTimeout: a.Config.ReadHeaderTimeoutOrDefault(),
-		WriteTimeout:      a.Config.WriteTimeoutOrDefault(),
-		IdleTimeout:       a.Config.IdleTimeoutOrDefault(),
-	}
-}
-
 // Use adds a new default middleware to the middleware chain.
 func (a *App) Use(middleware Middleware) {
 	a.DefaultMiddleware = append(a.DefaultMiddleware, middleware)
 }
 
-// StartupTasks runs common startup tasks.
-func (a *App) StartupTasks() error {
-	return a.Views.Initialize()
-}
-
 // Start starts the server and binds to the given address.
 func (a *App) Start() (err error) {
-	// set up the underlying server.
-	a.Server = a.CreateServer()
-
-	for _, opt := range a.ServerOptions {
-		if err = opt(a.Server); err != nil {
-			return err
-		}
-	}
-
 	// initialize the view cache.
 	err = a.StartupTasks()
 	if err != nil {
@@ -467,6 +438,35 @@ func (a *App) NestMiddleware(action Action, middleware ...Middleware) Action {
 	}
 
 	return NestMiddleware(action, finalMiddleware...)
+}
+
+//
+// startup helpers
+//
+
+// StartupTasks runs common startup tasks.
+func (a *App) StartupTasks() (err error) {
+	if err = a.SetupServer(); err != nil {
+		return
+	}
+	if err = a.Views.Initialize(); err != nil {
+		return
+	}
+	return nil
+}
+
+// SetupServer creates a new http.Server for the app.
+// This is ultimately what is started when you call `.Start()`.
+func (a *App) SetupServer() error {
+	a.Server.Handler = a
+	a.Server.TLSConfig = a.TLSConfig
+	a.Server.Addr = a.Config.BindAddrOrDefault()
+	a.Server.MaxHeaderBytes = a.Config.MaxHeaderBytesOrDefault()
+	a.Server.ReadTimeout = a.Config.ReadTimeoutOrDefault()
+	a.Server.ReadHeaderTimeout = a.Config.ReadHeaderTimeoutOrDefault()
+	a.Server.WriteTimeout = a.Config.WriteTimeoutOrDefault()
+	a.Server.IdleTimeout = a.Config.IdleTimeoutOrDefault()
+	return nil
 }
 
 //

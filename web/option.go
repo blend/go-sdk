@@ -173,10 +173,15 @@ func OptShutdownGracePeriod(d time.Duration) Option {
 	}
 }
 
-// OptServerOptions applies options to the underlying http server.
-func OptServerOptions(opts ...webutil.HTTPServerOption) Option {
+// OptHTTPServerOptions applies options to the underlying http server.
+func OptHTTPServerOptions(opts ...webutil.HTTPServerOption) Option {
 	return func(a *App) error {
-		a.ServerOptions = opts
+		var err error
+		for _, opt := range opts {
+			if err = opt(a.Server); err != nil {
+				return err
+			}
+		}
 		return nil
 	}
 }

@@ -36,6 +36,21 @@ type InfoReceiver interface {
 	Info(...interface{})
 }
 
+// PrintfReceiver is a type that defines Printf.
+type PrintfReceiver interface {
+	Printf(string, ...interface{})
+}
+
+// PrintReceiver is a type that defines Print.
+type PrintReceiver interface {
+	Print(...interface{})
+}
+
+// PrintlnReceiver is a type that defines Println.
+type PrintlnReceiver interface {
+	Println(...interface{})
+}
+
 // InfofReceiver is a type that defines Infof.
 type InfofReceiver interface {
 	Infof(string, ...interface{})
