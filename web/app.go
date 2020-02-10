@@ -386,10 +386,19 @@ func (a *App) RenderAction(action Action) Handler {
 
 		if len(a.DefaultHeaders) > 0 {
 			for key, value := range a.DefaultHeaders {
+				// the reason for assignment here is we skip looping over the
+				// values and can just set the key's value in full
 				ctx.Response.Header()[key] = value
 			}
 		}
+
+		//
+		// call the action
+		//
+		// note: if this panics, it will be recovered by `ServeHTTP` and the recover block in that
+		// function governed by the `RecoverPanics` configuration option.
 		result := action(ctx)
+
 		if result != nil {
 			// check for a prerender step
 			if typed, ok := result.(ResultPreRender); ok {

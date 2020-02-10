@@ -1,4 +1,4 @@
-package loggerutil
+package logger
 
 import (
 	"bytes"
@@ -6,17 +6,16 @@ import (
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
-	"github.com/blend/go-sdk/logger"
 )
 
 func TestStdlibShim(t *testing.T) {
 	assert := assert.New(t)
 
 	buf := new(bytes.Buffer)
-	log, err := logger.New(
-		logger.OptOutput(buf),
-		logger.OptAll(),
-		logger.OptText(logger.OptTextHideTimestamp(), logger.OptTextNoColor()),
+	log, err := New(
+		OptOutput(buf),
+		OptAll(),
+		OptText(OptTextHideTimestamp(), OptTextNoColor()),
 	)
 	defer log.Close()
 	assert.Nil(err)
