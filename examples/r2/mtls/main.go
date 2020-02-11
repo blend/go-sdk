@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context"
-	"net/http"
 	"os"
 
 	"github.com/blend/go-sdk/certutil"
@@ -10,6 +8,7 @@ import (
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/r2"
 	"github.com/blend/go-sdk/web"
+	"github.com/blend/go-sdk/webutil"
 )
 
 func fatal(log logger.FatalReceiver, err error) {
@@ -65,10 +64,13 @@ func main() {
 		web.OptLog(log),
 		web.OptBindAddr("127.0.0.1:5000"),
 		web.OptTLSConfig(serverCertManager.TLSConfig),
-		web.OptHTTPServerOptions(func(s *http.Server) error {
-			s.ErrorLog = logger.StdlibShim(context.Background(), "http.errors", log)
-			return nil
-		}),
+		web.OptHTTPServerOptions(
+			webutil.OptHTTPServerErrorLog(
+				logger.StdlibShim(log, logger.OptShimWriterEventProvider(
+					logger.ShimWriterMessageEventProvider("http.error"),
+				)),
+			),
+		),
 	)
 	if err != nil {
 		fatal(log, err)

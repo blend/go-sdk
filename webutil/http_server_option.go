@@ -1,10 +1,8 @@
 package webutil
 
 import (
-	"context"
 	"crypto/tls"
 	"log"
-	"net"
 	"net/http"
 	"time"
 )
@@ -84,6 +82,8 @@ func OptHTTPServerErrorLog(log *log.Logger) HTTPServerOption {
 	}
 }
 
+/*
+// WCTODO: once we bump to 1.13
 // OptHTTPServerBaseContext sets the error log.
 func OptHTTPServerBaseContext(handler func(net.Listener) context.Context) HTTPServerOption {
 	return func(s *http.Server) error {
@@ -91,3 +91,4 @@ func OptHTTPServerBaseContext(handler func(net.Listener) context.Context) HTTPSe
 		return nil
 	}
 }
+*/
