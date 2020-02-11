@@ -53,6 +53,7 @@ type App struct {
 	Views                   *ViewCache
 	TLSConfig               *tls.Config
 	Server                  *http.Server
+	ServerOptions           []webutil.HTTPServerOption
 	Listener                *net.TCPListener
 	DefaultHeaders          http.Header
 	Statics                 map[string]*StaticFileServer
@@ -73,14 +74,17 @@ func (a *App) Use(middleware Middleware) {
 
 // Start starts the server and binds to the given address.
 func (a *App) Start() (err error) {
-	// check if we can start
 	if !a.Latch.CanStart() {
 		return ex.New(async.ErrCannotStart)
 	}
-	err = a.SetupServer()
-	if err != nil {
-		return
+
+	serverOptions := append(a.httpServerOptions(), a.ServerOptions...)
+	for _, opt := range serverOptions {
+		if err = opt(a.Server); err != nil {
+			return err
+		}
 	}
+
 	err = a.StartupTasks()
 	if err != nil {
 		return
@@ -90,15 +94,11 @@ func (a *App) Start() (err error) {
 	if a.Server.TLSConfig != nil {
 		serverProtocol = "https (tls)"
 	}
-
-	logger.MaybeInfof(a.Log, "%s server started, listening on %s", serverProtocol, a.Config.BindAddrOrDefault())
-
-	if a.Server.TLSConfig != nil && a.Server.TLSConfig.ClientCAs != nil {
-		logger.MaybeInfof(a.Log, "%s using client cert pool with (%d) client certs", serverProtocol, len(a.Server.TLSConfig.ClientCAs.Subjects()))
+	if a.Server.Addr == "" {
+		a.Server.Addr = a.Config.BindAddrOrDefault()
 	}
-
 	var listener net.Listener
-	listener, err = net.Listen("tcp", a.Config.BindAddrOrDefault())
+	listener, err = net.Listen("tcp", a.Server.Addr)
 	if err != nil {
 		err = ex.New(err)
 		return
@@ -110,14 +110,17 @@ func (a *App) Start() (err error) {
 		return
 	}
 
-	keepAliveListener := TCPKeepAliveListener{a.Listener}
-	var shutdownErr error
+	logger.MaybeInfof(a.Log, "%s server started, listening on %s", serverProtocol, a.Server.Addr)
+	if a.Server.TLSConfig != nil && a.Server.TLSConfig.ClientCAs != nil {
+		logger.MaybeInfof(a.Log, "%s using client cert pool with (%d) client certs", serverProtocol, len(a.Server.TLSConfig.ClientCAs.Subjects()))
+	}
 
+	var shutdownErr error
 	a.Started()
 	if a.Server.TLSConfig != nil {
-		shutdownErr = a.Server.Serve(tls.NewListener(keepAliveListener, a.Server.TLSConfig))
+		shutdownErr = a.Server.Serve(tls.NewListener(TCPKeepAliveListener{a.Listener}, a.Server.TLSConfig))
 	} else {
-		shutdownErr = a.Server.Serve(keepAliveListener)
+		shutdownErr = a.Server.Serve(TCPKeepAliveListener{a.Listener})
 	}
 	if shutdownErr != nil && shutdownErr != http.ErrServerClosed {
 		err = ex.New(shutdownErr)
@@ -470,26 +473,27 @@ func (a *App) StartupTasks() (err error) {
 	return nil
 }
 
-// SetupServer creates a new http.Server for the app.
-// This is ultimately what is started when you call `.Start()`.
-func (a *App) SetupServer() error {
-	a.Server.Handler = a
-	a.Server.TLSConfig = a.TLSConfig
-	a.Server.Addr = a.Config.BindAddrOrDefault()
-	a.Server.MaxHeaderBytes = a.Config.MaxHeaderBytesOrDefault()
-	a.Server.ReadTimeout = a.Config.ReadTimeoutOrDefault()
-	a.Server.ReadHeaderTimeout = a.Config.ReadHeaderTimeoutOrDefault()
-	a.Server.WriteTimeout = a.Config.WriteTimeoutOrDefault()
-	a.Server.IdleTimeout = a.Config.IdleTimeoutOrDefault()
-	return nil
-}
-
 //
 // internal helpers
 //
 
-func (a *App) createCtx(w ResponseWriter, r *http.Request, route *Route, p RouteParameters, extra ...CtxOption) *Ctx {
-	options := []CtxOption{
+// httpServerOptions creates a new http.Server for the app.
+// This is ultimately what is started when you call `.Start()`.
+func (a *App) httpServerOptions() []webutil.HTTPServerOption {
+	return []webutil.HTTPServerOption{
+		webutil.OptHTTPServerHandler(a),
+		webutil.OptHTTPServerTLSConfig(a.TLSConfig),
+		webutil.OptHTTPServerAddr(a.Config.BindAddrOrDefault()),
+		webutil.OptHTTPServerMaxHeaderBytes(a.Config.MaxHeaderBytesOrDefault()),
+		webutil.OptHTTPServerReadTimeout(a.Config.ReadTimeoutOrDefault()),
+		webutil.OptHTTPServerReadHeaderTimeout(a.Config.ReadHeaderTimeoutOrDefault()),
+		webutil.OptHTTPServerWriteTimeout(a.Config.WriteTimeoutOrDefault()),
+		webutil.OptHTTPServerIdleTimeout(a.Config.IdleTimeoutOrDefault()),
+	}
+}
+
+func (a *App) ctxOptions(route *Route, p RouteParameters) []CtxOption {
+	return []CtxOption{
 		OptCtxApp(a),
 		OptCtxAuth(a.Auth),
 		OptCtxDefaultProvider(a.DefaultProvider),
@@ -499,7 +503,10 @@ func (a *App) createCtx(w ResponseWriter, r *http.Request, route *Route, p Route
 		OptCtxState(a.State.Copy()),
 		OptCtxTracer(a.Tracer),
 	}
-	return NewCtx(w, r, append(options, extra...)...)
+}
+
+func (a *App) createCtx(w ResponseWriter, r *http.Request, route *Route, p RouteParameters, extra ...CtxOption) *Ctx {
+	return NewCtx(w, r, append(a.ctxOptions(route, p), extra...)...)
 }
 
 func (a *App) allowed(path, reqMethod string) (allow string) {

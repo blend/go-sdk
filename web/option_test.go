@@ -3,11 +3,11 @@ package web
 import (
 	"io/ioutil"
 	"log"
-	"net/http"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/webutil"
 )
 
 func TestOptConfig(t *testing.T) {
@@ -54,12 +54,15 @@ func TestOptHTTPServerOptions(t *testing.T) {
 
 	app, err := New(
 		OptHTTPServerOptions(
-			func(s *http.Server) error {
-				s.ErrorLog = log.New(ioutil.Discard, "", log.LstdFlags)
-				return nil
-			},
+			webutil.OptHTTPServerErrorLog(log.New(ioutil.Discard, "", log.LstdFlags)),
 		),
 	)
 	assert.Nil(err)
+	assert.NotEmpty(app.ServerOptions)
+
+	go app.Start()
+	<-app.NotifyStarted()
+	defer app.Stop()
+
 	assert.NotNil(app.Server.ErrorLog)
 }

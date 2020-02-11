@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"net/http"
 	"os"
 
 	"github.com/blend/go-sdk/certutil"
@@ -59,34 +61,40 @@ func main() {
 	}
 
 	// create a server
-	app, err := web.New(web.OptLog(log), web.OptBindAddr("127.0.0.1:5000"), web.OptTLSConfig(serverCertManager.TLSConfig))
+	app, err := web.New(
+		web.OptLog(log),
+		web.OptBindAddr("127.0.0.1:5000"),
+		web.OptTLSConfig(serverCertManager.TLSConfig),
+		web.OptHTTPServerOptions(func(s *http.Server) error {
+			s.ErrorLog = logger.StdlibShim(context.Background(), "http.errors", log)
+			return nil
+		}),
+	)
 	if err != nil {
 		fatal(log, err)
 	}
 
 	go func() {
-		if err := graceful.Shutdown(app); err != nil {
+		<-app.NotifyStarted()
+
+		// make some requests ...
+		log.Info("making a secure request")
+
+		if _, err := r2.New("https://localhost:5000",
+			r2.OptTLSRootCAs(caPool),
+			r2.OptTLSClientCert([]byte(clientKeyPair.Cert), []byte(clientKeyPair.Key))).Discard(); err != nil {
 			fatal(log, err)
+		} else {
+			log.Info("secure request success")
+		}
+
+		log.Info("making an insecure request")
+		if _, err := r2.New("https://localhost:5000", r2.OptTLSRootCAs(caPool)).Discard(); err != nil {
+			log.Error(err)
 		}
 	}()
-	<-app.NotifyStarted()
 
-	// make some requests ...
-
-	log.Info("making a secure request")
-
-	if _, err := r2.New("https://localhost:5000",
-		r2.OptTLSRootCAs(caPool),
-		r2.OptTLSClientCert([]byte(clientKeyPair.Cert), []byte(clientKeyPair.Key))).Discard(); err != nil {
+	if err := graceful.Shutdown(app); err != nil {
 		fatal(log, err)
-	} else {
-		log.Info("secure request success")
 	}
-
-	log.Info("making an insecure request")
-	if _, err := r2.New("https://localhost:5000", r2.OptTLSRootCAs(caPool)).Discard(); err != nil {
-		log.Error(err)
-	}
-
-	select {}
 }

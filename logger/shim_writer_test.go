@@ -2,7 +2,6 @@ package logger
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"testing"
 
@@ -21,7 +20,11 @@ func TestShimLogger(t *testing.T) {
 	defer log.Close()
 	assert.Nil(err)
 
-	sw := ShimWriter{Context: context.Background(), Flag: "shim", Log: log}
+	sw := NewShimWriter(log,
+		OptShimWriterEventProvider(
+			ShimWriterMessageEventProvider("shim"),
+		),
+	)
 	fmt.Fprintf(sw, "this is a test\n")
 	fmt.Fprintf(sw, "this is also a test\n")
 

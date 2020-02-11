@@ -2,7 +2,6 @@ package logger
 
 import (
 	"bytes"
-	"context"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
@@ -20,11 +19,11 @@ func TestStdlibShim(t *testing.T) {
 	defer log.Close()
 	assert.Nil(err)
 
-	shim := StdlibShim(context.Background(), "errors", log)
+	shim := StdlibShim(log, OptShimWriterEventProvider(ShimWriterErrorEventProvider("error")))
 
 	shim.Println("this is a test")
 	shim.Println("this is another test")
 
 	assert.NotEmpty(buf.String())
-	assert.Equal("[errors] this is a test\n[errors] this is another test\n", buf.String())
+	assert.Equal("[error] this is a test\n[error] this is another test\n", buf.String())
 }
