@@ -64,6 +64,16 @@ func WithLabels(ctx context.Context, labels Labels) context.Context {
 	return context.WithValue(ctx, labelsKey{}, labels)
 }
 
+// WithLabel returns a new context with a given additional label.
+func WithLabel(ctx context.Context, key, value string) context.Context {
+	existing := GetLabels(ctx)
+	if existing == nil {
+		existing = make(Labels)
+	}
+	existing[key] = value
+	return context.WithValue(ctx, labelsKey{}, existing)
+}
+
 // GetLabels gets labels off a context.
 func GetLabels(ctx context.Context) Labels {
 	if raw := ctx.Value(labelsKey{}); raw != nil {

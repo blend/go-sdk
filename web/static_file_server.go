@@ -123,7 +123,7 @@ func (sc *StaticFileServer) ServeFile(r *Ctx, filePath string) Result {
 		return sc.fileError(r, err)
 	}
 
-	r.WithContext(logger.WithLabels(r.Context(), logger.Labels{"web.static_file": finalPath}))
+	r.WithContext(logger.WithLabel(r.Context(), "web.static_file", finalPath))
 	http.ServeContent(r.Response, r.Request, filePath, finfo.ModTime(), f)
 	return nil
 }
@@ -139,7 +139,7 @@ func (sc *StaticFileServer) ServeCachedFile(r *Ctx, filepath string) Result {
 		r.Response.Header().Set(webutil.HeaderETag, file.ETag)
 	}
 
-	r.WithContext(logger.WithLabels(r.Context(), logger.Labels{"web.static_file_cached": file.Path}))
+	r.WithContext(logger.WithLabel(r.Context(), "web.static_file_cached", file.Path))
 	http.ServeContent(r.Response, r.Request, filepath, file.ModTime, file.Contents)
 	return nil
 }

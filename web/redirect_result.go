@@ -3,6 +3,8 @@ package web
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/blend/go-sdk/logger"
 )
 
 // Redirect returns a redirect result to a given destination.
@@ -43,6 +45,7 @@ type RedirectResult struct {
 
 // Render writes the result to the response.
 func (rr *RedirectResult) Render(ctx *Ctx) error {
+	ctx.WithContext(logger.WithLabel(ctx.Context(), "web.redirect", rr.RedirectURI))
 	if len(rr.Method) > 0 {
 		ctx.Request.Method = rr.Method
 		http.Redirect(ctx.Response, ctx.Request, rr.RedirectURI, http.StatusFound)
