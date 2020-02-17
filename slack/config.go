@@ -1,6 +1,10 @@
 package slack
 
-import "github.com/blend/go-sdk/env"
+import (
+	"context"
+
+	"github.com/blend/go-sdk/configutil"
+)
 
 // Config represents the required fields for the config.
 type Config struct {
@@ -13,8 +17,8 @@ type Config struct {
 }
 
 // Resolve includes extra steps on configutil.Read(...).
-func (c *Config) Resolve() error {
-	return env.Env().ReadInto(c)
+func (c *Config) Resolve(ctx context.Context) error {
+	return configutil.GetEnvVars(ctx).ReadInto(c)
 }
 
 // IsZero returns if the config is set or not.

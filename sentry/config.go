@@ -1,6 +1,11 @@
 package sentry
 
-import "github.com/blend/go-sdk/env"
+import (
+	"context"
+
+	"github.com/blend/go-sdk/configutil"
+	"github.com/blend/go-sdk/env"
+)
 
 // Config is the sentry config.
 type Config struct {
@@ -24,8 +29,8 @@ func (c Config) IsZero() bool {
 }
 
 // Resolve applies configutil resoltion steps.
-func (c *Config) Resolve() error {
-	return env.Env().ReadInto(c)
+func (c *Config) Resolve(ctx context.Context) error {
+	return configutil.GetEnvVars(ctx).ReadInto(c)
 }
 
 // ServerNameOrDefault returns the server name or a default.

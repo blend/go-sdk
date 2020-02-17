@@ -250,13 +250,20 @@ func (p *Profanity) ReadRules(path string) (Rules, error) {
 
 // RulesFromPath reads rules from a path
 func (p *Profanity) RulesFromPath(path string) (rules Rules, err error) {
-	contents, readErr := ioutil.ReadFile(path)
+	contents, readErr := os.Open(path)
 	if readErr != nil {
 		err = ex.New(readErr, ex.OptMessagef("file: %s", path))
 		return
 	}
+	defer contents.Close()
+	rules, err = p.RulesFromReader(path, contents)
+	return
+}
+
+// RulesFromReader reads rules from a reader.
+func (p *Profanity) RulesFromReader(path string, reader io.Reader) (rules Rules, err error) {
 	var fileRules Rules
-	yamlErr := yaml.Unmarshal(contents, &fileRules)
+	yamlErr := yaml.NewDecoder(reader).Decode(&fileRules)
 	if yamlErr != nil {
 		err = ex.New("cannot unmarshal rules file", ex.OptMessagef("file: %s", path), ex.OptInnerClass(yamlErr))
 		return

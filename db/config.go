@@ -1,11 +1,13 @@
 package db
 
 import (
+	"context"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/blend/go-sdk/configutil"
 	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/stringutil"
@@ -57,7 +59,7 @@ func NewConfigFromDSN(dsn string) (*Config, error) {
 //	-	DB_PASSWORD 	= Password
 //	-	DB_SSLMODE 		= SSLMode
 func NewConfigFromEnv() (config Config, err error) {
-	if err = env.Env().ReadInto(&config); err != nil {
+	if err = (&config).Resolve(configutil.WithEnvVars(context.Background(), env.Env())); err != nil {
 		return
 	}
 	return
@@ -104,8 +106,6 @@ type Config struct {
 	ConnectTimeout int `json:"connectTimeout" yaml:"connectTimeout" env:"DB_CONNECT_TIMEOUT"`
 	// SSLMode is the sslmode for the connection.
 	SSLMode string `json:"sslMode,omitempty" yaml:"sslMode,omitempty" env:"DB_SSLMODE"`
-	// PlanCacheDisabled indicates if we should use the prepared statement plan cache.
-	PlanCacheDisabled bool `json:"planCacheDisabled,omitempty" yaml:"planCacheDisabled,omitempty" env:"DB_DISABLE_PLAN_CACHE"`
 	// IdleConnections is the number of idle connections.
 	IdleConnections int `json:"idleConnections,omitempty" yaml:"idleConnections,omitempty" env:"DB_IDLE_CONNECTIONS"`
 	// MaxConnections is the maximum number of connections.
@@ -119,6 +119,26 @@ type Config struct {
 // IsZero returns if the config is unset.
 func (c Config) IsZero() bool {
 	return c.DSN == "" && c.Host == "" && c.Port == "" && c.Database == "" && c.Schema == "" && c.Username == "" && c.Password == "" && c.SSLMode == ""
+}
+
+// Resolve applies any external data sources to the config.
+func (c *Config) Resolve(ctx context.Context) error {
+	return configutil.GetEnvVars(ctx).ReadInto(c)
+}
+
+// Reparse creates a DSN and reparses it, in case some values need to be coalesced.
+func (c Config) Reparse() (*Config, error) {
+	return NewConfigFromDSN(c.CreateDSN())
+}
+
+// MustReparse creates a DSN and reparses it, in case some values need to be coalesced,
+// and panics if there is an error.
+func (c Config) MustReparse() *Config {
+	cfg, err := NewConfigFromDSN(c.CreateDSN())
+	if err != nil {
+		panic(err)
+	}
+	return cfg
 }
 
 // EngineOrDefault returns the database engine.
@@ -234,21 +254,6 @@ func (c Config) CreateDSN() string {
 	return dsn.String()
 }
 
-// Resolve creates a DSN and reparses it, in case some values need to be coalesced.
-func (c Config) Resolve() (*Config, error) {
-	return NewConfigFromDSN(c.CreateDSN())
-}
-
-// MustResolve creates a DSN and reparses it, in case some values need to be coalesced,
-// and panics if there is an error.
-func (c Config) MustResolve() *Config {
-	cfg, err := NewConfigFromDSN(c.CreateDSN())
-	if err != nil {
-		panic(err)
-	}
-	return cfg
-}
-
 // ValidateProduction validates production configuration for the config.
 func (c Config) ValidateProduction() error {
 	if !(len(c.SSLMode) == 0 ||
@@ -257,7 +262,6 @@ func (c Config) ValidateProduction() error {
 		stringutil.EqualsCaseless(c.SSLMode, SSLModeVerifyFull)) {
 		return ex.New(ErrUnsafeSSLMode, ex.OptMessagef("sslmode: %s", c.SSLMode))
 	}
-
 	if len(c.Username) == 0 {
 		return ex.New(ErrUsernameUnset)
 	}

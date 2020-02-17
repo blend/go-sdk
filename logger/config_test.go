@@ -1,10 +1,12 @@
 package logger
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/configutil"
 	"github.com/blend/go-sdk/env"
 )
 
@@ -37,7 +39,8 @@ func TestConfigResolve(t *testing.T) {
 	env.Env().Set("NO_COLOR", "true")
 
 	cfg := &Config{}
-	assert.Nil(cfg.Resolve())
+	ctx := configutil.WithEnvVars(context.Background(), env.Env())
+	assert.Nil(cfg.Resolve(ctx))
 
 	assert.Any(cfg.Flags, func(v interface{}) bool { return v.(string) == "foo" })
 	assert.Any(cfg.Flags, func(v interface{}) bool { return v.(string) == "bar" })

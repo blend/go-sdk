@@ -4,21 +4,12 @@ import (
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
-	"github.com/blend/go-sdk/env"
+	"github.com/blend/go-sdk/configutil"
 )
 
-func TestNewConfigFromEnv(t *testing.T) {
-	assert := assert.New(t)
-	defer env.Restore()
-
-	env.Env().Set("VAULT_ADDR", "http://127.0.0.2:8100")
-	env.Env().Set("VAULT_TOKEN", "thisisatest")
-
-	cfg, err := NewConfigFromEnv()
-	assert.Nil(err)
-	assert.Equal("http://127.0.0.2:8100", cfg.AddrOrDefault())
-	assert.Equal("thisisatest", cfg.Token)
-}
+var (
+	_ configutil.Resolver = (*Config)(nil)
+)
 
 func TestConfigIsZero(t *testing.T) {
 	assert := assert.New(t)

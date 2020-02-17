@@ -1,7 +1,7 @@
 package configutil
 
-// AnyError returns the first non-nil error.
-func AnyError(errors ...error) error {
+// ReturnFirst returns the first non-nil error in a list.
+func ReturnFirst(errors ...error) error {
 	for _, err := range errors {
 		if err != nil {
 			return err

@@ -1,9 +1,10 @@
 package secrets
 
 import (
+	"context"
 	"time"
 
-	"github.com/blend/go-sdk/env"
+	"github.com/blend/go-sdk/configutil"
 )
 
 // EnvVars
@@ -11,12 +12,6 @@ const (
 	EnvVarVaultAddr  = "VAULT_ADDR"
 	EnvVarVaultToken = "VAULT_TOKEN"
 )
-
-// NewConfigFromEnv returns a config populated by the env.
-func NewConfigFromEnv() (cfg Config, err error) {
-	err = env.Env().ReadInto(&cfg)
-	return
-}
 
 // Config is the secrets config object.
 type Config struct {
@@ -40,8 +35,8 @@ func (c Config) IsZero() bool {
 }
 
 // Resolve reads the environment into the config on configutil.Read(...)
-func (c *Config) Resolve() error {
-	return env.Env().ReadInto(c)
+func (c *Config) Resolve(ctx context.Context) error {
+	return configutil.GetEnvVars(ctx).ReadInto(c)
 }
 
 // AddrOrDefault returns the client addr.

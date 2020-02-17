@@ -1,10 +1,16 @@
 package sentry
 
 import (
+	"context"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/configutil"
 	"github.com/blend/go-sdk/env"
+)
+
+var (
+	_ configutil.Resolver = (*Config)(nil)
 )
 
 func TestConfigResolve(t *testing.T) {
@@ -26,7 +32,7 @@ func TestConfigResolve(t *testing.T) {
 	assert.Empty(cfg.DistOrDefault())
 	assert.Empty(cfg.ReleaseOrDefault())
 
-	assert.Nil(cfg.Resolve())
+	assert.Nil(cfg.Resolve(configutil.WithEnvVars(context.Background(), env.Env())))
 	assert.False(cfg.IsZero())
 	assert.Equal("http://foo@example.com/1", cfg.DSN)
 	assert.Equal("go-sdk-web-server", cfg.ServerName)

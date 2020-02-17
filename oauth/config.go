@@ -1,9 +1,10 @@
 package oauth
 
 import (
+	"context"
 	"encoding/base64"
 
-	"github.com/blend/go-sdk/env"
+	"github.com/blend/go-sdk/configutil"
 )
 
 // Config is the config options.
@@ -28,8 +29,8 @@ func (c Config) IsZero() bool {
 }
 
 // Resolve adds extra steps to perform during `configutil.Read(...)`.
-func (c *Config) Resolve() error {
-	return env.Env().ReadInto(c)
+func (c *Config) Resolve(ctx context.Context) error {
+	return configutil.GetEnvVars(ctx).ReadInto(c)
 }
 
 // DecodeSecret decodes the secret if set from base64 encoding.

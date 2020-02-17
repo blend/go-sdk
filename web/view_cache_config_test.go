@@ -1,10 +1,16 @@
 package web
 
 import (
+	"context"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/configutil"
 	"github.com/blend/go-sdk/env"
+)
+
+var (
+	_ configutil.Resolver = (*ViewCacheConfig)(nil)
 )
 
 func TestViewCacheConfigResolve(t *testing.T) {
@@ -13,11 +19,11 @@ func TestViewCacheConfigResolve(t *testing.T) {
 
 	defer env.Restore()
 	env.SetEnv(env.New())
-	assert.Nil(vcc.Resolve())
+	assert.Nil(vcc.Resolve(configutil.WithEnvVars(context.Background(), env.Env())))
 	assert.False(vcc.LiveReload)
 
 	env.Env().Set("LIVE_RELOAD", "true")
-	assert.Nil(vcc.Resolve())
+	assert.Nil(vcc.Resolve(configutil.WithEnvVars(context.Background(), env.Env())))
 	assert.True(vcc.LiveReload)
 }
 

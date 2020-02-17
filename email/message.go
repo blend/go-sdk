@@ -62,11 +62,6 @@ type Message struct {
 	HTMLBody string   `json:"htmlBody" yaml:"htmlBody"`
 }
 
-// Resolve applies extra resolution steps.
-func (m *Message) Resolve() error {
-	return nil
-}
-
 // IsZero returns if the object is set or not.
 func (m Message) IsZero() bool {
 	return len(m.To) == 0

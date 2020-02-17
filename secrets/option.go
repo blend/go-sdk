@@ -1,11 +1,14 @@
 package secrets
 
 import (
+	"context"
 	"crypto/tls"
 	"net/http"
 	"net/url"
 	"time"
 
+	"github.com/blend/go-sdk/configutil"
+	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/logger"
 )
 
@@ -24,9 +27,9 @@ func OptLog(log logger.Log) Option {
 // from the environment.
 func OptConfigFromEnv() Option {
 	return func(vc *VaultClient) error {
-		cfg, err := NewConfigFromEnv()
-		if err != nil {
-			return err
+		var cfg Config
+		if err := (&cfg).Resolve(configutil.WithEnvVars(context.Background(), env.Env())); err != nil {
+			return nil
 		}
 		if err := OptConfig(cfg)(vc); err != nil {
 			return err
@@ -106,8 +109,8 @@ func OptRootCAs(rootCAs ...string) Option {
 				return err
 			}
 
-			xport := &http.Transport{}
-			xport.TLSClientConfig = &tls.Config{}
+			xport := new(http.Transport)
+			xport.TLSClientConfig = new(tls.Config)
 			xport.TLSClientConfig.RootCAs = certPool.Pool()
 			vc.Transport = xport
 		}

@@ -4,6 +4,11 @@ import (
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/configutil"
+)
+
+var (
+	_ configutil.Resolver = (*Config)(nil)
 )
 
 func TestConfigCreateDSN(t *testing.T) {
@@ -158,7 +163,7 @@ func TestConfigValidateProduction(t *testing.T) {
 	assert.True(IsUnsafeSSLMode(Config{Username: "foo", Password: "bar", SSLMode: "NOT A REAL MODE"}.ValidateProduction()))
 }
 
-func TestConfigResolve(t *testing.T) {
+func TestConfigReparse(t *testing.T) {
 	assert := assert.New(t)
 
 	cfg := &Config{
@@ -170,7 +175,7 @@ func TestConfigResolve(t *testing.T) {
 		SSLMode:  SSLModeVerifyCA,
 	}
 
-	resolved, err := cfg.Resolve()
+	resolved, err := cfg.Reparse()
 	assert.Nil(err)
 	assert.NotNil(resolved)
 	assert.Equal("bar", resolved.Host)

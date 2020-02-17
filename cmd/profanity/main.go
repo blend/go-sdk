@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 
 	"github.com/blend/go-sdk/configutil"
+	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/profanity"
 	"github.com/blend/go-sdk/ref"
 )
@@ -28,13 +30,17 @@ var (
 	flagFailFast             *bool
 )
 
+var (
+	_ configutil.Resolver = (*config)(nil)
+)
+
 type config struct {
 	profanity.Config `yaml:",inline"`
 }
 
 // Resolve resolves the config.
-func (c *config) Resolve() error {
-	return configutil.AnyError(
+func (c *config) Resolve(ctx context.Context) error {
+	return configutil.ReturnFirst(
 		configutil.SetBool(&c.Verbose, configutil.Bool(flagVerbose), configutil.Bool(c.Verbose), configutil.Bool(ref.Bool(false))),
 		configutil.SetBool(&c.FailFast, configutil.Bool(flagDebug), configutil.Bool(c.Debug), configutil.Bool(ref.Bool(false))),
 		configutil.SetBool(&c.FailFast, configutil.Bool(flagFailFast), configutil.Bool(c.FailFast), configutil.Bool(ref.Bool(false))),
@@ -44,12 +50,26 @@ func (c *config) Resolve() error {
 	)
 }
 
+var configExample = `CONTAINS_EXAMPLE: # id is meant to be a de-duplicating identifier
+  description: "please use 'foo.Bar', not a concrete type reference" # description should include remediation steps
+  contains: [ "foo.BarImpl" ]
+
+EXCLUDES_EXAMPLE:
+  description: "please dont use HerpDerp except in tests"
+  pattern: [ "HerpDerp$" ]
+  excludeFiles: [ "*_test.go" ]
+
+IMPORTS_EXAMPLE: # you can assert a go AST doesnt contains a given import by glob
+  description: "dont include command stuff"
+  importsContain: [ "github.com/blend/go-sdk/cmd/*" ]
+`
+
 func command() *cobra.Command {
 	root := &cobra.Command{
 		Use:   "profanity",
 		Short: "Enforce profanity rules in a directory tree.",
 		Long:  "Enforce profanity rules in a directory tree with inherited rules for each child directory.",
-		Example: `
+		Example: fmt.Sprintf(`
 # Run a basic rules set
 profanity --rules=PROFANITY_RULES
 
@@ -62,23 +82,11 @@ profanity --rules=PROFANITY_RULES --include="*.go" --exclude="*_test.go"
 # An example rule file looks like
 
 """ yaml
-CONTAINS_EXAMPLE: # id is meant to be a de-duplicating identifier
-  description: "please use 'foo.Bar', not a concrete type reference" # description should include remediation steps
-  contains:
-  - "foo.Bar"
-
-EXCLUDES_EXAMPLE:
-  description: "please dont use HerpDerp"
-  contains: [ "HerpDerp" ]
-  excludeFiles: [ "*_test.go" ]
-
-IMPORTS_EXAMPLE: # you can assert a go AST doesnt contains a given import by glob
-  description: "dont include command stuff"
-  importsContain: [ "github.com/blend/go-sdk/cmd/*" ]
+%s
 """
 
 For more example rule files, see https://github.com/blend/go-sdk/tree/master/PROFANITY_RULES.yml
-`,
+`, configExample),
 	}
 
 	flagRulesFile = root.Flags().StringP("rules", "r", profanity.DefaultRulesFile, "The rules file to search for in each valid directory")
@@ -94,7 +102,12 @@ func main() {
 	cmd := command()
 	cmd.Run = func(parent *cobra.Command, args []string) {
 		var cfg config
-		if err := cfg.Resolve(); err != nil {
+		var cfgOptions []configutil.Option
+		if flagDebug != nil && *flagDebug {
+			cfgOptions = append(cfgOptions, configutil.OptLog(logger.All().WithPath("config")))
+		}
+
+		if _, err := configutil.Read(&cfg, cfgOptions...); !configutil.IsIgnored(err) {
 			fmt.Fprintf(os.Stderr, "%v\n", err)
 			os.Exit(1)
 		}

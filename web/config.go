@@ -1,12 +1,13 @@
 package web
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/blend/go-sdk/env"
+	"github.com/blend/go-sdk/configutil"
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -41,8 +42,8 @@ type Config struct {
 }
 
 // Resolve resolves the config from other sources.
-func (c *Config) Resolve() error {
-	return env.Env().ReadInto(c)
+func (c *Config) Resolve(ctx context.Context) error {
+	return configutil.GetEnvVars(ctx).ReadInto(c)
 }
 
 // BindAddrOrDefault returns the bind address or a default.

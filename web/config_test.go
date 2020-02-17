@@ -1,13 +1,19 @@
 package web
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/configutil"
 	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/webutil"
+)
+
+var (
+	_ configutil.Resolver = (*Config)(nil)
 )
 
 func TestConfigBindAddrOrDefault(t *testing.T) {
@@ -157,12 +163,15 @@ func TestConfigShutdownGracePeriodOrDefault(t *testing.T) {
 
 func TestConfigResolve(t *testing.T) {
 	assert := assert.New(t)
+
 	var c Config
-	defer env.Restore()
 	env.SetEnv(env.New())
-	assert.Nil(c.Resolve())
+
+	defer env.Restore()
+	assert.Nil(c.Resolve(configutil.WithEnvVars(context.Background(), env.Env())))
 	assert.Empty(c.BindAddr)
+
 	env.Env().Set("BIND_ADDR", "hello")
-	assert.Nil(c.Resolve())
+	assert.Nil(c.Resolve(configutil.WithEnvVars(context.Background(), env.Env())))
 	assert.Equal("hello", c.BindAddr)
 }

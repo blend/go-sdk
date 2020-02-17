@@ -1,10 +1,16 @@
 package oauth
 
 import (
+	"context"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/configutil"
 	"github.com/blend/go-sdk/env"
+)
+
+var (
+	_ configutil.Resolver = (*Config)(nil)
 )
 
 func TestNewConfigFromEnv(t *testing.T) {
@@ -17,8 +23,8 @@ func TestNewConfigFromEnv(t *testing.T) {
 	env.Env().Set("OAUTH_CLIENT_SECRET", "bar")
 
 	cfg := &Config{}
-	err := cfg.Resolve()
-	assert.Nil(err)
+	ctx := configutil.WithEnvVars(context.Background(), env.Env())
+	assert.Nil(cfg.Resolve(ctx))
 	assert.Equal("foo", cfg.ClientID)
 	assert.Equal("bar", cfg.ClientSecret)
 	assert.Equal("https://app.com/oauth/google", cfg.RedirectURI)

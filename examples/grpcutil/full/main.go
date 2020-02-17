@@ -26,16 +26,20 @@ func customUnary(ctx context.Context, args interface{}, info *grpc.UnaryServerIn
 	return handler(ctx, args)
 }
 
+var (
+	_ configutil.Resolver = (*config)(nil)
+)
+
 type config struct {
 	BindAddr         string        `json:"bindAddr" yaml:"bindAddr"`
 	UseProxyProtocol *bool         `json:"useProxyProtocol" yaml:"useProxyProtocol"`
 	Logger           logger.Config `json:"logger" yaml:"logger"`
 }
 
-func (c *config) Resolve() error {
-	return configutil.AnyError(
-		configutil.SetString(&c.BindAddr, configutil.Env("BIND_ADDR"), configutil.String(c.BindAddr), configutil.String(":9000")),
-		configutil.SetBool(&c.UseProxyProtocol, configutil.Env("PROXY_PROTOCOL"), configutil.Bool(c.UseProxyProtocol), configutil.Bool(ref.Bool(false))),
+func (c *config) Resolve(ctx context.Context) error {
+	return configutil.ReturnFirst(
+		configutil.SetString(&c.BindAddr, configutil.Env(ctx, "BIND_ADDR"), configutil.String(c.BindAddr), configutil.String(":9000")),
+		configutil.SetBool(&c.UseProxyProtocol, configutil.Env(ctx, "PROXY_PROTOCOL"), configutil.Bool(c.UseProxyProtocol), configutil.Bool(ref.Bool(false))),
 	)
 }
 

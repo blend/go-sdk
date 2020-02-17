@@ -1,19 +1,15 @@
 package datadog
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/blend/go-sdk/configutil"
-	"github.com/blend/go-sdk/env"
 )
 
 const (
 	// DefaultDatadogBufferDepth is the default number of statsd messages to buffer.
 	DefaultDatadogBufferDepth = 128
-)
-
-var (
-	_ configutil.ConfigResolver = (*Config)(nil)
 )
 
 // Config is the datadog config.
@@ -38,8 +34,8 @@ type Config struct {
 }
 
 // Resolve implements configutil.ConfigResolver.
-func (c *Config) Resolve() error {
-	return env.Env().ReadInto(c)
+func (c *Config) Resolve(ctx context.Context) error {
+	return configutil.GetEnvVars(ctx).ReadInto(c)
 }
 
 // IsZero returns if the config is unset.
