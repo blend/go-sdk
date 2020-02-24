@@ -207,6 +207,7 @@ func (js *JobScheduler) Disable() {
 // Cancel stops all running invocations.
 func (js *JobScheduler) Cancel() error {
 	if js.Current() == nil {
+		logger.MaybeDebugfContext(js.withLogContext(context.Background()), js.Log, "cannot cancel; job is not runnning")
 		return nil
 	}
 	gracePeriod := js.Config().ShutdownGracePeriodOrDefault()
@@ -217,6 +218,8 @@ func (js *JobScheduler) Cancel() error {
 	}
 	if current := js.Current(); current != nil && current.Status == JobInvocationStatusRunning {
 		current.Cancel()
+	} else {
+		logger.MaybeDebugfContext(js.withLogContext(context.Background()), js.Log, "cannot cancel; job is not runnning")
 	}
 	return nil
 }
