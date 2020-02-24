@@ -105,7 +105,7 @@ test-verbose:
 
 cover:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"
-	@go run cmd/coverage/main.go --exclude="examples/*,cmd/*" --timeout="10s" --race
+	@go run cmd/coverage/main.go --exclude="examples/*,cmd/*" --timeout="30s" --race
 
 cover-ci:
 	@echo "$(VERSION)/$(GIT_REF) >> coverage"

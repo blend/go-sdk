@@ -8,6 +8,12 @@ go-sdk
 
 The general philosophy is to provide loosely coupled libraries that can be composed as a suite of tools, vs. a `do it all` framework.
 
+# Requirements
+
+This repository requires golang version 1.13+ to be installed.
+
+To run tests, it is required that you have Docker installed, with docker-compose, or have postgres running locally.
+
 # Addtional CLI Tools
 
 We also provide the following CLI tools to help with development that leverage some of these packages:
