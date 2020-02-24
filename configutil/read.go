@@ -83,6 +83,15 @@ func Read(ref Any, options ...Option) (path string, err error) {
 		}
 	}
 
+	if typed, ok := ref.(BareResolver); ok {
+		MaybeDebugf(configOptions.Log, "calling legacy config resolver")
+		MaybeWarningf(configOptions.Log, "deprecated; the legacy config resolver should be replaced with `.Resolve(context.Context) error`")
+		if resolveErr := typed.Resolve(); resolveErr != nil {
+			err = resolveErr
+			return
+		}
+	}
+
 	if typed, ok := ref.(Resolver); ok {
 		MaybeDebugf(configOptions.Log, "calling config resolver")
 		if resolveErr := typed.Resolve(configOptions.Background()); resolveErr != nil {
