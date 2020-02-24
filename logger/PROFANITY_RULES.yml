@@ -3,11 +3,6 @@ LOGGER_CRON:
   importsContain:
   - "github.com/blend/go-sdk/cron"
 
-LOGGER_CONFIGUTIL:
-  description: "you shouldn't need to add configutil to logger"
-  importsContain:
-  - "github.com/blend/go-sdk/configutil"
-
 LOGGER_DB:
   importsContain:
   - "github.com/blend/go-sdk/db"
