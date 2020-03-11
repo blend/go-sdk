@@ -1,4 +1,4 @@
-package grpcutil
+package grpctrace
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
+	"github.com/blend/go-sdk/grpcutil"
 	"github.com/blend/go-sdk/stats/tracing"
 )
 
@@ -24,9 +25,9 @@ func TracedUnary(tracer opentracing.Tracer) grpc.UnaryServerInterceptor {
 		if !ok {
 			md = metadata.New(nil)
 		}
-		authority := MetaValue(md, MetaTagAuthority)
-		contentType := MetaValue(md, MetaTagContentType)
-		userAgent := MetaValue(md, MetaTagUserAgent)
+		authority := grpcutil.MetaValue(md, grpcutil.MetaTagAuthority)
+		contentType := grpcutil.MetaValue(md, grpcutil.MetaTagContentType)
+		userAgent := grpcutil.MetaValue(md, grpcutil.MetaTagUserAgent)
 
 		startOptions := []opentracing.StartSpanOption{
 			opentracing.Tag{Key: tracing.TagKeySpanType, Value: tracing.SpanTypeGRPC},
