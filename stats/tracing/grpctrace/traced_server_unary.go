@@ -12,8 +12,8 @@ import (
 	"github.com/blend/go-sdk/stats/tracing"
 )
 
-// TracedUnary returns a unary server interceptor.
-func TracedUnary(tracer opentracing.Tracer) grpc.UnaryServerInterceptor {
+// TracedServerUnary returns a unary server interceptor.
+func TracedServerUnary(tracer opentracing.Tracer) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, args interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		if tracer == nil {
 			return handler(ctx, args)

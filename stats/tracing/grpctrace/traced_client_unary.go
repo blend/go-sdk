@@ -5,6 +5,7 @@ import (
 	"time"
 
 	opentracing "github.com/opentracing/opentracing-go"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
@@ -20,6 +21,7 @@ func TracedClientUnary(tracer opentracing.Tracer) grpc.UnaryClientInterceptor {
 			return
 		}
 		startTime := time.Now().UTC()
+
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
 			md = metadata.New(nil)
@@ -27,6 +29,7 @@ func TracedClientUnary(tracer opentracing.Tracer) grpc.UnaryClientInterceptor {
 		authority := grpcutil.MetaValue(md, grpcutil.MetaTagAuthority)
 		contentType := grpcutil.MetaValue(md, grpcutil.MetaTagContentType)
 		userAgent := grpcutil.MetaValue(md, grpcutil.MetaTagUserAgent)
+
 		startOptions := []opentracing.StartSpanOption{
 			opentracing.Tag{Key: tracing.TagKeySpanType, Value: tracing.SpanTypeGRPC},
 			opentracing.Tag{Key: tracing.TagKeyResourceName, Value: method},
@@ -43,6 +46,8 @@ func TracedClientUnary(tracer opentracing.Tracer) grpc.UnaryClientInterceptor {
 			}
 			span.Finish()
 		}()
+		tracer.Inject(span.Context(), opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(md))
+		opts = append(opts, grpc.Header(&md))
 		err = invoker(ctx, method, req, reply, cc, opts...)
 		return
 	}
