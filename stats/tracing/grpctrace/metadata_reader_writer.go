@@ -6,13 +6,14 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-// metadataReaderWriter satisfies both the opentracing.TextMapReader and
+// MetadataReaderWriter satisfies both the opentracing.TextMapReader and
 // opentracing.TextMapWriter interfaces.
-type metadataReaderWriter struct {
+type MetadataReaderWriter struct {
 	metadata.MD
 }
 
-func (w metadataReaderWriter) Set(key, val string) {
+// Set sets a key a value.
+func (w MetadataReaderWriter) Set(key, val string) {
 	// The GRPC HPACK implementation rejects any uppercase keys here.
 	//
 	// As such, since the HTTP_HEADERS format is case-insensitive anyway, we
@@ -22,7 +23,8 @@ func (w metadataReaderWriter) Set(key, val string) {
 	w.MD[key] = append(w.MD[key], val)
 }
 
-func (w metadataReaderWriter) ForeachKey(handler func(key, val string) error) error {
+// ForeachKey does something for each key.
+func (w MetadataReaderWriter) ForeachKey(handler func(key, val string) error) error {
 	for k, vals := range w.MD {
 		for _, v := range vals {
 			if err := handler(k, v); err != nil {

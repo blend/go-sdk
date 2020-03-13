@@ -1,7 +1,7 @@
 syntax = "proto3";
-package calculator;
+package v1;
 
-service {
+service Calculator {
 	rpc Add(Numbers) returns (Number) {}
 	rpc AddStream(stream Number) returns (Number) {}
 	rpc Subtract(Numbers) returns (Number) {}
@@ -13,9 +13,9 @@ service {
 }
 
 message Numbers {
-	repeated float64 Values = 1;
+	repeated double Values = 1;
 }
 
 message Number {
-	float64 value = 1;
+	double value = 1;
 }
