@@ -5,11 +5,10 @@ package v1
 
 import (
 	fmt "fmt"
-	math "math"
-
 	proto "github.com/golang/protobuf/proto"
 	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -102,28 +101,27 @@ func (m *Number) GetValue() float64 {
 }
 
 func init() {
-	proto.RegisterType((*Numbers)(nil), "grpctrace_test.Numbers")
-	proto.RegisterType((*Number)(nil), "grpctrace_test.Number")
+	proto.RegisterType((*Numbers)(nil), "v1.Numbers")
+	proto.RegisterType((*Number)(nil), "v1.Number")
 }
 
 func init() { proto.RegisterFile("calculator.proto", fileDescriptor_c686ea360062a8cf) }
 
 var fileDescriptor_c686ea360062a8cf = []byte{
-	// 220 bytes of a gzipped FileDescriptorProto
+	// 208 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0x48, 0x4e, 0xcc, 0x49,
-	0x2e, 0xcd, 0x49, 0x2c, 0xc9, 0x2f, 0xd2, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x4b, 0x2f,
-	0x2a, 0x48, 0x2e, 0x29, 0x4a, 0x4c, 0x4e, 0x8d, 0x2f, 0x49, 0x2d, 0x2e, 0x51, 0x52, 0xe4, 0x62,
-	0xf7, 0x2b, 0xcd, 0x4d, 0x4a, 0x2d, 0x2a, 0x16, 0x12, 0xe3, 0x62, 0x0b, 0x4b, 0xcc, 0x29, 0x4d,
-	0x2d, 0x96, 0x60, 0x54, 0x60, 0xd6, 0x60, 0x0c, 0x82, 0xf2, 0x94, 0xe4, 0xb8, 0xd8, 0x20, 0x4a,
-	0x84, 0x44, 0xb8, 0x58, 0xcb, 0x40, 0x62, 0x12, 0x8c, 0x0a, 0x8c, 0x1a, 0x8c, 0x41, 0x10, 0x8e,
-	0xd1, 0x24, 0x16, 0x2e, 0x2e, 0x67, 0xb8, 0x3d, 0x42, 0x16, 0x5c, 0xcc, 0x8e, 0x29, 0x29, 0x42,
-	0xe2, 0x7a, 0xa8, 0x36, 0xe9, 0x41, 0xad, 0x91, 0x12, 0xc3, 0x2e, 0xa1, 0xc4, 0x20, 0x64, 0xcf,
-	0xc5, 0xe9, 0x98, 0x92, 0x12, 0x5c, 0x52, 0x94, 0x9a, 0x98, 0x2b, 0x84, 0x43, 0x19, 0x6e, 0xed,
-	0x1a, 0x8c, 0x42, 0xb6, 0x5c, 0x1c, 0xc1, 0xa5, 0x49, 0x20, 0xb9, 0x12, 0x72, 0xec, 0x77, 0xe1,
-	0xe2, 0x83, 0x69, 0xa7, 0xcc, 0x11, 0xbe, 0xa5, 0x39, 0x25, 0x99, 0x05, 0x39, 0x95, 0x64, 0x3a,
-	0x02, 0xa6, 0x9d, 0x02, 0x47, 0x58, 0x73, 0xb1, 0xb9, 0x64, 0x96, 0x65, 0xa6, 0xa4, 0x92, 0xe3,
-	0x04, 0x27, 0x2e, 0x1e, 0x88, 0x66, 0xf2, 0x1d, 0x90, 0xc4, 0x06, 0x4e, 0x6e, 0xc6, 0x80, 0x00,
-	0x00, 0x00, 0xff, 0xff, 0x76, 0x6c, 0xb9, 0xd7, 0x82, 0x02, 0x00, 0x00,
+	0x2e, 0xcd, 0x49, 0x2c, 0xc9, 0x2f, 0xd2, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2a, 0x33,
+	0x54, 0x52, 0xe4, 0x62, 0xf7, 0x2b, 0xcd, 0x4d, 0x4a, 0x2d, 0x2a, 0x16, 0x12, 0xe3, 0x62, 0x0b,
+	0x4b, 0xcc, 0x29, 0x4d, 0x2d, 0x96, 0x60, 0x54, 0x60, 0xd6, 0x60, 0x0c, 0x82, 0xf2, 0x94, 0xe4,
+	0xb8, 0xd8, 0x20, 0x4a, 0x84, 0x44, 0xb8, 0x58, 0xcb, 0x40, 0x62, 0x12, 0x8c, 0x0a, 0x8c, 0x1a,
+	0x8c, 0x41, 0x10, 0x8e, 0xd1, 0x25, 0x26, 0x2e, 0x2e, 0x67, 0xb8, 0xd9, 0x42, 0x0a, 0x5c, 0xcc,
+	0x8e, 0x29, 0x29, 0x42, 0xdc, 0x7a, 0x65, 0x86, 0x7a, 0x50, 0xa3, 0xa5, 0xb8, 0x10, 0x1c, 0x25,
+	0x06, 0x21, 0x75, 0x2e, 0x4e, 0xc7, 0x94, 0x94, 0xe0, 0x92, 0xa2, 0xd4, 0xc4, 0x5c, 0x21, 0x24,
+	0x29, 0x54, 0x65, 0x1a, 0x8c, 0x42, 0xaa, 0x5c, 0x1c, 0xc1, 0xa5, 0x49, 0x25, 0x45, 0x89, 0xc9,
+	0x25, 0xf8, 0xcc, 0xd3, 0xe1, 0xe2, 0x83, 0x29, 0x23, 0xce, 0x50, 0xdf, 0xd2, 0x9c, 0x92, 0xcc,
+	0x82, 0x9c, 0x4a, 0x02, 0x86, 0xc2, 0x94, 0x11, 0x61, 0xa8, 0x32, 0x17, 0x9b, 0x4b, 0x66, 0x59,
+	0x66, 0x4a, 0x2a, 0x3e, 0x23, 0xb5, 0xb8, 0x78, 0x20, 0x8a, 0x08, 0x1b, 0x98, 0xc4, 0x06, 0x8e,
+	0x22, 0x63, 0x40, 0x00, 0x00, 0x00, 0xff, 0xff, 0x19, 0x55, 0x47, 0x5c, 0xb6, 0x01, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -158,7 +156,7 @@ func NewCalculatorClient(cc *grpc.ClientConn) CalculatorClient {
 
 func (c *calculatorClient) Add(ctx context.Context, in *Numbers, opts ...grpc.CallOption) (*Number, error) {
 	out := new(Number)
-	err := c.cc.Invoke(ctx, "/grpctrace_test.Calculator/Add", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/v1.Calculator/Add", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +164,7 @@ func (c *calculatorClient) Add(ctx context.Context, in *Numbers, opts ...grpc.Ca
 }
 
 func (c *calculatorClient) AddStream(ctx context.Context, opts ...grpc.CallOption) (Calculator_AddStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Calculator_serviceDesc.Streams[0], "/grpctrace_test.Calculator/AddStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &_Calculator_serviceDesc.Streams[0], "/v1.Calculator/AddStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -201,7 +199,7 @@ func (x *calculatorAddStreamClient) CloseAndRecv() (*Number, error) {
 
 func (c *calculatorClient) Subtract(ctx context.Context, in *Numbers, opts ...grpc.CallOption) (*Number, error) {
 	out := new(Number)
-	err := c.cc.Invoke(ctx, "/grpctrace_test.Calculator/Subtract", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/v1.Calculator/Subtract", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +207,7 @@ func (c *calculatorClient) Subtract(ctx context.Context, in *Numbers, opts ...gr
 }
 
 func (c *calculatorClient) SubtractStream(ctx context.Context, opts ...grpc.CallOption) (Calculator_SubtractStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Calculator_serviceDesc.Streams[1], "/grpctrace_test.Calculator/SubtractStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &_Calculator_serviceDesc.Streams[1], "/v1.Calculator/SubtractStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +242,7 @@ func (x *calculatorSubtractStreamClient) CloseAndRecv() (*Number, error) {
 
 func (c *calculatorClient) Multiply(ctx context.Context, in *Numbers, opts ...grpc.CallOption) (*Number, error) {
 	out := new(Number)
-	err := c.cc.Invoke(ctx, "/grpctrace_test.Calculator/Multiply", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/v1.Calculator/Multiply", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -252,7 +250,7 @@ func (c *calculatorClient) Multiply(ctx context.Context, in *Numbers, opts ...gr
 }
 
 func (c *calculatorClient) MultiplyStream(ctx context.Context, opts ...grpc.CallOption) (Calculator_MultiplyStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Calculator_serviceDesc.Streams[2], "/grpctrace_test.Calculator/MultiplyStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &_Calculator_serviceDesc.Streams[2], "/v1.Calculator/MultiplyStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -287,7 +285,7 @@ func (x *calculatorMultiplyStreamClient) CloseAndRecv() (*Number, error) {
 
 func (c *calculatorClient) Divide(ctx context.Context, in *Numbers, opts ...grpc.CallOption) (*Number, error) {
 	out := new(Number)
-	err := c.cc.Invoke(ctx, "/grpctrace_test.Calculator/Divide", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/v1.Calculator/Divide", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -295,7 +293,7 @@ func (c *calculatorClient) Divide(ctx context.Context, in *Numbers, opts ...grpc
 }
 
 func (c *calculatorClient) DivideStream(ctx context.Context, opts ...grpc.CallOption) (Calculator_DivideStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Calculator_serviceDesc.Streams[3], "/grpctrace_test.Calculator/DivideStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &_Calculator_serviceDesc.Streams[3], "/v1.Calculator/DivideStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -354,7 +352,7 @@ func _Calculator_Add_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpctrace_test.Calculator/Add",
+		FullMethod: "/v1.Calculator/Add",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CalculatorServer).Add(ctx, req.(*Numbers))
@@ -398,7 +396,7 @@ func _Calculator_Subtract_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpctrace_test.Calculator/Subtract",
+		FullMethod: "/v1.Calculator/Subtract",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CalculatorServer).Subtract(ctx, req.(*Numbers))
@@ -442,7 +440,7 @@ func _Calculator_Multiply_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpctrace_test.Calculator/Multiply",
+		FullMethod: "/v1.Calculator/Multiply",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CalculatorServer).Multiply(ctx, req.(*Numbers))
@@ -486,7 +484,7 @@ func _Calculator_Divide_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpctrace_test.Calculator/Divide",
+		FullMethod: "/v1.Calculator/Divide",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CalculatorServer).Divide(ctx, req.(*Numbers))
@@ -521,7 +519,7 @@ func (x *calculatorDivideStreamServer) Recv() (*Number, error) {
 }
 
 var _Calculator_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "grpctrace_test.Calculator",
+	ServiceName: "v1.Calculator",
 	HandlerType: (*CalculatorServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
