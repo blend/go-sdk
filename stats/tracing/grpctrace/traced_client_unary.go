@@ -26,7 +26,7 @@ func TracedClientUnary(tracer opentracing.Tracer) grpc.UnaryClientInterceptor {
 			opentracing.Tag{Key: tracing.TagKeyResourceName, Value: method},
 			opentracing.Tag{Key: tracing.TagKeyGRPCMethod, Value: method},
 			opentracing.Tag{Key: tracing.TagKeyGRPCRole, Value: "client"},
-
+			opentracing.Tag{Key: tracing.TagKeyGRPCCallingConvention, Value: "unary"},
 			opentracing.StartTime(startTime),
 		}
 		span, ctx := tracing.StartSpanFromContext(ctx, tracer, tracing.OperationRPC, startOptions...)

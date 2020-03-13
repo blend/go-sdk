@@ -4,23 +4,22 @@ import (
 	"context"
 	"time"
 
+	"github.com/blend/go-sdk/grpcutil"
+	"github.com/blend/go-sdk/stats/tracing"
 	opentracing "github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-
-	"github.com/blend/go-sdk/grpcutil"
-	"github.com/blend/go-sdk/stats/tracing"
 )
 
-// TracedServerUnary returns a unary server interceptor.
-func TracedServerUnary(tracer opentracing.Tracer) grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, args interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+// TracedServerStream returns a grpc streaming interceptor.
+func TracedServerStream(tracer opentracing.Tracer) grpc.StreamServerInterceptor {
+	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		if tracer == nil {
-			return handler(ctx, args)
+			return handler(srv, ss)
 		}
 
 		startTime := time.Now().UTC()
-		md, ok := metadata.FromIncomingContext(ctx)
+		md, ok := metadata.FromIncomingContext(ss.Context())
 		if !ok {
 			md = metadata.New(nil)
 		}
@@ -37,7 +36,7 @@ func TracedServerUnary(tracer opentracing.Tracer) grpc.UnaryServerInterceptor {
 			opentracing.Tag{Key: tracing.TagKeyGRPCUserAgent, Value: userAgent},
 			opentracing.Tag{Key: tracing.TagKeyGRPCContentType, Value: contentType},
 			opentracing.Tag{Key: tracing.TagKeyGRPCRole, Value: "server"},
-			opentracing.Tag{Key: tracing.TagKeyGRPCCallingConvention, Value: "unary"},
+			opentracing.Tag{Key: tracing.TagKeyGRPCCallingConvention, Value: "stream"},
 			opentracing.StartTime(startTime),
 		}
 
@@ -50,8 +49,6 @@ func TracedServerUnary(tracer opentracing.Tracer) grpc.UnaryServerInterceptor {
 		}
 
 		span := tracer.StartSpan(tracing.OperationRPC, startOptions...)
-		ctx = opentracing.ContextWithSpan(ctx, span)
-
 		var err error
 		defer func() {
 			if err != nil {
@@ -59,8 +56,18 @@ func TracedServerUnary(tracer opentracing.Tracer) grpc.UnaryServerInterceptor {
 			}
 			span.Finish()
 		}()
-		var result interface{}
-		result, err = handler(ctx, args)
-		return result, err
+		err = handler(srv, &spanServerStream{ServerStream: ss, Span: span})
+		return nil
 	}
+}
+
+// wrappedStream wraps around the embedded grpc.ServerStream, and intercepts the RecvMsg and
+// SendMsg method call.
+type spanServerStream struct {
+	grpc.ServerStream
+	Span opentracing.Span
+}
+
+func (ss *spanServerStream) Context() context.Context {
+	return opentracing.ContextWithSpan(ss.ServerStream.Context(), ss.Span)
 }

@@ -36,6 +36,8 @@ const (
 	TagKeyJobName = "job.name"
 	// TagKeyGRPCRole is the grpc role (i.e. client or server).
 	TagKeyGRPCRole = "grpc.role"
+	// TagKeyGRPCCallingConvention is the grpc calling convention (i.e. unary or streaming).
+	TagKeyGRPCCallingConvention = "grpc.calling_convention"
 	// TagKeyGRPCMethod is the grpc method.
 	TagKeyGRPCMethod = "grpc.method"
 	// TagKeyGRPCCode is the grpc result code.
