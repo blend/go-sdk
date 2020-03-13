@@ -18,11 +18,13 @@ func TracedServerUnary(tracer opentracing.Tracer) grpc.UnaryServerInterceptor {
 		if tracer == nil {
 			return handler(ctx, args)
 		}
+
 		startTime := time.Now().UTC()
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
 			md = metadata.New(nil)
 		}
+
 		authority := grpcutil.MetaValue(md, grpcutil.MetaTagAuthority)
 		contentType := grpcutil.MetaValue(md, grpcutil.MetaTagContentType)
 		userAgent := grpcutil.MetaValue(md, grpcutil.MetaTagUserAgent)
@@ -34,24 +36,30 @@ func TracedServerUnary(tracer opentracing.Tracer) grpc.UnaryServerInterceptor {
 			opentracing.Tag{Key: tracing.TagKeyGRPCAuthority, Value: authority},
 			opentracing.Tag{Key: tracing.TagKeyGRPCUserAgent, Value: userAgent},
 			opentracing.Tag{Key: tracing.TagKeyGRPCContentType, Value: contentType},
+			opentracing.Tag{Key: tracing.TagKeyGRPCRole, Value: "server"},
 			opentracing.StartTime(startTime),
 		}
 
 		// try to extract an incoming span context
 		// this is typically done if we're a service being called in a chain from another (more ancestral)
 		// span context.
-		spanContext, _ := tracer.Extract(opentracing.HTTPHeaders, MetadataReaderWriter{md})
+		spanContext, _ := tracer.Extract(opentracing.TextMap, MetadataReaderWriter{md})
 		if spanContext != nil {
 			startOptions = append(startOptions, opentracing.ChildOf(spanContext))
 		}
 
-		span, ctx := tracing.StartSpanFromContext(ctx, tracer, tracing.OperationRPC, startOptions...)
-		defer span.Finish()
+		span := tracer.StartSpan(tracing.OperationRPC, startOptions...)
+		ctx = opentracing.ContextWithSpan(ctx, span)
 
-		result, err := handler(ctx, args)
-		if err != nil {
-			tracing.SpanError(span, err)
-		}
+		var err error
+		defer func() {
+			if err != nil {
+				tracing.SpanError(span, err)
+			}
+			span.Finish()
+		}()
+		var result interface{}
+		result, err = handler(ctx, args)
 		return result, err
 	}
 }

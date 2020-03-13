@@ -9,7 +9,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/blend/go-sdk/grpcutil"
 	"github.com/blend/go-sdk/stats/tracing"
 )
 
@@ -22,21 +21,12 @@ func TracedClientUnary(tracer opentracing.Tracer) grpc.UnaryClientInterceptor {
 		}
 		startTime := time.Now().UTC()
 
-		md, ok := metadata.FromIncomingContext(ctx)
-		if !ok {
-			md = metadata.New(nil)
-		}
-		authority := grpcutil.MetaValue(md, grpcutil.MetaTagAuthority)
-		contentType := grpcutil.MetaValue(md, grpcutil.MetaTagContentType)
-		userAgent := grpcutil.MetaValue(md, grpcutil.MetaTagUserAgent)
-
 		startOptions := []opentracing.StartSpanOption{
 			opentracing.Tag{Key: tracing.TagKeySpanType, Value: tracing.SpanTypeGRPC},
 			opentracing.Tag{Key: tracing.TagKeyResourceName, Value: method},
 			opentracing.Tag{Key: tracing.TagKeyGRPCMethod, Value: method},
-			opentracing.Tag{Key: tracing.TagKeyGRPCAuthority, Value: authority},
-			opentracing.Tag{Key: tracing.TagKeyGRPCUserAgent, Value: userAgent},
-			opentracing.Tag{Key: tracing.TagKeyGRPCContentType, Value: contentType},
+			opentracing.Tag{Key: tracing.TagKeyGRPCRole, Value: "client"},
+
 			opentracing.StartTime(startTime),
 		}
 		span, ctx := tracing.StartSpanFromContext(ctx, tracer, tracing.OperationRPC, startOptions...)
@@ -46,8 +36,9 @@ func TracedClientUnary(tracer opentracing.Tracer) grpc.UnaryClientInterceptor {
 			}
 			span.Finish()
 		}()
-		tracer.Inject(span.Context(), opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(md))
-		opts = append(opts, grpc.Header(&md))
+		md := make(metadata.MD)
+		tracer.Inject(span.Context(), opentracing.TextMap, MetadataReaderWriter{md})
+		ctx = metadata.NewOutgoingContext(ctx, md)
 		err = invoker(ctx, method, req, reply, cc, opts...)
 		return
 	}
