@@ -43,7 +43,7 @@ func TracedServerUnary(tracer opentracing.Tracer) grpc.UnaryServerInterceptor {
 		// try to extract an incoming span context
 		// this is typically done if we're a service being called in a chain from another (more ancestral)
 		// span context.
-		spanContext, _ := tracer.Extract(opentracing.TextMap, MetadataReaderWriter{md})
+		spanContext, _ := tracer.Extract(opentracing.HTTPHeaders, MetadataReaderWriter{md})
 		if spanContext != nil {
 			startOptions = append(startOptions, opentracing.ChildOf(spanContext))
 		}
