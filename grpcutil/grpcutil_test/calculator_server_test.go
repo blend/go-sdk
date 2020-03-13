@@ -9,7 +9,7 @@ import (
 )
 
 func numbers(values ...float64) []*v1.Number {
-	output := make([]*v1.Value, len(values))
+	output := make([]*v1.Number, len(values))
 	for index := range values {
 		output[index] = &v1.Number{Value: values[index]}
 	}

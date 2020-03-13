@@ -18,7 +18,7 @@ type CalculatorServer struct{}
 func (CalculatorServer) Add(_ context.Context, values *v1.Numbers) (*v1.Number, error) {
 	var output float64
 	for _, value := range values.Values {
-		output += value.Value
+		output += value
 	}
 	return &v1.Number{
 		Value: output,
@@ -29,15 +29,17 @@ func (CalculatorServer) Add(_ context.Context, values *v1.Numbers) (*v1.Number, 
 func (CalculatorServer) AddStream(stream v1.Calculator_AddStreamServer) error {
 	var output float64
 	var number *v1.Number
+	var err error
 	for {
 		select {
-		case <-stream.Context.Done():
+		case <-stream.Context().Done():
 			return stream.SendAndClose(&v1.Number{
 				Value: output,
 			})
+		default:
 		}
 
-		msg, err = stream.Recv()
+		number, err = stream.Recv()
 		if err == io.EOF {
 			return stream.SendAndClose(&v1.Number{
 				Value: output,
@@ -51,11 +53,11 @@ func (CalculatorServer) AddStream(stream v1.Calculator_AddStreamServer) error {
 // Subtract subtracts a fixed set of numbers.
 func (CalculatorServer) Subtract(_ context.Context, values *v1.Numbers) (*v1.Number, error) {
 	if len(values.Values) == 0 {
-		return
+		return nil, nil
 	}
 	output := values.Values[0]
 	for _, value := range values.Values[1:] {
-		output -= value.Value
+		output -= value
 	}
 	return &v1.Number{
 		Value: output,
@@ -67,15 +69,17 @@ func (CalculatorServer) SubtractStream(stream v1.Calculator_SubtractStreamServer
 	var outputSet bool
 	var output float64
 	var number *v1.Number
+	var err error
 	for {
 		select {
-		case <-stream.Context.Done():
+		case <-stream.Context().Done():
 			return stream.SendAndClose(&v1.Number{
 				Value: output,
 			})
+		default:
 		}
 
-		msg, err = stream.Recv()
+		number, err = stream.Recv()
 		if err == io.EOF {
 			return stream.SendAndClose(&v1.Number{
 				Value: output,
@@ -91,10 +95,10 @@ func (CalculatorServer) SubtractStream(stream v1.Calculator_SubtractStreamServer
 }
 
 // Multiply multiplies a fixed set of numbers.
-func (CalculatorServer) Multiply(context.Context, *v1.Numbers) (*v1.Number, error) {
+func (CalculatorServer) Multiply(_ context.Context, values *v1.Numbers) (*v1.Number, error) {
 	var output float64
 	for _, value := range values.Values {
-		output *= value.Value
+		output *= value
 	}
 	return &v1.Number{
 		Value: output,
@@ -105,15 +109,17 @@ func (CalculatorServer) Multiply(context.Context, *v1.Numbers) (*v1.Number, erro
 func (CalculatorServer) MultiplyStream(stream v1.Calculator_MultiplyStreamServer) error {
 	var output float64
 	var number *v1.Number
+	var err error
 	for {
 		select {
-		case <-stream.Context.Done():
+		case <-stream.Context().Done():
 			return stream.SendAndClose(&v1.Number{
 				Value: output,
 			})
+		default:
 		}
 
-		msg, err = stream.Recv()
+		number, err = stream.Recv()
 		if err == io.EOF {
 			return stream.SendAndClose(&v1.Number{
 				Value: output,
@@ -125,13 +131,13 @@ func (CalculatorServer) MultiplyStream(stream v1.Calculator_MultiplyStreamServer
 }
 
 // Divide divides a fixed set of numbers.
-func (CalculatorServer) Divide(context.Context, *v1.Numbers) (*v1.Number, error) {
+func (CalculatorServer) Divide(_ context.Context, values *v1.Numbers) (*v1.Number, error) {
 	if len(values.Values) == 0 {
-		return
+		return nil, nil
 	}
 	output := values.Values[0]
 	for _, value := range values.Values[1:] {
-		output = output / value.Value
+		output = output / value
 	}
 	return &v1.Number{
 		Value: output,
@@ -143,15 +149,17 @@ func (CalculatorServer) DivideStream(stream v1.Calculator_DivideStreamServer) er
 	var outputSet bool
 	var output float64
 	var number *v1.Number
+	var err error
 	for {
 		select {
-		case <-stream.Context.Done():
+		case <-stream.Context().Done():
 			return stream.SendAndClose(&v1.Number{
 				Value: output,
 			})
+		default:
 		}
 
-		msg, err = stream.Recv()
+		number, err = stream.Recv()
 		if err == io.EOF {
 			return stream.SendAndClose(&v1.Number{
 				Value: output,
