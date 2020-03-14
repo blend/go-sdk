@@ -61,8 +61,11 @@ func TracedServerStream(tracer opentracing.Tracer) grpc.StreamServerInterceptor 
 	}
 }
 
-// wrappedStream wraps around the embedded grpc.ServerStream, and intercepts the RecvMsg and
-// SendMsg method call.
+// spanServerStream wraps around the embedded grpc.ServerStream, and
+// intercepts calls to `Context()` returning a context with the span information injected.
+//
+// NOTE: you can extend this type to intercept calls to `SendMsg` and `RecvMsg` if you want to
+// add tracing handling for individual stream calls.
 type spanServerStream struct {
 	grpc.ServerStream
 	Span opentracing.Span
