@@ -29,8 +29,8 @@ func LoggedUnary(log logger.Triggerable) grpc.UnaryServerInterceptor {
 	}
 }
 
-// LoggedStreaming returns a streaming server interceptor.
-func LoggedStreaming(log logger.Triggerable) grpc.StreamServerInterceptor {
+// LoggedStream returns a stream server interceptor.
+func LoggedStream(log logger.Triggerable) grpc.StreamServerInterceptor {
 	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) (err error) {
 		startTime := time.Now().UTC()
 		err = handler(srv, stream)
