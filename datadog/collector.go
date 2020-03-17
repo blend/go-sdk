@@ -25,7 +25,7 @@ func New(cfg Config, opts ...statsd.Option) (*Collector, error) {
 	if cfg.BufferedOrDefault() {
 		opts = append(opts, statsd.WithMaxMessagesPerPayload(cfg.BufferDepthOrDefault()))
 	}
-	client, err = statsd.New(cfg.GetHost(), opts...)
+	client, err = statsd.New(cfg.GetAddress(), opts...)
 	if err != nil {
 		return nil, err
 	}

@@ -14,6 +14,8 @@ const (
 
 // Config is the datadog config.
 type Config struct {
+	// Address is the address of the datadog collector in the form of "hostname:port" or "unix:///path/to/socket"
+	Address string `json:"address,omitempty" yaml:"address,omitempty" env:"DATADOG_ADDRESS"`
 	// Hostname is the dns name or ip of the datadog collector.
 	Hostname string `json:"hostname,omitempty" yaml:"hostname,omitempty" env:"DATADOG_HOSTNAME"`
 	// Port is the port of the datadog collector.
@@ -65,6 +67,14 @@ func (c Config) TracingEnabledOrDefault() bool {
 		return *c.TracingEnabled
 	}
 	return DefaultTracingEnabled
+}
+
+// GetAddress returns the datadog collector address string.
+func (c Config) GetAddress() string {
+	if c.Address != "" {
+		return c.Address
+	}
+	return c.GetHost()
 }
 
 // GetHost returns the datadog collector host:port string.
