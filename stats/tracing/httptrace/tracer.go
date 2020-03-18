@@ -44,7 +44,7 @@ func StartHTTPSpan(ctx context.Context, tracer opentracing.Tracer, req *http.Req
 	// try to extract an incoming span context
 	// this is typically done if we're a service being called in a chain from another (more ancestral)
 	// span context.
-	spanContext, _ := tracer.Extract(opentracing.TextMap, opentracing.HTTPHeadersCarrier(req.Header))
+	spanContext, _ := tracer.Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(req.Header))
 	if spanContext != nil {
 		startOptions = append(startOptions, opentracing.ChildOf(spanContext))
 	}

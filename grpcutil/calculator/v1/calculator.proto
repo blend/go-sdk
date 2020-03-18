@@ -1,0 +1,21 @@
+syntax = "proto3";
+package v1;
+
+service Calculator {
+	rpc Add(Numbers) returns (Number) {}
+	rpc AddStream(stream Number) returns (Number) {}
+	rpc Subtract(Numbers) returns (Number) {}
+	rpc SubtractStream(stream Number) returns (Number) {}
+	rpc Multiply(Numbers) returns (Number) {}
+	rpc MultiplyStream(stream Number) returns (Number) {}
+	rpc Divide(Numbers) returns (Number) {}
+	rpc DivideStream(stream Number) returns (Number) {}
+}
+
+message Numbers {
+	repeated double Values = 1;
+}
+
+message Number {
+	double value = 1;
+}
