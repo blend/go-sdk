@@ -14,6 +14,24 @@ var (
 	_ graceful.Graceful = (*JobScheduler)(nil)
 )
 
+func TestJobSchedulerStop(t *testing.T) {
+	assert := assert.New(t)
+
+	js := NewJobScheduler(NewJob(
+		OptJobName("stop-test"),
+		OptJobSchedule(EveryHour()),
+	))
+	startErrors := make(chan error)
+	go func() {
+		startErrors <- js.Start()
+	}()
+
+	<-js.Latch.NotifyStarted()
+
+	assert.Nil(js.Stop())
+	assert.Nil(<-startErrors)
+}
+
 func TestJobSchedulerEnableDisable(t *testing.T) {
 	assert := assert.New(t)
 
