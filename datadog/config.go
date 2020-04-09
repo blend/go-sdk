@@ -55,7 +55,7 @@ func (c *Config) Resolve(ctx context.Context) error {
 
 // IsZero returns if the config is unset.
 func (c Config) IsZero() bool {
-	return c.GetAddress() == "" && c.GetTraceAddress() == ""
+	return c.GetAddress() == ""
 }
 
 // TracingEnabledOrDefault returns if tracing is enabled.
