@@ -7,6 +7,10 @@ const (
 	DefaultTracePort = "8126"
 	// DefaultTracingEnabled is the default value for tracing enabled.
 	DefaultTracingEnabled = true
+	// DefaultAddress is the default address for datadog.
+	DefaultAddress = "unix:///var/run/datadog/dsd.socket"
+	// DefaultTraceAddress is the default address for datadog apm.
+	DefaultTraceAddress = "dd-agent.kube-system:8126"
 )
 
 // Default Tags

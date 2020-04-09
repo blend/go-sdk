@@ -2,7 +2,6 @@ package datadog
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/blend/go-sdk/configutil"
 )
@@ -16,12 +15,8 @@ const (
 type Config struct {
 	// Address is the address of the datadog collector in the form of "hostname:port" or "unix:///path/to/socket"
 	Address string `json:"address,omitempty" yaml:"address,omitempty" env:"DATADOG_ADDRESS"`
-	// Hostname is the dns name or ip of the datadog collector.
-	Hostname string `json:"hostname,omitempty" yaml:"hostname,omitempty" env:"DATADOG_HOSTNAME"`
-	// Port is the port of the datadog collector.
-	Port string `json:"port,omitempty" yaml:"port,omitempty" env:"DATADOG_PORT"`
-	// TracePort is the port of the datadog apm collector.
-	TracePort string `json:"tracePort,omitempty" yaml:"tracePort,omitempty" env:"DATADOG_TRACE_PORT"`
+	// Address is the address of the datadog collector in the form of "hostname:port" or "unix:///path/to/trace-socket"
+	TraceAddress string `json:"traceAddress,omitempty" yaml:"traceAddress,omitempty" env:"DATADOG_TRACE_ADDRESS"`
 	// TracingEnabled returns if we should use tracing or not.
 	TracingEnabled *bool `json:"tracingEnabled" yaml:"tracingEnabled" env:"DATADOG_APM_ENABLED"`
 	// Buffered indicates if we should buffer statsd messages or not.
@@ -42,23 +37,7 @@ func (c *Config) Resolve(ctx context.Context) error {
 
 // IsZero returns if the config is unset.
 func (c Config) IsZero() bool {
-	return len(c.Hostname) == 0
-}
-
-// PortOrDefault returns the datadog port.
-func (c Config) PortOrDefault() string {
-	if c.Port != "" {
-		return c.Port
-	}
-	return DefaultPort
-}
-
-// TracePortOrDefault returns the datadog trace port.
-func (c Config) TracePortOrDefault(defaults ...string) string {
-	if c.TracePort != "" {
-		return c.TracePort
-	}
-	return DefaultTracePort
+	return c.Address == "" && c.TraceAddress == ""
 }
 
 // TracingEnabledOrDefault returns if tracing is enabled.
@@ -74,17 +53,15 @@ func (c Config) GetAddress() string {
 	if c.Address != "" {
 		return c.Address
 	}
-	return c.GetHost()
+	return DefaultAddress
 }
 
-// GetHost returns the datadog collector host:port string.
-func (c Config) GetHost() string {
-	return fmt.Sprintf("%s:%s", c.Hostname, c.PortOrDefault())
-}
-
-// GetTraceHost returns the datadog trace collector host:port string.
-func (c Config) GetTraceHost() string {
-	return fmt.Sprintf("%s:%s", c.Hostname, c.TracePortOrDefault())
+// GetTraceAddress returns the datadog collector address string.
+func (c Config) GetTraceAddress() string {
+	if c.TraceAddress != "" {
+		return c.TraceAddress
+	}
+	return DefaultTraceAddress
 }
 
 // BufferedOrDefault returns if the client should buffer messages or not.

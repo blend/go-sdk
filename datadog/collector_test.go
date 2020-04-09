@@ -73,8 +73,7 @@ func TestCollectorClose(t *testing.T) {
 func TestCollectorNew(t *testing.T) {
 	assert := assert.New(t)
 	cfg := Config{
-		Hostname: "localhost",
-		Port:     "8125",
+		Address: "localhost:8125",
 	}
 	c, err := New(cfg)
 	assert.Nil(err)
