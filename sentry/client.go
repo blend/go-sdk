@@ -59,7 +59,7 @@ func (c Client) Notify(ctx context.Context, ee logger.ErrorEvent) {
 
 func errEvent(ctx context.Context, ee logger.ErrorEvent) *raven.Event {
 	return &raven.Event{
-		Timestamp:   logger.GetEventTimestamp(ctx, ee).Unix(),
+		Timestamp:   logger.GetEventTimestamp(ctx, ee),
 		Fingerprint: errFingerprint(ctx, ex.ErrClass(ee.Err).Error()),
 		Level:       raven.Level(ee.GetFlag()),
 		Tags:        errTags(ctx),
