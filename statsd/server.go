@@ -34,7 +34,6 @@ func (s *Server) Start() error {
 		if err != nil {
 			return err
 		}
-		println("server read", string(data))
 		err = s.parseMetric(data, &metric)
 		if err != nil {
 			return err
