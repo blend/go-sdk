@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/DataDog/datadog-go/statsd"
+	dogstatsd "github.com/DataDog/datadog-go/statsd"
 
 	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/stats"
@@ -19,13 +19,13 @@ var (
 )
 
 // New returns a new stats collector from a config.
-func New(cfg Config, opts ...statsd.Option) (*Collector, error) {
-	var client *statsd.Client
+func New(cfg Config, opts ...dogstatsd.Option) (*Collector, error) {
+	var client *dogstatsd.Client
 	var err error
 	if cfg.BufferedOrDefault() {
-		opts = append(opts, statsd.WithMaxMessagesPerPayload(cfg.BufferDepthOrDefault()))
+		opts = append(opts, dogstatsd.WithMaxMessagesPerPayload(cfg.BufferDepthOrDefault()))
 	}
-	client, err = statsd.New(cfg.GetAddress(), opts...)
+	client, err = dogstatsd.New(cfg.GetAddress(), opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func MustNew(cfg Config) *Collector {
 
 // Collector is a class that wraps the statsd collector we're using.
 type Collector struct {
-	client      *statsd.Client
+	client      *dogstatsd.Client
 	defaultTags []string
 }
 
@@ -115,7 +115,7 @@ func (dc *Collector) SimpleEvent(title, text string) error {
 	return dc.client.SimpleEvent(title, text)
 }
 
-// SendEvent sends any *statsd.Event
+// SendEvent sends any *dogstatsd.Event
 func (dc *Collector) SendEvent(event stats.Event) error {
 	return dc.client.Event(ConvertEvent(event))
 }
@@ -135,16 +135,16 @@ func (dc *Collector) tags(tags ...string) []string {
 }
 
 // ConvertEvent converts a stats event to a statsd (datadog) event.
-func ConvertEvent(e stats.Event) *statsd.Event {
-	return &statsd.Event{
+func ConvertEvent(e stats.Event) *dogstatsd.Event {
+	return &dogstatsd.Event{
 		Title:          e.Title,
 		Text:           e.Text,
 		Timestamp:      e.Timestamp,
 		Hostname:       e.Hostname,
 		AggregationKey: e.AggregationKey,
-		Priority:       statsd.EventPriority(e.Priority),
+		Priority:       dogstatsd.EventPriority(e.Priority),
 		SourceTypeName: e.SourceTypeName,
-		AlertType:      statsd.EventAlertType(e.AlertType),
+		AlertType:      dogstatsd.EventAlertType(e.AlertType),
 		Tags:           e.Tags,
 	}
 }
