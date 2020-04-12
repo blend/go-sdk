@@ -5,5 +5,6 @@ import "time"
 // Constants
 const (
 	DefaultDialTimeout   = time.Second
-	DefaultMaxPacketSize = 1440
+	DefaultMaxPacketSize = 1 << 12 // 2^12 or 4kB
+	DefaultMaxBufferSize = 32
 )

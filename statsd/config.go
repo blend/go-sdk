@@ -17,6 +17,7 @@ type Config struct {
 	DialTimeout   time.Duration     `json:"dialTimeout" yaml:"dialTimeout"`
 	SampleRate    float64           `json:"sampleRate" yaml:"sampleRate"`
 	MaxPacketSize int               `json:"maxPacketSize" yaml:"maxPacketSize"`
+	MaxBufferSize int               `json:"maxBufferSize" yaml:"maxBufferSize"`
 	DefaultTags   map[string]string `json:"defaultTags" yaml:"defaultTags"`
 }
 

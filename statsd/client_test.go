@@ -19,9 +19,11 @@ func Test_ClientCount(t *testing.T) {
 	metrics := make(chan Metric, 4)
 	mock := &Server{
 		Listener: listener,
-		Handler: func(m Metric) {
+		Handler: func(ms ...Metric) {
 			defer wg.Done()
-			metrics <- m
+			for _, m := range ms {
+				metrics <- m
+			}
 		},
 	}
 	go mock.Start()

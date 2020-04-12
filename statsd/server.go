@@ -5,13 +5,16 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Server is a listener for statsd metrics.
+// It is meant to be used for diagnostic purposes, and is not suitable for
+// production anything.
 type Server struct {
 	Addr     string
-	Listener *net.UDPConn
-	Handler  func(Metric)
+	Listener net.PacketConn
+	Handler  func(...Metric)
 }
 
 // Start starts the server. This call blocks.
@@ -28,17 +31,18 @@ func (s *Server) Start() error {
 	}
 
 	data := make([]byte, DefaultMaxPacketSize)
-	var metric Metric
+	var metrics []Metric
+	var n int
 	for {
-		_, err = s.Listener.Read(data)
+		n, _, err = s.Listener.ReadFrom(data)
 		if err != nil {
 			return err
 		}
-		err = s.parseMetric(data, &metric)
+		metrics, err = s.parseMetrics(data[:n])
 		if err != nil {
 			return err
 		}
-		s.Handler(metric)
+		go s.Handler(metrics...)
 	}
 }
 
@@ -50,9 +54,20 @@ func (s *Server) Stop() error {
 	return s.Listener.Close()
 }
 
-// parseMetric parses a metric from a given data packet.
-func (s *Server) parseMetric(data []byte, m *Metric) error {
+func (s *Server) parseMetrics(data []byte) ([]Metric, error) {
+	var metrics []Metric
+	for index := 0; index < len(data); index++ {
+		m, err := s.parseMetric(&index, data)
+		if err != nil {
+			return nil, err
+		}
+		metrics = append(metrics, m)
+	}
+	return metrics, nil
+}
 
+// parseMetric parses a metric from a given data packet.
+func (s *Server) parseMetric(index *int, data []byte) (m Metric, err error) {
 	var name []byte
 	var metricType []byte
 	var value []byte
@@ -60,8 +75,8 @@ func (s *Server) parseMetric(data []byte, m *Metric) error {
 
 	var state int
 	var b byte
-	for x := 0; x < len(data); x++ {
-		b = data[x]
+	for ; *index < len(data); (*index)++ {
+		b = data[*index]
 		switch state {
 		case 0: //name
 			if b == ':' {
@@ -88,6 +103,9 @@ func (s *Server) parseMetric(data []byte, m *Metric) error {
 			if b == '#' {
 				continue
 			}
+			if b == '\n' {
+				break // drop out at newline
+			}
 			tags = append(tags, b)
 		}
 	}
@@ -96,17 +114,12 @@ func (s *Server) parseMetric(data []byte, m *Metric) error {
 	m.Type = string(metricType)
 	m.Value = string(value)
 	m.Tags = strings.Split(string(tags), ",")
-	return nil
+	return
 }
 
 // NewUDPListener returns a new UDP listener for a given address.
-func NewUDPListener(addr string) (*net.UDPConn, error) {
-	udpAddr, err := net.ResolveUDPAddr("udp", addr)
-	if err != nil {
-		return nil, err
-	}
-
-	listener, err := net.ListenUDP("udp", udpAddr)
+func NewUDPListener(addr string) (net.PacketConn, error) {
+	listener, err := net.ListenPacket("udp", addr)
 	if err != nil {
 		return nil, err
 	}
@@ -129,4 +142,14 @@ func (m Metric) Float64() (float64, error) {
 // Int64 returns the value parsed as an int64.
 func (m Metric) Int64() (int64, error) {
 	return strconv.ParseInt(m.Value, 10, 64)
+}
+
+// Duration is the value parsed as a duration assuming
+// it was a float64 of milliseconds.
+func (m Metric) Duration() (time.Duration, error) {
+	f64, err := m.Float64()
+	if err != nil {
+		return 0, err
+	}
+	return time.Duration(f64 * float64(time.Millisecond)), nil
 }
