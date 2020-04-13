@@ -66,6 +66,16 @@ func Test_Client_Options(t *testing.T) {
 	assert.Any(configClient.DefaultTags(), func(v interface{}) bool { return v.(string) == "env:sandbox" })
 
 	assert.NotNil(configClient.SampleProvider)
+
+	c.SampleProvider = nil
+	assert.NotNil(OptSampleRate(-1)(c))
+	assert.NotNil(OptSampleRate(1.01)(c))
+
+	assert.Nil(OptSampleRate(1.0)(c))
+	assert.Nil(c.SampleProvider)
+
+	assert.Nil(OptSampleRate(0.8)(c))
+	assert.NotNil(c.SampleProvider)
 }
 
 func Test_Client_AddDefaultTag(t *testing.T) {
@@ -321,4 +331,90 @@ func Test_ClientTimeInMilliseconds_Buffered(t *testing.T) {
 
 	wg.Wait()
 	assert.Len(metrics, 10)
+}
+
+func Test_ClientIncrement_Buffered(t *testing.T) {
+	assert := assert.New(t)
+
+	listener, err := NewUDPListener("127.0.0.1:0")
+	assert.Nil(err)
+
+	wg := sync.WaitGroup{}
+	wg.Add(5)
+
+	metrics := make(chan Metric, 10)
+	mock := &Server{
+		Listener: listener,
+		Handler: func(ms ...Metric) {
+			defer wg.Done()
+			for _, m := range ms {
+				metrics <- m
+			}
+		},
+	}
+	go mock.Start()
+	defer mock.Stop()
+
+	client, err := New(
+		OptAddr(mock.Listener.LocalAddr().String()),
+		OptMaxBufferSize(2),
+	)
+	assert.Nil(err)
+
+	for x := 0; x < 10; x++ {
+		assert.Nil(client.Increment(fmt.Sprintf("increment%d", x), Tag("env", "dev"), Tag("role", "test"), Tag("index", strconv.Itoa(x))))
+	}
+
+	wg.Wait()
+	assert.Len(metrics, 10)
+
+	m := <-metrics
+
+	assert.Equal(MetricTypeCount, m.Type)
+	assert.Equal("increment0", m.Name)
+	assert.Equal("1", m.Value)
+	assert.Equal([]string{"env:dev", "role:test", "index:0"}, m.Tags)
+}
+
+func Test_ClientHistogram_Buffered(t *testing.T) {
+	assert := assert.New(t)
+
+	listener, err := NewUDPListener("127.0.0.1:0")
+	assert.Nil(err)
+
+	wg := sync.WaitGroup{}
+	wg.Add(5)
+
+	metrics := make(chan Metric, 10)
+	mock := &Server{
+		Listener: listener,
+		Handler: func(ms ...Metric) {
+			defer wg.Done()
+			for _, m := range ms {
+				metrics <- m
+			}
+		},
+	}
+	go mock.Start()
+	defer mock.Stop()
+
+	client, err := New(
+		OptAddr(mock.Listener.LocalAddr().String()),
+		OptMaxBufferSize(2),
+	)
+	assert.Nil(err)
+
+	for x := 0; x < 10; x++ {
+		assert.Nil(client.Histogram(fmt.Sprintf("histogram%d", x), float64(x), Tag("env", "dev"), Tag("role", "test"), Tag("index", strconv.Itoa(x))))
+	}
+
+	wg.Wait()
+	assert.Len(metrics, 10)
+
+	m := <-metrics
+
+	assert.Equal(MetricTypeHistogram, m.Type)
+	assert.Equal("histogram0", m.Name)
+	assert.Equal("0", m.Value)
+	assert.Equal([]string{"env:dev", "role:test", "index:0"}, m.Tags)
 }
