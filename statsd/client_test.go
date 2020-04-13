@@ -21,6 +21,62 @@ type noOpWriteCloser struct {
 // Close is a no-op.
 func (n noOpWriteCloser) Close() error { return nil }
 
+func Test_Client_Options(t *testing.T) {
+	assert := assert.New(t)
+
+	c := new(Client)
+	assert.Empty(c.Addr)
+	assert.Nil(OptAddr("192.168.1.1:0")(c))
+	assert.Equal("192.168.1.1:0", c.Addr)
+
+	assert.Zero(c.DialTimeout)
+	assert.Nil(OptDialTimeout(time.Second)(c))
+	assert.Equal(time.Second, c.DialTimeout)
+
+	assert.Zero(c.MaxPacketSize)
+	assert.Nil(OptMaxPacketSize(1024)(c))
+	assert.Equal(1024, c.MaxPacketSize)
+
+	assert.Zero(c.MaxBufferSize)
+	assert.Nil(OptMaxBufferSize(512)(c))
+	assert.Equal(512, c.MaxBufferSize)
+
+	cfg := Config{
+		Addr:          "127.0.0.1:0",
+		DialTimeout:   500 * time.Millisecond,
+		MaxPacketSize: 1024,
+		MaxBufferSize: 64,
+		DefaultTags: map[string]string{
+			"foo": "bar",
+			"env": "sandbox",
+		},
+		SampleRate: 0.8,
+	}
+
+	configClient := new(Client)
+	assert.Nil(configClient.SampleProvider)
+	assert.Nil(OptConfig(cfg)(configClient))
+
+	assert.Equal("127.0.0.1:0", configClient.Addr)
+	assert.Equal(500*time.Millisecond, configClient.DialTimeout)
+	assert.Equal(1024, configClient.MaxPacketSize)
+	assert.Equal(64, configClient.MaxBufferSize)
+
+	assert.Any(configClient.DefaultTags(), func(v interface{}) bool { return v.(string) == "foo:bar" })
+	assert.Any(configClient.DefaultTags(), func(v interface{}) bool { return v.(string) == "env:sandbox" })
+
+	assert.NotNil(configClient.SampleProvider)
+}
+
+func Test_Client_AddDefaultTag(t *testing.T) {
+	assert := assert.New(t)
+
+	c := new(Client)
+	assert.Empty(c.defaultTags)
+	c.AddDefaultTag("foo", "bar")
+	assert.Equal([]string{"foo:bar"}, c.defaultTags)
+}
+
 func Test_Client_Sampling(t *testing.T) {
 	assert := assert.New(t)
 

@@ -87,7 +87,7 @@ func OptConfig(cfg Config) ClientOpt {
 		for key, value := range cfg.DefaultTags {
 			c.defaultTags = append(c.defaultTags, Tag(key, value))
 		}
-		return nil
+		return OptSampleRate(cfg.SampleRate)(c)
 	}
 }
 

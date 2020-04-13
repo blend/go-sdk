@@ -3,18 +3,24 @@ package statsd
 import (
 	"fmt"
 	"net"
-	"strconv"
-	"strings"
-	"time"
 )
 
 // Server is a listener for statsd metrics.
 // It is meant to be used for diagnostic purposes, and is not suitable for
 // production anything.
 type Server struct {
-	Addr     string
-	Listener net.PacketConn
-	Handler  func(...Metric)
+	Addr          string
+	MaxPacketSize int
+	Listener      net.PacketConn
+	Handler       func(...Metric)
+}
+
+// MaxPacketSizeOrDefault returns the max packet size or a default.
+func (s *Server) MaxPacketSizeOrDefault() int {
+	if s.MaxPacketSize > 0 {
+		return s.MaxPacketSize
+	}
+	return DefaultMaxPacketSize
 }
 
 // Start starts the server. This call blocks.
@@ -30,7 +36,7 @@ func (s *Server) Start() error {
 		return fmt.Errorf("server cannot start; no listener or addr provided")
 	}
 
-	data := make([]byte, DefaultMaxPacketSize)
+	data := make([]byte, s.MaxPacketSizeOrDefault())
 	var metrics []Metric
 	var n int
 	for {
@@ -71,7 +77,7 @@ func (s *Server) parseMetric(index *int, data []byte) (m Metric, err error) {
 	var name []byte
 	var metricType []byte
 	var value []byte
-	var tags []byte
+	var tag []byte
 
 	var state int
 	var b byte
@@ -97,7 +103,7 @@ func (s *Server) parseMetric(index *int, data []byte) (m Metric, err error) {
 			}
 			value = append(value, b)
 			continue
-		case 2:
+		case 2: // metric type
 			if b == '|' {
 				state = 3
 				continue
@@ -112,51 +118,19 @@ func (s *Server) parseMetric(index *int, data []byte) (m Metric, err error) {
 			err = fmt.Errorf("invalid metric; tags should be marked with '#'")
 			return
 		case 4:
-			tags = append(tags, b)
+			if b == ',' {
+				m.Tags = append(m.Tags, string(tag))
+				tag = nil
+			}
+			tag = append(tag, b)
 		}
-
+	}
+	if len(tag) > 0 {
+		m.Tags = append(m.Tags, string(tag))
 	}
 
 	m.Name = string(name)
 	m.Type = string(metricType)
 	m.Value = string(value)
-	m.Tags = strings.Split(string(tags), ",")
 	return
-}
-
-// NewUDPListener returns a new UDP listener for a given address.
-func NewUDPListener(addr string) (net.PacketConn, error) {
-	listener, err := net.ListenPacket("udp", addr)
-	if err != nil {
-		return nil, err
-	}
-	return listener, nil
-}
-
-// Metric is a statsd metric.
-type Metric struct {
-	Name  string
-	Type  string
-	Value string
-	Tags  []string
-}
-
-// Float64 returns the value parsed as a float64.s
-func (m Metric) Float64() (float64, error) {
-	return strconv.ParseFloat(m.Value, 64)
-}
-
-// Int64 returns the value parsed as an int64.
-func (m Metric) Int64() (int64, error) {
-	return strconv.ParseInt(m.Value, 10, 64)
-}
-
-// Duration is the value parsed as a duration assuming
-// it was a float64 of milliseconds.
-func (m Metric) Duration() (time.Duration, error) {
-	f64, err := m.Float64()
-	if err != nil {
-		return 0, err
-	}
-	return time.Duration(f64 * float64(time.Millisecond)), nil
 }

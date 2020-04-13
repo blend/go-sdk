@@ -31,8 +31,6 @@ func main() {
 		Handler:  handleMetrics,
 	}
 
-	go printRates()
-
 	log.Printf("server listenening on: %s", listener.LocalAddr().String())
 	if err := srv.Start(); err != nil {
 		log.Fatal(err)
@@ -90,7 +88,7 @@ func (r rate) String() string {
 }
 
 type logger struct {
-	wr io.Writer
+	wr io.Write
 }
 
 func (l logger) Write(contents []byte) (int, error) {
