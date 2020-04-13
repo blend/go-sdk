@@ -28,6 +28,9 @@ func (s *Server) MaxPacketSizeOrDefault() int {
 // Start starts the server. This call blocks.
 func (s *Server) Start() error {
 	var err error
+	if s.Handler == nil {
+		return fmt.Errorf("server cannot start; no handler provided")
+	}
 	if s.Listener == nil && s.Addr != "" {
 		s.Listener, err = NewUDPListener(s.Addr)
 		if err != nil {
