@@ -13,22 +13,24 @@ import (
 )
 
 var (
-	addr    = flag.String("addr", "127.0.0.1:8125", "The statsd server address")
-	workers = flag.Int("workers", runtime.NumCPU(), "The number of workers to use")
+	addr        = flag.String("addr", "127.0.0.1:8125", "The statsd server address")
+	dialTimeout = flag.Duration("dial-timeout", time.Second, "The client dial timeout")
+	bufferSize  = flag.Int("buffer-size", 64, "The client buffer size")
+	workers     = flag.Int("workers", runtime.NumCPU(), "The number of workers to use")
 )
 
 var metrics = []statsd.Metric{
-	{Type: "c", Name: "http.request", Value: "1", Tags: []string{statsd.Tag("env", "test")}},
-	{Type: "c", Name: "error", Value: "1", Tags: []string{statsd.Tag("env", "test")}},
-	{Type: "c", Name: "http.response", Value: "1", Tags: []string{statsd.Tag("env", "test"), statsd.Tag("status_code", "200")}},
-	{Type: "ms", Name: "http.response.elapsed", Value: "500.0", Tags: []string{statsd.Tag("env", "test"), statsd.Tag("status_code", "200")}},
+	{Type: statsd.MetricTypeCount, Name: "http.request", Value: "1", Tags: []string{statsd.Tag("env", "test")}},
+	{Type: statsd.MetricTypeCount, Name: "error", Value: "1", Tags: []string{statsd.Tag("env", "test")}},
+	{Type: statsd.MetricTypeCount, Name: "http.response", Value: "1", Tags: []string{statsd.Tag("env", "test"), statsd.Tag("status_code", "200")}},
+	{Type: statsd.MetricTypeTimer, Name: "http.response.elapsed", Value: "500.0", Tags: []string{statsd.Tag("env", "test"), statsd.Tag("status_code", "200")}},
 }
 
 func main() {
 	c, err := statsd.New(
 		statsd.OptAddr(*addr),
-		statsd.OptDialTimeout(250*time.Millisecond),
-		statsd.OptMaxBufferSize(64),
+		statsd.OptDialTimeout(*dialTimeout),
+		statsd.OptMaxBufferSize(*bufferSize),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -44,13 +46,13 @@ func main() {
 			for x := 0; x < 1024; x++ {
 				for _, m := range metrics {
 					switch m.Type {
-					case "c":
+					case statsd.MetricTypeCount:
 						v, _ := m.Int64()
 						err = c.Count(m.Name, v, m.Tags...)
-					case "g":
+					case statsd.MetricTypeGauge:
 						v, _ := m.Float64()
 						err = c.Gauge(m.Name, v, m.Tags...)
-					case "ms":
+					case statsd.MetricTypeTimer:
 						v, _ := m.Duration()
 						err = c.TimeInMilliseconds(m.Name, v, m.Tags...)
 					}

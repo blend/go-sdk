@@ -31,6 +31,8 @@ func main() {
 		Handler:  handleMetrics,
 	}
 
+	go printMetricCounts()
+
 	log.Printf("server listenening on: %s", listener.LocalAddr().String())
 	if err := srv.Start(); err != nil {
 		log.Fatal(err)
@@ -42,10 +44,12 @@ var (
 	metricRatesMu sync.Mutex
 )
 
-func printRates() {
+func printMetricCounts() {
 	for {
-		<-time.Tick(2 * time.Second)
+		<-time.Tick(10 * time.Second)
 
+		log.Println("---")
+		log.Println("Metric Stats:")
 		for key, rate := range metricRates {
 			log.Printf("%s: %s\n", key, rate.String())
 		}
@@ -84,7 +88,7 @@ func (r rate) String() string {
 	}
 	quantum := float64(time.Since(r.Time)) / float64(time.Second)
 	rate := float64(r.Count) / quantum
-	return fmt.Sprintf("%0.2f/s", rate)
+	return fmt.Sprintf("%d %0.2f/s", r.Count, rate)
 }
 
 type logger struct {

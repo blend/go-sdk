@@ -13,7 +13,7 @@ type Metric struct {
 	Tags  []string
 }
 
-// Float64 returns the value parsed as a float64.s
+// Float64 returns the value parsed as a float64.
 func (m Metric) Float64() (float64, error) {
 	return strconv.ParseFloat(m.Value, 64)
 }

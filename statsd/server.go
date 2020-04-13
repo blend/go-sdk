@@ -59,7 +59,7 @@ func (s *Server) Start() error {
 	}
 }
 
-// Stop closes the server with a given context.
+// Stop closes the server.
 func (s *Server) Stop() error {
 	if s.Listener == nil {
 		return nil
@@ -86,8 +86,16 @@ func (s *Server) parseMetric(index *int, data []byte) (m Metric, err error) {
 	var value []byte
 	var tag []byte
 
-	var state int
+	const (
+		stateName       = iota
+		stateValue      = iota
+		stateMetricType = iota
+		stateTags       = iota
+		stateTagValues  = iota
+	)
+
 	var b byte
+	state := stateName
 	for ; *index < len(data); (*index)++ {
 		b = data[*index]
 
@@ -96,35 +104,35 @@ func (s *Server) parseMetric(index *int, data []byte) (m Metric, err error) {
 		}
 
 		switch state {
-		case 0: //name
+		case stateName: //name
 			if b == ':' {
-				state = 1
+				state = stateValue
 				continue
 			}
 			name = append(name, b)
 			continue
-		case 1: //value
+		case stateValue: //value
 			if b == '|' {
-				state = 2
+				state = stateMetricType
 				continue
 			}
 			value = append(value, b)
 			continue
-		case 2: // metric type
+		case stateMetricType: // metric type
 			if b == '|' {
-				state = 3
+				state = stateTags
 				continue
 			}
 			metricType = append(metricType, b)
 			continue
-		case 3: // tags
+		case stateTags: // tags
 			if b == '#' {
-				state = 4
+				state = stateTagValues
 				continue
 			}
 			err = fmt.Errorf("invalid metric; tags should be marked with '#'")
 			return
-		case 4:
+		case stateTagValues:
 			if b == ',' {
 				m.Tags = append(m.Tags, string(tag))
 				tag = nil
