@@ -77,6 +77,11 @@ func (s *Server) parseMetric(index *int, data []byte) (m Metric, err error) {
 	var b byte
 	for ; *index < len(data); (*index)++ {
 		b = data[*index]
+
+		if b == '\n' {
+			break // drop out at newline
+		}
+
 		switch state {
 		case 0: //name
 			if b == ':' {
@@ -101,13 +106,15 @@ func (s *Server) parseMetric(index *int, data []byte) (m Metric, err error) {
 			continue
 		case 3: // tags
 			if b == '#' {
+				state = 4
 				continue
 			}
-			if b == '\n' {
-				break // drop out at newline
-			}
+			err = fmt.Errorf("invalid metric; tags should be marked with '#'")
+			return
+		case 4:
 			tags = append(tags, b)
 		}
+
 	}
 
 	m.Name = string(name)

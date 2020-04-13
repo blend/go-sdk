@@ -2,6 +2,7 @@ package statsd
 
 import (
 	"fmt"
+	"io"
 	"math/rand"
 	"net"
 	"strconv"
@@ -122,7 +123,7 @@ type Client struct {
 
 	defaultTags []string
 
-	conn   net.Conn
+	conn   io.WriteCloser
 	connMu sync.Mutex
 
 	bufferMu    sync.Mutex
@@ -189,11 +190,11 @@ func (c *Client) sendInt(metricType, name string, value int64, tags ...string) e
 
 	c.bufferCount++
 	c.buffer = c.appendInt(c.buffer, metricType, name, value, tags...)
-	if c.bufferCount >= c.MaxBufferSize {
-		return c.flushBuffer()
+	if c.bufferCount < c.MaxBufferSize {
+		c.buffer = c.appendMetricSeparator(c.buffer)
+		return nil
 	}
-	c.buffer = c.appendMetricSeparator(c.buffer)
-	return nil
+	return c.flushBuffer()
 }
 
 func (c *Client) sendFloat(metricType, name string, value float64, tags ...string) error {
@@ -208,11 +209,11 @@ func (c *Client) sendFloat(metricType, name string, value float64, tags ...strin
 
 	c.bufferCount++
 	c.buffer = c.appendFloat(c.buffer, metricType, name, value, tags...)
-	if c.bufferCount >= c.MaxBufferSize {
-		return c.flushBuffer()
+	if c.bufferCount < c.MaxBufferSize {
+		c.buffer = c.appendMetricSeparator(c.buffer)
+		return nil
 	}
-	c.buffer = c.appendMetricSeparator(c.buffer)
-	return nil
+	return c.flushBuffer()
 }
 
 func (c *Client) appendInt(data []byte, metricType, name string, value int64, tags ...string) []byte {
@@ -221,7 +222,7 @@ func (c *Client) appendInt(data []byte, metricType, name string, value int64, ta
 	data = strconv.AppendInt(data, value, 10)
 	data = append(data, '|')
 	data = append(data, []byte(metricType)...)
-	data = c.appendTags(data, tags...)
+	data = c.appendTags(data, append(c.defaultTags, tags...)...)
 	return data
 }
 
@@ -231,7 +232,7 @@ func (c *Client) appendFloat(data []byte, metricType, name string, value float64
 	data = strconv.AppendFloat(data, value, 'f', -1, 64)
 	data = append(data, '|')
 	data = append(data, []byte(metricType)...)
-	data = c.appendTags(data, tags...)
+	data = c.appendTags(data, append(c.defaultTags, tags...)...)
 	return data
 }
 
