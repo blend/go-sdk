@@ -88,7 +88,7 @@ func (r rate) String() string {
 }
 
 type logger struct {
-	wr io.Write
+	wr io.Writer
 }
 
 func (l logger) Write(contents []byte) (int, error) {
