@@ -77,7 +77,7 @@ func Test_Client_AddDefaultTag(t *testing.T) {
 	assert.Equal([]string{"foo:bar"}, c.defaultTags)
 }
 
-func Test_Client_Sampling(t *testing.T) {
+func Test_ClientCount_Sampling(t *testing.T) {
 	assert := assert.New(t)
 
 	buffer := new(bytes.Buffer)
@@ -91,6 +91,27 @@ func Test_Client_Sampling(t *testing.T) {
 
 	for x := 0; x < 512; x++ {
 		assert.Nil(client.Count("sampling test", int64(x)))
+	}
+
+	contents := strings.Split(buffer.String(), "\n")
+	assert.True(len(contents) > 200, len(contents))
+	assert.True(len(contents) < 300, len(contents))
+}
+
+func Test_ClientGauge_Sampling(t *testing.T) {
+	assert := assert.New(t)
+
+	buffer := new(bytes.Buffer)
+
+	client := &Client{
+		SampleProvider: func() bool {
+			return rand.Float64() < 0.5
+		},
+		conn: noOpWriteCloser{buffer},
+	}
+
+	for x := 0; x < 512; x++ {
+		assert.Nil(client.Gauge("sampling test", float64(x)))
 	}
 
 	contents := strings.Split(buffer.String(), "\n")
