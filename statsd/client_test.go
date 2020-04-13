@@ -1,14 +1,46 @@
 package statsd
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"math/rand"
 	"strconv"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/blend/go-sdk/assert"
 )
+
+type noOpWriteCloser struct {
+	io.Writer
+}
+
+// Close is a no-op.
+func (n noOpWriteCloser) Close() error { return nil }
+
+func Test_Client_Sampling(t *testing.T) {
+	assert := assert.New(t)
+
+	buffer := new(bytes.Buffer)
+
+	client := &Client{
+		SampleProvider: func() bool {
+			return rand.Float64() < 0.5
+		},
+		conn: noOpWriteCloser{buffer},
+	}
+
+	for x := 0; x < 512; x++ {
+		assert.Nil(client.Count("sampling test", int64(x)))
+	}
+
+	contents := strings.Split(buffer.String(), "\n")
+	assert.True(len(contents) > 200, len(contents))
+	assert.True(len(contents) < 300, len(contents))
+}
 
 func Test_ClientCount_Buffered(t *testing.T) {
 	assert := assert.New(t)
