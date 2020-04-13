@@ -1,7 +1,6 @@
 package statsd
 
 import (
-	"fmt"
 	"io"
 	"math/rand"
 	"net"
@@ -85,7 +84,7 @@ func OptConfig(cfg Config) ClientOpt {
 		c.MaxPacketSize = cfg.MaxPacketSize
 		c.MaxBufferSize = cfg.MaxBufferSize
 		for key, value := range cfg.DefaultTags {
-			c.defaultTags = append(c.defaultTags, Tag(key, value))
+			c.AddDefaultTag(key, value)
 		}
 		return OptSampleRate(cfg.SampleRate)(c)
 	}
@@ -133,7 +132,7 @@ type Client struct {
 
 // AddDefaultTag adds a default tag.
 func (c *Client) AddDefaultTag(key, value string) {
-	c.defaultTags = append(c.defaultTags, fmt.Sprintf("%s:%s", key, value))
+	c.defaultTags = append(c.defaultTags, Tag(key, value))
 }
 
 // DefaultTags returns the default tags.
@@ -143,27 +142,27 @@ func (c *Client) DefaultTags() []string {
 
 // Count sends a count message.
 func (c *Client) Count(name string, value int64, tags ...string) error {
-	return c.sendInt("c", name, value, tags...)
+	return c.sendInt(MetricTypeCount, name, value, tags...)
 }
 
 // Increment sends a count message with a value of (1).
 func (c *Client) Increment(name string, tags ...string) error {
-	return c.sendInt("c", name, 1, tags...)
+	return c.sendInt(MetricTypeCount, name, 1, tags...)
 }
 
 // Gauge sends a point in time value.
 func (c *Client) Gauge(name string, value float64, tags ...string) error {
-	return c.sendFloat("g", name, value, tags...)
+	return c.sendFloat(MetricTypeGauge, name, value, tags...)
 }
 
 // TimeInMilliseconds sends a gauge method with a given value represented in milliseconds.
 func (c *Client) TimeInMilliseconds(name string, value time.Duration, tags ...string) error {
-	return c.sendFloat("ms", name, float64(value)/float64(time.Millisecond), tags...)
+	return c.sendFloat(MetricTypeTimer, name, float64(value)/float64(time.Millisecond), tags...)
 }
 
 // Histogram is an no-op for raw statsd.
 func (c *Client) Histogram(name string, value float64, tags ...string) error {
-	return c.sendFloat("h", name, value, tags...)
+	return c.sendFloat(MetricTypeHistogram, name, value, tags...)
 }
 
 // Flush is a no-op.
