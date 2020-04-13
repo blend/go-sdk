@@ -279,6 +279,7 @@ func (c *Client) send(data []byte) error {
 
 	c.connMu.Lock()
 	defer c.connMu.Unlock()
+
 	_, err := c.conn.Write(append(data, '\n'))
 	if err != nil {
 		return ex.New(err)

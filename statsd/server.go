@@ -3,6 +3,7 @@ package statsd
 import (
 	"fmt"
 	"net"
+	"time"
 )
 
 // Server is a listener for statsd metrics.
@@ -10,6 +11,7 @@ import (
 // production anything.
 type Server struct {
 	Addr          string
+	ReadDeadline  time.Duration
 	MaxPacketSize int
 	Listener      net.PacketConn
 	Handler       func(...Metric)
@@ -40,6 +42,11 @@ func (s *Server) Start() error {
 	var metrics []Metric
 	var n int
 	for {
+		if s.ReadDeadline > 0 {
+			if err := s.Listener.SetReadDeadline(time.Now().Add(s.ReadDeadline)); err != nil {
+				return err
+			}
+		}
 		n, _, err = s.Listener.ReadFrom(data)
 		if err != nil {
 			return err
@@ -48,7 +55,7 @@ func (s *Server) Start() error {
 		if err != nil {
 			return err
 		}
-		go s.Handler(metrics...)
+		s.Handler(metrics...)
 	}
 }
 
@@ -121,6 +128,7 @@ func (s *Server) parseMetric(index *int, data []byte) (m Metric, err error) {
 			if b == ',' {
 				m.Tags = append(m.Tags, string(tag))
 				tag = nil
+				continue
 			}
 			tag = append(tag, b)
 		}
