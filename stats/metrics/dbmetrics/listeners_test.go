@@ -42,7 +42,7 @@ func TestAddListenersStats(t *testing.T) {
 	assert.Equal(1000, qm.Gauge)
 	assert.NotEmpty(qm.Tags)
 
-	wqm = <-collector.Events
+	qm = <-collector.Events
 	assert.Equal(MetricNameDBQueryElapsed, qm.Name)
 	assert.Equal(1000, qm.TimeInMilliseconds)
 	assert.NotEmpty(qm.Tags)
