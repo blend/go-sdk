@@ -14,9 +14,15 @@ type Triggerable interface {
 
 // Scoper is a type that can return a scope.
 type Scoper interface {
+	// Apply augments a given context with fields from the Scope, including Labels, Annotations, and Path.
+	Apply(context.Context) context.Context
+	// WithContext sets the default context for the scope, which otherwise would be `context.Background()`
 	WithContext(context.Context) Scope
+	// WithPath returns a new scope with a given set of additional path segments.
 	WithPath(...string) Scope
+	// WithLabels returns a new scope with a given set of additional label values.
 	WithLabels(Labels) Scope
+	// WithAnnotations returns a new scope with a given set of additional annotation values.
 	WithAnnotations(Annotations) Scope
 }
 

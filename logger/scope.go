@@ -122,8 +122,11 @@ func (sc Scope) WithAnnotations(annotations Annotations) Scope {
 // --------------------------------------------------------------------------------
 
 // Trigger triggers an event in the subcontext.
+// The provided context is ammended with fields from the scope.
+// The provided context is also ammended with a TriggerTimestamp, which can be retrieved with `GetTriggerTimestamp(ctx)` in listeners.
 func (sc Scope) Trigger(ctx context.Context, event Event) {
-	sc.Logger.Trigger(sc.ApplyContext(ctx), event)
+	ctx = WithTriggerTimestamp(ctx, time.Now().UTC())
+	sc.Logger.Trigger(sc.Apply(ctx), event)
 }
 
 // --------------------------------------------------------------------------------
@@ -183,9 +186,12 @@ func (sc Scope) Fatal(err error, opts ...ErrorEventOption) error {
 	return err
 }
 
-// ApplyContext applies the scope context to a given context.
-func (sc Scope) ApplyContext(ctx context.Context) context.Context {
-	ctx = WithTriggerTimestamp(ctx, time.Now().UTC())
+//
+// Context utilities
+//
+
+// Apply applies the scope fields to a given context.
+func (sc Scope) Apply(ctx context.Context) context.Context {
 	ctx = WithPath(ctx, append(sc.Path, GetPath(ctx)...)...)
 	ctx = WithLabels(ctx, CombineLabels(sc.Labels, GetLabels(ctx)))
 	ctx = WithAnnotations(ctx, CombineAnnotations(sc.Annotations, GetAnnotations(ctx)))
