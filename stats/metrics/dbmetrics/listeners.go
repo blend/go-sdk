@@ -7,6 +7,7 @@ import (
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/stats"
+	"github.com/blend/go-sdk/timeutil"
 )
 
 // AddListeners adds db listeners.
@@ -33,6 +34,7 @@ func AddListeners(log logger.Listenable, collector stats.Collector) {
 		}
 
 		collector.Increment(MetricNameDBQuery, tags...)
+		collector.Gauge(MetricNameDBQueryElapsed, timeutil.Milliseconds(qe.Elapsed), tags...)
 		collector.TimeInMilliseconds(MetricNameDBQueryElapsed, qe.Elapsed, tags...)
 	}))
 }

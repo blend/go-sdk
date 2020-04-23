@@ -6,6 +6,7 @@ import (
 
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/stats"
+	"github.com/blend/go-sdk/timeutil"
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -47,6 +48,7 @@ func AddListeners(log logger.Listenable, collector stats.Collector) {
 
 		collector.Increment(MetricNameHTTPResponse, tags...)
 		collector.Gauge(MetricNameHTTPResponseSize, float64(wre.ContentLength), tags...)
+		collector.Gauge(MetricNameHTTPResponseElapsed, timeutil.Milliseconds(wre.Elapsed), tags...)
 		collector.TimeInMilliseconds(MetricNameHTTPResponseElapsed, wre.Elapsed, tags...)
 	}))
 }

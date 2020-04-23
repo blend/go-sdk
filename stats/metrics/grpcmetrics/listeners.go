@@ -6,6 +6,7 @@ import (
 	"github.com/blend/go-sdk/grpcutil"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/stats"
+	"github.com/blend/go-sdk/timeutil"
 )
 
 // AddListeners adds grpc listeners.
@@ -32,6 +33,7 @@ func AddListeners(log logger.Listenable, collector stats.Collector) {
 			tags = append(tags, stats.TagError)
 		}
 		collector.Increment(MetricNameRPC, tags...)
+		collector.Gauge(MetricNameRPCElapsed, timeutil.Milliseconds(re.Elapsed), tags...)
 		collector.TimeInMilliseconds(MetricNameRPCElapsed, re.Elapsed, tags...)
 	}))
 }
