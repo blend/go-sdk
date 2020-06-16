@@ -7,7 +7,7 @@ import (
 )
 
 // InMemoryLog creates a logger that logs to the in-memory buffer passed in.
-func InMemoryLog(logBuffer *bytes.Buffer) *logger.Logger {
+func InMemoryLog(logBuffer *bytes.Buffer) logger.Log {
 	return logger.MustNew(
 		logger.OptAll(),
 		logger.OptOutput(logBuffer),
