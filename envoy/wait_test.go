@@ -102,16 +102,20 @@ func TestWaitForAdminExecute(t *testing.T) {
 	it.Nil(err)
 	expected := strings.Join([]string{
 		"[debug] Checking if Envoy is ready, attempt 1",
-		`[debug] Envoy is not ready; connection failed: Get "http://localhost:15000/ready": TimeoutError`,
+		timeoutError(),
 		"[debug] Envoy is not yet ready, sleeping for 1ns",
 		"[debug] Checking if Envoy is ready, attempt 2",
-		`[debug] Envoy is not ready; connection failed: Get "http://localhost:15000/ready": TimeoutError`,
+		timeoutError(),
 		"[debug] Envoy is not yet ready, sleeping for 1ns",
 		"[debug] Checking if Envoy is ready, attempt 3",
 		"[debug] Envoy is ready",
 		"",
 	}, "\n")
 	it.Equal(expected, string(logBuffer.Bytes()))
+}
+
+func timeoutError() string {
+	return `[debug] Envoy is not ready; connection failed: Get "http://localhost:15000/ready": TimeoutError`
 }
 
 func TestIsReady(t *testing.T) {
