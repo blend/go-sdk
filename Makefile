@@ -34,7 +34,7 @@ deps:
 
 dev-deps:
 	@go get -u golang.org/x/lint/golint
-	@go get -d github.com/goreleaser/goreleaser
+	@GO111MODULE=on go get -d github.com/goreleaser/goreleaser
 
 install-all: install-ask install-bindata install-coverage install-profanity install-reverseproxy install-recover install-semver install-shamir install-template
 
