@@ -9,7 +9,7 @@ import (
 
 // Options are the options for the retry.
 type Options struct {
-	MaxAttempts         int
+	MaxAttempts         uint
 	DelayProvider       DelayProvider
 	ShouldRetryProvider ShouldRetryProvider
 }
@@ -18,7 +18,7 @@ type Options struct {
 type Option func(*Options)
 
 // OptMaxAttempts sets the max attempts.
-func OptMaxAttempts(maxAttempts int) Option {
+func OptMaxAttempts(maxAttempts uint) Option {
 	return func(ro *Options) { ro.MaxAttempts = maxAttempts }
 }
 
@@ -53,7 +53,8 @@ func Retry(ctx context.Context, action Action, opts ...Option) (res interface{},
 		opt(&options)
 	}
 
-	for attempt := 0; attempt < options.MaxAttempts; attempt++ {
+	var attempt uint
+	for attempt = 0; attempt < options.MaxAttempts; attempt++ {
 		func() {
 			defer func() {
 				if r := recover(); r != nil {
