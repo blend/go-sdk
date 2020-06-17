@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"runtime"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -114,7 +116,33 @@ func TestWaitForAdminExecute(t *testing.T) {
 	it.Equal(expected, string(logBuffer.Bytes()))
 }
 
+// getMinorVersion attempts to extract the minor (`X`) version in a version
+// string `go1.X` or `go1.X.Y`, e.g. `go1.14.4`. If the version is not of
+// this form, a negative number will be returned.
+func getMinorVersion() int {
+	version := runtime.Version()
+	if !strings.HasPrefix(version, "go1.") {
+		return -1
+	}
+
+	parts := strings.SplitN(version, ".", 3)
+	if len(parts) < 2 {
+		return -2
+	}
+
+	mv, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return -3
+	}
+
+	return mv
+}
+
 func timeoutError() string {
+	mv := getMinorVersion()
+	if mv < 14 {
+		return `[debug] Envoy is not ready; connection failed: Get http://localhost:15000/ready: TimeoutError`
+	}
 	return `[debug] Envoy is not ready; connection failed: Get "http://localhost:15000/ready": TimeoutError`
 }
 
