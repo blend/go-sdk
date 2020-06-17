@@ -9,8 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"runtime"
-	"strconv"
+	"regexp"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -102,48 +101,22 @@ func TestWaitForAdminExecute(t *testing.T) {
 	wfa = envoy.WaitForAdmin{Log: log, HTTPClient: mhgc, Sleep: time.Nanosecond}
 	err = wfa.Execute(context.TODO())
 	it.Nil(err)
-	expected := strings.Join([]string{
-		"[debug] Checking if Envoy is ready, attempt 1",
-		timeoutError(),
-		"[debug] Envoy is not yet ready, sleeping for 1ns",
-		"[debug] Checking if Envoy is ready, attempt 2",
-		timeoutError(),
-		"[debug] Envoy is not yet ready, sleeping for 1ns",
-		"[debug] Checking if Envoy is ready, attempt 3",
-		"[debug] Envoy is ready",
+
+	// NOTE: This regex is intended to work across Go minor versions. In go1.14, the quotes
+	//       were added (in the standard library) around `http://localhost:15000/ready`.
+	expectedPattern := strings.Join([]string{
+		`\[debug\] Checking if Envoy is ready, attempt 1`,
+		`\[debug\] Envoy is not ready; connection failed: Get (")?http://localhost:15000/ready(")?: TimeoutError`,
+		`\[debug\] Envoy is not yet ready, sleeping for 1ns`,
+		`\[debug\] Checking if Envoy is ready, attempt 2`,
+		`\[debug\] Envoy is not ready; connection failed: Get (")?http://localhost:15000/ready(")?: TimeoutError`,
+		`\[debug\] Envoy is not yet ready, sleeping for 1ns`,
+		`\[debug\] Checking if Envoy is ready, attempt 3`,
+		`\[debug\] Envoy is ready`,
 		"",
 	}, "\n")
-	it.Equal(expected, string(logBuffer.Bytes()))
-}
-
-// getMinorVersion attempts to extract the minor (`X`) version in a version
-// string `go1.X` or `go1.X.Y`, e.g. `go1.14.4`. If the version is not of
-// this form, a negative number will be returned.
-func getMinorVersion() int {
-	version := runtime.Version()
-	if !strings.HasPrefix(version, "go1.") {
-		return -1
-	}
-
-	parts := strings.SplitN(version, ".", 3)
-	if len(parts) < 2 {
-		return -2
-	}
-
-	mv, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return -3
-	}
-
-	return mv
-}
-
-func timeoutError() string {
-	mv := getMinorVersion()
-	if mv < 14 {
-		return `[debug] Envoy is not ready; connection failed: Get http://localhost:15000/ready: TimeoutError`
-	}
-	return `[debug] Envoy is not ready; connection failed: Get "http://localhost:15000/ready": TimeoutError`
+	re := regexp.MustCompile("(?m)^" + expectedPattern + "$")
+	it.True(re.Match(logBuffer.Bytes()))
 }
 
 func TestIsReady(t *testing.T) {
