@@ -21,9 +21,8 @@ func TestParse(t *testing.T) {
 		FailureCase{URI: "spiffe://only.local/", Message: "Missing workload identifier: \"spiffe://only.local/\""},
 	}
 	for _, fc := range failures {
-		trustDomain, workloadID, err := spiffeutil.Parse(fc.URI)
-		it.Empty(trustDomain)
-		it.Empty(workloadID)
+		pu, err := spiffeutil.Parse(fc.URI)
+		it.Nil(pu)
 		it.True(ex.Is(err, spiffeutil.ErrInvalidURI))
 		asEx, ok := err.(*ex.Ex)
 		it.True(ok)
@@ -31,8 +30,8 @@ func TestParse(t *testing.T) {
 	}
 
 	// Success.
-	trustDomain, workloadID, err := spiffeutil.Parse("spiffe://cluster.local/ns/blend/sa/quasar")
-	it.Equal("cluster.local", trustDomain)
-	it.Equal("ns/blend/sa/quasar", workloadID)
+	pu, err := spiffeutil.Parse("spiffe://cluster.local/ns/blend/sa/quasar")
+	expected := &spiffeutil.ParsedURI{TrustDomain: "cluster.local", WorkloadID: "ns/blend/sa/quasar"}
+	it.Equal(expected, pu)
 	it.Nil(err)
 }

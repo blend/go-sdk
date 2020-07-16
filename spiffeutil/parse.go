@@ -13,20 +13,27 @@ const (
 	ErrInvalidURI = ex.Class("Invalid SPIFFE URI")
 )
 
+// ParsedURI represents a SPIFFE URI that has been parsed via `Parse()`.
+type ParsedURI struct {
+	TrustDomain string
+	WorkloadID  string
+}
+
 // Parse consumes a SPIFFE URI and splits out the trust domain and workload
 // identifier. For example in `spiffe://cluster.local/ns/blend/sa/quasar`
 // the trust domain is `cluster.local` and the workload identifier is
 // `ns/blend/sa/quasar`.
-func Parse(uri string) (string, string, error) {
+func Parse(uri string) (*ParsedURI, error) {
 	if !strings.HasPrefix(uri, spiffePrefix) {
-		return "", "", ex.New(ErrInvalidURI).WithMessagef("Does not match protocol: %q", uri)
+		return nil, ex.New(ErrInvalidURI).WithMessagef("Does not match protocol: %q", uri)
 	}
 
 	suffix := uri[len(spiffePrefix):]
 	parts := strings.SplitN(suffix, "/", 2)
 	if len(parts) != 2 || len(parts[1]) == 0 {
-		return "", "", ex.New(ErrInvalidURI).WithMessagef("Missing workload identifier: %q", uri)
+		return nil, ex.New(ErrInvalidURI).WithMessagef("Missing workload identifier: %q", uri)
 	}
 
-	return parts[0], parts[1], nil
+	pu := &ParsedURI{TrustDomain: parts[0], WorkloadID: parts[1]}
+	return pu, nil
 }
