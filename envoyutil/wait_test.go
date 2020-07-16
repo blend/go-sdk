@@ -1,4 +1,4 @@
-package envoy_test
+package envoyutil_test
 
 import (
 	"bytes"
@@ -17,7 +17,7 @@ import (
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/env"
-	"github.com/blend/go-sdk/envoy"
+	"github.com/blend/go-sdk/envoyutil"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/web"
 )
@@ -25,11 +25,11 @@ import (
 // NOTE: Ensure that
 //       - `TimeoutError` satisfies `error`
 //       - `BadReadCloser` satisfies `io.ReadCloser`
-//       - `MockHTTPGetClient` satisfies `envoy.HTTPGetClient`
+//       - `MockHTTPGetClient` satisfies `envoyutil.HTTPGetClient`
 var (
-	_ error               = (*TimeoutError)(nil)
-	_ io.ReadCloser       = (*BadReadCloser)(nil)
-	_ envoy.HTTPGetClient = (*MockHTTPGetClient)(nil)
+	_ error                   = (*TimeoutError)(nil)
+	_ io.ReadCloser           = (*BadReadCloser)(nil)
+	_ envoyutil.HTTPGetClient = (*MockHTTPGetClient)(nil)
 )
 
 func TestMaybeWaitForAdmin(t *testing.T) {
@@ -41,7 +41,7 @@ func TestMaybeWaitForAdmin(t *testing.T) {
 	// No-op (WAIT_FOR_ENVOY is not set.)
 	var logBuffer bytes.Buffer
 	log := InMemoryLog(&logBuffer)
-	err := envoy.MaybeWaitForAdmin(log)
+	err := envoyutil.MaybeWaitForAdmin(log)
 	it.Nil(err)
 	it.Empty(logBuffer.Bytes())
 	logBuffer.Reset()
@@ -49,14 +49,14 @@ func TestMaybeWaitForAdmin(t *testing.T) {
 	// Happy-path; WAIT_FOR_ENVOY / ENVOY_ADMIN_PORT set.
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, envoy.EnumStateLive+"\n")
+		fmt.Fprint(w, envoyutil.EnumStateLive+"\n")
 	}))
 	defer server.Close()
 
 	port := strings.TrimPrefix(server.URL, "http://127.0.0.1:")
-	env.Env().Set(envoy.EnvVarWaitFlag, "true")
-	env.Env().Set(envoy.EnvVarAdminPort, port)
-	err = envoy.MaybeWaitForAdmin(log)
+	env.Env().Set(envoyutil.EnvVarWaitFlag, "true")
+	env.Env().Set(envoyutil.EnvVarAdminPort, port)
+	err = envoyutil.MaybeWaitForAdmin(log)
 	it.Nil(err)
 	expected := strings.Join([]string{
 		"[debug] Checking if Envoy is ready, attempt 1",
@@ -72,9 +72,9 @@ func TestWaitForAdminExecute(t *testing.T) {
 
 	// Failure with error that isn't timeout or connection error.
 	mhgc := &MockHTTPGetClient{Error: ex.New("known failure")}
-	wfa := envoy.WaitForAdmin{HTTPClient: mhgc}
+	wfa := envoyutil.WaitForAdmin{HTTPClient: mhgc}
 	err := wfa.Execute(context.TODO())
-	it.True(ex.Is(err, envoy.ErrTimedOut))
+	it.True(ex.Is(err, envoyutil.ErrTimedOut))
 
 	// Repeated failures with timeout
 	ue := &url.Error{
@@ -83,9 +83,9 @@ func TestWaitForAdminExecute(t *testing.T) {
 		Err: &TimeoutError{},
 	}
 	mhgc = &MockHTTPGetClient{Error: ue}
-	wfa = envoy.WaitForAdmin{HTTPClient: mhgc, Sleep: time.Nanosecond}
+	wfa = envoyutil.WaitForAdmin{HTTPClient: mhgc, Sleep: time.Nanosecond}
 	err = wfa.Execute(context.TODO())
-	it.True(ex.Is(err, envoy.ErrTimedOut))
+	it.True(ex.Is(err, envoyutil.ErrTimedOut))
 
 	// Success after repeated failures.
 	var logBuffer bytes.Buffer
@@ -95,10 +95,10 @@ func TestWaitForAdminExecute(t *testing.T) {
 		SwitchAfter: 3,
 		SwitchResponse: &http.Response{
 			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte(envoy.EnumStateLive + "\n"))),
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte(envoyutil.EnumStateLive + "\n"))),
 		},
 	}
-	wfa = envoy.WaitForAdmin{Log: log, HTTPClient: mhgc, Sleep: time.Nanosecond}
+	wfa = envoyutil.WaitForAdmin{Log: log, HTTPClient: mhgc, Sleep: time.Nanosecond}
 	err = wfa.Execute(context.TODO())
 	it.Nil(err)
 
@@ -132,7 +132,7 @@ func TestIsReady(t *testing.T) {
 	defer server.Close()
 
 	port := strings.TrimPrefix(server.URL, "http://127.0.0.1:")
-	wfa := envoy.WaitForAdmin{
+	wfa := envoyutil.WaitForAdmin{
 		Port:       port,
 		Sleep:      time.Nanosecond,
 		HTTPClient: &http.Client{Timeout: time.Second},
@@ -158,7 +158,7 @@ func TestIsReady(t *testing.T) {
 	bodyErr := ex.New("Filesystem oops")
 	body := &BadReadCloser{Error: bodyErr}
 	mhgc := &MockHTTPGetClient{Response: &http.Response{Body: body}}
-	wfa = envoy.WaitForAdmin{
+	wfa = envoyutil.WaitForAdmin{
 		Port:       port,
 		Sleep:      time.Nanosecond,
 		HTTPClient: mhgc,
