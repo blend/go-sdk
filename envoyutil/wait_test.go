@@ -17,9 +17,10 @@ import (
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/env"
-	"github.com/blend/go-sdk/envoyutil"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/web"
+
+	"github.com/blend/go-sdk/envoyutil"
 )
 
 // NOTE: Ensure that
