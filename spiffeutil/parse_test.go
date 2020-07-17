@@ -11,14 +11,14 @@ import (
 func TestParse(t *testing.T) {
 	it := assert.New(t)
 
-	type FailureCase struct {
+	type failureCase struct {
 		URI     string
 		Message string
 	}
-	failures := []FailureCase{
-		FailureCase{URI: "https://web.invalid", Message: "Does not match protocol: \"https://web.invalid\""},
-		FailureCase{URI: "spiffe://only.local", Message: "Missing workload identifier: \"spiffe://only.local\""},
-		FailureCase{URI: "spiffe://only.local/", Message: "Missing workload identifier: \"spiffe://only.local/\""},
+	failures := []failureCase{
+		{URI: "https://web.invalid", Message: "Does not match protocol: \"https://web.invalid\""},
+		{URI: "spiffe://only.local", Message: "Missing workload identifier: \"spiffe://only.local\""},
+		{URI: "spiffe://only.local/", Message: "Missing workload identifier: \"spiffe://only.local/\""},
 	}
 	for _, fc := range failures {
 		pu, err := spiffeutil.Parse(fc.URI)
