@@ -1,16 +1,23 @@
 package envoyutil
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/blend/go-sdk/collections"
 	"github.com/blend/go-sdk/ex"
+	"github.com/blend/go-sdk/spiffeutil"
 )
 
 const (
-	// ErrMissingXFCC is the error returned when XFCC is missing
+	// ErrMissingXFCC is the error returned when XFCC is missing.
 	ErrMissingXFCC = ex.Class("Missing X-Forwarded-Client-Cert header")
-	// ErrInvalidXFCC is the error returned when XFCC is invalid
+	// ErrInvalidXFCC is the error returned when XFCC is invalid.
 	ErrInvalidXFCC = ex.Class("Invalid X-Forwarded-Client-Cert header")
+	// ErrInvalidClientIdentity is the error returned when XFCC has a missing / invalid client identity.
+	ErrInvalidClientIdentity = ex.Class("Client identity could not be determined from X-Forwarded-Client-Cert header")
+	// ErrDeniedClientIdentity is in the deny list.
+	ErrDeniedClientIdentity = ex.Class("Client identity from X-Forwarded-Client-Cert header is denied")
 	// ErrMissingExtractFunction is the message used when the "extract client
 	// identity" function is `nil` or not provided.
 	ErrMissingExtractFunction = ex.Class("Missing client identity extraction function")
@@ -67,4 +74,65 @@ func ExtractAndVerifyClientIdentity(req *http.Request, cip ClientIdentityProvide
 
 	// Do final extraction.
 	return cip(xfcc)
+}
+
+// ClientWorkloadID determines the SPIFFE workload identifier for the client.
+// This function assumes the client identity is in the `URI` field and that field
+// is a SPIFFE URI.
+func ClientWorkloadID(trustDomain string, xfcc XFCCElement) (string, error) {
+	pu, err := spiffeutil.Parse(xfcc.URI)
+	// NOTE: The `pu == nil` check is redundant, we expect `spiffeutil.Parse()`
+	//       not to violate the invariant that `pu != nil` when `err == nil`.
+	if err != nil || pu == nil {
+		return "", &XFCCExtractionError{
+			Class: ErrInvalidClientIdentity,
+			XFCC:  xfcc.String(),
+		}
+	}
+
+	if pu.TrustDomain != trustDomain {
+		return "", &XFCCValidationError{
+			Class: ErrInvalidClientIdentity,
+			XFCC:  xfcc.String(),
+		}
+	}
+
+	return pu.WorkloadID, nil
+}
+
+// ClientIdentityFromSPIFFE produces a function satisfying `ClientIdentityProvider`.
+//
+// This function assumes the client identity is in the `URI` field and that field
+// is a SPIFFE URI. Further, it assumes the workload identifier identifies a
+// Kubernetes service account, of the form  `ns/{namespace}/sa/{serviceAccount}`.
+// After parsing, the returned value is of the form `{namespace}.{serviceAccount}`.
+//
+// Additionally, it takes a variadic input of `denied` client identities that
+// should not pass validation.
+func ClientIdentityFromSPIFFE(trustDomain string, denied ...string) ClientIdentityProvider {
+	deniedSet := collections.NewSetOfString(denied...)
+	return func(xfcc XFCCElement) (string, error) {
+		workloadID, err := ClientWorkloadID(trustDomain, xfcc)
+		if err != nil {
+			return "", err
+		}
+
+		kw, err := spiffeutil.ParseKubernetesWorkloadID(workloadID)
+		if err != nil || kw == nil {
+			return "", &XFCCExtractionError{
+				Class: ErrInvalidClientIdentity,
+				XFCC:  xfcc.String(),
+			}
+		}
+
+		clientIdentity := fmt.Sprintf("%s.%s", kw.ServiceAccount, kw.Namespace)
+		if deniedSet.Contains(clientIdentity) {
+			return "", &XFCCValidationError{
+				Class: ErrDeniedClientIdentity,
+				XFCC:  xfcc.String(),
+			}
+		}
+
+		return clientIdentity, nil
+	}
 }
