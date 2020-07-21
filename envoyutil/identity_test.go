@@ -2,6 +2,7 @@ package envoyutil_test
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"testing"
@@ -49,7 +50,9 @@ func TestXFCCErrorError(t *testing.T) {
 func TestIsUserError(t *testing.T) {
 	assert := sdkAssert.New(t)
 
-	err := ex.New("anything")
+	var err error = ex.New("anything")
+	assert.False(envoyutil.IsUserError(err))
+	err = errors.New("WRENCH")
 	assert.False(envoyutil.IsUserError(err))
 	err = ex.New(envoyutil.ErrNilInterface)
 	assert.True(envoyutil.IsUserError(err))
