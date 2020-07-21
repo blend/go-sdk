@@ -16,6 +16,12 @@ const (
 	ErrInvalidXFCC = "Invalid X-Forwarded-Client-Cert header"
 )
 
+// NOTE: Ensure
+//       - `XFCCError` satisfies `error`.
+var (
+	_ error = (*XFCCError)(nil)
+)
+
 // XFCCError contains metadata about an XFCC header that could not
 // be parsed. This is intended to be used as the body of a 401 Unauthorized
 // response.
@@ -23,6 +29,12 @@ type XFCCError struct {
 	Message  string      `json:"message" xml:"message"`
 	XFCC     string      `json:"xfcc,omitempty" xml:"xfcc,omitempty"`
 	Metadata interface{} `json:"metadata,omitempty" xml:"metadata,omitempty"`
+}
+
+// Error satisfies the `error` interface. It is intended to be a unique
+// identifier for the error
+func (xe *XFCCError) Error() string {
+	return xe.Message
 }
 
 // ExtractFromXFCC is a function to extra the client identity from a

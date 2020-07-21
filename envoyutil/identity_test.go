@@ -18,6 +18,14 @@ var (
 	_ envoyutil.ExtractFromXFCC = extractFailure
 )
 
+func TestXFCCErrorError(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	m := "oh a bad thing happened"
+	var err error = &envoyutil.XFCCError{Message: m}
+	assert.Equal(m, err.Error())
+}
+
 func TestExtractClientIdentity(t *testing.T) {
 	assert := sdkAssert.New(t)
 
