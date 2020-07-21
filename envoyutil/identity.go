@@ -44,7 +44,7 @@ type XFCCError struct {
 // Error satisfies the `error` interface. It is intended to be a unique
 // identifier for the error.
 func (xe *XFCCError) Error() string {
-	return string(xe.Class)
+	return xe.Class.Error()
 }
 
 // IsUserError determines if an error is a user error (vs. a legitimate input
