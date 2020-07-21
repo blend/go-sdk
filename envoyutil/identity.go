@@ -57,37 +57,33 @@ type VerifyXFCC func(xfcc XFCCElement, xfccValue string) (err *XFCCError)
 // does so by requiring the XFCC header to present and valid and then passing
 // the parsed XFCC header along to some verifiers (e.g. to verify the server
 // identity) as well as to an extractor (for the client identity).
-func ExtractClientIdentity(req *http.Request, efx ExtractFromXFCC, verifiers ...VerifyXFCC) (clientIdentity string, err *XFCCError) {
+func ExtractClientIdentity(req *http.Request, efx ExtractFromXFCC, verifiers ...VerifyXFCC) (string, *XFCCError) {
 	if efx == nil {
-		err = &XFCCError{Class: ErrMissingExtractFunction}
-		return
+		return "", &XFCCError{Class: ErrMissingExtractFunction}
 	}
 
 	// Early exit if XFCC header is not present.
 	xfccValue := req.Header.Get(HeaderXFCC)
 	if xfccValue == "" {
-		err = &XFCCError{Class: ErrMissingXFCC}
-		return
+		return "", &XFCCError{Class: ErrMissingXFCC}
 	}
 
 	// Early exit if XFCC header is invalid, or has zero or multiple elements.
 	xfccElements, parseErr := ParseXFCC(xfccValue)
 	if parseErr != nil || len(xfccElements) != 1 {
-		err = &XFCCError{Class: ErrInvalidXFCC, XFCC: xfccValue}
-		return
+		return "", &XFCCError{Class: ErrInvalidXFCC, XFCC: xfccValue}
 	}
 	xfcc := xfccElements[0]
 
 	// Run all verifiers on the parsed `xfcc`.
 	for _, verifier := range verifiers {
 		if verifier == nil {
-			err = &XFCCError{Class: ErrVerifierNil, XFCC: xfccValue}
-			return
+			return "", &XFCCError{Class: ErrVerifierNil, XFCC: xfccValue}
 		}
 
-		err = verifier(xfcc, xfccValue)
+		err := verifier(xfcc, xfccValue)
 		if err != nil {
-			return
+			return "", err
 		}
 	}
 
