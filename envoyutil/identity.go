@@ -26,7 +26,8 @@ var (
 // be parsed. This is intended to be used as the body of a 401 Unauthorized
 // response.
 type XFCCError struct {
-	Message  string      `json:"message" xml:"message"`
+	// Class can be used to uniquely identify the type of the error.
+	Class    string      `json:"class" xml:"class"`
 	XFCC     string      `json:"xfcc,omitempty" xml:"xfcc,omitempty"`
 	Metadata interface{} `json:"metadata,omitempty" xml:"metadata,omitempty"`
 }
@@ -34,7 +35,7 @@ type XFCCError struct {
 // Error satisfies the `error` interface. It is intended to be a unique
 // identifier for the error
 func (xe *XFCCError) Error() string {
-	return xe.Message
+	return xe.Class
 }
 
 // ExtractFromXFCC is a function to extra the client identity from a
@@ -53,21 +54,21 @@ type VerifyXFCC func(xfcc XFCCElement, xfccValue string) (errResponse *XFCCError
 // identity) as well as to an extractor (for the client identity).
 func ExtractClientIdentity(req *http.Request, efx ExtractFromXFCC, verifiers ...VerifyXFCC) (clientIdentity string, errResponse *XFCCError) {
 	if efx == nil {
-		errResponse = &XFCCError{Message: ErrMissingExtractFunction}
+		errResponse = &XFCCError{Class: ErrMissingExtractFunction}
 		return
 	}
 
 	// Early exit if XFCC header is not present.
 	xfccValue := req.Header.Get(HeaderXFCC)
 	if xfccValue == "" {
-		errResponse = &XFCCError{Message: ErrMissingXFCC}
+		errResponse = &XFCCError{Class: ErrMissingXFCC}
 		return
 	}
 
 	// Early exit if XFCC header is invalid, or has zero or multiple elements.
 	xfccElements, err := ParseXFCC(xfccValue)
 	if err != nil || len(xfccElements) != 1 {
-		errResponse = &XFCCError{Message: ErrInvalidXFCC, XFCC: xfccValue}
+		errResponse = &XFCCError{Class: ErrInvalidXFCC, XFCC: xfccValue}
 		return
 	}
 	xfcc := xfccElements[0]
@@ -75,7 +76,7 @@ func ExtractClientIdentity(req *http.Request, efx ExtractFromXFCC, verifiers ...
 	// Run all verifiers on the parsed `xfcc`.
 	for _, verifier := range verifiers {
 		if verifier == nil {
-			errResponse = &XFCCError{Message: ErrVerifierNil, XFCC: xfccValue}
+			errResponse = &XFCCError{Class: ErrVerifierNil, XFCC: xfccValue}
 			return
 		}
 

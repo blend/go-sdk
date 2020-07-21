@@ -21,9 +21,9 @@ var (
 func TestXFCCErrorError(t *testing.T) {
 	assert := sdkAssert.New(t)
 
-	m := "oh a bad thing happened"
-	var err error = &envoyutil.XFCCError{Message: m}
-	assert.Equal(m, err.Error())
+	c := "oh a bad thing happened"
+	var err error = &envoyutil.XFCCError{Class: c}
+	assert.Equal(c, err.Error())
 }
 
 func TestExtractClientIdentity(t *testing.T) {
@@ -32,21 +32,21 @@ func TestExtractClientIdentity(t *testing.T) {
 	type testCase struct {
 		XFCC           string
 		ClientIdentity string
-		Message        string
+		Class          string
 		Extract        envoyutil.ExtractFromXFCC
 		Verifiers      []envoyutil.VerifyXFCC
 	}
 	testCases := []testCase{
-		{Message: envoyutil.ErrMissingExtractFunction},
-		{XFCC: "", Message: envoyutil.ErrMissingXFCC, Extract: extractJustURI},
-		{XFCC: `""`, Message: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
-		{XFCC: "something=bad", Message: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
+		{Class: envoyutil.ErrMissingExtractFunction},
+		{XFCC: "", Class: envoyutil.ErrMissingXFCC, Extract: extractJustURI},
+		{XFCC: `""`, Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
+		{XFCC: "something=bad", Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
 		{XFCC: "By=spiffe://cluster.local/ns/blend/sa/idea;URI=spiffe://cluster.local/ns/light/sa/bulb", ClientIdentity: "spiffe://cluster.local/ns/light/sa/bulb", Extract: extractJustURI},
-		{XFCC: "By=x;URI=y", Message: "extractFailure", Extract: extractFailure},
+		{XFCC: "By=x;URI=y", Class: "extractFailure", Extract: extractFailure},
 		{
 			XFCC:      "By=abc;URI=def",
 			Verifiers: []envoyutil.VerifyXFCC{makeVerifyXFCC("xyz")},
-			Message:   `verifyFailure: expected "xyz"`,
+			Class:     `verifyFailure: expected "xyz"`,
 			Extract:   extractJustURI,
 		},
 		{
@@ -58,7 +58,7 @@ func TestExtractClientIdentity(t *testing.T) {
 		{
 			XFCC:      "By=abc;URI=def",
 			Verifiers: []envoyutil.VerifyXFCC{nil},
-			Message:   envoyutil.ErrVerifierNil,
+			Class:     envoyutil.ErrVerifierNil,
 			Extract:   extractJustURI,
 		},
 	}
@@ -73,10 +73,10 @@ func TestExtractClientIdentity(t *testing.T) {
 
 		clientIdentity, errResponse := envoyutil.ExtractClientIdentity(r, tc.Extract, tc.Verifiers...)
 		assert.Equal(tc.ClientIdentity, clientIdentity)
-		if tc.Message == "" {
+		if tc.Class == "" {
 			assert.Nil(errResponse)
 		} else {
-			expected := &envoyutil.XFCCError{Message: tc.Message, XFCC: tc.XFCC}
+			expected := &envoyutil.XFCCError{Class: tc.Class, XFCC: tc.XFCC}
 			assert.Equal(expected, errResponse)
 		}
 	}
@@ -89,7 +89,7 @@ func extractJustURI(xfcc envoyutil.XFCCElement, _ string) (string, *envoyutil.XF
 
 // extractFailure satisfies `envoyutil.ExtractFromXFCC` and fails.
 func extractFailure(xfcc envoyutil.XFCCElement, xfccValue string) (string, *envoyutil.XFCCError) {
-	return "", &envoyutil.XFCCError{Message: "extractFailure", XFCC: xfccValue}
+	return "", &envoyutil.XFCCError{Class: "extractFailure", XFCC: xfccValue}
 }
 
 func makeVerifyXFCC(expectedBy string) envoyutil.VerifyXFCC {
@@ -98,7 +98,7 @@ func makeVerifyXFCC(expectedBy string) envoyutil.VerifyXFCC {
 			return nil
 		}
 
-		message := fmt.Sprintf("verifyFailure: expected %q", expectedBy)
-		return &envoyutil.XFCCError{Message: message, XFCC: xfccValue}
+		c := fmt.Sprintf("verifyFailure: expected %q", expectedBy)
+		return &envoyutil.XFCCError{Class: c, XFCC: xfccValue}
 	}
 }
