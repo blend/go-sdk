@@ -27,8 +27,11 @@ var (
 // response.
 type XFCCError struct {
 	// Class can be used to uniquely identify the type of the error.
-	Class    string      `json:"class" xml:"class"`
-	XFCC     string      `json:"xfcc,omitempty" xml:"xfcc,omitempty"`
+	Class string `json:"class" xml:"class"`
+	// XFCC contains the XFCC header value that could not be parsed or was
+	// invalid in some way.
+	XFCC string `json:"xfcc,omitempty" xml:"xfcc,omitempty"`
+	// Metadata contains extra information relevant to a specific failure.
 	Metadata interface{} `json:"metadata,omitempty" xml:"metadata,omitempty"`
 }
 
