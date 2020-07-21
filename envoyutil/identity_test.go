@@ -52,12 +52,13 @@ func TestExtractClientIdentity(t *testing.T) {
 	type testCase struct {
 		XFCC           string
 		ClientIdentity string
+		UserError      bool
 		Class          ex.Class
 		Extract        envoyutil.ExtractFromXFCC
 		Verifiers      []envoyutil.VerifyXFCC
 	}
 	testCases := []testCase{
-		{Class: envoyutil.ErrMissingExtractFunction},
+		{UserError: true, Class: envoyutil.ErrMissingExtractFunction},
 		{XFCC: "", Class: envoyutil.ErrMissingXFCC, Extract: extractJustURI},
 		{XFCC: `""`, Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
 		{XFCC: "something=bad", Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
@@ -78,8 +79,9 @@ func TestExtractClientIdentity(t *testing.T) {
 		{
 			XFCC:      "By=abc;URI=def",
 			Verifiers: []envoyutil.VerifyXFCC{nil},
-			Class:     envoyutil.ErrVerifierNil,
+			UserError: true,
 			Extract:   extractJustURI,
+			Class:     envoyutil.ErrVerifierNil + `; XFCC: "By=abc;URI=def"`,
 		},
 	}
 
@@ -93,7 +95,12 @@ func TestExtractClientIdentity(t *testing.T) {
 
 		clientIdentity, err := envoyutil.ExtractClientIdentity(r, tc.Extract, tc.Verifiers...)
 		assert.Equal(tc.ClientIdentity, clientIdentity)
-		if tc.Class == "" {
+		if tc.UserError {
+			asEx, ok := err.(*ex.Ex)
+			assert.True(ok)
+			assert.Equal(envoyutil.ErrNilInterface, asEx.Class)
+			assert.Equal(tc.Class, asEx.Message)
+		} else if tc.Class == "" {
 			assert.Nil(err)
 		} else {
 			expected := &envoyutil.XFCCError{Class: tc.Class, XFCC: tc.XFCC}
