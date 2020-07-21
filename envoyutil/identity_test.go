@@ -65,8 +65,8 @@ func TestExtractClientIdentity(t *testing.T) {
 
 	for _, tc := range testCases {
 		// Set-up mock context.
-		r, err := http.NewRequest("GET", "", nil)
-		assert.Nil(err)
+		r, newReqErr := http.NewRequest("GET", "", nil)
+		assert.Nil(newReqErr)
 		if tc.XFCC != "" {
 			r.Header.Add(envoyutil.HeaderXFCC, tc.XFCC)
 		}

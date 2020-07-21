@@ -36,7 +36,7 @@ type XFCCError struct {
 }
 
 // Error satisfies the `error` interface. It is intended to be a unique
-// identifier for the error
+// identifier for the error.
 func (xe *XFCCError) Error() string {
 	return xe.Class
 }
@@ -69,8 +69,8 @@ func ExtractClientIdentity(req *http.Request, efx ExtractFromXFCC, verifiers ...
 	}
 
 	// Early exit if XFCC header is invalid, or has zero or multiple elements.
-	xfccElements, err := ParseXFCC(xfccValue)
-	if err != nil || len(xfccElements) != 1 {
+	xfccElements, parseErr := ParseXFCC(xfccValue)
+	if parseErr != nil || len(xfccElements) != 1 {
 		errResponse = &XFCCError{Class: ErrInvalidXFCC, XFCC: xfccValue}
 		return
 	}
