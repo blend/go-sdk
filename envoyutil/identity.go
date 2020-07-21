@@ -57,7 +57,7 @@ type VerifyXFCC func(xfcc XFCCElement, xfccValue string) (err *XFCCError)
 // does so by requiring the XFCC header to present and valid and then passing
 // the parsed XFCC header along to some verifiers (e.g. to verify the server
 // identity) as well as to an extractor (for the client identity).
-func ExtractClientIdentity(req *http.Request, efx ExtractFromXFCC, verifiers ...VerifyXFCC) (string, *XFCCError) {
+func ExtractClientIdentity(req *http.Request, efx ExtractFromXFCC, verifiers ...VerifyXFCC) (string, error) {
 	if efx == nil {
 		return "", &XFCCError{Class: ErrMissingExtractFunction}
 	}
