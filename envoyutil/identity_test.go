@@ -46,6 +46,15 @@ func TestXFCCErrorError(t *testing.T) {
 	assert.Equal(c, err.Error())
 }
 
+func TestIsUserError(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	err := ex.New("anything")
+	assert.False(envoyutil.IsUserError(err))
+	err = ex.New(envoyutil.ErrNilInterface)
+	assert.True(envoyutil.IsUserError(err))
+}
+
 func TestExtractClientIdentity(t *testing.T) {
 	assert := sdkAssert.New(t)
 

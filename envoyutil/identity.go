@@ -47,6 +47,13 @@ func (xe *XFCCError) Error() string {
 	return string(xe.Class)
 }
 
+// IsUserError determines if an error is a user error (vs. a legitimate input
+// error) in this package. A user error happens when a `nil` interface is
+// provided in a place where a non-`nil` value is required.
+func IsUserError(err error) bool {
+	return ex.Is(err, ErrNilInterface)
+}
+
 // ExtractFromXFCC is a function to extra the client identity from a
 // parsed XFCC header. For example, client identity could be determined from the
 // SPIFFE URI in the `URI` field in an XFCC element.
