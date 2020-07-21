@@ -1,11 +1,13 @@
 package envoyutil_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
 
 	sdkAssert "github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/ex"
 
 	"github.com/blend/go-sdk/envoyutil"
 )
@@ -18,10 +20,28 @@ var (
 	_ envoyutil.ExtractFromXFCC = extractFailure
 )
 
+func TestXFCCErrorMarshal(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	c := ex.Class("caused by something invalid")
+	err := &envoyutil.XFCCError{Class: c, XFCC: "a=b", Metadata: map[string]string{"x": "why"}}
+
+	asBytes, marshalErr := json.MarshalIndent(err, "", "  ")
+	assert.Nil(marshalErr)
+	expected := `{
+  "class": "caused by something invalid",
+  "xfcc": "a=b",
+  "metadata": {
+    "x": "why"
+  }
+}`
+	assert.Equal(expected, string(asBytes))
+}
+
 func TestXFCCErrorError(t *testing.T) {
 	assert := sdkAssert.New(t)
 
-	c := "oh a bad thing happened"
+	c := ex.Class("oh a bad thing happened")
 	var err error = &envoyutil.XFCCError{Class: c}
 	assert.Equal(c, err.Error())
 }
@@ -32,7 +52,7 @@ func TestExtractClientIdentity(t *testing.T) {
 	type testCase struct {
 		XFCC           string
 		ClientIdentity string
-		Class          string
+		Class          ex.Class
 		Extract        envoyutil.ExtractFromXFCC
 		Verifiers      []envoyutil.VerifyXFCC
 	}
@@ -98,7 +118,7 @@ func makeVerifyXFCC(expectedBy string) envoyutil.VerifyXFCC {
 			return nil
 		}
 
-		c := fmt.Sprintf("verifyFailure: expected %q", expectedBy)
+		c := ex.Class(fmt.Sprintf("verifyFailure: expected %q", expectedBy))
 		return &envoyutil.XFCCError{Class: c, XFCC: xfccValue}
 	}
 }

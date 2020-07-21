@@ -2,18 +2,20 @@ package envoyutil
 
 import (
 	"net/http"
+
+	"github.com/blend/go-sdk/ex"
 )
 
 const (
 	// ErrMissingExtractFunction is the error returned when the "extract client
 	// identity" function is `nil` or not provided.
-	ErrMissingExtractFunction = "Missing client identity extraction function"
+	ErrMissingExtractFunction = ex.Class("Missing client identity extraction function")
 	// ErrVerifierNil is the error returned when a provided verifier is `nil`.
-	ErrVerifierNil = "Verifier must not be `nil`"
+	ErrVerifierNil = ex.Class("Verifier must not be `nil`")
 	// ErrMissingXFCC is the error returned when XFCC is missing
-	ErrMissingXFCC = "Missing X-Forwarded-Client-Cert header"
+	ErrMissingXFCC = ex.Class("Missing X-Forwarded-Client-Cert header")
 	// ErrInvalidXFCC is the error returned when XFCC is invalid
-	ErrInvalidXFCC = "Invalid X-Forwarded-Client-Cert header"
+	ErrInvalidXFCC = ex.Class("Invalid X-Forwarded-Client-Cert header")
 )
 
 // NOTE: Ensure
@@ -27,7 +29,7 @@ var (
 // response.
 type XFCCError struct {
 	// Class can be used to uniquely identify the type of the error.
-	Class string `json:"class" xml:"class"`
+	Class ex.Class `json:"class" xml:"class"`
 	// XFCC contains the XFCC header value that could not be parsed or was
 	// invalid in some way.
 	XFCC string `json:"xfcc,omitempty" xml:"xfcc,omitempty"`
@@ -38,7 +40,7 @@ type XFCCError struct {
 // Error satisfies the `error` interface. It is intended to be a unique
 // identifier for the error.
 func (xe *XFCCError) Error() string {
-	return xe.Class
+	return string(xe.Class)
 }
 
 // ExtractFromXFCC is a function to extra the client identity from a
