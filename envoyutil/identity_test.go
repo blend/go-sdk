@@ -68,29 +68,29 @@ func TestExtractClientIdentity(t *testing.T) {
 		if tc.Message == "" {
 			assert.Nil(errResponse)
 		} else {
-			expected := &envoyutil.InvalidXFCCResponse{Message: tc.Message, XFCC: tc.XFCC}
+			expected := &envoyutil.XFCCError{Message: tc.Message, XFCC: tc.XFCC}
 			assert.Equal(expected, errResponse)
 		}
 	}
 }
 
 // extractJustURI satisfies `envoyutil.ExtractFromXFCC` and just returns the URI.
-func extractJustURI(xfcc envoyutil.XFCCElement, _ string) (string, *envoyutil.InvalidXFCCResponse) {
+func extractJustURI(xfcc envoyutil.XFCCElement, _ string) (string, *envoyutil.XFCCError) {
 	return xfcc.URI, nil
 }
 
 // extractFailure satisfies `envoyutil.ExtractFromXFCC` and fails.
-func extractFailure(xfcc envoyutil.XFCCElement, xfccValue string) (string, *envoyutil.InvalidXFCCResponse) {
-	return "", &envoyutil.InvalidXFCCResponse{Message: "extractFailure", XFCC: xfccValue}
+func extractFailure(xfcc envoyutil.XFCCElement, xfccValue string) (string, *envoyutil.XFCCError) {
+	return "", &envoyutil.XFCCError{Message: "extractFailure", XFCC: xfccValue}
 }
 
 func makeVerifyXFCC(expectedBy string) envoyutil.VerifyXFCC {
-	return func(xfcc envoyutil.XFCCElement, xfccValue string) *envoyutil.InvalidXFCCResponse {
+	return func(xfcc envoyutil.XFCCElement, xfccValue string) *envoyutil.XFCCError {
 		if xfcc.By == expectedBy {
 			return nil
 		}
 
 		message := fmt.Sprintf("verifyFailure: expected %q", expectedBy)
-		return &envoyutil.InvalidXFCCResponse{Message: message, XFCC: xfccValue}
+		return &envoyutil.XFCCError{Message: message, XFCC: xfccValue}
 	}
 }
