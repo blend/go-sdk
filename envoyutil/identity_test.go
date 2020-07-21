@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	sdkAssert "github.com/blend/go-sdk/assert"
-	"github.com/blend/go-sdk/web"
 
 	"github.com/blend/go-sdk/envoyutil"
 )
@@ -63,9 +62,8 @@ func TestExtractClientIdentity(t *testing.T) {
 		if tc.XFCC != "" {
 			r.Header.Add(envoyutil.HeaderXFCC, tc.XFCC)
 		}
-		ctx := web.NewCtx(nil, r)
 
-		clientIdentity, errResponse := envoyutil.ExtractClientIdentity(ctx, tc.Extract, tc.Verifiers...)
+		clientIdentity, errResponse := envoyutil.ExtractClientIdentity(r, tc.Extract, tc.Verifiers...)
 		assert.Equal(tc.ClientIdentity, clientIdentity)
 		if tc.Message == "" {
 			assert.Nil(errResponse)

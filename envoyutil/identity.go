@@ -1,7 +1,7 @@
 package envoyutil
 
 import (
-	"github.com/blend/go-sdk/web"
+	"net/http"
 )
 
 const (
@@ -39,15 +39,15 @@ type VerifyXFCC func(xfcc XFCCElement, xfccValue string) (errResponse *InvalidXF
 // does so by requiring the XFCC header to present and valid and then passing
 // the parsed XFCC header along to some verifiers (e.g. to verify the server
 // identity) as well as to an extractor (for the client identity).
-func ExtractClientIdentity(ctx *web.Ctx, efx ExtractFromXFCC, verifiers ...VerifyXFCC) (clientIdentity string, errResponse *InvalidXFCCResponse) {
+func ExtractClientIdentity(req *http.Request, efx ExtractFromXFCC, verifiers ...VerifyXFCC) (clientIdentity string, errResponse *InvalidXFCCResponse) {
 	if efx == nil {
 		errResponse = &InvalidXFCCResponse{Message: ErrMissingExtractFunction}
 		return
 	}
 
 	// Early exit if XFCC header is not present.
-	xfccValue, err := ctx.HeaderValue(HeaderXFCC)
-	if err != nil {
+	xfccValue := req.Header.Get(HeaderXFCC)
+	if xfccValue == "" {
 		errResponse = &InvalidXFCCResponse{Message: ErrMissingXFCC}
 		return
 	}
