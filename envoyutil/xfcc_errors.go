@@ -33,6 +33,12 @@ func (xee *XFCCExtractionError) Error() string {
 	return xee.Class.Error()
 }
 
+// IsExtractionError is a helper to check if an error is an `*XFCCExtractionError`.
+func IsExtractionError(err error) bool {
+	_, ok := err.(*XFCCExtractionError)
+	return ok
+}
+
 // XFCCValidationError contains metadata about an XFCC header that could not
 // be parsed or extracted. This is intended to be used as the body of a 401
 // Unauthorized response.
@@ -52,6 +58,12 @@ func (xve *XFCCValidationError) Error() string {
 	return xve.Class.Error()
 }
 
+// IsValidationError is a helper to check if an error is an `*XFCCValidationError`.
+func IsValidationError(err error) bool {
+	_, ok := err.(*XFCCValidationError)
+	return ok
+}
+
 // XFCCFatalError contains metadata about an unrecoverable failure when parsing
 // an XFCC header. A "fatal error" should indicate invalid usage of `envoyutil`
 // such as providing a `nil` value for a function interface that must be invoked.
@@ -67,4 +79,10 @@ type XFCCFatalError struct {
 // identifier for the error.
 func (xfe *XFCCFatalError) Error() string {
 	return xfe.Class.Error()
+}
+
+// IsFatalError is a helper to check if an error is an `*XFCCFatalError`.
+func IsFatalError(err error) bool {
+	_, ok := err.(*XFCCFatalError)
+	return ok
 }

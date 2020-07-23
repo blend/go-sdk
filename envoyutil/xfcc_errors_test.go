@@ -36,6 +36,15 @@ func TestXFCCExtractionErrorError(t *testing.T) {
 	assert.Equal(c, err.Error())
 }
 
+func TestIsExtractionError(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	var err error = ex.New("NOPE")
+	assert.False(envoyutil.IsExtractionError(err))
+	err = &envoyutil.XFCCExtractionError{Class: "YEP"}
+	assert.True(envoyutil.IsExtractionError(err))
+}
+
 func TestXFCCValidationErrorMarshal(t *testing.T) {
 	assert := sdkAssert.New(t)
 
@@ -62,6 +71,15 @@ func TestXFCCValidationErrorError(t *testing.T) {
 	assert.Equal(c, err.Error())
 }
 
+func TestIsValidationError(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	var err error = ex.New("NOPE")
+	assert.False(envoyutil.IsValidationError(err))
+	err = &envoyutil.XFCCValidationError{Class: "YEP"}
+	assert.True(envoyutil.IsValidationError(err))
+}
+
 func TestXFCCFatalErrorMarshal(t *testing.T) {
 	assert := sdkAssert.New(t)
 
@@ -83,4 +101,13 @@ func TestXFCCFatalErrorError(t *testing.T) {
 	c := ex.Class("oh a fatal thing happened")
 	var err error = &envoyutil.XFCCFatalError{Class: c}
 	assert.Equal(c, err.Error())
+}
+
+func TestIsFatalError(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	var err error = ex.New("NOPE")
+	assert.False(envoyutil.IsFatalError(err))
+	err = &envoyutil.XFCCFatalError{Class: "YEP"}
+	assert.True(envoyutil.IsFatalError(err))
 }
