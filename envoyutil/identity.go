@@ -28,10 +28,10 @@ type ClientIdentityProvider func(xfcc XFCCElement, xfccValue string) (clientIden
 // addition to the client identity.
 type VerifyXFCC func(xfcc XFCCElement, xfccValue string) (err *XFCCValidationError)
 
-// ExtractAndVerifyClientIdentity enables extracting client identity from a request. It
-// does so by requiring the XFCC header to present and valid and then passing
-// the parsed XFCC header along to some verifiers (e.g. to verify the server
-// identity) as well as to an extractor (for the client identity).
+// ExtractAndVerifyClientIdentity enables extracting client identity from a request.
+// It does so by requiring the XFCC header to present and valid and contain exactly
+// one element. Then it passes the parsed XFCC header along to some verifiers (e.g.
+// to verify the server identity) as well as to an extractor (for the client identity).
 func ExtractAndVerifyClientIdentity(req *http.Request, cip ClientIdentityProvider, verifiers ...VerifyXFCC) (string, error) {
 	if cip == nil {
 		return "", &XFCCFatalError{Class: MissingExtractFunction}
