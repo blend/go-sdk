@@ -45,7 +45,10 @@ func ExtractAndVerifyClientIdentity(req *http.Request, cip ClientIdentityProvide
 
 	// Early exit if XFCC header is invalid, or has zero or multiple elements.
 	xfccElements, parseErr := ParseXFCC(xfccValue)
-	if parseErr != nil || len(xfccElements) != 1 {
+	if parseErr != nil {
+		return "", &XFCCExtractionError{Class: ErrInvalidXFCC, XFCC: xfccValue}
+	}
+	if len(xfccElements) != 1 {
 		return "", &XFCCValidationError{Class: ErrInvalidXFCC, XFCC: xfccValue}
 	}
 	xfcc := xfccElements[0]

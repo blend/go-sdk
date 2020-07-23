@@ -34,7 +34,13 @@ func TestExtractAndVerifyClientIdentity(t *testing.T) {
 		{ErrorType: "XFCCFatalError", Class: envoyutil.MissingExtractFunction},
 		{XFCC: "", ErrorType: "XFCCExtractionError", Class: envoyutil.ErrMissingXFCC, Extract: extractJustURI},
 		{XFCC: `""`, ErrorType: "XFCCValidationError", Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
-		{XFCC: "something=bad", ErrorType: "XFCCValidationError", Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
+		{XFCC: "something=bad", ErrorType: "XFCCExtractionError", Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
+		{
+			XFCC:      "By=first,URI=second",
+			ErrorType: "XFCCValidationError",
+			Class:     envoyutil.ErrInvalidXFCC,
+			Extract:   extractJustURI,
+		},
 		{
 			XFCC:           "By=spiffe://cluster.local/ns/blend/sa/idea;URI=spiffe://cluster.local/ns/light/sa/bulb",
 			ClientIdentity: "spiffe://cluster.local/ns/light/sa/bulb",
