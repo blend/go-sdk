@@ -14,7 +14,7 @@ func TestGuard(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	tableName := randomName()
 	err = createTestTable(tableName, tx)
@@ -29,8 +29,8 @@ func TestGuard(t *testing.T) {
 		return nil
 	})
 
-	err = Guard("test", func(c *db.Connection, itx *sql.Tx) (bool, error) {
-		return c.Invoke(db.OptTx(itx)).Query(fmt.Sprintf("select * from %s", tableName)).Any()
+	err = Guard("test", func(ctx context.Context, c *db.Connection, itx *sql.Tx) (bool, error) {
+		return c.Invoke(db.OptContext(ctx), db.OptTx(itx)).Query(fmt.Sprintf("select * from %s", tableName)).Any()
 	})(
 		context.Background(),
 		defaultDB(),

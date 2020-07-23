@@ -22,7 +22,7 @@ func TestNewAuthManager(t *testing.T) {
 	assert.Equal(DefaultCookiePath, am.CookieDefaults.Path)
 	assert.Equal(DefaultCookieHTTPOnly, am.CookieDefaults.HttpOnly)
 	assert.Equal(DefaultCookieSecure, am.CookieDefaults.Secure)
-	assert.Zero(am.CookieDefaults.SameSite)
+	assert.Equal(http.SameSiteLaxMode, am.CookieDefaults.SameSite)
 
 	am, err = NewAuthManager(OptAuthManagerCookieDefaults(http.Cookie{
 		Name:     "_FOO_AUTH_",
@@ -235,7 +235,7 @@ func TestAuthManagerVerifySessionParsed(t *testing.T) {
 	}
 
 	r := NewCtx(webutil.NewMockResponse(new(bytes.Buffer)), webutil.NewMockRequestWithCookie("GET", "/", am.CookieDefaults.Name, NewSessionID()))
-	session, err := am.VerifySession(r)
+	session, err := am.VerifyOrExpireSession(r)
 	assert.Nil(err)
 	assert.NotNil(session)
 	assert.True(session.ExpiresUTC.IsZero())
@@ -278,7 +278,7 @@ func TestAuthManagerVerifySessionFetched(t *testing.T) {
 	assert.False(calledValidateHandler)
 
 	r = NewCtx(webutil.NewMockResponse(new(bytes.Buffer)), webutil.NewMockRequestWithCookie("GET", "/", am.CookieDefaults.Name, session.SessionID))
-	session, err = am.VerifySession(r)
+	session, err = am.VerifyOrExpireSession(r)
 	assert.Nil(err)
 	assert.NotNil(session)
 	assert.True(calledFetchHandler)
@@ -293,7 +293,7 @@ func TestAuthManagerVerifySessionUnset(t *testing.T) {
 
 	r := NewCtx(webutil.NewMockResponse(new(bytes.Buffer)), webutil.NewMockRequest("GET", "/"))
 
-	session, err := am.VerifySession(r)
+	session, err := am.VerifyOrExpireSession(r)
 	assert.Nil(err)
 	assert.Nil(session)
 }
@@ -317,7 +317,7 @@ func TestAuthManagerVerifySessionExpired(t *testing.T) {
 
 	res := webutil.NewMockResponse(new(bytes.Buffer))
 	r := NewCtx(res, webutil.NewMockRequestWithCookie("GET", "/", am.CookieDefaults.Name, NewSessionID()))
-	session, err := am.VerifySession(r)
+	session, err := am.VerifyOrExpireSession(r)
 	assert.Nil(err)
 	assert.Nil(session)
 	assert.False(calledValidateHandler)

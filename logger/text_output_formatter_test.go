@@ -1,6 +1,8 @@
 package logger
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -41,6 +43,23 @@ func TestTextOutputFormatter(t *testing.T) {
 	assert.True(tf.HideFields)
 	assert.True(tf.NoColor)
 	assert.Equal(time.Kitchen, tf.TimeFormatOrDefault())
+}
+
+func TestTextOutputFormatterWriteFormat(t *testing.T) {
+	assert := assert.New(t)
+
+	tf := NewTextOutputFormatter()
+	paths := []string{"foo", "bar"}
+	ctxPaths := make([]string, len(paths))
+	copy(ctxPaths, paths) // make sure that the original paths are not modified
+	ctx := WithPath(context.Background(), ctxPaths...)
+
+	message := "this is a test"
+	buf := new(bytes.Buffer)
+
+	assert.Nil(tf.WriteFormat(ctx, buf, NewMessageEvent(Info, message)))
+	assert.Contains(buf.String(), message)
+	assert.Equal(paths, GetPath(ctx)) // test that the context paths are not modified
 }
 
 func TestTextOutputFormatterColorize(t *testing.T) {

@@ -39,8 +39,17 @@ var (
 	_ ResultProvider = (*ViewCache)(nil)
 )
 
+// MustNewViewCache returns a new view cache and panics on eror.
+func MustNewViewCache(opts ...ViewCacheOption) *ViewCache {
+	vc, err := NewViewCache(opts...)
+	if err != nil {
+		panic(err)
+	}
+	return vc
+}
+
 // NewViewCache returns a new view cache.
-func NewViewCache(options ...ViewCacheOption) *ViewCache {
+func NewViewCache(options ...ViewCacheOption) (*ViewCache, error) {
 	vc := &ViewCache{
 		FuncMap:                   template.FuncMap(templatehelpers.ViewFuncs{}.FuncMap()),
 		BufferPool:                bufferutil.NewPool(1024),
@@ -50,10 +59,13 @@ func NewViewCache(options ...ViewCacheOption) *ViewCache {
 		NotAuthorizedTemplateName: DefaultTemplateNameNotAuthorized,
 		StatusTemplateName:        DefaultTemplateNameStatus,
 	}
+	var err error
 	for _, option := range options {
-		option(vc)
+		if err = option(vc); err != nil {
+			return nil, err
+		}
 	}
-	return vc
+	return vc, nil
 }
 
 // ViewCache is the cached views used in view results.
@@ -195,7 +207,7 @@ func (vc *ViewCache) NotAuthorized() Result {
 }
 
 // Status returns a status view result.
-func (vc *ViewCache) Status(statusCode int, response ...interface{}) Result {
+func (vc *ViewCache) Status(statusCode int, response interface{}) Result {
 	t, viewErr := vc.Lookup(vc.StatusTemplateName)
 	if viewErr != nil {
 		return vc.viewError(viewErr)
@@ -209,7 +221,9 @@ func (vc *ViewCache) Status(statusCode int, response ...interface{}) Result {
 		ViewName:   vc.StatusTemplateName,
 		StatusCode: statusCode,
 		Template:   t,
-		ViewModel:  StatusViewModel{StatusCode: statusCode, Response: ResultOrDefault(http.StatusText(statusCode), response...)},
+		ViewModel: StatusViewModel{
+			StatusCode: statusCode,
+			Response:   ResultOrDefault(response, http.StatusText(statusCode))},
 	}
 }
 

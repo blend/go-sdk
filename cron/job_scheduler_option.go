@@ -1,6 +1,10 @@
 package cron
 
-import "github.com/blend/go-sdk/logger"
+import (
+	"context"
+
+	"github.com/blend/go-sdk/logger"
+)
 
 // JobSchedulerOption is an option for job schedulers.
 type JobSchedulerOption func(*JobScheduler)
@@ -13,4 +17,9 @@ func OptJobSchedulerTracer(tracer Tracer) JobSchedulerOption {
 // OptJobSchedulerLog sets the job scheduler logger.
 func OptJobSchedulerLog(log logger.Log) JobSchedulerOption {
 	return func(js *JobScheduler) { js.Log = log }
+}
+
+// OptJobSchedulerBaseContext sets the job scheduler BaseContext.
+func OptJobSchedulerBaseContext(ctx context.Context) JobSchedulerOption {
+	return func(js *JobScheduler) { js.BaseContext = ctx }
 }

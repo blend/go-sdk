@@ -26,7 +26,7 @@ func getData() (interface{}, error) {
 
 func main() {
 	log := logger.Prod()
-	log.Disable(webutil.HTTPRequest, webutil.HTTPResponse) // disable noisey events.
+	log.Disable(webutil.FlagHTTPRequest) // disable noisey events.
 	app, err := web.New(
 		web.OptConfigFromEnv(),
 		web.OptLog(log),
@@ -41,7 +41,7 @@ func main() {
 		return web.Text.InternalError(ex.New(r))
 	}
 
-	lc := cache.NewLocalCache(cache.OptLocalCacheSweepInterval(500 * time.Millisecond))
+	lc := cache.New(cache.OptSweepInterval(500 * time.Millisecond))
 	go lc.Start()
 
 	app.GET("/stats", func(r *web.Ctx) web.Result {

@@ -42,7 +42,9 @@ func (m *SigningMethodHMAC) Verify(signingString, signature string, key interfac
 	// by reproducing the signature from the signing string and key, then
 	// comparing that against the provided signature.
 	hasher := hmac.New(m.Hash.New, keyBytes)
-	hasher.Write([]byte(signingString))
+	if _, err := hasher.Write([]byte(signingString)); err != nil {
+		return ex.New(err)
+	}
 	if !hmac.Equal(sig, hasher.Sum(nil)) {
 		return ex.New(ErrHMACSignatureInvalid)
 	}
@@ -60,7 +62,10 @@ func (m *SigningMethodHMAC) Sign(signingString string, key interface{}) (string,
 		}
 
 		hasher := hmac.New(m.Hash.New, keyBytes)
-		hasher.Write([]byte(signingString))
+		_, err := hasher.Write([]byte(signingString))
+		if err != nil {
+			return "", ex.New(err)
+		}
 
 		return EncodeSegment(hasher.Sum(nil)), nil
 	}

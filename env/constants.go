@@ -47,5 +47,5 @@ const (
 	DefaultServiceEnv = ServiceEnvDev
 
 	// TagName is the reflection tag name.
-	TagName = "env"
+	ReflectTagName = "env"
 )

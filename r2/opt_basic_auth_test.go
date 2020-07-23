@@ -15,7 +15,7 @@ func TestOptBasicAuth(t *testing.T) {
 	req := New("https://foo.bar.local")
 	assert.Nil(opt(req))
 
-	assert.NotNil(req.Header)
-	assert.NotEmpty(req.Header.Get("Authorization"))
-	assert.True(strings.HasPrefix(req.Header.Get("Authorization"), "Basic "))
+	assert.NotNil(req.Request.Header)
+	assert.NotEmpty(req.Request.Header.Get("Authorization"))
+	assert.True(strings.HasPrefix(req.Request.Header.Get("Authorization"), "Basic "))
 }

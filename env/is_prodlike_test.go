@@ -1,10 +1,11 @@
-package env
+package env_test
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/uuid"
 )
 
@@ -15,19 +16,19 @@ func TestIsProdlike(t *testing.T) {
 		Input    string
 		Expected bool
 	}{
-		{Input: ServiceEnvDev, Expected: false},
-		{Input: ServiceEnvCI, Expected: false},
-		{Input: ServiceEnvTest, Expected: false},
-		{Input: ServiceEnvSandbox, Expected: false},
-		{Input: ServiceEnvPreprod, Expected: true},
-		{Input: ServiceEnvBeta, Expected: true},
-		{Input: ServiceEnvProd, Expected: true},
+		{Input: env.ServiceEnvDev, Expected: false},
+		{Input: env.ServiceEnvCI, Expected: false},
+		{Input: env.ServiceEnvTest, Expected: false},
+		{Input: env.ServiceEnvSandbox, Expected: false},
+		{Input: env.ServiceEnvPreprod, Expected: true},
+		{Input: env.ServiceEnvBeta, Expected: true},
+		{Input: env.ServiceEnvProd, Expected: true},
 		{Input: uuid.V4().String(), Expected: true},
 		{Expected: true},
 	}
 
 	for _, testCase := range testCases {
-		assert.Equal(testCase.Expected, IsProdlike(testCase.Input), fmt.Sprintf("failed for: %s", testCase.Input))
+		assert.Equal(testCase.Expected, env.IsProdlike(testCase.Input), fmt.Sprintf("failed for: %s", testCase.Input))
 	}
 }
 
@@ -38,18 +39,18 @@ func TestIsProduction(t *testing.T) {
 		Input    string
 		Expected bool
 	}{
-		{Input: ServiceEnvDev, Expected: false},
-		{Input: ServiceEnvCI, Expected: false},
-		{Input: ServiceEnvTest, Expected: false},
-		{Input: ServiceEnvSandbox, Expected: false},
-		{Input: ServiceEnvPreprod, Expected: true},
-		{Input: ServiceEnvBeta, Expected: false},
-		{Input: ServiceEnvProd, Expected: true},
+		{Input: env.ServiceEnvDev, Expected: false},
+		{Input: env.ServiceEnvCI, Expected: false},
+		{Input: env.ServiceEnvTest, Expected: false},
+		{Input: env.ServiceEnvSandbox, Expected: false},
+		{Input: env.ServiceEnvPreprod, Expected: true},
+		{Input: env.ServiceEnvBeta, Expected: false},
+		{Input: env.ServiceEnvProd, Expected: true},
 		{Input: uuid.V4().String(), Expected: false},
 		{Expected: false},
 	}
 
 	for _, testCase := range testCases {
-		assert.Equal(testCase.Expected, IsProduction(testCase.Input), fmt.Sprintf("failed for: %s", testCase.Input))
+		assert.Equal(testCase.Expected, env.IsProduction(testCase.Input), fmt.Sprintf("failed for: %s", testCase.Input))
 	}
 }

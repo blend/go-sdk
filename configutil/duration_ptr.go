@@ -1,6 +1,9 @@
 package configutil
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 // DurationPtr returns a DurationSource for a given duration pointer.
 func DurationPtr(value *time.Duration) DurationSource {
@@ -17,6 +20,6 @@ type DurationPtrSource struct {
 }
 
 // Duration implements DurationSource.
-func (dps DurationPtrSource) Duration() (*time.Duration, error) {
+func (dps DurationPtrSource) Duration(_ context.Context) (*time.Duration, error) {
 	return dps.Value, nil
 }

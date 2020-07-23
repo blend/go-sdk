@@ -15,8 +15,9 @@ var (
 	_ Locker = (*LocalCache)(nil)
 )
 
-// NewLocalCache returns a new LocalLocalCache.
-func NewLocalCache(options ...LocalCacheOption) *LocalCache {
+// New returns a new LocalLocalCache.
+// It defaults to 500ms sweep intervals and an LRU queue for invalidation.
+func New(options ...LocalCacheOption) *LocalCache {
 	c := LocalCache{
 		Data: make(map[interface{}]*Value),
 		LRU:  NewLRUQueue(),
@@ -31,10 +32,17 @@ func NewLocalCache(options ...LocalCacheOption) *LocalCache {
 // LocalCacheOption is a local cache option.
 type LocalCacheOption func(*LocalCache)
 
-// OptLocalCacheSweepInterval sets the local cache sweep interval.
-func OptLocalCacheSweepInterval(d time.Duration) LocalCacheOption {
+// OptSweepInterval sets the local cache sweep interval.
+func OptSweepInterval(d time.Duration) LocalCacheOption {
 	return func(lc *LocalCache) {
 		lc.Sweeper = async.NewInterval(lc.Sweep, d)
+	}
+}
+
+// OptLRU sets the LRU implementation.
+func OptLRU(lruImplementation LRU) LocalCacheOption {
+	return func(lc *LocalCache) {
+		lc.LRU = lruImplementation
 	}
 }
 
@@ -243,13 +251,40 @@ func (lc *LocalCache) Remove(key interface{}) (value interface{}, hit bool) {
 
 	value = valueData.Value
 	hit = true
+
 	if valueData.OnRemove != nil {
 		valueData.OnRemove(key, Removed)
 	}
 	return
 }
 
+// Reset removes all items from the cache, leaving an empty cache.
+//
+// Reset will call the removed handler for any elements currently in the cache
+// with a removal reason `Removed`. This will be done outside the critical section.
+func (lc *LocalCache) Reset() {
+	lc.Lock()
+	var removed []*Value
+	for _, value := range lc.Data {
+		if value.OnRemove != nil {
+			removed = append(removed, value)
+		}
+	}
+	lc.LRU.Reset()                         // reset the lru queue
+	lc.Data = make(map[interface{}]*Value) // reset the map
+	lc.Unlock()
+
+	// call the remove handlers
+	for _, value := range removed {
+		value.OnRemove(value.Key, Removed)
+	}
+}
+
 // Stats returns the LocalCache stats.
+//
+// Stats include the number of items held, the age of the items,
+// and the size in bytes represented by each of the items (not including)
+// the fields of the cache itself like the LRU queue.
 func (lc *LocalCache) Stats() (stats Stats) {
 	lc.RLock()
 	defer lc.RUnlock()

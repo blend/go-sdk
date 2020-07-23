@@ -7,7 +7,7 @@ import (
 
 // NewBatch creates a new batch processor.
 // Batch processes are a known quantity of work that needs to be processed in parallel.
-func NewBatch(action WorkAction, work chan interface{}, options ...BatchOption) *Batch {
+func NewBatch(work chan interface{}, action WorkAction, options ...BatchOption) *Batch {
 	b := Batch{
 		Action:      action,
 		Work:        work,
@@ -63,7 +63,7 @@ func (b *Batch) Process(ctx context.Context) {
 		worker.Finalizer = returnWorker
 
 		workerStarted := worker.NotifyStarted()
-		go worker.Start()
+		go func() { _ = worker.Start() }()
 		<-workerStarted
 
 		allWorkers[x] = worker
@@ -73,7 +73,7 @@ func (b *Batch) Process(ctx context.Context) {
 	defer func() {
 		// stop the workers
 		for x := 0; x < len(allWorkers); x++ {
-			allWorkers[x].Stop()
+			_ = allWorkers[x].Stop()
 		}
 	}()
 

@@ -30,12 +30,12 @@ func (w *ByteWriter) Write(p []byte) (n int, err error) {
 	for n = range p {
 		if w.c%96 == 0 {
 			if n > 0 {
-				w.Writer.Write(newline)
+				_, _ = w.Writer.Write(newline)
 			}
-			w.Writer.Write(w.Indent)
+			_, _ = w.Writer.Write(w.Indent)
 			w.c = 0
 		} else {
-			w.Writer.Write(space)
+			_, _ = w.Writer.Write(space)
 		}
 
 		fmt.Fprintf(w.Writer, "0x%02x,", p[n])

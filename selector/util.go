@@ -121,8 +121,7 @@ func CheckKey(key string) (err error) {
 	var width int
 	for pos := 0; pos < keyLen; pos += width {
 		ch, width = utf8.DecodeRuneInString(key[pos:])
-		switch state {
-		case 0: // collect dns prefix or key
+		if state == 0 {
 			if ch == ForwardSlash {
 				err = checkDNS(string(working))
 				if err != nil {
@@ -230,6 +229,7 @@ func checkDNS(value string) (err error) {
 			}
 			if pos == valueLen-2 {
 				state = 0
+				continue
 			}
 
 			state = 1

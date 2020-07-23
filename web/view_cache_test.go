@@ -14,7 +14,8 @@ import (
 func TestViewCacheProperties(t *testing.T) {
 	assert := assert.New(t)
 
-	vc := NewViewCache()
+	vc, err := NewViewCache()
+	assert.Nil(err)
 	assert.NotNil(vc.FuncMap)
 
 	assert.Equal(DefaultTemplateNameBadRequest, vc.BadRequestTemplateName)
@@ -49,7 +50,7 @@ func TestViewCacheProperties(t *testing.T) {
 func TestViewCacheAddRawViews(t *testing.T) {
 	assert := assert.New(t)
 
-	vc := NewViewCache()
+	vc := MustNewViewCache()
 	vc.AddLiterals(`{{ define "test" }}<h1> This is a test. </h1>{{ end }}`)
 
 	view, err := vc.Parse()
@@ -60,12 +61,12 @@ func TestViewCacheAddRawViews(t *testing.T) {
 	assert.Nil(view.ExecuteTemplate(buf, "test", nil))
 	assert.NotEmpty(buf.String())
 
-	vc = NewViewCache()
+	vc = MustNewViewCache()
 	vc.AddLiterals(`{{define "test"}}failure{{`)
 	_, err = vc.Parse()
 	assert.NotNil(err)
 
-	vc = NewViewCache()
+	vc = MustNewViewCache()
 	vc.AddPaths("this path doesn't exist at all")
 	_, err = vc.Parse()
 	assert.NotNil(err)
@@ -74,7 +75,7 @@ func TestViewCacheAddRawViews(t *testing.T) {
 func TestViewCacheCached(t *testing.T) {
 	assert := assert.New(t)
 
-	vc := NewViewCache()
+	vc := MustNewViewCache()
 	assert.False(vc.LiveReload)
 	vc.AddLiterals(`{{ define "foo" }}bar{{ end }}`)
 	assert.Nil(vc.Initialize())
@@ -94,7 +95,7 @@ func TestViewCacheCached(t *testing.T) {
 	assert.Nil(tmp.Execute(buf, nil))
 	assert.Equal("bar", buf.String())
 
-	vc = NewViewCache()
+	vc = MustNewViewCache()
 	vc.AddLiterals(`{{define "test"}}failure{{`)
 	_, err = vc.Lookup("foo")
 	assert.NotNil(err)
@@ -103,7 +104,7 @@ func TestViewCacheCached(t *testing.T) {
 func TestViewCacheCachingDisabled(t *testing.T) {
 	assert := assert.New(t)
 
-	vc := NewViewCache(OptViewCacheLiveReload(true))
+	vc := MustNewViewCache(OptViewCacheLiveReload(true))
 	assert.True(vc.LiveReload)
 	vc.AddLiterals(`{{ define "foo" }}bar{{ end }}`)
 	assert.Nil(vc.Initialize())
@@ -127,7 +128,7 @@ func TestViewCacheCachingDisabled(t *testing.T) {
 func TestViewCacheBadRequest(t *testing.T) {
 	assert := assert.New(t)
 
-	vc := NewViewCache()
+	vc := MustNewViewCache()
 	assert.Nil(vc.Initialize())
 	vr, _ := vc.BadRequest(ex.Class("only a test")).(*ViewResult)
 	assert.Equal(vc.BadRequestTemplateName, vr.ViewName)
@@ -135,7 +136,7 @@ func TestViewCacheBadRequest(t *testing.T) {
 	assert.NotNil(vr.Views)
 	assert.NotNil(vr.ViewModel)
 
-	vc = NewViewCache()
+	vc = MustNewViewCache()
 	vc.AddLiterals(`{{define "test"}}failure{{`)
 	vr, _ = vc.BadRequest(fmt.Errorf("err")).(*ViewResult)
 	assert.NotNil(vr.ViewModel)
@@ -146,7 +147,7 @@ func TestViewCacheBadRequest(t *testing.T) {
 func TestViewCacheInternalError(t *testing.T) {
 	assert := assert.New(t)
 
-	vc := NewViewCache()
+	vc := MustNewViewCache()
 	assert.Nil(vc.Initialize())
 
 	ler, _ := vc.InternalError(ex.Class("only a test")).(*LoggedErrorResult)
@@ -158,7 +159,7 @@ func TestViewCacheInternalError(t *testing.T) {
 	assert.NotNil(vr.Template)
 	assert.NotNil(vr.ViewModel)
 
-	vc = NewViewCache()
+	vc = MustNewViewCache()
 	vc.AddLiterals(`{{define "test"}}failure{{`)
 	vr, _ = vc.InternalError(fmt.Errorf("err")).(*ViewResult)
 	assert.NotNil(vr.ViewModel)
@@ -169,7 +170,7 @@ func TestViewCacheInternalError(t *testing.T) {
 func TestViewCacheNotFound(t *testing.T) {
 	assert := assert.New(t)
 
-	vc := NewViewCache()
+	vc := MustNewViewCache()
 	assert.Nil(vc.Initialize())
 
 	vr, _ := vc.NotFound().(*ViewResult)
@@ -180,7 +181,7 @@ func TestViewCacheNotFound(t *testing.T) {
 	assert.NotNil(vr.Template)
 	assert.Nil(vr.ViewModel)
 
-	vc = NewViewCache()
+	vc = MustNewViewCache()
 	vc.AddLiterals(`{{define "test"}}failure{{`)
 	vr, _ = vc.NotFound().(*ViewResult)
 	assert.NotNil(vr.ViewModel)
@@ -191,7 +192,7 @@ func TestViewCacheNotFound(t *testing.T) {
 func TestViewCacheNotAuthorized(t *testing.T) {
 	assert := assert.New(t)
 
-	vc := NewViewCache()
+	vc := MustNewViewCache()
 	assert.Nil(vc.Initialize())
 
 	vr, _ := vc.NotAuthorized().(*ViewResult)
@@ -202,7 +203,7 @@ func TestViewCacheNotAuthorized(t *testing.T) {
 	assert.NotNil(vr.Template)
 	assert.Nil(vr.ViewModel)
 
-	vc = NewViewCache()
+	vc = MustNewViewCache()
 	vc.AddLiterals(`{{define "test"}}failure{{`)
 	vr, _ = vc.NotAuthorized().(*ViewResult)
 	assert.NotNil(vr.ViewModel)
@@ -213,10 +214,10 @@ func TestViewCacheNotAuthorized(t *testing.T) {
 func TestViewCacheStatus(t *testing.T) {
 	assert := assert.New(t)
 
-	vc := NewViewCache()
+	vc := MustNewViewCache()
 	assert.Nil(vc.Initialize())
 
-	vr, _ := vc.Status(http.StatusFailedDependency).(*ViewResult)
+	vr, _ := vc.Status(http.StatusFailedDependency, nil).(*ViewResult)
 	assert.NotNil(vr)
 	assert.Equal(vc.StatusTemplateName, vr.ViewName)
 	assert.Equal(http.StatusFailedDependency, vr.StatusCode)
@@ -224,9 +225,9 @@ func TestViewCacheStatus(t *testing.T) {
 	assert.NotNil(vr.Template)
 	assert.NotNil(vr.ViewModel)
 
-	vc = NewViewCache()
+	vc = MustNewViewCache()
 	vc.AddLiterals(`{{define "test"}}failure{{`)
-	vr, _ = vc.Status(http.StatusPreconditionFailed).(*ViewResult)
+	vr, _ = vc.Status(http.StatusPreconditionFailed, nil).(*ViewResult)
 	assert.NotNil(vr.ViewModel)
 	_, ok := vr.ViewModel.(error)
 	assert.True(ok)
@@ -235,7 +236,7 @@ func TestViewCacheStatus(t *testing.T) {
 func TestViewCacheViewStatus(t *testing.T) {
 	assert := assert.New(t)
 
-	vc := NewViewCache()
+	vc := MustNewViewCache()
 	assert.Nil(vc.Initialize())
 
 	vc.AddLiterals(`{{define "test"}}failure{{`)
@@ -248,7 +249,7 @@ func TestViewCacheViewStatus(t *testing.T) {
 func TestViewCacheView(t *testing.T) {
 	assert := assert.New(t)
 
-	vc := NewViewCache()
+	vc := MustNewViewCache()
 	vc.AddLiterals(
 		`{{ define "test" }}{{.ViewModel}}{{end}}`,
 	)
@@ -275,7 +276,7 @@ func TestViewCacheView(t *testing.T) {
 func TestViewCacheViewError(t *testing.T) {
 	assert := assert.New(t)
 
-	vc := NewViewCache()
+	vc := MustNewViewCache()
 
 	vcr := vc.viewError(ex.Class("test error")).(*ViewResult)
 	assert.NotNil(vcr)
@@ -289,7 +290,7 @@ func TestViewCacheViewError(t *testing.T) {
 func TestViewCacheFuncs(t *testing.T) {
 	assert := assert.New(t)
 
-	vc := NewViewCache()
+	vc := MustNewViewCache()
 
 	f := func() {}
 

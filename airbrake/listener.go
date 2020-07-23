@@ -22,11 +22,11 @@ func AddListeners(log logger.Listenable, cfg Config) {
 		if ee.State != nil {
 			req, ok := ee.State.(*http.Request)
 			if ok {
-				client.NotifyWithRequest(ee.Err, req)
+				_ = client.NotifyWithRequest(ee.Err, req)
 				return
 			}
 		}
-		client.Notify(ee.Err)
+		_ = client.Notify(ee.Err)
 	})
 	log.Listen(logger.Error, ListenerName, listener)
 	log.Listen(logger.Fatal, ListenerName, listener)

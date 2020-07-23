@@ -18,6 +18,7 @@ func TestBundle(t *testing.T) {
 	err := bundle.Start(buffer)
 	assert.Nil(err)
 	err = bundle.ProcessPath(buffer, PathConfig{Path: "./testdata/css", Recursive: true})
+	assert.Nil(err)
 	err = bundle.ProcessPath(buffer, PathConfig{Path: "./testdata/js/app.js", Recursive: false})
 	assert.Nil(err)
 	err = bundle.Finish(buffer)

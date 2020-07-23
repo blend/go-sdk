@@ -24,7 +24,8 @@ func OptTLSClientCertPool(certPEMs ...[]byte) TLSOption {
 				return ex.New("invalid ca cert for client cert pool")
 			}
 		}
-		t.BuildNameToCertificate()
+		// this is deprecated
+		// t.BuildNameToCertificate()
 
 		// this forces the server to reload the tls config for every request if there is a cert pool loaded.
 		// normally this would introduce overhead but it allows us to hot patch the cert pool.

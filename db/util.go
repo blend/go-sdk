@@ -19,6 +19,13 @@ func TableNameByType(t reflect.Type) string {
 	if typed, isTyped := instance.(TableNameProvider); isTyped {
 		return typed.TableName()
 	}
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+		instance = reflect.New(t).Interface()
+		if typed, isTyped := instance.(TableNameProvider); isTyped {
+			return typed.TableName()
+		}
+	}
 	return strings.ToLower(t.Name())
 }
 

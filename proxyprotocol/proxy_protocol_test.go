@@ -2,6 +2,7 @@ package proxyprotocol
 
 import (
 	"bytes"
+	"fmt"
 	"net"
 	"testing"
 	"time"
@@ -25,21 +26,29 @@ func TestPassthrough(t *testing.T) {
 
 	pl := &Listener{Listener: l}
 
+	errors := make(chan error, 4)
 	go func() {
 		conn, err := net.Dial("tcp", pl.Addr().String())
 		if err != nil {
-			t.Fatalf("err: %v", err)
+			errors <- err
+			return
 		}
 		defer conn.Close()
 
-		conn.Write([]byte("ping"))
+		_, err = conn.Write([]byte("ping"))
+		if err != nil {
+			errors <- err
+			return
+		}
 		recv := make([]byte, 4)
 		_, err = conn.Read(recv)
 		if err != nil {
-			t.Fatalf("err: %v", err)
+			errors <- err
+			return
 		}
 		if !bytes.Equal(recv, []byte("pong")) {
-			t.Fatalf("bad: %v", recv)
+			errors <- fmt.Errorf("bad: %v", recv)
+			return
 		}
 	}()
 
@@ -47,7 +56,7 @@ func TestPassthrough(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err: %v", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	recv := make([]byte, 4)
 	_, err = conn.Read(recv)
@@ -61,6 +70,10 @@ func TestPassthrough(t *testing.T) {
 	if _, err := conn.Write([]byte("pong")); err != nil {
 		t.Fatalf("err: %v", err)
 	}
+
+	if len(errors) > 0 {
+		t.Fatal(<-errors)
+	}
 }
 
 func TestTimeout(t *testing.T) {
@@ -73,24 +86,32 @@ func TestTimeout(t *testing.T) {
 	proxyHeaderTimeout := 50 * time.Millisecond
 	pl := &Listener{Listener: l, ProxyHeaderTimeout: proxyHeaderTimeout}
 
+	errors := make(chan error, 4)
 	go func() {
 		conn, err := net.Dial("tcp", pl.Addr().String())
 		if err != nil {
-			t.Fatalf("err: %v", err)
+			errors <- err
+			return
 		}
 		defer conn.Close()
 
 		// Do not send data for a while
 		time.Sleep(clientWriteDelay)
 
-		conn.Write([]byte("ping"))
+		_, err = conn.Write([]byte("ping"))
+		if err != nil {
+			errors <- err
+			return
+		}
 		recv := make([]byte, 4)
 		_, err = conn.Read(recv)
 		if err != nil {
-			t.Fatalf("err: %v", err)
+			errors <- err
+			return
 		}
 		if !bytes.Equal(recv, []byte("pong")) {
-			t.Fatalf("bad: %v", recv)
+			errors <- fmt.Errorf("bad: %v", recv)
+			return
 		}
 	}()
 
@@ -125,6 +146,10 @@ func TestTimeout(t *testing.T) {
 	if _, err := conn.Write([]byte("pong")); err != nil {
 		t.Fatalf("err: %v", err)
 	}
+
+	if len(errors) > 0 {
+		t.Fatal(<-errors)
+	}
 }
 
 func TestParse_ipv4(t *testing.T) {
@@ -135,25 +160,39 @@ func TestParse_ipv4(t *testing.T) {
 
 	pl := &Listener{Listener: l}
 
+	errors := make(chan error, 5)
+
 	go func() {
 		conn, err := net.Dial("tcp", pl.Addr().String())
 		if err != nil {
-			t.Fatalf("err: %v", err)
+			errors <- err
+			return
 		}
 		defer conn.Close()
 
 		// Write out the header!
 		header := "PROXY TCP4 10.1.1.1 20.2.2.2 1000 2000\r\n"
-		conn.Write([]byte(header))
+		_, err = conn.Write([]byte(header))
+		if err != nil {
+			errors <- err
+			return
+		}
 
-		conn.Write([]byte("ping"))
+		_, err = conn.Write([]byte("ping"))
+		if err != nil {
+			errors <- err
+			return
+		}
+
 		recv := make([]byte, 4)
 		_, err = conn.Read(recv)
 		if err != nil {
-			t.Fatalf("err: %v", err)
+			errors <- err
+			return
 		}
 		if !bytes.Equal(recv, []byte("pong")) {
-			t.Fatalf("bad: %v", recv)
+			errors <- fmt.Errorf("bad: %v", recv)
+			return
 		}
 	}()
 
@@ -184,6 +223,10 @@ func TestParse_ipv4(t *testing.T) {
 	if addr.Port != 1000 {
 		t.Fatalf("bad: %v", addr)
 	}
+
+	if len(errors) > 0 {
+		t.Fatal(<-errors)
+	}
 }
 
 func TestParse_ipv6(t *testing.T) {
@@ -194,25 +237,38 @@ func TestParse_ipv6(t *testing.T) {
 
 	pl := &Listener{Listener: l}
 
+	errors := make(chan error, 5)
 	go func() {
 		conn, err := net.Dial("tcp", pl.Addr().String())
 		if err != nil {
-			t.Fatalf("err: %v", err)
+			errors <- err
+			return
 		}
 		defer conn.Close()
 
 		// Write out the header!
 		header := "PROXY TCP6 ffff::ffff ffff::ffff 1000 2000\r\n"
-		conn.Write([]byte(header))
+		_, err = conn.Write([]byte(header))
+		if err != nil {
+			errors <- err
+			return
+		}
 
-		conn.Write([]byte("ping"))
+		_, err = conn.Write([]byte("ping"))
+		if err != nil {
+			errors <- err
+			return
+		}
+
 		recv := make([]byte, 4)
 		_, err = conn.Read(recv)
 		if err != nil {
-			t.Fatalf("err: %v", err)
+			errors <- err
+			return
 		}
 		if !bytes.Equal(recv, []byte("pong")) {
-			t.Fatalf("bad: %v", recv)
+			errors <- fmt.Errorf("bad: %v", recv)
+			return
 		}
 	}()
 
@@ -243,6 +299,10 @@ func TestParse_ipv6(t *testing.T) {
 	if addr.Port != 1000 {
 		t.Fatalf("bad: %v", addr)
 	}
+
+	if len(errors) > 0 {
+		t.Fatal(<-errors)
+	}
 }
 
 func TestParse_BadHeader(t *testing.T) {
@@ -253,23 +313,34 @@ func TestParse_BadHeader(t *testing.T) {
 
 	pl := &Listener{Listener: l}
 
+	errors := make(chan error, 5)
 	go func() {
 		conn, err := net.Dial("tcp", pl.Addr().String())
 		if err != nil {
-			t.Fatalf("err: %v", err)
+			errors <- err
+			return
 		}
 		defer conn.Close()
 
 		// Write out the header!
 		header := "PROXY TCP4 what 127.0.0.1 1000 2000\r\n"
-		conn.Write([]byte(header))
+		_, err = conn.Write([]byte(header))
+		if err != nil {
+			errors <- err
+			return
+		}
 
-		conn.Write([]byte("ping"))
+		_, err = conn.Write([]byte("ping"))
+		if err != nil {
+			errors <- err
+			return
+		}
 
 		recv := make([]byte, 4)
 		_, err = conn.Read(recv)
 		if err == nil {
-			t.Fatalf("err: %v", err)
+			errors <- fmt.Errorf("err: %v", err)
+			return
 		}
 	}()
 
@@ -289,7 +360,7 @@ func TestParse_BadHeader(t *testing.T) {
 	recv := make([]byte, 4)
 	_, err = conn.Read(recv)
 	if err == nil {
-		t.Fatalf("err: %v", err)
+		t.Fatal("err should be set")
 	}
 }
 
@@ -318,25 +389,37 @@ func testParseIpv4CheckFunc(t *testing.T) {
 
 	pl := &Listener{Listener: l, SourceCheck: checkFunc}
 
+	errors := make(chan error, 4)
 	go func() {
 		conn, err := net.Dial("tcp", pl.Addr().String())
 		if err != nil {
-			t.Fatalf("err: %v", err)
+			errors <- err
+			return
 		}
 		defer conn.Close()
 
 		// Write out the header!
 		header := "PROXY TCP4 10.1.1.1 20.2.2.2 1000 2000\r\n"
-		conn.Write([]byte(header))
+		_, err = conn.Write([]byte(header))
+		if err != nil {
+			errors <- err
+			return
+		}
 
-		conn.Write([]byte("ping"))
+		_, err = conn.Write([]byte("ping"))
+		if err != nil {
+			errors <- err
+			return
+		}
 		recv := make([]byte, 4)
 		_, err = conn.Read(recv)
 		if err != nil {
-			t.Fatalf("err: %v", err)
+			errors <- err
+			return
 		}
 		if !bytes.Equal(recv, []byte("pong")) {
-			t.Fatalf("bad: %v", recv)
+			errors <- fmt.Errorf("bad: %v", recv)
+			return
 		}
 	}()
 
@@ -379,5 +462,8 @@ func testParseIpv4CheckFunc(t *testing.T) {
 		if addr.Port == 1000 {
 			t.Fatalf("bad: %v", addr)
 		}
+	}
+	if len(errors) > 0 {
+		t.Fatal(<-errors)
 	}
 }

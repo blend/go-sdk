@@ -187,6 +187,14 @@ func (lru *LRUQueue) Consume(consumer func(*Value) bool) {
 	}
 }
 
+// Reset removes all elements from the heap, leaving an empty heap.
+func (lru *LRUQueue) Reset() {
+	lru.array = make([]*Value, ringBufferDefaultCapacity)
+	lru.head = 0
+	lru.tail = 0
+	lru.size = 0
+}
+
 //
 // util / helpers
 //
@@ -256,6 +264,5 @@ func arrayCopy(source []*Value, sourceIndex int, destination []*Value, destinati
 
 const (
 	ringBufferMinimumGrow     = 4
-	ringBufferShrinkThreshold = 32
 	ringBufferDefaultCapacity = 4
 )

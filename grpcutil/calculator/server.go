@@ -146,7 +146,7 @@ func (Server) Divide(_ context.Context, values *v1.Numbers) (*v1.Number, error) 
 	}
 	output := values.Values[0]
 	for _, value := range values.Values[1:] {
-		output = output / value
+		output /= value
 	}
 	return &v1.Number{
 		Value: output,
@@ -178,7 +178,7 @@ func (Server) DivideStream(stream v1.Calculator_DivideStreamServer) error {
 			output = number.Value
 			outputSet = true
 		} else {
-			output = output / number.Value
+			output /= number.Value
 		}
 	}
 }

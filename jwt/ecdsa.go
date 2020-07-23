@@ -57,10 +57,12 @@ func (m *SigningMethodECDSA) Verify(signingString, signature string, key interfa
 		return ex.New(ErrHashUnavailable)
 	}
 	hasher := m.Hash.New()
-	hasher.Write([]byte(signingString))
+	if _, err = hasher.Write([]byte(signingString)); err != nil {
+		return ex.New(err)
+	}
 
 	// Verify the signature
-	if verifystatus := ecdsa.Verify(ecdsaKey, hasher.Sum(nil), r, s); verifystatus == true {
+	if verifystatus := ecdsa.Verify(ecdsaKey, hasher.Sum(nil), r, s); verifystatus {
 		return nil
 	}
 	return ex.New(ErrECDSAVerification)
@@ -84,7 +86,9 @@ func (m *SigningMethodECDSA) Sign(signingString string, key interface{}) (string
 	}
 
 	hasher := m.Hash.New()
-	hasher.Write([]byte(signingString))
+	if _, err := hasher.Write([]byte(signingString)); err != nil {
+		return "", ex.New(err)
+	}
 
 	// Sign the string and return r, s
 	r, s, err := ecdsa.Sign(rand.Reader, ecdsaKey, hasher.Sum(nil))

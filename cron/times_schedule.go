@@ -38,7 +38,7 @@ func (ts *TimesSchedule) Next(after time.Time) time.Time {
 	defer ts.Unlock()
 
 	if ts.left > 0 {
-		ts.left = ts.left - 1
+		ts.left--
 		return ts.schedule.Next(after)
 	}
 	return Zero

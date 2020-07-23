@@ -133,15 +133,14 @@ func (m *Manager) FetchProfile(ctx context.Context, accessToken string) (profile
 		r2.OptQueryValue("alt", "json"),
 		r2.OptQueryValue("access_token", accessToken),
 	)...).Do()
-
 	if err != nil {
 		return
 	}
+	defer res.Body.Close()
 	if res.StatusCode > 299 {
 		err = ex.New(ErrGoogleResponseStatus, ex.OptMessagef("status code: %d", res.StatusCode))
 		return
 	}
-	defer res.Body.Close()
 	if err = json.NewDecoder(res.Body).Decode(&profile); err != nil {
 		err = ex.New(ErrProfileJSONUnmarshal, ex.OptInner(err))
 		return
@@ -228,6 +227,6 @@ func (m *Manager) hash(plaintext string) string {
 // hmac hashes data with the given key.
 func (m *Manager) hmac(plainText []byte) []byte {
 	mac := hmac.New(sha512.New, m.Secret)
-	mac.Write([]byte(plainText))
+	_, _ = mac.Write([]byte(plainText))
 	return mac.Sum(nil)
 }

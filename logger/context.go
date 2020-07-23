@@ -5,6 +5,23 @@ import (
 	"time"
 )
 
+type loggerKey struct{}
+
+// WithLogger adds the logger to a context.
+func WithLogger(ctx context.Context, log Log) context.Context {
+	return context.WithValue(ctx, loggerKey{}, log)
+}
+
+// GetLogger gets a logger off a context.
+func GetLogger(ctx context.Context) Log {
+	if value := ctx.Value(loggerKey{}); value != nil {
+		if typed, ok := value.(Log); ok {
+			return typed
+		}
+	}
+	return nil
+}
+
 type triggerTimestampKey struct{}
 
 // WithTriggerTimestamp returns a new context with a given timestamp value.

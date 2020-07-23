@@ -9,17 +9,17 @@ import (
 func OptDial(opts ...DialOption) Option {
 	return func(r *Request) error {
 		if r.Client == nil {
-			r.Client = &http.Client{}
+			r.Client = new(http.Client)
 		}
 		if r.Client.Transport == nil {
-			r.Client.Transport = &http.Transport{}
+			r.Client.Transport = new(http.Transport)
 		}
 		if typed, ok := r.Client.Transport.(*http.Transport); ok {
-			dialer := &net.Dialer{}
+			dialer := new(net.Dialer)
 			for _, opt := range opts {
 				opt(dialer)
 			}
-			typed.Dial = dialer.Dial
+			typed.DialContext = dialer.DialContext
 		}
 		return nil
 	}

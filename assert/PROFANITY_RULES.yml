@@ -1,4 +1,3 @@
 ASSERT_GO_SDK:
-  contains: [ "github.com/blend/go-sdk" ]
+  importsContain: [ "golang.blend.com/sdk" ]
   description: "assert needs to only depend on itself as it's used by every other package"
-  excludeFiles: [ "assert/_examples/*" ]

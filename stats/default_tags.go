@@ -7,9 +7,11 @@ func AddDefaultTagsFromEnv(collector Collector) {
 	if collector == nil {
 		return
 	}
-	collector.AddDefaultTag(TagService, env.Env().String("SERVICE_NAME"))
-	collector.AddDefaultTag(TagEnv, env.Env().String("SERVICE_ENV"))
-	collector.AddDefaultTag(TagContainer, env.Env().String("HOSTNAME"))
+	collector.AddDefaultTags(
+		Tag(TagService, env.Env().String("SERVICE_NAME")),
+		Tag(TagEnv, env.Env().String("SERVICE_ENV")),
+		Tag(TagContainer, env.Env().String("HOSTNAME")),
+	)
 }
 
 // AddDefaultTags adds default tags to a stats collector.
@@ -17,7 +19,9 @@ func AddDefaultTags(collector Collector, serviceName, serviceEnv, container stri
 	if collector == nil {
 		return
 	}
-	collector.AddDefaultTag(TagService, serviceName)
-	collector.AddDefaultTag(TagEnv, serviceEnv)
-	collector.AddDefaultTag(TagContainer, container)
+	collector.AddDefaultTags(
+		Tag(TagService, serviceName),
+		Tag(TagEnv, serviceEnv),
+		Tag(TagContainer, container),
+	)
 }

@@ -1,6 +1,6 @@
 package r2
 
-import "net"
+import "github.com/blend/go-sdk/webutil"
 
 // DialOption is an option for the net dialer.
-type DialOption func(*net.Dialer)
+type DialOption = webutil.DialOption

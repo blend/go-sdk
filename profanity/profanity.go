@@ -8,9 +8,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/blend/go-sdk/ansi"
 	"github.com/blend/go-sdk/ex"
-	"github.com/blend/go-sdk/yaml"
 )
 
 // New creates a new profanity engine with a given set of config options.
@@ -229,7 +230,7 @@ func (p *Profanity) RulesForPath(workingSet map[string]Rules, path string) (Rule
 // Path is meant to be the slash terminated dir, which will have the configured rule path appended to it.
 func (p *Profanity) ReadRules(path string) (Rules, error) {
 	if p.Config.DebugOrDefault() {
-		p.Printf("checking for profanity file: %s/%s", ansi.LightWhite(path), p.Config.RulesFileOrDefault())
+		p.Printf("checking for profanity file: %s/%s\n", ansi.LightWhite(path), p.Config.RulesFileOrDefault())
 	}
 	profanityPath := filepath.Join(path, p.Config.RulesFileOrDefault())
 	if _, err := os.Stat(profanityPath); err != nil {
@@ -241,7 +242,7 @@ func (p *Profanity) ReadRules(path string) (Rules, error) {
 	rules, err := p.RulesFromPath(profanityPath)
 	if err != nil {
 		if p.Config.DebugOrDefault() {
-			p.Errorf("error reading profanity file: %s/%s %v", ansi.LightWhite(path), p.Config.RulesFileOrDefault(), err)
+			p.Errorf("error reading profanity file: %s/%s %v\n", ansi.LightWhite(path), p.Config.RulesFileOrDefault(), err)
 		}
 		return nil, err
 	}

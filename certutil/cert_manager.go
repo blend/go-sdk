@@ -146,7 +146,7 @@ func (cm *CertManager) RefreshClientCerts() error {
 		}
 	}
 	cm.TLSConfig.ClientCAs = pool
-	cm.TLSConfig.BuildNameToCertificate()
+	// cm.TLSConfig.BuildNameToCertificate()
 	return nil
 }
 

@@ -61,7 +61,7 @@ func TestQuery(t *testing.T) {
 	a := assert.New(t)
 	tx, err := defaultDB().Begin()
 	a.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	a.Equal(DefaultSchema, defaultDB().Config.SchemaOrDefault())
 	err = seedObjects(100, tx)
@@ -89,7 +89,7 @@ func TestExec(t *testing.T) {
 	a := assert.New(t)
 	tx, err := defaultDB().Begin()
 	a.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	err = IgnoreExecResult(defaultDB().Invoke(OptTx(tx)).Exec("select 'ok!'"))
 	a.Nil(err)

@@ -79,7 +79,7 @@ func (c config) WebOptions() []web.Option {
 // Resolve is called by configutil.Read, it sets up fields on the config from a precedence list of sources.
 // The list is read left to right, if a non-zero value is found the value is returned for that field.
 func (c *config) Resolve(ctx context.Context) error {
-	return configutil.SetString(&c.BindAddress, configutil.String(*flagBindAddress), configutil.Env(ctx, "BIND_ADDR"), configutil.String(c.BindAddress))
+	return configutil.SetString(&c.BindAddress, configutil.String(*flagBindAddress), configutil.Env("BIND_ADDR"), configutil.String(c.BindAddress))(ctx)
 }
 
 func main() {

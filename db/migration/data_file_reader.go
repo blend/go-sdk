@@ -16,8 +16,7 @@ import (
 )
 
 const (
-	runeTab          = rune('\t')
-	runeNewline      = rune('\n')
+	// runeTab          = rune('\t')
 	byteNewLine      = byte('\n')
 	byteTab          = byte('\t')
 	null             = `\N`
@@ -143,14 +142,13 @@ func (dfr *DataFileReader) extractCopyLine(line string) []string {
 	allResults := dfr.copyExtractor.FindAllStringSubmatch(line, -1)
 	results := []string{}
 	for _, resultSet := range allResults {
-		for _, result := range resultSet {
-			results = append(results, result)
-		}
+		results = append(results, resultSet...)
 	}
 
 	return results
 }
 
+/*
 func (dfr *DataFileReader) extractDataLine(line string) []interface{} {
 	var values []interface{}
 	var value string
@@ -189,7 +187,7 @@ func (dfr *DataFileReader) extractDataLine(line string) []interface{} {
 	}
 
 	return values
-}
+} */
 
 // readLine reads a file until a newline.
 func (dfr *DataFileReader) readLine(f io.ReaderAt, cursor int64, readBuffer []byte, lineBuffer *bytes.Buffer) (int64, error) {

@@ -249,6 +249,8 @@ func mult(a, b uint8) (out uint8) {
 		// This operation does not do anything logically useful. It
 		// only ensures a constant number of assignments to thwart
 		// timing attacks.
+
+		//nolint:ineffassign
 		goodVal = zero
 	}
 

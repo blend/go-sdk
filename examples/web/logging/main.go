@@ -15,7 +15,7 @@ func main() {
 	app.GET("/", func(r *web.Ctx) web.Result {
 		return web.Text.Result("foo")
 	})
-	log.Listen(webutil.HTTPRequest, logger.DefaultListenerName, webutil.NewHTTPRequestEventListener(func(_ context.Context, wre webutil.HTTPRequestEvent) {
+	log.Listen(webutil.FlagHTTPRequest, logger.DefaultListenerName, webutil.NewHTTPRequestEventListener(func(_ context.Context, wre webutil.HTTPRequestEvent) {
 		log.Infof("got a new request at route: %s", wre.Route)
 	}))
 

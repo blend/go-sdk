@@ -32,13 +32,12 @@ func ShutdownBySignal(hosted []Graceful, opts ...ShutdownOption) error {
 		// start the instance
 		go func(instance Graceful) {
 			defer func() {
-				safely(func() { close(serverExited) }) // close the server exited channel, but do so safely
-				waitServerExited.Done()                // signal the normal exit process is done
+				_ = safely(func() { close(serverExited) }) // close the server exited channel, but do so safely
+				waitServerExited.Done()                    // signal the normal exit process is done
 			}()
 			if err := instance.Start(); err != nil {
 				errors <- err
 			}
-			return
 		}(hostedInstance)
 
 		// wait to stop the instance
@@ -48,7 +47,6 @@ func ShutdownBySignal(hosted []Graceful, opts ...ShutdownOption) error {
 			if err := instance.Stop(); err != nil {
 				errors <- err
 			}
-			return
 		}(hostedInstance)
 	}
 

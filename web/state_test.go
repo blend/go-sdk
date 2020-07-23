@@ -10,7 +10,7 @@ func TestSyncState(t *testing.T) {
 	assert := assert.New(t)
 
 	state := &SyncState{
-		Values: Values{
+		Values: map[string]interface{}{
 			"foo":  "bar",
 			"buzz": "fuzz",
 		},

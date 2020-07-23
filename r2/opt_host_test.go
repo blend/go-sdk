@@ -9,7 +9,7 @@ import (
 func TestOptHost(t *testing.T) {
 	assert := assert.New(t)
 
-	r := New("http://foo.com", OptHost("bar.com"))
+	r := New(TestURL, OptHost("bar.invalid"))
 
-	assert.Equal("http://bar.com", r.URL.String())
+	assert.Equal("https://bar.invalid/test?query=value", r.Request.URL.String())
 }

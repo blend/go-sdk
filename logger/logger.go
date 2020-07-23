@@ -37,19 +37,21 @@ func MustNew(options ...Option) *Logger {
 
 // All returns a new logger with all flags enabled.
 func All(options ...Option) *Logger {
-	return MustNew(append([]Option{
-		OptConfigFromEnv(),
-		OptAll(),
-	}, options...)...)
+	return MustNew(
+		append([]Option{
+			OptConfigFromEnv(),
+			OptAll(),
+		}, options...)...)
 }
 
 // None returns a new logger with all flags enabled.
-func None() *Logger {
+func None(options ...Option) *Logger {
 	return MustNew(
-		OptNone(),
-		OptOutput(nil),
-		OptFormatter(nil),
-	)
+		append([]Option{
+			OptNone(),
+			OptOutput(nil),
+			OptFormatter(nil),
+		}, options...)...)
 }
 
 // Prod returns a new logger tuned for production use.
@@ -60,6 +62,21 @@ func Prod(options ...Option) *Logger {
 			OptAll(),
 			OptOutput(os.Stderr),
 			OptFormatter(NewTextOutputFormatter(OptTextNoColor())),
+		}, options...)...)
+}
+
+// Memory creates a logger that logs to the in-memory writer passed in.
+//
+// It is useful for writing tests that collect log output.
+func Memory(buffer io.Writer, options ...Option) *Logger {
+	return MustNew(
+		append([]Option{
+			OptAll(),
+			OptOutput(buffer),
+			OptFormatter(NewTextOutputFormatter(
+				OptTextNoColor(),
+				OptTextHideTimestamp(),
+			)),
 		}, options...)...)
 }
 
@@ -122,7 +139,7 @@ func (l *Logger) Listen(flag, listenerName string, listener Listener) {
 
 	eventListener := NewWorker(listener)
 	l.Listeners[flag][listenerName] = eventListener
-	go eventListener.Start()
+	go func() { _ = eventListener.Start() }()
 	<-eventListener.NotifyStarted()
 }
 
@@ -177,11 +194,11 @@ func (l *Logger) RemoveListener(flag, listenerName string) error {
 	return nil
 }
 
-// Trigger fires the listeners for a given event asynchronously, and writes the event to the output.
+// Dispatch fires the listeners for a given event asynchronously, and writes the event to the output.
 // The invocations will be queued in a work queue per listener.
 // There are no order guarantees on when these events will be processed across listeners.
 // This call will not block on the event listeners, but will block on the write.
-func (l *Logger) Trigger(ctx context.Context, e Event) {
+func (l *Logger) Dispatch(ctx context.Context, e Event) {
 	if e == nil {
 		return
 	}
@@ -231,7 +248,7 @@ func (l *Logger) Write(ctx context.Context, e Event) {
 // Close releases shared resources for the agent.
 // It will stop listeners and wait for them to complete work
 // and then zero out any other resources.
-func (l *Logger) Close() error {
+func (l *Logger) Close() {
 	l.Lock()
 	defer l.Unlock()
 
@@ -239,37 +256,29 @@ func (l *Logger) Close() error {
 		l.Flags.SetNone()
 	}
 
-	var err error
 	for _, listeners := range l.Listeners {
 		for _, listener := range listeners {
-			if err = listener.Stop(); err != nil {
-				return err
-			}
+			_ = listener.Stop()
 		}
 	}
 	for key := range l.Listeners {
 		delete(l.Listeners, key)
 	}
 	l.Listeners = nil
-	return nil
 }
 
 // Drain stops the event listeners, letting them complete their work
 // and then restarts the listeners.
-func (l *Logger) Drain() error {
-	return l.DrainContext(context.Background())
+func (l *Logger) Drain() {
+	l.DrainContext(context.Background())
 }
 
 // DrainContext waits for the logger to finish its queue of events with a given context.
-func (l *Logger) DrainContext(ctx context.Context) error {
-	var err error
+func (l *Logger) DrainContext(ctx context.Context) {
 	for _, workers := range l.Listeners {
 		for _, worker := range workers {
-			if err = worker.StopContext(ctx); err != nil {
-				return err
-			}
-			go worker.Start()
+			_ = worker.StopContext(ctx)
+			go func(w *Worker) { _ = w.Start() }(worker)
 		}
 	}
-	return nil
 }

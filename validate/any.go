@@ -60,6 +60,8 @@ func (a AnyValidators) Required() Validator {
 // Zero returns a validator that asserts an object is it's zero value.
 // This nil for pointers, slices, maps, channels.
 // And whatever equality passes for everything else with it's initialized value.
+// Note: this method uses reflect.Zero, there are faster .Zero evaluators
+// for the relevant numeric types.
 func (a AnyValidators) Zero() Validator {
 	return func() error {
 		if a.Obj == nil {
@@ -76,6 +78,8 @@ func (a AnyValidators) Zero() Validator {
 
 // NotZero returns a validator that a given field is set.
 // It will return an error if the field is unset.
+// Note: this method uses reflect.Zero, there are faster .NotZero evaluators
+// for the relevant numeric types.
 func (a AnyValidators) NotZero() Validator {
 	return func() error {
 		if err := a.Zero()(); err == nil {

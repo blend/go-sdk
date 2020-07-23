@@ -1,6 +1,7 @@
 package configutil
 
 import (
+	"context"
 	"strconv"
 	"time"
 
@@ -25,8 +26,8 @@ type Parser struct {
 }
 
 // Bool returns the bool value.
-func (p Parser) Bool() (*bool, error) {
-	value, err := p.Source.String()
+func (p Parser) Bool(ctx context.Context) (*bool, error) {
+	value, err := p.Source.String(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -42,8 +43,8 @@ func (p Parser) Bool() (*bool, error) {
 }
 
 // Int returns the int value.
-func (p Parser) Int() (*int, error) {
-	value, err := p.Source.String()
+func (p Parser) Int(ctx context.Context) (*int, error) {
+	value, err := p.Source.String(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -58,8 +59,8 @@ func (p Parser) Int() (*int, error) {
 }
 
 // Float64 returns the float64 value.
-func (p Parser) Float64() (*float64, error) {
-	value, err := p.Source.String()
+func (p Parser) Float64(ctx context.Context) (*float64, error) {
+	value, err := p.Source.String(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +75,8 @@ func (p Parser) Float64() (*float64, error) {
 }
 
 // Duration returns a parsed duration value.
-func (p Parser) Duration() (*time.Duration, error) {
-	value, err := p.Source.String()
+func (p Parser) Duration(ctx context.Context) (*time.Duration, error) {
+	value, err := p.Source.String(ctx)
 	if err != nil {
 		return nil, err
 	}

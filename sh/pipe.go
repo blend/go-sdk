@@ -20,15 +20,16 @@ func Pipe(commands ...*exec.Cmd) error {
 		readers[index], writers[index] = io.Pipe()
 
 		// wire up pipes
-		if index == 0 { // the first command
+		switch {
+		case index == 0: // the first command
 			commands[index].Stdin = os.Stdin
 			commands[index].Stdout = writers[index]
 			commands[index].Stderr = writers[index]
-		} else if index == len(commands)-1 { // the last command
+		case index == len(commands)-1: // the last command
 			commands[index].Stdin = readers[index-1]
 			commands[index].Stdout = os.Stdout
 			commands[index].Stderr = os.Stderr
-		} else { // intermediate commands
+		default: // intermediate commands
 			commands[index].Stdin = readers[index-1]
 			commands[index].Stdout = writers[index]
 			commands[index].Stderr = writers[index]

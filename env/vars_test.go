@@ -1,4 +1,4 @@
-package env
+package env_test
 
 import (
 	"encoding/base64"
@@ -6,17 +6,18 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/env"
 )
 
 func TestNewVarsFromEnvironment(t *testing.T) {
 	assert := assert.New(t)
-	assert.NotNil(New(OptFromEnv()))
+	assert.NotNil(env.New(env.OptFromEnv()))
 }
 
 func TestVarsSet(t *testing.T) {
 	assert := assert.New(t)
 
-	vars := Vars{
+	vars := env.Vars{
 		"Foo": "baz",
 	}
 
@@ -30,7 +31,7 @@ func TestVarsSet(t *testing.T) {
 func TestEnvBool(t *testing.T) {
 	assert := assert.New(t)
 
-	vars := Vars{
+	vars := env.Vars{
 		"true":  "true",
 		"1":     "1",
 		"yes":   "yes",
@@ -56,7 +57,7 @@ func TestEnvBool(t *testing.T) {
 func TestEnvInt(t *testing.T) {
 	assert := assert.New(t)
 
-	vars := Vars{
+	vars := env.Vars{
 		"One": "1",
 		"Two": "2",
 		"Foo": "Bar",
@@ -73,7 +74,7 @@ func TestEnvInt(t *testing.T) {
 func TestEnvInt64(t *testing.T) {
 	assert := assert.New(t)
 
-	vars := Vars{
+	vars := env.Vars{
 		"One": "1",
 		"Two": "2",
 		"Foo": "Bar",
@@ -90,7 +91,7 @@ func TestEnvInt64(t *testing.T) {
 func TestEnvBytes(t *testing.T) {
 	assert := assert.New(t)
 
-	vars := Vars{
+	vars := env.Vars{
 		"Foo": "abcdef",
 	}
 
@@ -103,7 +104,7 @@ func TestEnvBase64(t *testing.T) {
 	assert := assert.New(t)
 
 	testValue := base64.StdEncoding.EncodeToString([]byte("this is a test"))
-	vars := Vars{
+	vars := env.Vars{
 		"Foo": string(testValue),
 		"Bar": "not_base64",
 	}
@@ -120,7 +121,7 @@ func TestEnvBase64(t *testing.T) {
 func TestEnvHasKey(t *testing.T) {
 	assert := assert.New(t)
 
-	vars := Vars{
+	vars := env.Vars{
 		"test1": "foo",
 		"test2": "bar",
 		"test3": "baz",
@@ -134,7 +135,7 @@ func TestEnvHasKey(t *testing.T) {
 func TestEnvHasAnyKeys(t *testing.T) {
 	assert := assert.New(t)
 
-	vars := Vars{
+	vars := env.Vars{
 		"test1": "foo",
 		"test2": "bar",
 		"test3": "baz",
@@ -151,7 +152,7 @@ func TestEnvHasAnyKeys(t *testing.T) {
 func TestEnvHasAllKeys(t *testing.T) {
 	assert := assert.New(t)
 
-	vars := Vars{
+	vars := env.Vars{
 		"test1": "foo",
 		"test2": "bar",
 		"test3": "baz",
@@ -167,7 +168,7 @@ func TestEnvHasAllKeys(t *testing.T) {
 func TestVarsKeys(t *testing.T) {
 	assert := assert.New(t)
 
-	vars := Vars{
+	vars := env.Vars{
 		"test1": "foo",
 		"test2": "bar",
 		"test3": "baz",
@@ -185,12 +186,12 @@ func TestVarsKeys(t *testing.T) {
 func TestEnvUnion(t *testing.T) {
 	assert := assert.New(t)
 
-	vars1 := Vars{
+	vars1 := env.Vars{
 		"test3": "baz",
 		"test4": "buzz",
 	}
 
-	vars2 := Vars{
+	vars2 := env.Vars{
 		"test1": "foo",
 		"test2": "bar",
 	}
@@ -248,7 +249,7 @@ type alias string
 func TestEnvReadInto(t *testing.T) {
 	assert := assert.New(t)
 
-	vars1 := Vars{
+	vars1 := env.Vars{
 		"test1":   "foo",
 		"test2":   "1",
 		"test3":   "2.0",
@@ -332,7 +333,7 @@ func TestEnvReadInto(t *testing.T) {
 func TestEnvDelete(t *testing.T) {
 	assert := assert.New(t)
 
-	vars := Vars{
+	vars := env.Vars{
 		"test": "foo",
 		"bar":  "baz",
 	}
@@ -345,7 +346,7 @@ func TestEnvDelete(t *testing.T) {
 func TestEnvCSV(t *testing.T) {
 	assert := assert.New(t)
 
-	vars := Vars{
+	vars := env.Vars{
 		"foo": "a,b,c",
 		"bar": "",
 	}

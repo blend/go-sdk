@@ -13,6 +13,30 @@ func TestOptTLSRootCAs(t *testing.T) {
 
 	pool, err := x509.SystemCertPool()
 	assert.Nil(err)
-	r := New("http://foo.com", OptTLSRootCAs(pool))
+	r := New(TestURL, OptTLSRootCAs(pool))
 	assert.NotNil(r.Client.Transport.(*http.Transport).TLSClientConfig.RootCAs)
+}
+
+func TestOptTLSRootCAsWithNilTransport(t *testing.T) {
+	assert := assert.New(t)
+
+	var transport *http.Transport
+	certPool, err := x509.SystemCertPool()
+	assert.Nil(err)
+
+	req := New(
+		TestURL,
+		// NOTE: Transport **must** come before the root CAs since the CAs get set
+		//       **on** the transport.
+		OptTransport(transport),
+		OptTLSRootCAs(certPool),
+	)
+
+	assert.NotNil(req.Client)
+	assert.NotNil(req.Client.Transport)
+	typed, ok := req.Client.Transport.(*http.Transport)
+	assert.True(ok)
+	assert.NotNil(typed)
+	assert.NotNil(typed.TLSClientConfig)
+	assert.NotNil(typed.TLSClientConfig.RootCAs)
 }

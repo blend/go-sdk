@@ -685,7 +685,7 @@ func (i *Invocation) Finish(statement string, r interface{}, res sql.Result, err
 		qe.Label = i.Label
 		qe.Engine = i.Config.EngineOrDefault()
 		qe.Err = err
-		i.Log.Trigger(i.Context, qe)
+		i.Log.TriggerContext(i.Context, qe)
 	}
 	if i.TraceFinisher != nil && !IsSkipQueryLogging(i.Context) {
 		i.TraceFinisher.FinishQuery(i.Context, res, err)

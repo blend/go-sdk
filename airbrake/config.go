@@ -15,10 +15,10 @@ type Config struct {
 
 // Resolve resolves config defaults.
 func (c *Config) Resolve(ctx context.Context) error {
-	return configutil.ReturnFirst(
-		configutil.SetString(&c.ProjectID, configutil.String(c.ProjectID), configutil.Env(ctx, "AIRBRAKE_PROJECT_ID")),
-		configutil.SetString(&c.ProjectKey, configutil.String(c.ProjectKey), configutil.Env(ctx, "AIRBRAKE_PROJECT_KEY")),
-		configutil.SetString(&c.Environment, configutil.String(c.Environment), configutil.Env(ctx, "SERVICE_ENV")),
+	return configutil.Resolve(ctx,
+		configutil.SetString(&c.ProjectID, configutil.String(c.ProjectID), configutil.Env("AIRBRAKE_PROJECT_ID")),
+		configutil.SetString(&c.ProjectKey, configutil.String(c.ProjectKey), configutil.Env("AIRBRAKE_PROJECT_KEY")),
+		configutil.SetString(&c.Environment, configutil.String(c.Environment), configutil.Env("SERVICE_ENV")),
 	)
 }
 

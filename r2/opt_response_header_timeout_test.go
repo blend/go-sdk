@@ -11,6 +11,6 @@ import (
 func TestOptResponseHeaderTimeout(t *testing.T) {
 	assert := assert.New(t)
 
-	r := New("http://foo.com", OptResponseHeaderTimeout(time.Second))
+	r := New(TestURL, OptResponseHeaderTimeout(time.Second))
 	assert.Equal(time.Second, r.Client.Transport.(*http.Transport).ResponseHeaderTimeout)
 }

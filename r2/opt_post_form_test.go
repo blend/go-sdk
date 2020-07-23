@@ -10,15 +10,15 @@ import (
 func TestOptPostForm(t *testing.T) {
 	assert := assert.New(t)
 
-	r := New("http://foo.com", OptPostForm(url.Values{"bar": []string{"baz, buzz"}}))
-	assert.NotNil(r.PostForm)
-	assert.NotEmpty(r.PostForm.Get("bar"))
+	r := New(TestURL, OptPostForm(url.Values{"bar": []string{"baz, buzz"}}))
+	assert.NotNil(r.Request.PostForm)
+	assert.NotEmpty(r.Request.PostForm.Get("bar"))
 }
 
 func TestOptPostFormValue(t *testing.T) {
 	assert := assert.New(t)
 
-	r := New("http://foo.com", OptPostFormValue("bar", "baz"))
-	assert.NotNil(r.PostForm)
-	assert.Equal("baz", r.PostForm.Get("bar"))
+	r := New(TestURL, OptPostFormValue("bar", "baz"))
+	assert.NotNil(r.Request.PostForm)
+	assert.Equal("baz", r.Request.PostForm.Get("bar"))
 }

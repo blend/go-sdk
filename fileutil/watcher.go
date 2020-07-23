@@ -17,7 +17,9 @@ const (
 // Watch watches a file for changes and calls the action if there are changes.
 // It does this by polling the file for ModTime changes every 500ms.
 // It is not designed for watching a large number of files.
-// You should probably call this with its own goroutine.
+// This function blocks, and you should probably call this with its own goroutine.
+// The action takes a direct file handle, and is _NOT_ responsible for closing
+// the file; the watcher will do that when the action has completed.
 func Watch(path string, action WatchAction) error {
 	errors := make(chan error, 1)
 	w := NewWatcher(path, action)
@@ -47,7 +49,7 @@ func NewWatcher(path string, action WatchAction, opts ...WatcherOption) *Watcher
 type WatchAction func(*os.File) error
 
 // WatcherOption is an option for a watcher.
-type WatcherOption func(*Watcher) error
+type WatcherOption func(*Watcher)
 
 // Watcher watches a file for changes and calls the action.
 type Watcher struct {
@@ -77,10 +79,12 @@ func (w Watcher) Watch() {
 
 	w.Started()
 	lastMod := stat.ModTime()
-	ticker := time.Tick(w.PollIntervalOrDefault())
+	ticker := time.NewTicker(w.PollIntervalOrDefault())
+	defer ticker.Stop()
+
 	for {
 		select {
-		case <-ticker:
+		case <-ticker.C:
 			stat, err = os.Stat(w.Path)
 			if err != nil {
 				w.handleError(ex.New(err))
@@ -92,7 +96,15 @@ func (w Watcher) Watch() {
 					w.handleError(err)
 					return
 				}
-				if err := w.Action(file); err != nil {
+
+				// call the action
+				// and no matter what, close the file.
+				func() {
+					defer file.Close()
+					err = w.Action(file)
+				}()
+
+				if err != nil {
 					if ex.Is(err, ErrWatchStopped) {
 						return
 					}

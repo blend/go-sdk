@@ -14,11 +14,18 @@ const (
 	ErrUnsetViewTemplate ex.Class = "view result template is unset"
 	// ErrParameterMissing is an error on request validation.
 	ErrParameterMissing ex.Class = "parameter is missing"
+	// ErrParameterInvalid is an error on request validation.
+	ErrParameterInvalid ex.Class = "parameter is invalid"
 )
 
 // NewParameterMissingError returns a new parameter missing error.
 func NewParameterMissingError(paramName string) error {
-	return ex.New(ErrParameterMissing, ex.OptMessagef("`%s` parameter is missing", paramName))
+	return ex.New(ErrParameterMissing, ex.OptMessagef("%s", paramName))
+}
+
+// NewParameterInvalidError returns a new parameter invalid error.
+func NewParameterInvalidError(paramName, message string) error {
+	return ex.New(ErrParameterMissing, ex.OptMessagef("%q: %s", paramName, message))
 }
 
 // IsErrSessionInvalid returns if an error is a session invalid error.
@@ -34,8 +41,21 @@ func IsErrSessionInvalid(err error) bool {
 	return false
 }
 
-// IsErrParameterMissing returns if an error is a session invalid error.
+// IsErrBadRequest returns if an error is a bad request triggering error.
+func IsErrBadRequest(err error) bool {
+	return IsErrParameterMissing(err) || IsErrParameterInvalid(err)
+}
+
+// IsErrParameterMissing returns if an error is an ErrParameterMissing.
 func IsErrParameterMissing(err error) bool {
+	if err == nil {
+		return false
+	}
+	return ex.Is(err, ErrParameterMissing)
+}
+
+// IsErrParameterInvalid returns if an error is an ErrParameterInvalid.
+func IsErrParameterInvalid(err error) bool {
 	if err == nil {
 		return false
 	}

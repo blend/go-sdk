@@ -116,7 +116,6 @@ func TestParseGoodInputs(t *testing.T) {
 	// two valid key-val pairs where both the key and value for each pair is
 	// enclosed in quotes
 	input = `"var_1"="val_1";"var_2"="val_2";`
-	input = `var_1=val_1;var_2=val_2;`
 	res, err = ParsePairDelimiter(input, PairDelimiterSemicolon)
 	assert.Equal(nil, err)
 

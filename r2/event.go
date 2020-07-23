@@ -49,13 +49,13 @@ func (e Event) GetFlag() string { return e.Flag }
 // WriteText writes the event to a text writer.
 func (e Event) WriteText(tf logger.TextFormatter, wr io.Writer) {
 	if e.Request != nil && e.Response != nil {
-		io.WriteString(wr, fmt.Sprintf("%s %s %s (%v)", e.Request.Method, e.Request.URL.String(), webutil.ColorizeStatusCodeWithFormatter(tf, e.Response.StatusCode), e.Elapsed))
+		fmt.Fprint(wr, fmt.Sprintf("%s %s %s (%v)", e.Request.Method, e.Request.URL.String(), webutil.ColorizeStatusCodeWithFormatter(tf, e.Response.StatusCode), e.Elapsed))
 	} else if e.Request != nil {
-		io.WriteString(wr, fmt.Sprintf("%s %s", e.Request.Method, e.Request.URL.String()))
+		fmt.Fprint(wr, fmt.Sprintf("%s %s", e.Request.Method, e.Request.URL.String()))
 	}
 	if e.Body != nil {
-		io.WriteString(wr, logger.Newline)
-		io.WriteString(wr, string(e.Body))
+		fmt.Fprint(wr, logger.Newline)
+		fmt.Fprint(wr, string(e.Body))
 	}
 }
 

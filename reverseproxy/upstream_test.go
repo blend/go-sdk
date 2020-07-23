@@ -30,7 +30,8 @@ func TestUpstreamServeHTTP(t *testing.T) {
 	assert.NotNil(u.ReverseProxy)
 	u.Log = logger.None()
 
-	proxy := NewProxy()
+	proxy, err := NewProxy()
+	assert.Nil(err)
 	proxy.Upstreams = append(proxy.Upstreams, u)
 
 	req, err := http.NewRequest("GET", srv.URL, nil)

@@ -14,13 +14,6 @@ const (
 	ConnectionNilError = "connection is nil"
 )
 
-const (
-	runeComma   = rune(',')
-	runeNewline = rune('\n')
-	runeTab     = rune('\t')
-	runeSpace   = rune(' ')
-)
-
 // --------------------------------------------------------------------------------
 // Connection
 // --------------------------------------------------------------------------------
@@ -116,7 +109,7 @@ func (dbc *Connection) Begin(opts ...func(*sql.TxOptions)) (*sql.Tx, error) {
 }
 
 // BeginContext starts a new transaction in a givent context.
-func (dbc *Connection) BeginContext(context context.Context, opts ...func(*sql.TxOptions)) (*sql.Tx, error) {
+func (dbc *Connection) BeginContext(ctx context.Context, opts ...func(*sql.TxOptions)) (*sql.Tx, error) {
 	if dbc.Connection == nil {
 		return nil, ex.New(ErrConnectionClosed)
 	}
@@ -124,25 +117,25 @@ func (dbc *Connection) BeginContext(context context.Context, opts ...func(*sql.T
 	for _, opt := range opts {
 		opt(&txOptions)
 	}
-	tx, err := dbc.Connection.BeginTx(context, &txOptions)
+	tx, err := dbc.Connection.BeginTx(ctx, &txOptions)
 	return tx, Error(err)
 }
 
 // PrepareContext prepares a statement within a given context.
 // If a tx is provided, the tx is the target for the prepare.
 // This will trigger tracing on prepare.
-func (dbc *Connection) PrepareContext(context context.Context, statement string, tx *sql.Tx) (stmt *sql.Stmt, err error) {
+func (dbc *Connection) PrepareContext(ctx context.Context, statement string, tx *sql.Tx) (stmt *sql.Stmt, err error) {
 	if dbc.Tracer != nil {
-		tf := dbc.Tracer.Prepare(context, dbc.Config, statement)
+		tf := dbc.Tracer.Prepare(ctx, dbc.Config, statement)
 		if tf != nil {
-			defer func() { tf.FinishPrepare(context, err) }()
+			defer func() { tf.FinishPrepare(ctx, err) }()
 		}
 	}
 	if tx != nil {
-		stmt, err = tx.PrepareContext(context, statement)
+		stmt, err = tx.PrepareContext(ctx, statement)
 		return
 	}
-	stmt, err = dbc.Connection.PrepareContext(context, statement)
+	stmt, err = dbc.Connection.PrepareContext(ctx, statement)
 	return
 }
 

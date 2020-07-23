@@ -45,7 +45,6 @@ func (p *Parser) Parse() (Selector, error) {
 	// loop over "clauses"
 	// clauses are separated by commas and grouped logically as "ands"
 	for {
-
 		// sniff the !haskey form
 		b = p.current()
 		if b == Bang {
@@ -201,6 +200,7 @@ func (p *Parser) popMark() {
 	p.m = 0
 }
 
+/*
 // read returns the rune currently lexed, and advances the position.
 func (p *Parser) read() (r rune) {
 	var width int
@@ -210,6 +210,7 @@ func (p *Parser) read() (r rune) {
 	}
 	return r
 }
+*/
 
 // current returns the rune at the current position.
 func (p *Parser) current() (r rune) {
@@ -225,12 +226,14 @@ func (p *Parser) advance() {
 	}
 }
 
+/*
 // prev moves the cursor back a rune.
 func (p *Parser) prev() {
 	if p.pos > 0 {
 		p.pos--
 	}
 }
+*/
 
 // readOp reads a valid operator.
 // valid operators include:
@@ -365,6 +368,7 @@ func (p *Parser) readCSV() (results []string, err error) {
 
 		if p.done() {
 			err = ErrInvalidSelector
+			results = nil
 			return
 		}
 
@@ -377,6 +381,7 @@ func (p *Parser) readCSV() (results []string, err error) {
 			}
 			// not open parens, bail
 			err = ErrInvalidSelector
+			results = nil
 			return
 		case 1: // alphas (in word)
 
@@ -406,6 +411,7 @@ func (p *Parser) readCSV() (results []string, err error) {
 
 			if !p.isValidValue(ch) {
 				err = ErrInvalidSelector
+				results = nil
 				return
 			}
 
@@ -464,8 +470,8 @@ func (p *Parser) readCSV() (results []string, err error) {
 			}
 
 			err = ErrInvalidSelector
+			results = nil
 			return
-
 		}
 	}
 }

@@ -27,7 +27,7 @@ func (ln TCPKeepAliveListener) Accept() (c net.Conn, err error) {
 	if err != nil {
 		return
 	}
-	tc.SetKeepAlive(ln.KeepAlive)
-	tc.SetKeepAlivePeriod(ln.KeepAlivePeriod)
+	_ = tc.SetKeepAlive(ln.KeepAlive)
+	_ = tc.SetKeepAlivePeriod(ln.KeepAlivePeriod)
 	return tc, nil
 }

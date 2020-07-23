@@ -11,6 +11,6 @@ import (
 func TestOptDialKeepAlive(t *testing.T) {
 	assert := assert.New(t)
 
-	r := New("http://foo.com", OptDial(OptDialKeepAlive(time.Second)))
-	assert.NotNil(r.Client.Transport.(*http.Transport).Dial)
+	r := New(TestURL, OptDial(OptDialKeepAlive(time.Second)))
+	assert.NotNil(r.Client.Transport.(*http.Transport).DialContext)
 }

@@ -45,7 +45,9 @@ func (m *SigningMethodRSA) Verify(signingString, signature string, key interface
 		return ex.New(ErrHashUnavailable)
 	}
 	hasher := m.Hash.New()
-	hasher.Write([]byte(signingString))
+	if _, err := hasher.Write([]byte(signingString)); err != nil {
+		return ex.New(err)
+	}
 
 	// Verify the signature
 	return ex.New(rsa.VerifyPKCS1v15(rsaKey, m.Hash, hasher.Sum(nil), sig))
@@ -68,14 +70,16 @@ func (m *SigningMethodRSA) Sign(signingString string, key interface{}) (string, 
 	}
 
 	hasher := m.Hash.New()
-	hasher.Write([]byte(signingString))
+	if _, err := hasher.Write([]byte(signingString)); err != nil {
+		return "", ex.New(err)
+	}
 
 	// Sign the string and return the encoded bytes
 	sigBytes, err := rsa.SignPKCS1v15(rand.Reader, rsaKey, m.Hash, hasher.Sum(nil))
-	if err == nil {
-		return EncodeSegment(sigBytes), nil
+	if err != nil {
+		return "", ex.New(err)
 	}
-	return "", err
+	return EncodeSegment(sigBytes), nil
 }
 
 //ParseRSAPrivateKeyFromPEM parses a PEM encoded PKCS1 or PKCS8 private key.

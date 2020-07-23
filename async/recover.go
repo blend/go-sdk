@@ -21,7 +21,7 @@ func Recover(action func() error, errors chan error) {
 		}
 	}()
 
-	if err := action(); err != nil {
+	if err := action(); err != nil && errors != nil {
 		errors <- err
 	}
 }

@@ -7,13 +7,8 @@ import (
 
 const (
 	ringBufferMinimumGrow     = 4
-	ringBufferShrinkThreshold = 32
 	ringBufferGrowFactor      = 200
 	ringBufferDefaultCapacity = 4
-)
-
-var (
-	emptyArray = make([]interface{}, 0)
 )
 
 // NewRingBuffer creates a new, empty, RingBuffer.
@@ -279,7 +274,6 @@ func (rb *RingBuffer) ReverseEachUntil(consumer func(value interface{}) bool) {
 				return
 			}
 		}
-
 	}
 }
 

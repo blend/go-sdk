@@ -33,7 +33,7 @@ func WithTimeout(d time.Duration) Middleware {
 			case res := <-resultChan:
 				return res
 			case <-ctx.Done():
-				return r.DefaultProvider.Status(http.StatusServiceUnavailable)
+				return r.DefaultProvider.Status(http.StatusServiceUnavailable, nil)
 			}
 		}
 	}

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/configutil"
+	"github.com/blend/go-sdk/env"
 )
 
 var (
@@ -23,5 +24,10 @@ type Config struct {
 
 // Resolve implements configutil.Resolver.
 func (c *Config) Resolve(ctx context.Context) error {
-	return configutil.GetEnvVars(ctx).ReadInto(c)
+	return env.GetVars(ctx).ReadInto(c)
+}
+
+// IsZero returns if the config is set or not.
+func (c Config) IsZero() bool {
+	return c.Addr == ""
 }

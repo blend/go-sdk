@@ -1,6 +1,7 @@
 package certutil
 
 import (
+	"crypto/tls"
 	"io/ioutil"
 	"os"
 
@@ -62,15 +63,32 @@ func (kp KeyPair) KeyBytes() ([]byte, error) {
 func (kp KeyPair) String() (output string) {
 	output = "[ "
 	if kp.Cert != "" {
-		output = output + "cert: <literal>"
+		output += "cert: <literal>"
 	} else if kp.CertPath != "" {
-		output = output + "cert: " + os.ExpandEnv(kp.CertPath)
+		output += ("cert: " + os.ExpandEnv(kp.CertPath))
 	}
 	if kp.Key != "" {
-		output = output + ", key: <literal>"
+		output += ", key: <literal>"
 	} else if kp.KeyPath != "" {
-		output = output + ", key: " + os.ExpandEnv(kp.KeyPath)
+		output += (", key: " + os.ExpandEnv(kp.KeyPath))
 	}
-	output = output + " ]"
+	output += " ]"
 	return output
+}
+
+// TLSCertificate returns the KeyPair as a tls.Certificate.
+func (kp KeyPair) TLSCertificate() (*tls.Certificate, error) {
+	certBytes, err := kp.CertBytes()
+	if err != nil {
+		return nil, ex.New(err)
+	}
+	keyBytes, err := kp.KeyBytes()
+	if err != nil {
+		return nil, ex.New(err)
+	}
+	cert, err := tls.X509KeyPair(certBytes, keyBytes)
+	if err != nil {
+		return nil, ex.New(err)
+	}
+	return &cert, nil
 }

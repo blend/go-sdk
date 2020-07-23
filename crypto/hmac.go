@@ -8,6 +8,6 @@ import (
 // HMAC512 sha512 hashes data with the given key.
 func HMAC512(key, plainText []byte) []byte {
 	mac := hmac.New(sha512.New, key)
-	mac.Write([]byte(plainText))
+	_, _ = mac.Write([]byte(plainText))
 	return mac.Sum(nil)
 }

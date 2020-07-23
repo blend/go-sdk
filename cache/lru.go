@@ -18,4 +18,6 @@ type LRU interface {
 	// Consume should iterate through the values. If `true` is removed by the handler,
 	// the current value will be removed and the handler will be called on the next value.
 	Consume(func(*Value) bool)
+	// Reset should remove all values from the LRU, leaving an empty LRU.
+	Reset()
 }

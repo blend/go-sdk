@@ -19,7 +19,7 @@ func Mock(app *App, req *http.Request, options ...r2.Option) *MockResult {
 	result := &MockResult{
 		App: app,
 		Request: &r2.Request{
-			Request: *req,
+			Request: req,
 		},
 	}
 	for _, option := range options {
@@ -34,15 +34,15 @@ func Mock(app *App, req *http.Request, options ...r2.Option) *MockResult {
 		return result
 	}
 
-	if result.Request.URL == nil {
-		result.Request.URL = &url.URL{}
+	if result.Request.Request.URL == nil {
+		result.Request.Request.URL = &url.URL{}
 	}
 
 	result.Server = httptest.NewServer(app)
 
 	parsedServerURL := webutil.MustParseURL(result.Server.URL)
-	result.Request.URL.Scheme = parsedServerURL.Scheme
-	result.Request.URL.Host = parsedServerURL.Host
+	result.Request.Request.URL.Scheme = parsedServerURL.Scheme
+	result.Request.Request.URL.Host = parsedServerURL.Host
 
 	return result
 }

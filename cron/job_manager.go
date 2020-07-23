@@ -15,8 +15,9 @@ import (
 // New returns a new job manager.
 func New(options ...JobManagerOption) *JobManager {
 	jm := JobManager{
-		Latch: async.NewLatch(),
-		Jobs:  make(map[string]*JobScheduler),
+		Latch:       async.NewLatch(),
+		BaseContext: context.Background(),
+		Jobs:        make(map[string]*JobScheduler),
 	}
 	for _, option := range options {
 		option(&jm)
@@ -27,12 +28,13 @@ func New(options ...JobManagerOption) *JobManager {
 // JobManager is the main orchestration and job management object.
 type JobManager struct {
 	sync.Mutex
-	Latch   *async.Latch
-	Tracer  Tracer
-	Log     logger.Log
-	Started time.Time
-	Stopped time.Time
-	Jobs    map[string]*JobScheduler
+	Latch       *async.Latch
+	BaseContext context.Context
+	Tracer      Tracer
+	Log         logger.Log
+	Started     time.Time
+	Stopped     time.Time
+	Jobs        map[string]*JobScheduler
 }
 
 //
@@ -91,7 +93,7 @@ func (jm *JobManager) Stop() error {
 		logger.MaybeInfo(jm.Log, "job manager stopping complete")
 	}()
 	for _, jobScheduler := range jm.Jobs {
-		if err := jobScheduler.OnUnload(context.Background()); err != nil {
+		if err := jobScheduler.OnUnload(jm.BaseContext); err != nil {
 			logger.MaybeError(jm.Log, err)
 		}
 		if err := jobScheduler.Stop(); err != nil {
@@ -120,8 +122,9 @@ func (jm *JobManager) LoadJobs(jobs ...Job) error {
 			job,
 			OptJobSchedulerLog(jm.Log),
 			OptJobSchedulerTracer(jm.Tracer),
+			OptJobSchedulerBaseContext(jm.BaseContext),
 		)
-		if err := jobScheduler.OnLoad(context.Background()); err != nil {
+		if err := jobScheduler.OnLoad(jm.BaseContext); err != nil {
 			return err
 		}
 		jm.Jobs[jobName] = jobScheduler
@@ -139,7 +142,9 @@ func (jm *JobManager) UnloadJobs(jobNames ...string) error {
 			if err := jobScheduler.OnUnload(context.Background()); err != nil {
 				return err
 			}
-			jobScheduler.Stop()
+			if err := jobScheduler.Stop(); err != nil {
+				return err
+			}
 			delete(jm.Jobs, jobName)
 		} else {
 			return ex.New(ErrJobNotFound, ex.OptMessagef("job: %s", jobName))

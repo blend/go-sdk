@@ -8,6 +8,7 @@ import (
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/r2"
 	"github.com/blend/go-sdk/stringutil"
+	"github.com/blend/go-sdk/webutil"
 )
 
 func TestSessionAware(t *testing.T) {
@@ -19,7 +20,7 @@ func TestSessionAware(t *testing.T) {
 	var sessionWasSet bool
 
 	app := MustNew(OptAuth(NewLocalAuthManager()))
-	app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "bailey"})
+	assert.Nil(app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "bailey"}))
 
 	app.GET("/", func(r *Ctx) Result {
 		didExecuteHandler = true
@@ -30,7 +31,7 @@ func TestSessionAware(t *testing.T) {
 	meta, err := MockGet(app, "/", r2.OptCookieValue(app.Auth.CookieDefaults.Name, sessionID)).Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode)
-	assert.Equal(ContentTypeText, meta.Header.Get(HeaderContentType))
+	assert.Equal(webutil.ContentTypeText, meta.Header.Get(webutil.HeaderContentType))
 	assert.True(didExecuteHandler, "we should have triggered the hander")
 	assert.True(sessionWasSet, "the session should have been set by the middleware")
 
@@ -47,7 +48,7 @@ func TestSessionRequired(t *testing.T) {
 
 	var sessionWasSet bool
 	app := MustNew(OptAuth(NewLocalAuthManager()))
-	app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "bailey"})
+	assert.Nil(app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "bailey"}))
 
 	app.GET("/", func(r *Ctx) Result {
 		sessionWasSet = r.Session != nil
@@ -72,7 +73,7 @@ func TestSessionRequiredCustomParamName(t *testing.T) {
 
 	var sessionWasSet bool
 	app := MustNew(OptAuth(NewLocalAuthManager()))
-	app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "bailey"})
+	assert.Nil(app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "bailey"}))
 	app.Auth.CookieDefaults.Name = "web_auth"
 
 	app.GET("/", func(r *Ctx) Result {
@@ -103,11 +104,11 @@ func TestSessionMiddleware(t *testing.T) {
 
 	var sessionWasSet bool
 	app := MustNew(OptAuth(NewLocalAuthManager()), OptBindAddr(DefaultMockBindAddr))
-	app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "bailey"})
+	assert.Nil(app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "bailey"}))
 
-	go app.Start()
+	go func() { _ = app.Start() }()
 	<-app.NotifyStarted()
-	defer app.Stop()
+	defer func() { _ = app.Stop() }()
 
 	var calledCustom bool
 	app.GET("/", func(r *Ctx) Result {

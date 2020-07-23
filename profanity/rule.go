@@ -28,8 +28,13 @@ type Rule struct {
 	Contains []string `yaml:"contains,omitempty"`
 	// Pattern implies we should fail if a file's content matches a given regex pattern.
 	Pattern []string `yaml:"pattern,omitempty"`
+
+	// go specific
+
 	// ImportsContain enforces that a given list of imports are used.
 	ImportsContain []string `yaml:"importsContain,omitempty"`
+	// Calls enforces that a given list of imports are used.
+	Calls []Call `yaml:"calls,omitempty"`
 }
 
 // ShouldInclude returns if we should include a file for a given rule.
@@ -51,11 +56,9 @@ func (r Rule) ShouldExclude(file string) bool {
 			return true
 		}
 	}
-
 	if len(r.ExcludeFiles) == 0 {
 		return false
 	}
-
 	return GlobAnyMatch(r.ExcludeFiles, file)
 }
 
@@ -72,6 +75,14 @@ func (r Rule) Apply(filename string, contents []byte) (result RuleResult) {
 	if len(r.ImportsContain) > 0 {
 		result = ImportsContainAny(r.ImportsContain...)(filename, contents)
 		return
+	}
+	if len(r.Calls) > 0 {
+		result = Calls(r.Calls...)(filename, contents)
+		return
+	}
+	result = RuleResult{
+		OK:   true,
+		File: filename,
 	}
 	return
 }
@@ -101,5 +112,16 @@ func (r Rule) String() string {
 	if len(r.ImportsContain) > 0 {
 		tokens = append(tokens, fmt.Sprintf("[go imports contain any: %s]", strings.Join(r.ImportsContain, ",")))
 	}
+	if len(r.Calls) > 0 {
+		tokens = append(tokens, fmt.Sprintf("[go calls any: %s]", strings.Join(makeStrings(r.Calls), ",")))
+	}
 	return strings.Join(tokens, " ")
+}
+
+func makeStrings(objs ...interface{}) []string {
+	var output []string
+	for _, obj := range objs {
+		output = append(output, fmt.Sprint(obj))
+	}
+	return output
 }

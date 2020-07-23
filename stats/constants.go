@@ -25,8 +25,3 @@ const (
 const (
 	ListenerNameStats string = "stats"
 )
-
-// Tag creates a new tag.
-func Tag(key, value string) string {
-	return key + ":" + value
-}

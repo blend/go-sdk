@@ -13,14 +13,15 @@ import (
 	"github.com/blend/go-sdk/stringutil"
 )
 
-// NewConfigFromDSN creates a new config from a dsn.
-func NewConfigFromDSN(dsn string) (*Config, error) {
-	parsed, err := ParseURL(dsn)
-	if err != nil {
-		return nil, ex.New(err)
+// NewConfigFromDSN creates a new config from a DSN.
+// Errors can be produced by parsing the DSN.
+func NewConfigFromDSN(dsn string) (config Config, err error) {
+	parsed, parseErr := ParseURL(dsn)
+	if parseErr != nil {
+		err = ex.New(parseErr)
+		return
 	}
 
-	var config Config
 	pieces := stringutil.SplitSpace(parsed)
 	for _, piece := range pieces {
 		if strings.HasPrefix(piece, "host=") {
@@ -38,14 +39,14 @@ func NewConfigFromDSN(dsn string) (*Config, error) {
 		} else if strings.HasPrefix(piece, "search_path=") {
 			config.Schema = strings.TrimPrefix(piece, "search_path=")
 		} else if strings.HasPrefix(piece, "connect_timeout=") {
-			config.ConnectTimeout, err = strconv.Atoi(strings.TrimPrefix(piece, "connect_timeout="))
-			if err != nil {
-				return nil, ex.New(err, ex.OptMessage("field: connect_timeout"))
+			config.ConnectTimeout, parseErr = strconv.Atoi(strings.TrimPrefix(piece, "connect_timeout="))
+			if parseErr != nil {
+				err = ex.New(parseErr, ex.OptMessage("field: connect_timeout"))
+				return
 			}
 		}
 	}
-
-	return &config, nil
+	return
 }
 
 // NewConfigFromEnv returns a new config from the environment.
@@ -59,7 +60,7 @@ func NewConfigFromDSN(dsn string) (*Config, error) {
 //	-	DB_PASSWORD 	= Password
 //	-	DB_SSLMODE 		= SSLMode
 func NewConfigFromEnv() (config Config, err error) {
-	if err = (&config).Resolve(configutil.WithEnvVars(context.Background(), env.Env())); err != nil {
+	if err = (&config).Resolve(env.WithVars(context.Background(), env.Env())); err != nil {
 		return
 	}
 	return
@@ -123,17 +124,32 @@ func (c Config) IsZero() bool {
 
 // Resolve applies any external data sources to the config.
 func (c *Config) Resolve(ctx context.Context) error {
-	return configutil.GetEnvVars(ctx).ReadInto(c)
+	return configutil.Resolve(ctx,
+		configutil.SetString(&c.Engine, configutil.Env("DB_ENGINE"), configutil.String(c.Engine), configutil.String(DefaultEngine)),
+		configutil.SetString(&c.DSN, configutil.Env("DATABASE_URL"), configutil.String(c.DSN)),
+		configutil.SetString(&c.Host, configutil.Env("DB_HOST"), configutil.String(c.Host), configutil.String(DefaultHost)),
+		configutil.SetString(&c.Port, configutil.Env("DB_PORT"), configutil.String(c.Port), configutil.String(DefaultPort)),
+		configutil.SetString(&c.Database, configutil.Env("DB_NAME"), configutil.String(c.Database), configutil.String(DefaultDatabase)),
+		configutil.SetString(&c.Schema, configutil.Env("DB_SCHEMA"), configutil.String(c.Schema)),
+		configutil.SetString(&c.Username, configutil.Env("DB_USER"), configutil.String(c.Username), configutil.Env("USER")),
+		configutil.SetString(&c.Password, configutil.Env("DB_PASSWORD"), configutil.String(c.Password)),
+		configutil.SetInt(&c.ConnectTimeout, configutil.Env("DB_CONNECT_TIMEOUT"), configutil.Int(c.ConnectTimeout), configutil.Int(DefaultConnectTimeout)),
+		configutil.SetString(&c.SSLMode, configutil.Env("DB_SSLMODE"), configutil.String(c.SSLMode)),
+		configutil.SetInt(&c.IdleConnections, configutil.Env("DB_IDLE_CONNECTIONS"), configutil.Int(c.IdleConnections), configutil.Int(DefaultIdleConnections)),
+		configutil.SetInt(&c.MaxConnections, configutil.Env("DB_MAX_CONNECTIONS"), configutil.Int(c.MaxConnections), configutil.Int(DefaultMaxConnections)),
+		configutil.SetDuration(&c.MaxLifetime, configutil.Env("DB_MAX_LIFETIME"), configutil.Duration(c.MaxConnections), configutil.Duration(DefaultMaxLifetime)),
+		configutil.SetInt(&c.BufferPoolSize, configutil.Env("DB_BUFFER_POOL_SIZE"), configutil.Int(c.BufferPoolSize), configutil.Int(DefaultBufferPoolSize)),
+	)
 }
 
 // Reparse creates a DSN and reparses it, in case some values need to be coalesced.
-func (c Config) Reparse() (*Config, error) {
+func (c Config) Reparse() (Config, error) {
 	return NewConfigFromDSN(c.CreateDSN())
 }
 
 // MustReparse creates a DSN and reparses it, in case some values need to be coalesced,
 // and panics if there is an error.
-func (c Config) MustReparse() *Config {
+func (c Config) MustReparse() Config {
 	cfg, err := NewConfigFromDSN(c.CreateDSN())
 	if err != nil {
 		panic(err)
@@ -166,7 +182,7 @@ func (c Config) PortOrDefault() string {
 }
 
 // DatabaseOrDefault returns the connection database or a default.
-func (c Config) DatabaseOrDefault(inherited ...string) string {
+func (c Config) DatabaseOrDefault() string {
 	if c.Database != "" {
 		return c.Database
 	}
@@ -175,7 +191,7 @@ func (c Config) DatabaseOrDefault(inherited ...string) string {
 
 // SchemaOrDefault returns the schema on the search_path or the default ("public"). It's considered bad practice to
 // use the public schema in production
-func (c Config) SchemaOrDefault(inherited ...string) string {
+func (c Config) SchemaOrDefault() string {
 	if c.Schema != "" {
 		return c.Schema
 	}
@@ -183,7 +199,7 @@ func (c Config) SchemaOrDefault(inherited ...string) string {
 }
 
 // IdleConnectionsOrDefault returns the number of idle connections or a default.
-func (c Config) IdleConnectionsOrDefault(inherited ...int) int {
+func (c Config) IdleConnectionsOrDefault() int {
 	if c.IdleConnections > 0 {
 		return c.IdleConnections
 	}
@@ -191,7 +207,7 @@ func (c Config) IdleConnectionsOrDefault(inherited ...int) int {
 }
 
 // MaxConnectionsOrDefault returns the maximum number of connections or a default.
-func (c Config) MaxConnectionsOrDefault(inherited ...int) int {
+func (c Config) MaxConnectionsOrDefault() int {
 	if c.MaxConnections > 0 {
 		return c.MaxConnections
 	}
@@ -237,6 +253,43 @@ func (c Config) CreateDSN() string {
 		} else {
 			dsn.User = url.User(c.Username)
 		}
+	}
+
+	queryArgs := url.Values{}
+	if len(c.SSLMode) > 0 {
+		queryArgs.Add("sslmode", c.SSLMode)
+	}
+	if c.ConnectTimeout > 0 {
+		queryArgs.Add("connect_timeout", strconv.Itoa(c.ConnectTimeout))
+	}
+	if c.Schema != "" {
+		queryArgs.Add("search_path", c.Schema)
+	}
+
+	dsn.RawQuery = queryArgs.Encode()
+	return dsn.String()
+}
+
+// CreateLoggingDSN creates a postgres connection string from the config suitable for logging.
+// It will not include the password.
+func (c Config) CreateLoggingDSN() string {
+	if c.DSN != "" {
+		return c.DSN
+	}
+
+	host := c.HostOrDefault()
+	if c.PortOrDefault() != "" {
+		host = host + ":" + c.PortOrDefault()
+	}
+
+	dsn := &url.URL{
+		Scheme: "postgres",
+		Host:   host,
+		Path:   c.DatabaseOrDefault(),
+	}
+
+	if len(c.Username) > 0 {
+		dsn.User = url.User(c.Username)
 	}
 
 	queryArgs := url.Values{}

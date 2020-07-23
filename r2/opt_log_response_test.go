@@ -21,9 +21,8 @@ type mockLogger struct {
 	Events []logger.Event
 }
 
-func (ml *mockLogger) Trigger(ctx context.Context, e logger.Event) {
+func (ml *mockLogger) TriggerContext(ctx context.Context, e logger.Event) {
 	ml.Events = append(ml.Events, e)
-	return
 }
 
 func TestOptLogResponse(t *testing.T) {
@@ -60,7 +59,7 @@ func TestOptLogResponseWithBody(t *testing.T) {
 func logResponseHelper(a *assert.Assertions, ml *mockLogger, opt Option, body string) Event {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, body)
+		fmt.Fprint(w, body)
 	}))
 	defer server.Close()
 

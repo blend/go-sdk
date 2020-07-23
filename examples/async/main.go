@@ -18,10 +18,10 @@ func main() {
 		work <- fmt.Sprintf("work-%d", x)
 	}
 
-	batch := async.NewBatch(func(ctx context.Context, work interface{}) error {
+	batch := async.NewBatch(work, func(ctx context.Context, work interface{}) error {
 		fmt.Printf("%v\n", work)
 		return nil
-	}, work, async.OptBatchParallelism(runtime.NumCPU()))
+	}, async.OptBatchParallelism(runtime.NumCPU()))
 
 	batch.Process(context.TODO())
 }

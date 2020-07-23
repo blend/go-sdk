@@ -3,6 +3,7 @@ package logger
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 
 	"github.com/blend/go-sdk/ex"
@@ -60,9 +61,9 @@ func (ee ErrorEvent) GetFlag() string { return ee.Flag }
 func (ee ErrorEvent) WriteText(formatter TextFormatter, output io.Writer) {
 	if ee.Err != nil {
 		if typed, ok := ee.Err.(*ex.Ex); ok {
-			io.WriteString(output, typed.String())
+			fmt.Fprint(output, typed.String())
 		} else {
-			io.WriteString(output, ee.Err.Error())
+			fmt.Fprint(output, ee.Err.Error())
 		}
 	}
 }

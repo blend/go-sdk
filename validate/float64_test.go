@@ -148,3 +148,43 @@ func TestFloat64Epsilon(t *testing.T) {
 	assert.Equal(5.0, ErrValue(verr))
 	assert.Equal(ErrFloat64Epsilon, ErrCause(verr))
 }
+
+func TestFloat64Zero(t *testing.T) {
+	assert := assert.New(t)
+
+	var verr error
+	val := 0.0
+	verr = Float64(&val).Zero()()
+	assert.Nil(verr)
+
+	verr = Float64(nil).Zero()()
+	assert.NotNil(verr)
+	assert.Nil(ErrValue(verr))
+	assert.Equal(ErrFloat64Zero, ErrCause(verr))
+
+	val = 5.0
+	verr = Float64(&val).Zero()()
+	assert.NotNil(verr)
+	assert.NotNil(ErrValue(verr))
+	assert.Equal(ErrFloat64Zero, ErrCause(verr))
+}
+
+func TestFloat64NotZero(t *testing.T) {
+	assert := assert.New(t)
+
+	var verr error
+	val := 5.0
+	verr = Float64(&val).NotZero()()
+	assert.Nil(verr)
+
+	verr = Float64(nil).NotZero()()
+	assert.NotNil(verr)
+	assert.Nil(ErrValue(verr))
+	assert.Equal(ErrFloat64NotZero, ErrCause(verr))
+
+	val = 0.0
+	verr = Float64(&val).NotZero()()
+	assert.NotNil(verr)
+	assert.NotNil(ErrValue(verr))
+	assert.Equal(ErrFloat64NotZero, ErrCause(verr))
+}

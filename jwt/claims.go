@@ -33,16 +33,16 @@ type StandardClaims struct {
 func (c StandardClaims) Valid() error {
 	now := TimeFunc().Unix()
 
-	if c.VerifyExpiresAt(now, false) == false {
+	if !c.VerifyExpiresAt(now, false) {
 		delta := time.Unix(now, 0).Sub(time.Unix(c.ExpiresAt, 0))
 		return ex.New(ErrValidationExpired, ex.OptMessagef("token is expired by %v", delta))
 	}
 
-	if c.VerifyIssuedAt(now, false) == false {
+	if !c.VerifyIssuedAt(now, false) {
 		return ex.New(ErrValidationIssued)
 	}
 
-	if c.VerifyNotBefore(now, false) == false {
+	if !c.VerifyNotBefore(now, false) {
 		return ex.New(ErrValidationNotBefore)
 	}
 	return nil

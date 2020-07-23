@@ -30,3 +30,8 @@ func SetEnv(vars Vars) {
 func Restore() {
 	SetEnv(New(OptFromEnv()))
 }
+
+// Clear sets .Env() to an empty env var set.
+func Clear() {
+	SetEnv(New())
+}

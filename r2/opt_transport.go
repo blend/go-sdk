@@ -1,6 +1,8 @@
 package r2
 
-import "net/http"
+import (
+	"net/http"
+)
 
 // OptTransport sets the client transport for a request.
 func OptTransport(transport http.RoundTripper) Option {

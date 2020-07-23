@@ -27,10 +27,7 @@ func extractSubMatches(re *regexp.Regexp, corpus string) []string {
 	allResults := re.FindAllStringSubmatch(corpus, -1)
 	results := []string{}
 	for _, resultSet := range allResults {
-		for _, result := range resultSet {
-			results = append(results, result)
-		}
+		results = append(results, resultSet...)
 	}
-
 	return results
 }

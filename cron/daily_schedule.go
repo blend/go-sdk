@@ -15,7 +15,7 @@ var (
 func WeeklyAtUTC(hour, minute, second int, days ...time.Weekday) Schedule {
 	dayOfWeekMask := uint(0)
 	for _, day := range days {
-		dayOfWeekMask = dayOfWeekMask | 1<<uint(day)
+		dayOfWeekMask |= 1 << uint(day)
 	}
 
 	return &DailySchedule{DayOfWeekMask: dayOfWeekMask, TimeOfDayUTC: time.Date(0, 0, 0, hour, minute, second, 0, time.UTC)}

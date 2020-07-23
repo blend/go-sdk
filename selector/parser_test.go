@@ -171,6 +171,7 @@ func TestParserReadCSV(t *testing.T) {
 	l = &Parser{s: "(bar, buzz, baz"}
 	words, err = l.readCSV()
 	assert.NotNil(err)
+	assert.Empty(words)
 
 	l = &Parser{s: "()"}
 	words, err = l.readCSV()
@@ -195,6 +196,7 @@ func TestParserReadCSV(t *testing.T) {
 	l = &Parser{s: "(test, space are bad)"}
 	words, err = l.readCSV()
 	assert.NotNil(err)
+	assert.Empty(words)
 }
 
 func TestParserHasKey(t *testing.T) {

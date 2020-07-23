@@ -2,7 +2,9 @@ package web
 
 import (
 	"net/http"
+	"time"
 
+	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -49,6 +51,16 @@ func OptCtxRouteParams(r RouteParameters) CtxOption {
 	return func(c *Ctx) { c.RouteParams = r }
 }
 
+// OptCtxRequestStarted sets the context request started timestamp.
+func OptCtxRequestStarted(ts time.Time) CtxOption {
+	return func(c *Ctx) { c.RequestStarted = ts }
+}
+
+// OptCtxLog sets the context logger.
+func OptCtxLog(log logger.Log) CtxOption {
+	return func(c *Ctx) { c.Log = log }
+}
+
 // OptCtxTracer sets the context tracer.
 func OptCtxTracer(tracer Tracer) CtxOption {
 	return func(c *Ctx) { c.Tracer = tracer }
@@ -67,7 +79,7 @@ func OptCtxRouteParamValue(key, value string) CtxOption {
 // CtxRequestOption is a ctx option that wraps a request option.
 func CtxRequestOption(opt func(*http.Request) error) CtxOption {
 	return func(c *Ctx) {
-		opt(c.Request)
+		_ = opt(c.Request)
 	}
 }
 

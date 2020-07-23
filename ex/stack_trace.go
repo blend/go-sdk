@@ -3,7 +3,6 @@ package ex
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"path"
 	"runtime"
 	"strings"
@@ -177,23 +176,23 @@ func (f Frame) Format(s fmt.State, verb rune) {
 			pc := f.PC()
 			fn := runtime.FuncForPC(pc)
 			if fn == nil {
-				io.WriteString(s, "unknown")
+				fmt.Fprint(s, "unknown")
 			} else {
 				file, _ := fn.FileLine(pc)
 				fname := fn.Name()
 				fmt.Fprintf(s, "%s\n\t%s", fname, trimGOPATH(fname, file))
 			}
 		default:
-			io.WriteString(s, path.Base(f.File()))
+			fmt.Fprint(s, path.Base(f.File()))
 		}
 	case 'd':
 		fmt.Fprintf(s, "%d", f.Line())
 	case 'n':
 		name := runtime.FuncForPC(f.PC()).Name()
-		io.WriteString(s, funcname(name))
+		fmt.Fprint(s, funcname(name))
 	case 'v':
 		f.Format(s, 's')
-		io.WriteString(s, ":")
+		fmt.Fprint(s, ":")
 		f.Format(s, 'd')
 	}
 }

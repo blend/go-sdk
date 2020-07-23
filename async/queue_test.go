@@ -18,7 +18,7 @@ func TestParallelQueue(t *testing.T) {
 		return nil
 	})
 
-	go q.Start()
+	go func() { _ = q.Start() }()
 	<-q.NotifyStarted()
 
 	assert.True(q.IsStarted())

@@ -7,6 +7,7 @@ import (
 	"github.com/blend/go-sdk/ref"
 
 	"github.com/DataDog/datadog-go/statsd"
+
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/stats"
 	"github.com/blend/go-sdk/uuid"
@@ -85,7 +86,7 @@ func TestCollectorNew(t *testing.T) {
 	assert.Nil(err)
 	assert.NotNil(c)
 	assert.NotNil(c.client)
-	assert.Equal("hello.", c.client.Namespace)
+	assert.Equal("hello", c.client.Namespace)
 
 	cfg.BufferDepth = 10
 	cfg.Buffered = ref.Bool(true)
@@ -94,5 +95,5 @@ func TestCollectorNew(t *testing.T) {
 	assert.Nil(err)
 	assert.NotNil(c)
 	assert.NotNil(c.client)
-	assert.Equal("hello.", c.client.Namespace)
+	assert.Equal("hello", c.client.Namespace)
 }

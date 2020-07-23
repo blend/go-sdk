@@ -15,7 +15,7 @@ func Tokenize(corpus string, tokens Tokens) string {
 		return corpus
 	}
 	// sanity check on tokens collection.
-	if tokens == nil || len(tokens) == 0 {
+	if len(tokens) == 0 {
 		return corpus
 	}
 

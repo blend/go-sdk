@@ -3,7 +3,7 @@ package web
 import (
 	"context"
 
-	"github.com/blend/go-sdk/configutil"
+	"github.com/blend/go-sdk/env"
 )
 
 // ViewCacheConfig is a config for the view cache.
@@ -29,7 +29,7 @@ type ViewCacheConfig struct {
 
 // Resolve adds extra resolution steps when we setup the config.
 func (vcc *ViewCacheConfig) Resolve(ctx context.Context) error {
-	return configutil.GetEnvVars(ctx).ReadInto(vcc)
+	return env.GetVars(ctx).ReadInto(vcc)
 }
 
 // BufferPoolSizeOrDefault gets the buffer pool size or a default.

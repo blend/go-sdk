@@ -13,7 +13,7 @@ func AddErrorListeners(log logger.Listenable, stats Collector) {
 	}
 
 	listener := logger.NewErrorEventListener(func(_ context.Context, ee logger.ErrorEvent) {
-		stats.Increment(MetricNameError,
+		_ = stats.Increment(MetricNameError,
 			Tag(TagSeverity, string(ee.GetFlag())),
 			// Tag(TagClass, fmt.Sprintf("%v", ex.ErrClass(ee.Err))),
 		)

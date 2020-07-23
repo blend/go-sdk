@@ -10,6 +10,6 @@ import (
 func TestOptTLSSkipVerify(t *testing.T) {
 	assert := assert.New(t)
 
-	r := New("http://foo.com", OptTLSSkipVerify(true))
+	r := New(TestURL, OptTLSSkipVerify(true))
 	assert.NotNil(r.Client.Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify)
 }

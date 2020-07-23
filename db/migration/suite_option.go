@@ -16,7 +16,6 @@ func OptGroups(groups ...*Group) SuiteOption {
 		} else {
 			s.Groups = append(s.Groups, groups...)
 		}
-
 	}
 }
 

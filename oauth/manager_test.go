@@ -240,7 +240,7 @@ func TestManagerRequestDefaulkts(t *testing.T) {
 	mock := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		didCallMock = true
 		rw.WriteHeader(http.StatusOK)
-		io.Copy(rw, bytes.NewReader(mockedResponse))
+		_, _ = io.Copy(rw, bytes.NewReader(mockedResponse))
 	}))
 
 	mgr := MustNew(

@@ -392,7 +392,7 @@ func parseEvery(values string, parser func(string) (int, error), validator func(
 	}
 
 	var output []int
-	for x := 0; x < 60; x = x + every {
+	for x := 0; x < 60; x += every {
 		output = append(output, x)
 	}
 	return output, nil
@@ -555,15 +555,17 @@ func csvOfInts(values []int, placeholder string) string {
 
 // these are special characters
 const (
-	cronSpecialComma    = ',' //
-	cronSpecialDash     = '-'
-	cronSpecialStar     = '*'
-	cronSpecialSlash    = '/'
-	cronSpecialQuestion = '?' // sometimes used as the startup time, sometimes as a *
+	cronSpecialComma = ',' //
+	cronSpecialDash  = '-'
+	cronSpecialStar  = '*'
 
-	cronSpecialLast       = 'L'
-	cronSpecialWeekday    = 'W' // nearest weekday to the given day of the month
-	cronSpecialDayOfMonth = '#' //
+	// these are unused
+	// cronSpecialSlash = '/'
+	// cronSpecialQuestion = '?' // sometimes used as the startup time, sometimes as a *
+
+	// cronSpecialLast       = 'L'
+	// cronSpecialWeekday    = 'W' // nearest weekday to the given day of the month
+	// cronSpecialDayOfMonth = '#' //
 
 	cronSpecialEvery = "*/"
 )

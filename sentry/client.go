@@ -31,7 +31,7 @@ func New(cfg Config) (*Client, error) {
 		raven.ClientOptions{
 			Dsn:         cfg.DSN,
 			Environment: cfg.EnvironmentOrDefault(),
-			ServerName:  cfg.ServerNameOrDefault(),
+			ServerName:  cfg.ServiceNameOrDefault(),
 			Dist:        cfg.DistOrDefault(),
 			Release:     cfg.ReleaseOrDefault(),
 		},

@@ -75,10 +75,10 @@ func (jrp JSONResultProvider) OK() Result {
 }
 
 // Status returns a plaintext result.
-func (jrp JSONResultProvider) Status(statusCode int, response ...interface{}) Result {
+func (jrp JSONResultProvider) Status(statusCode int, response interface{}) Result {
 	return &JSONResult{
 		StatusCode: statusCode,
-		Response:   ResultOrDefault(http.StatusText(statusCode), response...),
+		Response:   ResultOrDefault(response, http.StatusText(statusCode)),
 	}
 }
 

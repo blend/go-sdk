@@ -89,10 +89,8 @@ func (jw JSONOutputFormatter) WriteFormat(ctx context.Context, output io.Writer,
 		if err := encoder.Encode(fields); err != nil {
 			return err
 		}
-	} else {
-		if err := encoder.Encode(e); err != nil {
-			return err
-		}
+	} else if err := encoder.Encode(e); err != nil {
+		return err
 	}
 	_, err := io.Copy(output, buffer)
 	return err

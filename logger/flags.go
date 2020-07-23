@@ -89,16 +89,17 @@ func (efs *Flags) None() bool {
 
 // IsEnabled checks to see if an event is enabled.
 func (efs Flags) IsEnabled(flag string) bool {
-	if efs.all {
+	switch {
+	case efs.all:
 		if efs.flags != nil {
 			if enabled, hasEvent := efs.flags[flag]; hasEvent && !enabled {
 				return false
 			}
 		}
 		return true
-	} else if efs.none {
+	case efs.none:
 		return false
-	} else if efs.flags != nil {
+	case efs.flags != nil:
 		if enabled, hasFlag := efs.flags[flag]; hasFlag {
 			return enabled
 		}

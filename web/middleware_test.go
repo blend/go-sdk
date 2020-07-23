@@ -1,37 +1,83 @@
 package web
 
 import (
-	"bytes"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
-	"github.com/blend/go-sdk/webutil"
 )
 
-func TestDefaultProviderMiddlewares(t *testing.T) {
+func TestNestMiddleware(t *testing.T) {
 	assert := assert.New(t)
 
-	r := applyMiddleware(JSONProviderAsDefault)
-	_, ok := r.DefaultProvider.(JSONResultProvider)
-	assert.True(ok)
+	values := make(chan string, 4)
+	createMiddleware := func(v string) Middleware {
+		return func(action Action) Action {
+			return func(r *Ctx) Result {
+				values <- v
+				return action(r)
+			}
+		}
+	}
 
-	r = applyMiddleware(ViewProviderAsDefault)
-	_, ok = r.DefaultProvider.(*ViewCache)
-	assert.True(ok)
+	set0 := []Middleware{
+		createMiddleware("set0-0"),
+		createMiddleware("set0-1"),
+		createMiddleware("set0-2"),
+	}
 
-	r = applyMiddleware(XMLProviderAsDefault)
-	_, ok = r.DefaultProvider.(XMLResultProvider)
-	assert.True(ok)
+	action := func(_ *Ctx) Result {
+		values <- "action"
+		return nil
+	}
 
-	r = applyMiddleware(TextProviderAsDefault)
-	_, ok = r.DefaultProvider.(TextResultProvider)
-	assert.True(ok)
+	finalAction := NestMiddleware(action, set0...)
+	assert.NotNil(finalAction)
+	result := finalAction(nil)
+	assert.Nil(result)
+
+	assert.Equal("set0-2", <-values)
+	assert.Equal("set0-1", <-values)
+	assert.Equal("set0-0", <-values)
+	assert.Equal("action", <-values)
 }
 
-func applyMiddleware(middleware Middleware) (output *Ctx) {
-	middleware(func(ctx *Ctx) Result {
-		output = ctx
-		return NoContent
-	})(NewCtx(webutil.NewMockResponse(new(bytes.Buffer)), webutil.NewMockRequest("GET", "/")))
-	return
+func TestNestMiddleware_Append(t *testing.T) {
+	assert := assert.New(t)
+
+	values := make(chan string, 6)
+	createMiddleware := func(v string) Middleware {
+		return func(action Action) Action {
+			return func(r *Ctx) Result {
+				values <- v
+				return action(r)
+			}
+		}
+	}
+
+	set0 := []Middleware{
+		createMiddleware("set0-0"),
+		createMiddleware("set0-1"),
+		createMiddleware("set0-2"),
+	}
+	set1 := []Middleware{
+		createMiddleware("set1-0"),
+		createMiddleware("set1-1"),
+	}
+
+	action := func(_ *Ctx) Result {
+		values <- "action"
+		return nil
+	}
+
+	finalAction := NestMiddleware(action, append(set0, set1...)...)
+	assert.NotNil(finalAction)
+	result := finalAction(nil)
+	assert.Nil(result)
+
+	assert.Equal("set1-1", <-values)
+	assert.Equal("set1-0", <-values)
+	assert.Equal("set0-2", <-values)
+	assert.Equal("set0-1", <-values)
+	assert.Equal("set0-0", <-values)
+	assert.Equal("action", <-values)
 }

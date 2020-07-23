@@ -310,7 +310,7 @@ func (v *Version) String() string {
 		str := strconv.FormatInt(s, 10)
 		fmtParts[i] = str
 	}
-	fmt.Fprintf(&buf, strings.Join(fmtParts, "."))
+	fmt.Fprint(&buf, strings.Join(fmtParts, "."))
 	if v.pre != "" {
 		fmt.Fprintf(&buf, "-%s", v.pre)
 	}

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/blend/go-sdk/stringutil"
 )
@@ -24,7 +25,7 @@ func PathRedirectHandler(path string) func(*Ctx) *url.URL {
 // SessionIDs are generally 64 bytes.
 func NewSessionID() string {
 	b := make([]byte, 32)
-	rand.Read(b)
+	_, _ = rand.Read(b)
 	return base64.URLEncoding.EncodeToString(b)
 }
 
@@ -61,4 +62,42 @@ func CopyHeaders(headers http.Header) http.Header {
 		output[key] = values
 	}
 	return output
+}
+
+// CopySingleHeaders copies headers in single value format.
+func CopySingleHeaders(headers map[string]string) http.Header {
+	output := make(http.Header)
+	for key, value := range headers {
+		output[key] = []string{value}
+	}
+	return output
+}
+
+// MergeHeaders merges headers.
+func MergeHeaders(headers ...http.Header) http.Header {
+	output := make(http.Header)
+	for _, header := range headers {
+		for key, values := range header {
+			output[key] = append(output[key], values...)
+		}
+	}
+	return output
+}
+
+// ExtractHost splits a host / port pair (or just a host) and returns the host.
+// This is largely borrowed from `net/url.splitHostPort` (as of `go1.13.5`).
+func ExtractHost(hostport string) string {
+	host := hostport
+
+	colon := strings.LastIndexByte(host, ':')
+	if colon != -1 {
+		host = host[:colon]
+	}
+
+	// If `hostport` is an IPv6 address of the form `[::1]:12801`.
+	if strings.HasPrefix(host, "[") && strings.HasSuffix(host, "]") {
+		host = host[1 : len(host)-1]
+	}
+
+	return host
 }

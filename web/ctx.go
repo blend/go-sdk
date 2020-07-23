@@ -5,15 +5,20 @@ import (
 	"context"
 	"encoding/json"
 	"encoding/xml"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/reflectutil"
 	"github.com/blend/go-sdk/webutil"
+)
+
+var (
+	_ io.Closer = (*Ctx)(nil)
 )
 
 // NewCtx returns a new ctx.
@@ -21,7 +26,7 @@ func NewCtx(w ResponseWriter, r *http.Request, options ...CtxOption) *Ctx {
 	ctx := Ctx{
 		Response: w,
 		Request:  r,
-		State:    &SyncState{},
+		State:    new(SyncState),
 	}
 	for _, option := range options {
 		option(&ctx)
@@ -46,7 +51,7 @@ type Ctx struct {
 	Response ResponseWriter
 	// Request is the inbound request metadata.
 	Request *http.Request
-	// Body is a cached copy of the body of a request.
+	// Body is a cached copy of the post body of a request.
 	// It is typically set by calling `.PostBody()` on this context.
 	// If you're expecting a large post body, do not use
 	// the `.PostBody()` function, instead read directly from `.Request.Body` with
@@ -64,27 +69,36 @@ type Ctx struct {
 	// RouteParams is a cache of parameters or variables
 	// within the route and their values.
 	RouteParams RouteParameters
+	// Log is the request specific logger.
+	Log logger.Log
 	// Tracer is the app tracer by default if one is set.
 	// It can be overwritten by middleware.
 	Tracer Tracer
-	// RequestStart is the time the request was received.
-	RequestStart time.Time
-	// RequestEnd is the time the request is finished processing.
-	// It is used to compute elapsed time (with RequestStart).
-	RequestEnd time.Time
+	// RequestStarted is the time the request was received.
+	RequestStarted time.Time
+}
+
+// Close closes the context.
+func (rc *Ctx) Close() error {
+	if rc.Response != nil {
+		if err := rc.Response.Close(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // WithContext sets the background context for the request.
-func (rc *Ctx) WithContext(context context.Context) *Ctx {
-	*rc.Request = *rc.Request.WithContext(context)
+func (rc *Ctx) WithContext(ctx context.Context) *Ctx {
+	*rc.Request = *rc.Request.WithContext(ctx)
 	return rc
 }
 
 // Context returns the context.
 func (rc *Ctx) Context() context.Context {
-	ctx := rc.Request.Context()
-	ctx = logger.WithLabels(ctx, rc.loggerLabels())
-	return logger.WithAnnotations(ctx, rc.loggerAnnotations())
+	ctx := logger.WithLabels(rc.Request.Context(), logger.CombineLabels(logger.GetLabels(rc.Request.Context()), rc.Labels()))
+	ctx = logger.WithAnnotations(ctx, logger.CombineAnnotations(logger.GetAnnotations(rc.Request.Context()), rc.Annotations()))
+	return ctx
 }
 
 // WithStateValue sets the state for a key to an object.
@@ -179,7 +193,7 @@ func (rc *Ctx) QueryValue(key string) (value string, err error) {
 
 // FormValue returns a form value.
 func (rc *Ctx) FormValue(key string) (output string, err error) {
-	if err = rc.ensureForm(); err != nil {
+	if err = rc.EnsureForm(); err != nil {
 		return
 	}
 	if value := rc.Form.Get(key); len(value) > 0 {
@@ -261,13 +275,30 @@ func (rc *Ctx) PostBodyAsXML(response interface{}) error {
 	return nil
 }
 
+// PostBodyAsForm reads the incoming post body (closing it) sets a given object from the post form fields.
+// NOTE: the request method *MUST* not be `GET` otherwise the golang internals will skip parsing the body.
+func (rc *Ctx) PostBodyAsForm(response interface{}) error {
+	if err := rc.EnsureForm(); err != nil {
+		return err
+	}
+	return reflectutil.PatchStringsFunc("postForm", func(key string) (string, bool) {
+		if values, ok := rc.Form[key]; ok {
+			if len(values) > 0 {
+				return values[0], true
+			}
+			return "", false
+		}
+		return "", false
+	}, response)
+}
+
 // CookieDomain returns the cookie domain for a request.
 func (rc *Ctx) CookieDomain() string {
 	if rc.App != nil && rc.App.Config.BaseURL != "" {
 		u := webutil.MustParseURL(rc.App.Config.BaseURL)
 		return u.Hostname()
 	}
-	return extractHost(rc.Request.Host)
+	return ExtractHost(rc.Request.Host)
 }
 
 // Cookie returns a named cookie from the request.
@@ -335,17 +366,16 @@ func (rc *Ctx) ExpireCookie(name string, path string) {
 
 // Elapsed is the time delta between start and end.
 func (rc *Ctx) Elapsed() time.Duration {
-	if !rc.RequestEnd.IsZero() {
-		return rc.RequestEnd.Sub(rc.RequestStart)
-	}
-	return time.Now().UTC().Sub(rc.RequestStart)
+	return time.Now().UTC().Sub(rc.RequestStarted)
 }
 
 // --------------------------------------------------------------------------------
 // internal methods
 // --------------------------------------------------------------------------------
 
-func (rc *Ctx) ensureForm() error {
+// EnsureForm parses the post body as an application form.
+// The parsed form will be available on the `.Form` field.
+func (rc *Ctx) EnsureForm() error {
 	if rc.Form != nil {
 		return nil
 	}
@@ -358,7 +388,6 @@ func (rc *Ctx) ensureForm() error {
 	if err != nil {
 		return err
 	}
-
 	r := &http.Request{
 		Method: rc.Request.Method,
 		Header: rc.Request.Header,
@@ -371,47 +400,23 @@ func (rc *Ctx) ensureForm() error {
 	return nil
 }
 
-func (rc *Ctx) onRequestStart() {
-	rc.RequestStart = time.Now().UTC()
-}
-
-func (rc *Ctx) onRequestFinish() {
-	rc.RequestEnd = time.Now().UTC()
-}
-
-func (rc *Ctx) loggerLabels() logger.Labels {
-	fields := make(logger.Labels)
+// Labels returns the labels for logging calls.
+func (rc *Ctx) Labels() map[string]string {
+	fields := make(map[string]string)
 	if rc.Route != nil {
 		fields["web.route"] = rc.Route.String()
 	}
 	if rc.Session != nil {
 		fields["web.user"] = rc.Session.UserID
 	}
-	return logger.CombineLabels(logger.GetLabels(rc.Request.Context()), fields)
+	return fields
 }
 
-func (rc *Ctx) loggerAnnotations() logger.Annotations {
-	fields := make(logger.Annotations)
+// Annotations returns the annotations for logging calls.
+func (rc *Ctx) Annotations() map[string]interface{} {
+	fields := make(map[string]interface{})
 	if len(rc.RouteParams) > 0 {
 		fields["web.route_parameters"] = rc.RouteParams
 	}
-	return logger.CombineAnnotations(logger.GetAnnotations(rc.Request.Context()), fields)
-}
-
-// extractHost splits a host / port pair (or just a host) and returns the host.
-// This is large borrowed from `net/url.splitHostPort` (as of `go1.13.5`).
-func extractHost(hostport string) string {
-	host := hostport
-
-	colon := strings.LastIndexByte(host, ':')
-	if colon != -1 {
-		host = host[:colon]
-	}
-
-	// If `hostport` is an IPv6 address of the form `[::1]:12801`.
-	if strings.HasPrefix(host, "[") && strings.HasSuffix(host, "]") {
-		host = host[1 : len(host)-1]
-	}
-
-	return host
+	return fields
 }

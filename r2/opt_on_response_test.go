@@ -11,7 +11,7 @@ import (
 func TestOptOnResponse(t *testing.T) {
 	assert := assert.New(t)
 
-	r := New("http://foo.com",
+	r := New(TestURL,
 		OptOnResponse(func(_ *http.Request, _ *http.Response, _ time.Time, _ error) error { return nil }),
 		OptOnResponse(func(_ *http.Request, _ *http.Response, _ time.Time, _ error) error { return nil }),
 	)

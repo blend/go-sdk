@@ -122,7 +122,7 @@ this is a line that ends in a tab	`))
 	assert.Equal("10", pieces[9])
 
 	lineBuffer.Reset()
-	pieces, cursor, readErr = dfr.readTabLine(fileBuffer, cursor, readBuffer, lineBuffer)
+	pieces, _, readErr = dfr.readTabLine(fileBuffer, cursor, readBuffer, lineBuffer)
 	assert.NotNil(readErr)
 	assert.Equal(io.EOF, readErr)
 	assert.Len(pieces, 1)
@@ -179,6 +179,7 @@ func TestDataFileReaderAction(t *testing.T) {
 
 	var data []Data
 	err = conn.Query("Select * from test_table_one ORDER BY col_1 ASC").OutMany(&data)
+	a.Nil(err)
 	for i, d := range data {
 		a.Equal(fmt.Sprintf("data_%d_1", i+1), d.Col1)
 		a.Equal(fmt.Sprintf("data_%d_2", i+1), d.Col2)

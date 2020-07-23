@@ -2,6 +2,7 @@ package logger
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"time"
 )
@@ -62,10 +63,10 @@ func (e MessageEvent) GetFlag() string { return e.Flag }
 
 // WriteText implements TextWritable.
 func (e MessageEvent) WriteText(formatter TextFormatter, output io.Writer) {
-	io.WriteString(output, e.Text)
+	fmt.Fprint(output, e.Text)
 	if e.Elapsed > 0 {
-		io.WriteString(output, Space)
-		io.WriteString(output, "("+e.Elapsed.String()+")")
+		fmt.Fprint(output, Space)
+		fmt.Fprint(output, "("+e.Elapsed.String()+")")
 	}
 }
 

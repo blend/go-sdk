@@ -1,10 +1,7 @@
 package r2
 
 import (
-	"fmt"
 	"net/http"
-	"net/url"
-	"strings"
 
 	"github.com/blend/go-sdk/ex"
 )
@@ -20,26 +17,16 @@ func OptMaxRedirects(maxRedirects int) Option {
 		}
 		r.Client.CheckRedirect = func(r *http.Request, via []*http.Request) error {
 			if len(via) >= maxRedirects {
+				// NOTE: if we return *just* http.ErrUseLastResponse here
+				// http.Client will short circuit, treating the returned
+				// error as a sentinel value and return the last http response with a nil error.
+				// We have an explicit function to test for the "exception" form of the error
+				// `ErrIsUseLastResponse` that can be used to assert if we returned
+				// the error here.
 				return ex.New(http.ErrUseLastResponse)
 			}
 			return nil
 		}
 		return nil
 	}
-}
-
-// ErrIsTooManyRedirects returns if the error is too many redirects.
-func ErrIsTooManyRedirects(err error) bool {
-	if typed, ok := err.(*url.Error); ok {
-		return ex.Is(typed.Err, http.ErrUseLastResponse)
-	}
-	return false
-}
-
-func urlStrings(via []*http.Request) []string {
-	var output []string
-	for _, req := range via {
-		output = append(output, fmt.Sprintf("%s %v", strings.ToUpper(req.Method), req.URL.String()))
-	}
-	return output
 }

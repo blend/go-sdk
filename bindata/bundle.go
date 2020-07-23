@@ -177,10 +177,6 @@ func (b *Bundle) anyError(errs ...error) error {
 	return nil
 }
 
-func (b *Bundle) write(output io.Writer, text string) error {
-	return b.ignoreCount(io.WriteString(output, text))
-}
-
 func (b *Bundle) writeLines(output io.Writer, lines ...string) error {
 	var err error
 	for _, line := range lines {

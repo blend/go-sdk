@@ -129,3 +129,43 @@ func TestIntNegative(t *testing.T) {
 	assert.NotNil(ErrValue(verr))
 	assert.Equal(ErrIntNegative, ErrCause(verr))
 }
+
+func TestIntZero(t *testing.T) {
+	assert := assert.New(t)
+
+	var verr error
+	val := 0
+	verr = Int(&val).Zero()()
+	assert.Nil(verr)
+
+	verr = Int(nil).Zero()()
+	assert.NotNil(verr)
+	assert.Nil(ErrValue(verr))
+	assert.Equal(ErrIntZero, ErrCause(verr))
+
+	val = 5
+	verr = Int(&val).Zero()()
+	assert.NotNil(verr)
+	assert.NotNil(ErrValue(verr))
+	assert.Equal(ErrIntZero, ErrCause(verr))
+}
+
+func TestIntNotZero(t *testing.T) {
+	assert := assert.New(t)
+
+	var verr error
+	val := 5
+	verr = Int(&val).NotZero()()
+	assert.Nil(verr)
+
+	verr = Int(nil).NotZero()()
+	assert.NotNil(verr)
+	assert.Nil(ErrValue(verr))
+	assert.Equal(ErrIntNotZero, ErrCause(verr))
+
+	val = 0
+	verr = Int(&val).NotZero()()
+	assert.NotNil(verr)
+	assert.NotNil(ErrValue(verr))
+	assert.Equal(ErrIntNotZero, ErrCause(verr))
+}

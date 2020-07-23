@@ -8,6 +8,8 @@ const (
 	ErrIntMax      ex.Class = "int should be below a maximum value"
 	ErrIntPositive ex.Class = "int should be positive"
 	ErrIntNegative ex.Class = "int should be negative"
+	ErrIntZero     ex.Class = "int should be zero"
+	ErrIntNotZero  ex.Class = "int should not be zero"
 )
 
 // Int returns validators for ints.
@@ -36,7 +38,7 @@ func (i IntValidators) Min(min int) Validator {
 	}
 }
 
-// Max returns a validator that a int is below a max value inclusive.
+// Max returns a validator that an int is below a max value inclusive.
 // Max will pass for a value 10 if the max is set to 10, that is no error
 // would be returned.
 func (i IntValidators) Max(max int) Validator {
@@ -94,6 +96,34 @@ func (i IntValidators) Negative() Validator {
 		}
 		if *i.Value > 0 {
 			return Error(ErrIntNegative, *i.Value)
+		}
+		return nil
+	}
+}
+
+// Zero returns a validator that an int is zero.
+func (i IntValidators) Zero() Validator {
+	return func() error {
+		if i.Value == nil {
+			// an unset value cannot be zero
+			return Error(ErrIntZero, nil)
+		}
+		if *i.Value != 0 {
+			return Error(ErrIntZero, *i.Value)
+		}
+		return nil
+	}
+}
+
+// NotZero returns a validator that an int is not zero.
+func (i IntValidators) NotZero() Validator {
+	return func() error {
+		if i.Value == nil {
+			// an unset value cannot be not zero
+			return Error(ErrIntNotZero, nil)
+		}
+		if *i.Value == 0 {
+			return Error(ErrIntNotZero, *i.Value)
 		}
 		return nil
 	}

@@ -2,25 +2,19 @@ package web
 
 import "sync"
 
-// Any is an alias to the empty interface.
-type Any = interface{}
-
-// Values is an alias to map[string]interface{}
-type Values = map[string]interface{}
-
-// State is a provider for a state bag
+// State is a provider for a state bag.
 type State interface {
 	Keys() []string
-	Get(key string) Any
-	Set(key string, value Any)
+	Get(key string) interface{}
+	Set(key string, value interface{})
 	Remove(key string)
 	Copy() State
 }
 
 // SyncState is the collection of state objects on a context.
 type SyncState struct {
-	sync.Mutex
-	Values map[string]Any
+	sync.RWMutex
+	Values map[string]interface{}
 }
 
 // Keys returns
@@ -41,9 +35,9 @@ func (s *SyncState) Keys() (output []string) {
 }
 
 // Get gets a value.
-func (s *SyncState) Get(key string) Any {
-	s.Lock()
-	defer s.Unlock()
+func (s *SyncState) Get(key string) interface{} {
+	s.RLock()
+	defer s.RUnlock()
 	if s.Values == nil {
 		return nil
 	}
@@ -51,14 +45,13 @@ func (s *SyncState) Get(key string) Any {
 }
 
 // Set sets a value.
-func (s *SyncState) Set(key string, value Any) {
+func (s *SyncState) Set(key string, value interface{}) {
 	s.Lock()
 	defer s.Unlock()
 	if s.Values == nil {
-		s.Values = make(map[string]Any)
+		s.Values = make(map[string]interface{})
 	}
 	s.Values[key] = value
-	return
 }
 
 // Remove removes a key.
@@ -69,13 +62,12 @@ func (s *SyncState) Remove(key string) {
 		return
 	}
 	delete(s.Values, key)
-	return
 }
 
 // Copy creates a new copy of the vars.
 func (s *SyncState) Copy() State {
-	s.Lock()
-	defer s.Unlock()
+	s.RLock()
+	defer s.RUnlock()
 	return &SyncState{
 		Values: s.Values,
 	}

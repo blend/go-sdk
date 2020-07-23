@@ -11,7 +11,7 @@ func TestProfanityRulesFromPath(t *testing.T) {
 
 	profanity := &Profanity{}
 
-	rules, err := profanity.RulesFromPath("../" + DefaultRulesFile)
+	rules, err := profanity.RulesFromPath("testdata/rules.yml")
 	assert.Nil(err)
 	assert.NotEmpty(rules)
 }
@@ -21,11 +21,11 @@ func TestProfanityReadRules(t *testing.T) {
 
 	profanity := &Profanity{
 		Config: Config{
-			RulesFile: DefaultRulesFile,
+			RulesFile: "rules.yml",
 		},
 	}
 
-	rules, err := profanity.ReadRules("../")
+	rules, err := profanity.ReadRules("testdata/")
 	assert.Nil(err)
 	assert.NotEmpty(rules)
 }

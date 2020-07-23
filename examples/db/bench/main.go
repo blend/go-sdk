@@ -108,6 +108,6 @@ func main() {
 	}
 	wg.Wait()
 
-	maybeFatal(log.DrainContext(context.TODO()))
+	log.DrainContext(context.TODO())
 	log.Infof("OK")
 }

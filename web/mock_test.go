@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/webutil"
 )
 
 func TestMock(t *testing.T) {
@@ -14,7 +15,7 @@ func TestMock(t *testing.T) {
 	app := MustNew()
 	app.GET("/", func(_ *Ctx) Result { return NoContent })
 
-	res, err := Mock(app, &http.Request{Method: "GET", URL: &url.URL{Scheme: SchemeHTTP, Path: "/"}}).Discard()
+	res, err := Mock(app, &http.Request{Method: "GET", URL: &url.URL{Scheme: webutil.SchemeHTTP, Path: "/"}}).Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusNoContent, res.StatusCode)
 

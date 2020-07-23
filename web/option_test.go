@@ -13,9 +13,17 @@ import (
 func TestOptConfig(t *testing.T) {
 	assert := assert.New(t)
 
+	cfg := Config{
+		DefaultHeaders: map[string]string{"X-Debug": "debug-value"},
+		CookieName:     "FOOBAR",
+	}
+
 	var app App
-	assert.Nil(OptConfig(Config{CookieName: "FOOBAR"})(&app))
+	assert.Nil(OptConfig(cfg)(&app))
 	assert.Equal("FOOBAR", app.Auth.CookieDefaults.Name)
+	assert.NotEmpty(app.BaseHeaders)
+	assert.Equal([]string{"debug-value"}, app.BaseHeaders["X-Debug"])
+	assert.Equal([]string{PackageName}, app.BaseHeaders[webutil.HeaderServer])
 }
 
 func TestOptBindAddr(t *testing.T) {
@@ -43,7 +51,9 @@ func TestOptLog(t *testing.T) {
 	assert.NotNil(app.Log)
 }
 
-func TestOptHTTPServerOptions(t *testing.T) {
+func TestOptServerOptions(t *testing.T) {
+	t.Skip()
+
 	assert := assert.New(t)
 
 	baseline, baselineErr := New()
@@ -53,16 +63,16 @@ func TestOptHTTPServerOptions(t *testing.T) {
 	assert.Nil(baseline.Server.ErrorLog)
 
 	app, err := New(
-		OptHTTPServerOptions(
+		OptServerOptions(
 			webutil.OptHTTPServerErrorLog(log.New(ioutil.Discard, "", log.LstdFlags)),
 		),
 	)
 	assert.Nil(err)
-	assert.NotEmpty(app.ServerOptions)
+	assert.NotNil(app.Server.ErrorLog)
 
-	go app.Start()
+	go func() { _ = app.Start() }()
 	<-app.NotifyStarted()
-	defer app.Stop()
+	defer func() { _ = app.Stop() }()
 
 	assert.NotNil(app.Server.ErrorLog)
 }

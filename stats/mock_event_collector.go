@@ -1,7 +1,5 @@
 package stats
 
-import "fmt"
-
 // Assert that the mock collector implements Collector.
 var (
 	_ EventCollector = (*MockEventCollector)(nil)
@@ -21,8 +19,13 @@ type MockEventCollector struct {
 }
 
 // AddDefaultTag adds a default tag.
-func (mec *MockEventCollector) AddDefaultTag(key, value string) {
-	mec.defaultTags = append(mec.defaultTags, fmt.Sprintf("%s:%s", key, value))
+func (mec *MockEventCollector) AddDefaultTag(name, value string) {
+	mec.defaultTags = append(mec.defaultTags, Tag(name, value))
+}
+
+// AddDefaultTags adds default tags.
+func (mec *MockEventCollector) AddDefaultTags(tags ...string) {
+	mec.defaultTags = append(mec.defaultTags, tags...)
 }
 
 // DefaultTags returns the default tags set.

@@ -33,7 +33,7 @@ type resolvedConfig struct {
 
 // Resolve implements configutil.BareResolver.
 func (r *resolvedConfig) Resolve(ctx context.Context) error {
-	r.Environment = GetEnvVars(ctx).String("ENVIRONMENT")
+	r.Environment = env.GetVars(ctx).String("ENVIRONMENT")
 	return nil
 }
 

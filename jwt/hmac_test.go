@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/blend/go-sdk/jwt"
-	"github.com/blend/go-sdk/jwt/test"
 )
 
 var hmacTestData = []struct {
@@ -47,7 +46,7 @@ var hmacTestData = []struct {
 }
 
 var (
-	hmacTestKey, _ = base64.StdEncoding.DecodeString(test.HMACTestKey)
+	hmacTestKey, _ = base64.StdEncoding.DecodeString(HMACTestKey)
 )
 
 func TestHMACVerify(t *testing.T) {

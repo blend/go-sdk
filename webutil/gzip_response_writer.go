@@ -6,14 +6,14 @@ import (
 )
 
 var (
-	_ ResponseWrapper     = (*GZipResponseWriter)(nil)
+	_ ResponseWriter      = (*GZipResponseWriter)(nil)
 	_ http.ResponseWriter = (*GZipResponseWriter)(nil)
 	_ http.Flusher        = (*GZipResponseWriter)(nil)
 )
 
 // NewGZipResponseWriter returns a new gzipped response writer.
 func NewGZipResponseWriter(w http.ResponseWriter) *GZipResponseWriter {
-	if typed, ok := w.(ResponseWrapper); ok {
+	if typed, ok := w.(ResponseWriter); ok {
 		return &GZipResponseWriter{
 			innerResponse: typed.InnerResponse(),
 			gzipWriter:    gzip.NewWriter(typed.InnerResponse()),

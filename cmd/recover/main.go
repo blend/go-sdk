@@ -9,15 +9,6 @@ import (
 	"time"
 )
 
-// linker metadata block
-// this block must be present
-// it is used by goreleaser
-var (
-	version = "dev"
-	commit  = "none"
-	date    = "unknown"
-)
-
 var verbose = flag.Bool("verbose", false, "Print verbose output")
 var delay = flag.Int("delay", 0, "A time in milliseconds to wait before starting the sub process")
 var wait = flag.Int("wait", 0, "A time in milliseconds to wait between restarting the sub process on exit")
@@ -108,7 +99,7 @@ func runLoop(quit chan os.Signal, pwd string, subCommand ...string) error {
 			case s := <-quit:
 				verbosef("received SIGINT (%s) while sub process is running, killing sub process", s)
 				didQuit = true
-				sub.Process.Kill()
+				_ = sub.Process.Kill()
 				return
 			case <-abort:
 				close(aborted)

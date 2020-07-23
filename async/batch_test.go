@@ -28,8 +28,8 @@ func TestBatch(t *testing.T) {
 
 	errors := make(chan error, workItems)
 	NewBatch(
-		action,
 		items,
+		action,
 		OptBatchErrors(errors),
 		OptBatchParallelism(4),
 	).Process(context.Background())
@@ -57,7 +57,7 @@ func TestBatchPanic(t *testing.T) {
 	}
 
 	errors := make(chan error, workItems)
-	NewBatch(action, items, OptBatchErrors(errors)).Process(context.Background())
+	NewBatch(items, action, OptBatchErrors(errors)).Process(context.Background())
 
 	assert.Equal(workItems, processed)
 	assert.Equal(1, len(errors))

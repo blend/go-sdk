@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/blend/go-sdk/configutil"
+	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -38,12 +38,16 @@ type Config struct {
 	IdleTimeout         time.Duration     `json:"idleTimeout,omitempty" yaml:"idleTimeout,omitempty" env:"IDLE_TIMEOUT"`
 	ShutdownGracePeriod time.Duration     `json:"shutdownGracePeriod" yaml:"shutdownGracePeriod" env:"SHUTDOWN_GRACE_PERIOD"`
 
+	KeepAlive        *bool         `json:"keepAlive" yaml:"keepAlive" env:"KEEP_ALIVE"`
+	KeepAlivePeriod  time.Duration `json:"keepAlivePeriod,omitempty" yaml:"keepAlivePeriod,omitempty" env:"KEEP_ALIVE_PERIOD"`
+	UseProxyProtocol bool          `json:"useProxyProtocol" yaml:"useProxyProtocol"`
+
 	Views ViewCacheConfig `json:"views,omitempty" yaml:"views,omitempty"`
 }
 
 // Resolve resolves the config from other sources.
 func (c *Config) Resolve(ctx context.Context) error {
-	return configutil.GetEnvVars(ctx).ReadInto(c)
+	return env.GetVars(ctx).ReadInto(c)
 }
 
 // BindAddrOrDefault returns the bind address or a default.
@@ -84,7 +88,7 @@ func (c Config) BaseURLIsSecureScheme() bool {
 	if c.BaseURL == "" {
 		return false
 	}
-	return strings.HasPrefix(strings.ToLower(c.BaseURL), SchemeHTTPS) || strings.HasPrefix(strings.ToLower(c.BaseURL), SchemeSPDY)
+	return strings.HasPrefix(strings.ToLower(c.BaseURL), webutil.SchemeHTTPS) || strings.HasPrefix(strings.ToLower(c.BaseURL), webutil.SchemeSPDY)
 }
 
 // SessionTimeoutOrDefault returns a property or a default.
@@ -125,7 +129,7 @@ func (c Config) CookieSecureOrDefault() bool {
 		return *c.CookieSecure
 	}
 	if baseURL := c.BaseURLOrDefault(); baseURL != "" {
-		return strings.HasPrefix(baseURL, SchemeHTTPS) || strings.HasPrefix(baseURL, SchemeSPDY)
+		return strings.HasPrefix(baseURL, webutil.SchemeHTTPS) || strings.HasPrefix(baseURL, webutil.SchemeSPDY)
 	}
 	return DefaultCookieSecure
 }
@@ -192,4 +196,20 @@ func (c Config) ShutdownGracePeriodOrDefault() time.Duration {
 		return c.ShutdownGracePeriod
 	}
 	return DefaultShutdownGracePeriod
+}
+
+// KeepAliveOrDefault returns if we should keep TCP connections open.
+func (c Config) KeepAliveOrDefault() bool {
+	if c.KeepAlive != nil {
+		return *c.KeepAlive
+	}
+	return DefaultKeepAlive
+}
+
+// KeepAlivePeriodOrDefault returns the TCP keep alive period or a default.
+func (c Config) KeepAlivePeriodOrDefault() time.Duration {
+	if c.KeepAlivePeriod > 0 {
+		return c.KeepAlivePeriod
+	}
+	return DefaultKeepAlivePeriod
 }

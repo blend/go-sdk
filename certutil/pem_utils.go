@@ -34,10 +34,10 @@ func ParseCertPEM(certPem []byte) (output []*x509.Certificate, err error) {
 			continue
 		}
 
-		cert, err := x509.ParseCertificate(block.Bytes)
-		if err != nil {
-			err = ex.New(err)
-			continue
+		cert, certErr := x509.ParseCertificate(block.Bytes)
+		if certErr != nil {
+			err = ex.New(certErr)
+			return
 		}
 		output = append(output, cert)
 	}

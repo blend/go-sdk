@@ -100,7 +100,7 @@ func (q *Queue) Start() error {
 		worker.Finalizer = q.ReturnWorker
 
 		// start the worker on its own goroutine
-		go worker.Start()
+		go func() { _ = worker.Start() }()
 		<-worker.NotifyStarted()
 		q.Workers <- worker
 	}
@@ -141,7 +141,7 @@ func (q *Queue) Stop() error {
 	q.WaitStopped()
 	for x := 0; x < q.Parallelism; x++ {
 		worker := <-q.Workers
-		worker.Stop()
+		_ = worker.Stop()
 		q.Workers <- worker
 	}
 	return nil

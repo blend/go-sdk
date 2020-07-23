@@ -5,42 +5,65 @@ import (
 	"regexp"
 )
 
-// Logger flags
 const (
-	HTTPRequest  = "http.request"
-	HTTPResponse = "http.response"
+	// TestURL can be used in tests for the URL passed to requests.
+	//
+	// The URL itself sets `https` as the scheme, `test.invalid` as the host,
+	// `/test` as the path, and `query=value` as the querystring.
+	//
+	// Note: .invalid is a special top level domain that will _never_ be assigned
+	// to a real registrant, it is always reserved for testing.
+	// See: https://www.iana.org/domains/reserved
+	TestURL = "https://test.invalid/test?query=value"
 )
 
-// canonical header names.
+// Logger flags
+const (
+	FlagHTTPRequest = "http.request"
+)
+
+// HTTP Method constants (also referred to as 'verbs')
+const (
+	MethodConnect = "CONNECT"
+	MethodGet     = "GET"
+	MethodDelete  = "DELETE"
+	MethodHead    = "HEAD"
+	MethodPatch   = "PATCH"
+	MethodPost    = "POST"
+	MethodPut     = "PUT"
+	MethodOptions = "OPTIONS"
+)
+
+// Header names in canonical form.
 var (
-	// RFC7239 defines a new "Forwarded: " header designed to replace the
-	// existing use of X-Forwarded-* headers.
-	// e.g. Forwarded: for=192.0.2.60;proto=https;by=203.0.113.43
-	HeaderForwarded               = http.CanonicalHeaderKey("Forwarded")
-	HeaderXForwardedFor           = http.CanonicalHeaderKey("X-Forwarded-For")
-	HeaderXForwardedPort          = http.CanonicalHeaderKey("X-Forwarded-Port")
-	HeaderXForwardedHost          = http.CanonicalHeaderKey("X-Forwarded-Host")
-	HeaderXForwardedProto         = http.CanonicalHeaderKey("X-Forwarded-Proto")
-	HeaderXForwardedScheme        = http.CanonicalHeaderKey("X-Forwarded-Scheme")
-	HeaderXRealIP                 = http.CanonicalHeaderKey("X-Real-IP")
+	HeaderAccept                  = http.CanonicalHeaderKey("Accept")
 	HeaderAcceptEncoding          = http.CanonicalHeaderKey("Accept-Encoding")
-	HeaderSetCookie               = http.CanonicalHeaderKey("Set-Cookie")
-	HeaderCookie                  = http.CanonicalHeaderKey("Cookie")
-	HeaderDate                    = http.CanonicalHeaderKey("Date")
-	HeaderETag                    = http.CanonicalHeaderKey("etag")
+	HeaderAllow                   = http.CanonicalHeaderKey("Allow")
+	HeaderAuthorization           = http.CanonicalHeaderKey("Authorization")
 	HeaderCacheControl            = http.CanonicalHeaderKey("Cache-Control")
 	HeaderConnection              = http.CanonicalHeaderKey("Connection")
 	HeaderContentEncoding         = http.CanonicalHeaderKey("Content-Encoding")
 	HeaderContentLength           = http.CanonicalHeaderKey("Content-Length")
 	HeaderContentType             = http.CanonicalHeaderKey("Content-Type")
-	HeaderUserAgent               = http.CanonicalHeaderKey("User-Agent")
+	HeaderCookie                  = http.CanonicalHeaderKey("Cookie")
+	HeaderDate                    = http.CanonicalHeaderKey("Date")
+	HeaderETag                    = http.CanonicalHeaderKey("etag")
+	HeaderForwarded               = http.CanonicalHeaderKey("Forwarded")
 	HeaderServer                  = http.CanonicalHeaderKey("Server")
-	HeaderVary                    = http.CanonicalHeaderKey("Vary")
-	HeaderXServedBy               = http.CanonicalHeaderKey("X-Served-By")
-	HeaderXFrameOptions           = http.CanonicalHeaderKey("X-Frame-Options")
-	HeaderXXSSProtection          = http.CanonicalHeaderKey("X-Xss-Protection")
-	HeaderXContentTypeOptions     = http.CanonicalHeaderKey("X-Content-Type-Options")
+	HeaderSetCookie               = http.CanonicalHeaderKey("Set-Cookie")
 	HeaderStrictTransportSecurity = http.CanonicalHeaderKey("Strict-Transport-Security")
+	HeaderUserAgent               = http.CanonicalHeaderKey("User-Agent")
+	HeaderVary                    = http.CanonicalHeaderKey("Vary")
+	HeaderXContentTypeOptions     = http.CanonicalHeaderKey("X-Content-Type-Options")
+	HeaderXForwardedFor           = http.CanonicalHeaderKey("X-Forwarded-For")
+	HeaderXForwardedHost          = http.CanonicalHeaderKey("X-Forwarded-Host")
+	HeaderXForwardedPort          = http.CanonicalHeaderKey("X-Forwarded-Port")
+	HeaderXForwardedProto         = http.CanonicalHeaderKey("X-Forwarded-Proto")
+	HeaderXForwardedScheme        = http.CanonicalHeaderKey("X-Forwarded-Scheme")
+	HeaderXFrameOptions           = http.CanonicalHeaderKey("X-Frame-Options")
+	HeaderXRealIP                 = http.CanonicalHeaderKey("X-Real-IP")
+	HeaderXServedBy               = http.CanonicalHeaderKey("X-Served-By")
+	HeaderXXSSProtection          = http.CanonicalHeaderKey("X-Xss-Protection")
 )
 
 /*
@@ -58,7 +81,8 @@ const (
 var (
 	// Allows for a sub-match of the first value after 'for=' to the next
 	// comma, semi-colon or space. The match is case-insensitive.
-	forRegex = regexp.MustCompile(`(?i)(?:for=)([^(;|,| )]+)`)
+	// forRegex = regexp.MustCompile(`(?i)(?:for=)([^(;|,| )]+)`)
+
 	// Allows for a sub-match for the first instance of scheme (http|https)
 	// prefixed by 'proto='. The match is case-insensitive.
 	protoRegex = regexp.MustCompile(`(?i)(?:proto=)(https|http)`)
@@ -71,10 +95,25 @@ const (
 	SchemeSPDY  = "spdy"
 )
 
+// HSTS Cookie Fields
+const (
+	HSTSMaxAgeFormat      = "max-age=%d"
+	HSTSIncludeSubDomains = "includeSubDomains"
+	HSTSPreload           = "preload"
+)
+
+// Connection header values.
+const (
+	// ConnectionKeepAlive is a value for the "Connection" header and
+	// indicates the server should keep the tcp connection open
+	// after the last byte of the response is sent.
+	ConnectionKeepAlive = "keep-alive"
+)
+
 const (
 	// ContentTypeApplicationJSON is a content type for JSON responses.
 	// We specify chartset=utf-8 so that clients know to use the UTF-8 string encoding.
-	ContentTypeApplicationJSON = "application/json; charset=UTF-8"
+	ContentTypeApplicationJSON = "application/json; charset=utf-8"
 
 	// ContentTypeApplicationXML is a content type header value.
 	ContentTypeApplicationXML = "application/xml"
@@ -97,13 +136,9 @@ const (
 	// We specify chartset=utf-8 so that clients know to use the UTF-8 string encoding.
 	ContentTypeText = "text/plain; charset=utf-8"
 
-	// ConnectionKeepAlive is a value for the "Connection" header and
-	// indicates the server should keep the tcp connection open
-	// after the last byte of the response is sent.
-	ConnectionKeepAlive = "keep-alive"
-
 	// ContentEncodingIdentity is the identity (uncompressed) content encoding.
 	ContentEncodingIdentity = "identity"
+
 	// ContentEncodingGZIP is the gzip (compressed) content encoding.
 	ContentEncodingGZIP = "gzip"
 )

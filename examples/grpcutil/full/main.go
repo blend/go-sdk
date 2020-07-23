@@ -37,9 +37,9 @@ type config struct {
 }
 
 func (c *config) Resolve(ctx context.Context) error {
-	return configutil.ReturnFirst(
-		configutil.SetString(&c.BindAddr, configutil.Env(ctx, "BIND_ADDR"), configutil.String(c.BindAddr), configutil.String(":9000")),
-		configutil.SetBool(&c.UseProxyProtocol, configutil.Env(ctx, "PROXY_PROTOCOL"), configutil.Bool(c.UseProxyProtocol), configutil.Bool(ref.Bool(false))),
+	return configutil.Resolve(ctx,
+		configutil.SetString(&c.BindAddr, configutil.Env("BIND_ADDR"), configutil.String(c.BindAddr), configutil.String(":9000")),
+		configutil.SetBool(&c.UseProxyProtocol, configutil.Env("PROXY_PROTOCOL"), configutil.Bool(c.UseProxyProtocol), configutil.Bool(ref.Bool(false))),
 	)
 }
 
@@ -51,7 +51,7 @@ func main() {
 	log := logger.MustNew(logger.OptConfig(cfg.Logger))
 
 	log.Infof("using bind address: %s", cfg.BindAddr)
-	listener, err := grpcutil.Listener(cfg.BindAddr)
+	listener, err := grpcutil.CreateListener(cfg.BindAddr)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
@@ -60,13 +60,13 @@ func main() {
 	// grpc interceptors
 	interceptors := []grpc.UnaryServerInterceptor{
 		customUnary,
-		grpcutil.RecoverUnary(),
-		grpcutil.LoggedUnary(log),
+		grpcutil.RecoverServerUnary(),
+		grpcutil.LoggedServerUnary(log),
 	}
 
 	// start the grpc server
 	opts := []grpc.ServerOption{
-		grpc.UnaryInterceptor(grpcutil.UnaryChain(interceptors...)),
+		grpc.UnaryInterceptor(grpcutil.UnaryServerChain(interceptors...)),
 	}
 
 	if cfg.UseProxyProtocol != nil && *cfg.UseProxyProtocol {

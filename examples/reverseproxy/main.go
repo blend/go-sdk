@@ -22,7 +22,7 @@ func main() {
 	}
 
 	upstream := reverseproxy.NewUpstream(webutil.MustParseURL("https://www.google.com"))
-	proxy := reverseproxy.NewProxy(
+	proxy, _ := reverseproxy.NewProxy(
 		reverseproxy.OptProxyUpstream(upstream),
 		reverseproxy.OptProxySetHeaderValue(webutil.HeaderXForwardedProto, webutil.SchemeHTTPS),
 		reverseproxy.OptProxySetHeaderValue(webutil.HeaderXForwardedHost, "www.google.com"),

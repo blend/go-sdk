@@ -26,7 +26,7 @@ func NewClientTLSConfig(clientCert KeyPair, certificateAuthorities []KeyPair) (*
 	if err != nil {
 		return nil, ex.New(err)
 	}
-	config := &tls.Config{}
+	config := new(tls.Config)
 
 	rootCAPool, err := x509.SystemCertPool()
 	if err != nil {

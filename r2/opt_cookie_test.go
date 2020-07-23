@@ -15,8 +15,8 @@ func TestOptCookie(t *testing.T) {
 	req := New("https://foo.bar.local")
 	assert.Nil(opt(req))
 
-	assert.NotNil(req.Header)
-	assert.NotEmpty(req.Header.Get("Cookie"))
+	assert.NotNil(req.Request.Header)
+	assert.NotEmpty(req.Request.Header.Get("Cookie"))
 }
 
 func TestOptCookieValue(t *testing.T) {
@@ -27,6 +27,6 @@ func TestOptCookieValue(t *testing.T) {
 	req := New("https://foo.bar.local")
 	assert.Nil(opt(req))
 
-	assert.NotNil(req.Header)
-	assert.NotEmpty(req.Header.Get("Cookie"))
+	assert.NotNil(req.Request.Header)
+	assert.NotEmpty(req.Request.Header.Get("Cookie"))
 }

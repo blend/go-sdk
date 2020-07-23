@@ -42,6 +42,9 @@ const (
 	// Postgres Docs: "I want my data encrypted, and I accept the overhead. I want to be sure that I connect to a server I trust, and that it's the one I specify."
 	SSLModeVerifyFull = "verify-full"
 
+	// DefaultConnectTimeout is the default connect timeout.
+	DefaultConnectTimeout = 5
+
 	// DefaultPlanCacheDisabled is the default if we should enable the statement cache.
 	DefaultPlanCacheDisabled = false
 	// DefaultIdleConnections is the default number of idle connections.

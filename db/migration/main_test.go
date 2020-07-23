@@ -1,6 +1,7 @@
 package migration
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
@@ -48,4 +49,8 @@ func openDefaultDB(conn *db.Connection) error {
 
 func buildTestSchemaName() string {
 	return fmt.Sprintf("test_sch_%s", stringutil.Random(stringutil.LowerLetters, 10))
+}
+
+func todo() context.Context {
+	return context.TODO()
 }

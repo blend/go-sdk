@@ -3,7 +3,6 @@ package sentry
 import (
 	"context"
 
-	"github.com/blend/go-sdk/configutil"
 	"github.com/blend/go-sdk/env"
 )
 
@@ -30,11 +29,11 @@ func (c Config) IsZero() bool {
 
 // Resolve applies configutil resoltion steps.
 func (c *Config) Resolve(ctx context.Context) error {
-	return configutil.GetEnvVars(ctx).ReadInto(c)
+	return env.GetVars(ctx).ReadInto(c)
 }
 
-// ServerNameOrDefault returns the server name or a default.
-func (c Config) ServerNameOrDefault() string {
+// ServiceNameOrDefault returns the server name or a default.
+func (c Config) ServiceNameOrDefault() string {
 	if c.ServerName != "" {
 		return c.ServerName
 	}

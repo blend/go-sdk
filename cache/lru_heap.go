@@ -8,7 +8,7 @@ var (
 
 // NewLRUHeap creates a new, empty, LRU Heap.
 func NewLRUHeap() *LRUHeap {
-	return &LRUHeap{}
+	return new(LRUHeap)
 }
 
 // LRUHeap is a fifo buffer that is backed by a pre-allocated array, instead of allocating
@@ -42,7 +42,6 @@ func (lrh *LRUHeap) Fix(newValue *Value) {
 	if len(lrh.Values) == 0 {
 		return
 	}
-
 	var i int
 	for index, value := range lrh.Values {
 		if value.Key == newValue.Key {
@@ -92,4 +91,9 @@ func (lrh *LRUHeap) Consume(consumer func(value *Value) bool) {
 		}
 		lrh.Pop()
 	}
+}
+
+// Reset removes all elements from the heap, leaving an empty heap.
+func (lrh *LRUHeap) Reset() {
+	lrh.Values = nil
 }

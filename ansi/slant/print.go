@@ -100,25 +100,6 @@ func countTrailingSpace(row []rune) int {
 	return 0
 }
 
-func trimLeft(row []rune, count int) []rune {
-	if count >= len(row) {
-		return nil
-	}
-	if count == 0 {
-		return row
-	}
-	return row[count:]
-}
-
-func trimLeftSpace(row []rune) []rune {
-	for index := 0; index < len(row); index++ {
-		if !unicode.IsSpace(row[index]) {
-			return row[index:]
-		}
-	}
-	return row
-}
-
 func trimRightSpaceMax(row []rune, max int) ([]rune, int) {
 	var count int
 	for index := 0; index < len(row) && count < max; index++ {
@@ -137,26 +118,6 @@ func trimLeftSpaceMax(row []rune, max int) ([]rune, int) {
 		}
 	}
 	return row, max
-}
-
-func trimRightSpace(row []rune) []rune {
-	index := len(row) - 1
-	for ; index > 0; index-- {
-		if !unicode.IsSpace(row[index]) {
-			break
-		}
-	}
-	return row[:(index + 1)]
-}
-
-func trimRight(row []rune, count int) []rune {
-	if count >= len(row) {
-		return nil
-	}
-	if count == 0 {
-		return row
-	}
-	return row[:len(row)-count]
 }
 
 func replaceRunes(row []rune, old, new rune) []rune {
