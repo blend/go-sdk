@@ -1,7 +1,6 @@
 package envoyutil_test
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
@@ -20,68 +19,47 @@ var (
 	_ envoyutil.ExtractFromXFCC = extractFailure
 )
 
-func TestXFCCExtractionErrorMarshal(t *testing.T) {
-	assert := sdkAssert.New(t)
-
-	c := ex.Class("caused by something invalid")
-	err := &envoyutil.XFCCExtractionError{Class: c, XFCC: "a=b", Metadata: map[string]string{"x": "why"}}
-
-	asBytes, marshalErr := json.MarshalIndent(err, "", "  ")
-	assert.Nil(marshalErr)
-	expected := `{
-  "class": "caused by something invalid",
-  "xfcc": "a=b",
-  "metadata": {
-    "x": "why"
-  }
-}`
-	assert.Equal(expected, string(asBytes))
-}
-
-func TestXFCCExtractionErrorError(t *testing.T) {
-	assert := sdkAssert.New(t)
-
-	c := ex.Class("oh a bad thing happened")
-	var err error = &envoyutil.XFCCExtractionError{Class: c}
-	assert.Equal(c, err.Error())
-}
-
 func TestExtractClientIdentity(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	type testCase struct {
 		XFCC           string
 		ClientIdentity string
-		UserError      bool
+		ErrorType      string
 		Class          ex.Class
 		Extract        envoyutil.ExtractFromXFCC
 		Verifiers      []envoyutil.VerifyXFCC
 	}
 	testCases := []testCase{
-		{UserError: true, Class: envoyutil.MissingExtractFunction},
-		{XFCC: "", Class: envoyutil.ErrMissingXFCC, Extract: extractJustURI},
-		{XFCC: `""`, Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
-		{XFCC: "something=bad", Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
-		{XFCC: "By=spiffe://cluster.local/ns/blend/sa/idea;URI=spiffe://cluster.local/ns/light/sa/bulb", ClientIdentity: "spiffe://cluster.local/ns/light/sa/bulb", Extract: extractJustURI},
-		{XFCC: "By=x;URI=y", Class: "extractFailure", Extract: extractFailure},
+		{ErrorType: "XFCCFatalError", Class: envoyutil.MissingExtractFunction},
+		{XFCC: "", ErrorType: "XFCCExtractionError", Class: envoyutil.ErrMissingXFCC, Extract: extractJustURI},
+		{XFCC: `""`, ErrorType: "XFCCExtractionError", Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
+		{XFCC: "something=bad", ErrorType: "XFCCExtractionError", Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
+		{
+			XFCC:           "By=spiffe://cluster.local/ns/blend/sa/idea;URI=spiffe://cluster.local/ns/light/sa/bulb",
+			ClientIdentity: "spiffe://cluster.local/ns/light/sa/bulb",
+			Extract:        extractJustURI,
+		},
+		{XFCC: "By=x;URI=y", ErrorType: "XFCCExtractionError", Class: "extractFailure", Extract: extractFailure},
 		{
 			XFCC:      "By=abc;URI=def",
-			Verifiers: []envoyutil.VerifyXFCC{makeVerifyXFCC("xyz")},
+			ErrorType: "XFCCExtractionError",
 			Class:     `verifyFailure: expected "xyz"`,
 			Extract:   extractJustURI,
+			Verifiers: []envoyutil.VerifyXFCC{makeVerifyXFCC("xyz")},
 		},
 		{
 			XFCC:           "By=abc;URI=def",
-			Verifiers:      []envoyutil.VerifyXFCC{makeVerifyXFCC("abc")},
-			Extract:        extractJustURI,
 			ClientIdentity: "def",
+			Extract:        extractJustURI,
+			Verifiers:      []envoyutil.VerifyXFCC{makeVerifyXFCC("abc")},
 		},
 		{
 			XFCC:      "By=abc;URI=def",
-			Verifiers: []envoyutil.VerifyXFCC{nil},
-			UserError: true,
+			ErrorType: "XFCCFatalError",
+			Class:     envoyutil.VerifierNil,
 			Extract:   extractJustURI,
-			Class:     envoyutil.VerifierNil + `; XFCC: "By=abc;URI=def"`,
+			Verifiers: []envoyutil.VerifyXFCC{nil},
 		},
 	}
 
@@ -95,16 +73,15 @@ func TestExtractClientIdentity(t *testing.T) {
 
 		clientIdentity, err := envoyutil.ExtractClientIdentity(r, tc.Extract, tc.Verifiers...)
 		assert.Equal(tc.ClientIdentity, clientIdentity)
-		if tc.UserError {
-			asEx, ok := err.(*ex.Ex)
-			assert.True(ok)
-			assert.Equal(envoyutil.ErrNilInterface, asEx.Class)
-			assert.Equal(tc.Class, asEx.Message)
-		} else if tc.Class == "" {
-			assert.Nil(err)
-		} else {
+		switch tc.ErrorType {
+		case "XFCCExtractionError":
 			expected := &envoyutil.XFCCExtractionError{Class: tc.Class, XFCC: tc.XFCC}
 			assert.Equal(expected, err)
+		case "XFCCFatalError":
+			expected := &envoyutil.XFCCFatalError{Class: tc.Class, XFCC: tc.XFCC}
+			assert.Equal(expected, err)
+		default:
+			assert.Nil(err)
 		}
 	}
 }

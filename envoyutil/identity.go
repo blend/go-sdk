@@ -7,19 +7,15 @@ import (
 )
 
 const (
-	// ErrNilInterface is the error returned when a user error results in `nil`
-	// being passed as a function interface type.
-	ErrNilInterface = ex.Class("User error: nil interface provided")
 	// ErrMissingXFCC is the error returned when XFCC is missing
 	ErrMissingXFCC = ex.Class("Missing X-Forwarded-Client-Cert header")
 	// ErrInvalidXFCC is the error returned when XFCC is invalid
 	ErrInvalidXFCC = ex.Class("Invalid X-Forwarded-Client-Cert header")
-
 	// MissingExtractFunction is the message used when the "extract client
 	// identity" function is `nil` or not provided.
-	MissingExtractFunction = "Missing client identity extraction function"
+	MissingExtractFunction = ex.Class("Missing client identity extraction function")
 	// VerifierNil is the message prefix used when a provided verifier is `nil`.
-	VerifierNil = "XFCC verifier must not be `nil`"
+	VerifierNil = ex.Class("XFCC verifier must not be `nil`")
 )
 
 // ExtractFromXFCC is a function to extra the client identity from a
@@ -38,7 +34,7 @@ type VerifyXFCC func(xfcc XFCCElement, xfccValue string) (err *XFCCValidationErr
 // identity) as well as to an extractor (for the client identity).
 func ExtractClientIdentity(req *http.Request, efx ExtractFromXFCC, verifiers ...VerifyXFCC) (string, error) {
 	if efx == nil {
-		return "", ex.New(ErrNilInterface, ex.OptMessage(MissingExtractFunction))
+		return "", &XFCCFatalError{Class: MissingExtractFunction}
 	}
 
 	// Early exit if XFCC header is not present.
@@ -57,10 +53,7 @@ func ExtractClientIdentity(req *http.Request, efx ExtractFromXFCC, verifiers ...
 	// Run all verifiers on the parsed `xfcc`.
 	for _, verifier := range verifiers {
 		if verifier == nil {
-			return "", ex.New(
-				ErrNilInterface,
-				ex.OptMessagef("%s; XFCC: %q", VerifierNil, xfccValue),
-			)
+			return "", &XFCCFatalError{Class: VerifierNil, XFCC: xfccValue}
 		}
 
 		err := verifier(xfcc, xfccValue)
