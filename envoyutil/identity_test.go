@@ -93,12 +93,12 @@ func TestExtractClientIdentity(t *testing.T) {
 }
 
 // extractJustURI satisfies `envoyutil.ClientIdentityProvider` and just returns the URI.
-func extractJustURI(xfcc envoyutil.XFCCElement, _ string) (string, *envoyutil.XFCCExtractionError) {
+func extractJustURI(xfcc envoyutil.XFCCElement, _ string) (string, error) {
 	return xfcc.URI, nil
 }
 
 // extractFailure satisfies `envoyutil.ClientIdentityProvider` and fails.
-func extractFailure(xfcc envoyutil.XFCCElement, xfccValue string) (string, *envoyutil.XFCCExtractionError) {
+func extractFailure(xfcc envoyutil.XFCCElement, xfccValue string) (string, error) {
 	return "", &envoyutil.XFCCExtractionError{Class: "extractFailure", XFCC: xfccValue}
 }
 

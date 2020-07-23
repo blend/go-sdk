@@ -21,7 +21,7 @@ const (
 // ClientIdentityProvider is a function to extra the client identity from a
 // parsed XFCC header. For example, client identity could be determined from the
 // SPIFFE URI in the `URI` field in an XFCC element.
-type ClientIdentityProvider func(xfcc XFCCElement, xfccValue string) (clientIdentity string, err *XFCCExtractionError)
+type ClientIdentityProvider func(xfcc XFCCElement, xfccValue string) (clientIdentity string, err error)
 
 // VerifyXFCC is an "extra" verifier for an XFCC, for example if the server
 // identity (from the `By` field in an XFCC element) should be verified in
