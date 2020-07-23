@@ -93,22 +93,22 @@ func TestExtractAndVerifyClientIdentity(t *testing.T) {
 }
 
 // extractJustURI satisfies `envoyutil.ClientIdentityProvider` and just returns the URI.
-func extractJustURI(xfcc envoyutil.XFCCElement, _ string) (string, error) {
+func extractJustURI(xfcc envoyutil.XFCCElement) (string, error) {
 	return xfcc.URI, nil
 }
 
 // extractFailure satisfies `envoyutil.ClientIdentityProvider` and fails.
-func extractFailure(xfcc envoyutil.XFCCElement, xfccValue string) (string, error) {
-	return "", &envoyutil.XFCCExtractionError{Class: "extractFailure", XFCC: xfccValue}
+func extractFailure(xfcc envoyutil.XFCCElement) (string, error) {
+	return "", &envoyutil.XFCCExtractionError{Class: "extractFailure", XFCC: xfcc.String()}
 }
 
 func makeVerifyXFCC(expectedBy string) envoyutil.VerifyXFCC {
-	return func(xfcc envoyutil.XFCCElement, xfccValue string) *envoyutil.XFCCValidationError {
+	return func(xfcc envoyutil.XFCCElement) *envoyutil.XFCCValidationError {
 		if xfcc.By == expectedBy {
 			return nil
 		}
 
 		c := ex.Class(fmt.Sprintf("verifyFailure: expected %q", expectedBy))
-		return &envoyutil.XFCCValidationError{Class: c, XFCC: xfccValue}
+		return &envoyutil.XFCCValidationError{Class: c, XFCC: xfcc.String()}
 	}
 }
