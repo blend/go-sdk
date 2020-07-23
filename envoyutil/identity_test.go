@@ -33,8 +33,8 @@ func TestExtractClientIdentity(t *testing.T) {
 	testCases := []testCase{
 		{ErrorType: "XFCCFatalError", Class: envoyutil.MissingExtractFunction},
 		{XFCC: "", ErrorType: "XFCCExtractionError", Class: envoyutil.ErrMissingXFCC, Extract: extractJustURI},
-		{XFCC: `""`, ErrorType: "XFCCExtractionError", Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
-		{XFCC: "something=bad", ErrorType: "XFCCExtractionError", Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
+		{XFCC: `""`, ErrorType: "XFCCValidationError", Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
+		{XFCC: "something=bad", ErrorType: "XFCCValidationError", Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
 		{
 			XFCC:           "By=spiffe://cluster.local/ns/blend/sa/idea;URI=spiffe://cluster.local/ns/light/sa/bulb",
 			ClientIdentity: "spiffe://cluster.local/ns/light/sa/bulb",
@@ -43,7 +43,7 @@ func TestExtractClientIdentity(t *testing.T) {
 		{XFCC: "By=x;URI=y", ErrorType: "XFCCExtractionError", Class: "extractFailure", Extract: extractFailure},
 		{
 			XFCC:      "By=abc;URI=def",
-			ErrorType: "XFCCExtractionError",
+			ErrorType: "XFCCValidationError",
 			Class:     `verifyFailure: expected "xyz"`,
 			Extract:   extractJustURI,
 			Verifiers: []envoyutil.VerifyXFCC{makeVerifyXFCC("xyz")},
@@ -75,13 +75,19 @@ func TestExtractClientIdentity(t *testing.T) {
 		assert.Equal(tc.ClientIdentity, clientIdentity)
 		switch tc.ErrorType {
 		case "XFCCExtractionError":
+			assert.True(envoyutil.IsExtractionError(err), tc)
 			expected := &envoyutil.XFCCExtractionError{Class: tc.Class, XFCC: tc.XFCC}
-			assert.Equal(expected, err)
+			assert.Equal(expected, err, tc)
+		case "XFCCValidationError":
+			assert.True(envoyutil.IsValidationError(err), tc)
+			expected := &envoyutil.XFCCValidationError{Class: tc.Class, XFCC: tc.XFCC}
+			assert.Equal(expected, err, tc)
 		case "XFCCFatalError":
+			assert.True(envoyutil.IsFatalError(err), tc)
 			expected := &envoyutil.XFCCFatalError{Class: tc.Class, XFCC: tc.XFCC}
-			assert.Equal(expected, err)
+			assert.Equal(expected, err, tc)
 		default:
-			assert.Nil(err)
+			assert.Nil(err, tc)
 		}
 	}
 }
