@@ -19,7 +19,7 @@ var (
 	_ envoyutil.ClientIdentityProvider = extractFailure
 )
 
-func TestExtractClientIdentity(t *testing.T) {
+func TestExtractAndVerifyClientIdentity(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	type testCase struct {
@@ -71,7 +71,7 @@ func TestExtractClientIdentity(t *testing.T) {
 			r.Header.Add(envoyutil.HeaderXFCC, tc.XFCC)
 		}
 
-		clientIdentity, err := envoyutil.ExtractClientIdentity(r, tc.Extract, tc.Verifiers...)
+		clientIdentity, err := envoyutil.ExtractAndVerifyClientIdentity(r, tc.Extract, tc.Verifiers...)
 		assert.Equal(tc.ClientIdentity, clientIdentity)
 		switch tc.ErrorType {
 		case "XFCCExtractionError":
