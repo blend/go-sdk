@@ -20,11 +20,11 @@ var (
 	_ envoyutil.ExtractFromXFCC = extractFailure
 )
 
-func TestXFCCErrorMarshal(t *testing.T) {
+func TestXFCCExtractionErrorMarshal(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	c := ex.Class("caused by something invalid")
-	err := &envoyutil.XFCCError{Class: c, XFCC: "a=b", Metadata: map[string]string{"x": "why"}}
+	err := &envoyutil.XFCCExtractionError{Class: c, XFCC: "a=b", Metadata: map[string]string{"x": "why"}}
 
 	asBytes, marshalErr := json.MarshalIndent(err, "", "  ")
 	assert.Nil(marshalErr)
@@ -38,11 +38,11 @@ func TestXFCCErrorMarshal(t *testing.T) {
 	assert.Equal(expected, string(asBytes))
 }
 
-func TestXFCCErrorError(t *testing.T) {
+func TestXFCCExtractionErrorError(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	c := ex.Class("oh a bad thing happened")
-	var err error = &envoyutil.XFCCError{Class: c}
+	var err error = &envoyutil.XFCCExtractionError{Class: c}
 	assert.Equal(c, err.Error())
 }
 
@@ -103,29 +103,29 @@ func TestExtractClientIdentity(t *testing.T) {
 		} else if tc.Class == "" {
 			assert.Nil(err)
 		} else {
-			expected := &envoyutil.XFCCError{Class: tc.Class, XFCC: tc.XFCC}
+			expected := &envoyutil.XFCCExtractionError{Class: tc.Class, XFCC: tc.XFCC}
 			assert.Equal(expected, err)
 		}
 	}
 }
 
 // extractJustURI satisfies `envoyutil.ExtractFromXFCC` and just returns the URI.
-func extractJustURI(xfcc envoyutil.XFCCElement, _ string) (string, *envoyutil.XFCCError) {
+func extractJustURI(xfcc envoyutil.XFCCElement, _ string) (string, *envoyutil.XFCCExtractionError) {
 	return xfcc.URI, nil
 }
 
 // extractFailure satisfies `envoyutil.ExtractFromXFCC` and fails.
-func extractFailure(xfcc envoyutil.XFCCElement, xfccValue string) (string, *envoyutil.XFCCError) {
-	return "", &envoyutil.XFCCError{Class: "extractFailure", XFCC: xfccValue}
+func extractFailure(xfcc envoyutil.XFCCElement, xfccValue string) (string, *envoyutil.XFCCExtractionError) {
+	return "", &envoyutil.XFCCExtractionError{Class: "extractFailure", XFCC: xfccValue}
 }
 
 func makeVerifyXFCC(expectedBy string) envoyutil.VerifyXFCC {
-	return func(xfcc envoyutil.XFCCElement, xfccValue string) *envoyutil.XFCCError {
+	return func(xfcc envoyutil.XFCCElement, xfccValue string) *envoyutil.XFCCExtractionError {
 		if xfcc.By == expectedBy {
 			return nil
 		}
 
 		c := ex.Class(fmt.Sprintf("verifyFailure: expected %q", expectedBy))
-		return &envoyutil.XFCCError{Class: c, XFCC: xfccValue}
+		return &envoyutil.XFCCExtractionError{Class: c, XFCC: xfccValue}
 	}
 }

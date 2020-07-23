@@ -25,12 +25,12 @@ const (
 // ExtractFromXFCC is a function to extra the client identity from a
 // parsed XFCC header. For example, client identity could be determined from the
 // SPIFFE URI in the `URI` field in an XFCC element.
-type ExtractFromXFCC func(xfcc XFCCElement, xfccValue string) (clientIdentity string, err *XFCCError)
+type ExtractFromXFCC func(xfcc XFCCElement, xfccValue string) (clientIdentity string, err *XFCCExtractionError)
 
 // VerifyXFCC is an "extra" verifier for an XFCC, for example if the server
 // identity (from the `By` field in an XFCC element) should be verified in
 // addition to the client identity.
-type VerifyXFCC func(xfcc XFCCElement, xfccValue string) (err *XFCCError)
+type VerifyXFCC func(xfcc XFCCElement, xfccValue string) (err *XFCCValidationError)
 
 // ExtractClientIdentity enables extracting client identity from a request. It
 // does so by requiring the XFCC header to present and valid and then passing
@@ -44,13 +44,13 @@ func ExtractClientIdentity(req *http.Request, efx ExtractFromXFCC, verifiers ...
 	// Early exit if XFCC header is not present.
 	xfccValue := req.Header.Get(HeaderXFCC)
 	if xfccValue == "" {
-		return "", &XFCCError{Class: ErrMissingXFCC}
+		return "", &XFCCExtractionError{Class: ErrMissingXFCC}
 	}
 
 	// Early exit if XFCC header is invalid, or has zero or multiple elements.
 	xfccElements, parseErr := ParseXFCC(xfccValue)
 	if parseErr != nil || len(xfccElements) != 1 {
-		return "", &XFCCError{Class: ErrInvalidXFCC, XFCC: xfccValue}
+		return "", &XFCCValidationError{Class: ErrInvalidXFCC, XFCC: xfccValue}
 	}
 	xfcc := xfccElements[0]
 
