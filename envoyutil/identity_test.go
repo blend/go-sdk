@@ -97,12 +97,12 @@ func extractFailure(xfcc envoyutil.XFCCElement, xfccValue string) (string, *envo
 }
 
 func makeVerifyXFCC(expectedBy string) envoyutil.VerifyXFCC {
-	return func(xfcc envoyutil.XFCCElement, xfccValue string) *envoyutil.XFCCExtractionError {
+	return func(xfcc envoyutil.XFCCElement, xfccValue string) *envoyutil.XFCCValidationError {
 		if xfcc.By == expectedBy {
 			return nil
 		}
 
 		c := ex.Class(fmt.Sprintf("verifyFailure: expected %q", expectedBy))
-		return &envoyutil.XFCCExtractionError{Class: c, XFCC: xfccValue}
+		return &envoyutil.XFCCValidationError{Class: c, XFCC: xfccValue}
 	}
 }
