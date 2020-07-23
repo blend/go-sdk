@@ -31,7 +31,7 @@ func TestExtractAndVerifyClientIdentity(t *testing.T) {
 		Verifiers      []envoyutil.VerifyXFCC
 	}
 	testCases := []testCase{
-		{ErrorType: "XFCCFatalError", Class: envoyutil.MissingExtractFunction},
+		{ErrorType: "XFCCFatalError", Class: envoyutil.ErrMissingExtractFunction},
 		{XFCC: "", ErrorType: "XFCCExtractionError", Class: envoyutil.ErrMissingXFCC, Extract: extractJustURI},
 		{XFCC: `""`, ErrorType: "XFCCValidationError", Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
 		{XFCC: "something=bad", ErrorType: "XFCCExtractionError", Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
@@ -63,7 +63,7 @@ func TestExtractAndVerifyClientIdentity(t *testing.T) {
 		{
 			XFCC:      "By=abc;URI=def",
 			ErrorType: "XFCCFatalError",
-			Class:     envoyutil.VerifierNil,
+			Class:     envoyutil.ErrVerifierNil,
 			Extract:   extractJustURI,
 			Verifiers: []envoyutil.VerifyXFCC{nil},
 		},

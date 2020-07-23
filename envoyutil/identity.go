@@ -11,11 +11,11 @@ const (
 	ErrMissingXFCC = ex.Class("Missing X-Forwarded-Client-Cert header")
 	// ErrInvalidXFCC is the error returned when XFCC is invalid
 	ErrInvalidXFCC = ex.Class("Invalid X-Forwarded-Client-Cert header")
-	// MissingExtractFunction is the message used when the "extract client
+	// ErrMissingExtractFunction is the message used when the "extract client
 	// identity" function is `nil` or not provided.
-	MissingExtractFunction = ex.Class("Missing client identity extraction function")
-	// VerifierNil is the message prefix used when a provided verifier is `nil`.
-	VerifierNil = ex.Class("XFCC verifier must not be `nil`")
+	ErrMissingExtractFunction = ex.Class("Missing client identity extraction function")
+	// ErrVerifierNil is the message prefix used when a provided verifier is `nil`.
+	ErrVerifierNil = ex.Class("XFCC verifier must not be `nil`")
 )
 
 // ClientIdentityProvider is a function to extra the client identity from a
@@ -34,7 +34,7 @@ type VerifyXFCC func(xfcc XFCCElement) (err *XFCCValidationError)
 // to verify the server identity) as well as to an extractor (for the client identity).
 func ExtractAndVerifyClientIdentity(req *http.Request, cip ClientIdentityProvider, verifiers ...VerifyXFCC) (string, error) {
 	if cip == nil {
-		return "", &XFCCFatalError{Class: MissingExtractFunction}
+		return "", &XFCCFatalError{Class: ErrMissingExtractFunction}
 	}
 
 	// Early exit if XFCC header is not present.
@@ -56,7 +56,7 @@ func ExtractAndVerifyClientIdentity(req *http.Request, cip ClientIdentityProvide
 	// Run all verifiers on the parsed `xfcc`.
 	for _, verifier := range verifiers {
 		if verifier == nil {
-			return "", &XFCCFatalError{Class: VerifierNil, XFCC: xfccValue}
+			return "", &XFCCFatalError{Class: ErrVerifierNil, XFCC: xfccValue}
 		}
 
 		err := verifier(xfcc)
