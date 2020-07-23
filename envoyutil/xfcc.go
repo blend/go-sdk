@@ -1,6 +1,7 @@
 package envoyutil
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/blend/go-sdk/ex"
@@ -19,6 +20,29 @@ type XFCC []XFCCElement
 type XFCCElement struct {
 	By  string
 	URI string
+}
+
+// maybeQuoted quotes a string value that may need to be quoted to be part of an
+// XFCC header. It will use `%q` formatting to quote the value if it contains any
+// of `,` (comma), `;` (semi-colon), `=` (equals) or `"` (double quote).
+func maybeQuoted(value string) string {
+	if strings.ContainsAny(value, `,;="`) {
+		return fmt.Sprintf("%q", value)
+	}
+	return value
+}
+
+// String converts the parsed XFCC element **back** to a string. This is intended
+// for debugging purposes and is not particularly
+func (xe XFCCElement) String() string {
+	parts := []string{}
+	if xe.By != "" {
+		parts = append(parts, fmt.Sprintf("By=%s", maybeQuoted(xe.By)))
+	}
+	if xe.URI != "" {
+		parts = append(parts, fmt.Sprintf("URI=%s", maybeQuoted(xe.URI)))
+	}
+	return strings.Join(parts, ";")
 }
 
 const (

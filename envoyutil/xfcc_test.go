@@ -60,6 +60,33 @@ JmUY+1YGMn7qbeHTma33N28Ec7hK+WByul746Nro
 -----END CERTIFICATE-----`
 )
 
+func TestXFCCElementString(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	type testCase struct {
+		By       string
+		URI      string
+		Expected string
+	}
+	testCases := []testCase{
+		{Expected: ""},
+		{By: "hi", Expected: "By=hi"},
+		{URI: "bye", Expected: "URI=bye"},
+	}
+	for _, tc := range testCases {
+		xe := envoyutil.XFCCElement{By: tc.By, URI: tc.URI}
+		assert.Equal(tc.Expected, xe.String())
+		parsed, err := envoyutil.ParseXFCCElement(xe.String())
+		assert.Nil(err)
+		assert.Equal(xe, parsed)
+	}
+
+	// NOTE: For quoting and unquoting, `ParseXFCCElement()` is not fully an
+	//       inverse to `XFCCElement.String()`.
+	xe := envoyutil.XFCCElement{By: "a,b=10", URI: `c; "then" again`}
+	assert.Equal("By=\"a,b=10\";URI=\"c; \\\"then\\\" again\"", xe.String())
+}
+
 func TestParseXFCCElement(t *testing.T) {
 	assert := sdkAssert.New(t)
 
