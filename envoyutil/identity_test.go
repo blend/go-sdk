@@ -12,11 +12,11 @@ import (
 )
 
 // NOTE: Ensure
-//       - `extractJustURI` satisfies `envoyutil.ExtractFromXFCC`.
-//       - `extractFailure` satisfies `envoyutil.ExtractFromXFCC`.
+//       - `extractJustURI` satisfies `envoyutil.ClientIdentityProvider`.
+//       - `extractFailure` satisfies `envoyutil.ClientIdentityProvider`.
 var (
-	_ envoyutil.ExtractFromXFCC = extractJustURI
-	_ envoyutil.ExtractFromXFCC = extractFailure
+	_ envoyutil.ClientIdentityProvider = extractJustURI
+	_ envoyutil.ClientIdentityProvider = extractFailure
 )
 
 func TestExtractClientIdentity(t *testing.T) {
@@ -27,7 +27,7 @@ func TestExtractClientIdentity(t *testing.T) {
 		ClientIdentity string
 		ErrorType      string
 		Class          ex.Class
-		Extract        envoyutil.ExtractFromXFCC
+		Extract        envoyutil.ClientIdentityProvider
 		Verifiers      []envoyutil.VerifyXFCC
 	}
 	testCases := []testCase{
@@ -92,12 +92,12 @@ func TestExtractClientIdentity(t *testing.T) {
 	}
 }
 
-// extractJustURI satisfies `envoyutil.ExtractFromXFCC` and just returns the URI.
+// extractJustURI satisfies `envoyutil.ClientIdentityProvider` and just returns the URI.
 func extractJustURI(xfcc envoyutil.XFCCElement, _ string) (string, *envoyutil.XFCCExtractionError) {
 	return xfcc.URI, nil
 }
 
-// extractFailure satisfies `envoyutil.ExtractFromXFCC` and fails.
+// extractFailure satisfies `envoyutil.ClientIdentityProvider` and fails.
 func extractFailure(xfcc envoyutil.XFCCElement, xfccValue string) (string, *envoyutil.XFCCExtractionError) {
 	return "", &envoyutil.XFCCExtractionError{Class: "extractFailure", XFCC: xfccValue}
 }

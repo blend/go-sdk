@@ -18,10 +18,10 @@ const (
 	VerifierNil = ex.Class("XFCC verifier must not be `nil`")
 )
 
-// ExtractFromXFCC is a function to extra the client identity from a
+// ClientIdentityProvider is a function to extra the client identity from a
 // parsed XFCC header. For example, client identity could be determined from the
 // SPIFFE URI in the `URI` field in an XFCC element.
-type ExtractFromXFCC func(xfcc XFCCElement, xfccValue string) (clientIdentity string, err *XFCCExtractionError)
+type ClientIdentityProvider func(xfcc XFCCElement, xfccValue string) (clientIdentity string, err *XFCCExtractionError)
 
 // VerifyXFCC is an "extra" verifier for an XFCC, for example if the server
 // identity (from the `By` field in an XFCC element) should be verified in
@@ -32,7 +32,7 @@ type VerifyXFCC func(xfcc XFCCElement, xfccValue string) (err *XFCCValidationErr
 // does so by requiring the XFCC header to present and valid and then passing
 // the parsed XFCC header along to some verifiers (e.g. to verify the server
 // identity) as well as to an extractor (for the client identity).
-func ExtractClientIdentity(req *http.Request, efx ExtractFromXFCC, verifiers ...VerifyXFCC) (string, error) {
+func ExtractClientIdentity(req *http.Request, efx ClientIdentityProvider, verifiers ...VerifyXFCC) (string, error) {
 	if efx == nil {
 		return "", &XFCCFatalError{Class: MissingExtractFunction}
 	}
