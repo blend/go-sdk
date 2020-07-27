@@ -24,6 +24,7 @@ func CommonNamesForCertPEM(certPEM []byte) ([]string, error) {
 
 // ParseCertPEM parses the cert portion of a cert pair.
 func ParseCertPEM(certPem []byte) (output []*x509.Certificate, err error) {
+	var cert *x509.Certificate
 	for len(certPem) > 0 {
 		var block *pem.Block
 		block, certPem = pem.Decode(certPem)
@@ -34,7 +35,7 @@ func ParseCertPEM(certPem []byte) (output []*x509.Certificate, err error) {
 			continue
 		}
 
-		cert, err := x509.ParseCertificate(block.Bytes)
+		cert, err = x509.ParseCertificate(block.Bytes)
 		if err != nil {
 			err = ex.New(err)
 			continue

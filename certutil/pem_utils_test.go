@@ -23,7 +23,7 @@ func TestParseCertPEM(t *testing.T) {
 	}, "\n"))
 	certs, err = ParseCertPEM(invalidCert)
 	assert.Nil(certs)
-	assert.Nil(err)
+	assert.Equal("asn1: syntax error: truncated tag or length", err.Error())
 }
 
 func TestCommonNamesForCertPair(t *testing.T) {
