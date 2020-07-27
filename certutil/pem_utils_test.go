@@ -1,6 +1,7 @@
 package certutil
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
@@ -13,6 +14,16 @@ func TestParseCertPEM(t *testing.T) {
 	assert.Nil(err)
 	assert.Len(certs, 2)
 	assert.Equal(certLiteralCommonName, certs[0].Subject.CommonName)
+
+	invalidCert := []byte(strings.Join([]string{
+		"-----BEGIN CERTIFICATE-----",
+		"nope",
+		"-----END CERTIFICATE-----",
+		"",
+	}, "\n"))
+	certs, err = ParseCertPEM(invalidCert)
+	assert.Nil(certs)
+	assert.Nil(err)
 }
 
 func TestCommonNamesForCertPair(t *testing.T) {
