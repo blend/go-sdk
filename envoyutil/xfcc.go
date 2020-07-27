@@ -148,8 +148,6 @@ func ParseXFCCElement(element string) (XFCCElement, error) {
 func fillXFCCKeyValue(key, element string, valueStart, valueEnd int, ele *XFCCElement) (err error) {
 	key = strings.ToLower(key)
 	switch key {
-	case "cert", "chain", "dns", "hash", "subject":
-		return nil
 	case "by":
 		if ele.By != "" {
 			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", key)
@@ -158,6 +156,14 @@ func fillXFCCKeyValue(key, element string, valueStart, valueEnd int, ele *XFCCEl
 		//       The assumption here is that the "valid range" invariant for these inputs is maintained
 		//       elsewhere, in `ParseXFCCElement()`.
 		ele.By = element[valueStart : valueEnd+1]
+	case "hash":
+		return nil
+	case "cert":
+		return nil
+	case "chain":
+		return nil
+	case "subject":
+		return nil
 	case "uri":
 		if ele.URI != "" {
 			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", key)
@@ -166,6 +172,8 @@ func fillXFCCKeyValue(key, element string, valueStart, valueEnd int, ele *XFCCEl
 		//       The assumption here is that the "valid range" invariant for these inputs is maintained
 		//       elsewhere, in `ParseXFCCElement()`.
 		ele.URI = element[valueStart : valueEnd+1]
+	case "dns":
+		return nil
 	default:
 		return ex.New(ErrXFCCParsing).WithMessagef("Unknown key %q", key)
 	}
