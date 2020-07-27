@@ -14,12 +14,31 @@ import (
 type XFCC []XFCCElement
 
 // XFCCElement is an element in an XFCC header (see `XFCC`).
-//
-// NOTE: This is an intentionally limited coverage of the fields available in the XFCC
-//       header.
 type XFCCElement struct {
-	By  string
+	// By contains Subject Alternative Name (URI type) of the current proxy's
+	// certificate.	It is present here as a `string` and can be parsed to a
+	// `url.URL` if desired.
+	By string
+	// Hash contains the SHA 256 digest of the current client certificate; this
+	// is a bytestring of 64 hexadecimal characters.
+	Hash []byte
+	// Cert contains the entire client certificate in URL encoded PEM format.
+	// It is present here as a `string` and can be parsed to an `x509.Certificate`
+	// if desired.
+	Cert string
+	// Chain contains entire client certificate chain (including the leaf certificate)
+	// in URL encoded PEM format. It is present here as a `string` and can be parsed
+	// to a `[]x509.Certificate` if desired.
+	Chain string
+	// Subject contains the `Subject` field of the current client certificate.
+	Subject string
+	// URI contains the URI SAN of the current client certificate (assumes only
+	// one URI SAN).
 	URI string
+	// DNS contains the DNS SANs of the current client certificate. A client
+	// certificate may contain multiple DNS SANs, each will be a separate
+	// key-value pair in the XFCC element.
+	DNS []string
 }
 
 // maybeQuoted quotes a string value that may need to be quoted to be part of an
