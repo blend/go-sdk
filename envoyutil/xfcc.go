@@ -155,7 +155,10 @@ func fillXFCCKeyValue(key, element string, value []rune, ele *XFCCElement) (err 
 		}
 		ele.Hash = string(value)
 	case "cert":
-		return nil
+		if len(ele.Cert) > 0 {
+			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", key)
+		}
+		ele.Cert = string(value)
 	case "chain":
 		return nil
 	case "subject":

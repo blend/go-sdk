@@ -107,19 +107,30 @@ func TestParseXFCCElement(t *testing.T) {
 	assert.Equal(envoyutil.XFCCElement{Hash: "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688"}, ele)
 
 	ele, err = envoyutil.ParseXFCCElement(xfccElementHashTest + ";" + xfccElementHashTest)
-	assert.NotNil(err)
 	except, ok = err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
-	assert.Equal(envoyutil.ErrXFCCParsing, except.Class)
+	expectedErr := &ex.Ex{
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    `Key already encountered "hash"`,
+		StackTrace: except.StackTrace,
+	}
+	assert.Equal(expectedErr, except)
 
 	ele, err = envoyutil.ParseXFCCElement(xfccElementCertTest)
 	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{}, ele)
+	assert.Equal(envoyutil.XFCCElement{Cert: xfccElementTestCertEncoded}, ele)
 
 	ele, err = envoyutil.ParseXFCCElement(xfccElementCertTest + ";" + xfccElementCertTest)
-	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{}, ele)
+	except, ok = err.(*ex.Ex)
+	assert.True(ok)
+	assert.NotNil(except)
+	expectedErr = &ex.Ex{
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    `Key already encountered "cert"`,
+		StackTrace: except.StackTrace,
+	}
+	assert.Equal(expectedErr, except)
 
 	ele, err = envoyutil.ParseXFCCElement(xfccElementChainTest)
 	assert.Nil(err)
@@ -192,7 +203,7 @@ func TestParseXFCCElement(t *testing.T) {
 
 	ele, err = envoyutil.ParseXFCCElement("cert=" + xfccElementMalformedEncoding)
 	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{}, ele)
+	assert.Equal(envoyutil.XFCCElement{Cert: "%"}, ele)
 
 	ele, err = envoyutil.ParseXFCCElement("chain=" + xfccElementMalformedEncoding)
 	assert.Nil(err)
