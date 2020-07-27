@@ -101,9 +101,8 @@ func ParseXFCCElement(element string) (XFCCElement, error) {
 	state := parseXFCCKey
 	ele := XFCCElement{}
 	key := ""
-	valueStart := -1
-	valueEnd := -1
-	for i, char := range element {
+	value := []rune{}
+	for _, char := range element {
 		switch state {
 		case parseXFCCKey:
 			if char == '=' {
@@ -113,49 +112,42 @@ func ParseXFCCElement(element string) (XFCCElement, error) {
 			}
 		case parseXFCCValue:
 			if char == ';' {
-				if len(key) == 0 || valueStart == -1 {
+				if len(key) == 0 || len(value) == 0 {
 					return XFCCElement{}, ex.New(ErrXFCCParsing).WithMessage("Key or Value missing")
 				}
-				err := fillXFCCKeyValue(key, element, valueStart, valueEnd, &ele)
+				err := fillXFCCKeyValue(key, element, value, &ele)
 				if err != nil {
 					return XFCCElement{}, err
 				}
 
 				key = ""
-				valueStart = -1
-				valueEnd = -1
+				value = []rune{}
 				state = parseXFCCKey
 			} else {
-				if valueStart == -1 {
-					valueStart = i
-				}
-				valueEnd = i
+				value = append(value, char)
 			}
 		}
 	}
 
-	if len(key) > 0 && valueStart != -1 {
-		return ele, fillXFCCKeyValue(key, element, valueStart, valueEnd, &ele)
+	if len(key) > 0 && len(value) > 0 {
+		return ele, fillXFCCKeyValue(key, element, value, &ele)
 	}
 
-	if len(key) > 0 || valueStart != -1 {
+	if len(key) > 0 || len(value) > 0 {
 		return XFCCElement{}, ex.New(ErrXFCCParsing).WithMessage("Key or value found but not both")
 	}
 
 	return ele, nil
 }
 
-func fillXFCCKeyValue(key, element string, valueStart, valueEnd int, ele *XFCCElement) (err error) {
+func fillXFCCKeyValue(key, element string, value []rune, ele *XFCCElement) (err error) {
 	key = strings.ToLower(key)
 	switch key {
 	case "by":
 		if ele.By != "" {
 			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", key)
 		}
-		// NOTE: This can panic at runtime if `valueStart` and / or `valueEnd` are malformed.
-		//       The assumption here is that the "valid range" invariant for these inputs is maintained
-		//       elsewhere, in `ParseXFCCElement()`.
-		ele.By = element[valueStart : valueEnd+1]
+		ele.By = string(value)
 	case "hash":
 		return nil
 	case "cert":
@@ -168,10 +160,7 @@ func fillXFCCKeyValue(key, element string, valueStart, valueEnd int, ele *XFCCEl
 		if ele.URI != "" {
 			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", key)
 		}
-		// NOTE: This can panic at runtime if `valueStart` and / or `valueEnd` are malformed.
-		//       The assumption here is that the "valid range" invariant for these inputs is maintained
-		//       elsewhere, in `ParseXFCCElement()`.
-		ele.URI = element[valueStart : valueEnd+1]
+		ele.URI = string(value)
 	case "dns":
 		return nil
 	default:
