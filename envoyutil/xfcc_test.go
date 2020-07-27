@@ -60,6 +60,31 @@ JmUY+1YGMn7qbeHTma33N28Ec7hK+WByul746Nro
 -----END CERTIFICATE-----`
 )
 
+func TestXFCCElementDecodeHash(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	type testCase struct {
+		Hash     string
+		Expected []byte
+		Error    string
+	}
+	testCases := []testCase{
+		{Hash: "", Expected: []byte("")},
+		{Hash: "41434944", Expected: []byte("ACID")},
+		{Hash: "x", Expected: []byte(""), Error: "encoding/hex: invalid byte: U+0078 'x'"},
+	}
+	for _, tc := range testCases {
+		xe := envoyutil.XFCCElement{Hash: tc.Hash}
+		decoded, err := xe.DecodeHash()
+		assert.Equal(tc.Expected, decoded)
+		if tc.Error != "" {
+			assert.Equal(tc.Error, err.Error())
+		} else {
+			assert.Nil(err)
+		}
+	}
+}
+
 func TestXFCCElementString(t *testing.T) {
 	assert := sdkAssert.New(t)
 

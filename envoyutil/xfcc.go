@@ -1,6 +1,7 @@
 package envoyutil
 
 import (
+	"encoding/hex"
 	"fmt"
 	"strings"
 
@@ -21,7 +22,7 @@ type XFCCElement struct {
 	By string
 	// Hash contains the SHA 256 digest of the current client certificate; this
 	// is a string of 64 hexadecimal characters. This can be converted to the raw
-	// bytes underlying the hex string via `hex.DecodeString(xe.Hash)`.
+	// bytes underlying the hex string via `xe.DecodeHash()`.
 	Hash string
 	// Cert contains the entire client certificate in URL encoded PEM format.
 	// It is present here as a `string` and can be parsed to an `x509.Certificate`
@@ -40,6 +41,11 @@ type XFCCElement struct {
 	// certificate may contain multiple DNS SANs, each will be a separate
 	// key-value pair in the XFCC element.
 	DNS []string
+}
+
+// DecodeHash decodes the `Hash` element from a hex string to raw bytes.
+func (xe XFCCElement) DecodeHash() ([]byte, error) {
+	return hex.DecodeString(xe.Hash)
 }
 
 // maybeQuoted quotes a string value that may need to be quoted to be part of an
