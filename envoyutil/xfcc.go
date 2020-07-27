@@ -1,10 +1,13 @@
 package envoyutil
 
 import (
+	"crypto/x509"
 	"encoding/hex"
 	"fmt"
+	"net/url"
 	"strings"
 
+	"github.com/blend/go-sdk/certutil"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/stringutil"
 )
@@ -25,8 +28,7 @@ type XFCCElement struct {
 	// bytes underlying the hex string via `xe.DecodeHash()`.
 	Hash string
 	// Cert contains the entire client certificate in URL encoded PEM format.
-	// It is present here as a `string` and can be parsed to an `x509.Certificate`
-	// if desired.
+	// This can be decoded as a `*x509.Certificate` via `xe.DecodeCert()`.
 	Cert string
 	// Chain contains entire client certificate chain (including the leaf certificate)
 	// in URL encoded PEM format. It is present here as a `string` and can be parsed
@@ -46,6 +48,34 @@ type XFCCElement struct {
 // DecodeHash decodes the `Hash` element from a hex string to raw bytes.
 func (xe XFCCElement) DecodeHash() ([]byte, error) {
 	return hex.DecodeString(xe.Hash)
+}
+
+// DecodeCert decodes the `Cert` element from a URL encoded PEM to a
+// single `x509.Certificate`.
+func (xe XFCCElement) DecodeCert() (*x509.Certificate, error) {
+	if xe.Cert == "" {
+		return nil, nil
+	}
+
+	value, err := url.QueryUnescape(xe.Cert)
+	if err != nil {
+		return nil, err
+	}
+
+	parsed, err := certutil.ParseCertPEM([]byte(value))
+	if err != nil {
+		return nil, err
+	}
+
+	if len(parsed) != 1 {
+		err = ex.New(
+			ErrXFCCParsing,
+			ex.OptMessagef("Incorrect number of certificates; expected 1 got %d", len(parsed)),
+		)
+		return nil, err
+	}
+
+	return parsed[0], err
 }
 
 // maybeQuoted quotes a string value that may need to be quoted to be part of an

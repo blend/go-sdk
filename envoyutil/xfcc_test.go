@@ -1,9 +1,13 @@
 package envoyutil_test
 
 import (
+	"crypto/x509"
+	"fmt"
+	"net/url"
 	"testing"
 
 	sdkAssert "github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/certutil"
 	"github.com/blend/go-sdk/ex"
 
 	"github.com/blend/go-sdk/envoyutil"
@@ -82,6 +86,42 @@ func TestXFCCElementDecodeHash(t *testing.T) {
 		} else {
 			assert.Nil(err)
 		}
+	}
+}
+
+func TestXFCCElementDecodeCert(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	parsedCert, err := certutil.ParseCertPEM([]byte(xfccElementTestCert))
+	assert.Nil(err)
+
+	type testCase struct {
+		Cert   string
+		Parsed *x509.Certificate
+		Error  string
+	}
+	testCases := []testCase{
+		{Cert: ""},
+		{Cert: xfccElementTestCertEncoded, Parsed: parsedCert[0]},
+		{Cert: "%", Error: `invalid URL escape "%"`},
+		{
+			Cert:  "-----BEGIN CERTIFICATE-----\nnope\n-----END CERTIFICATE-----\n",
+			Error: "asn1: syntax error: truncated tag or length",
+		},
+		{
+			Cert:  url.QueryEscape(xfccElementTestCert + "\n" + xfccElementTestCert),
+			Error: "Error Parsing X-Forwarded-Client-Cert; Incorrect number of certificates; expected 1 got 2",
+		},
+	}
+	for _, tc := range testCases {
+		xe := envoyutil.XFCCElement{Cert: tc.Cert}
+		cert, err := xe.DecodeCert()
+		if tc.Error != "" {
+			assert.Equal(tc.Error, fmt.Sprintf("%v", err))
+		} else {
+			assert.Nil(err)
+		}
+		assert.Equal(tc.Parsed, cert)
 	}
 }
 
