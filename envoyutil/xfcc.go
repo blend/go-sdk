@@ -20,8 +20,9 @@ type XFCCElement struct {
 	// `url.URL` if desired.
 	By string
 	// Hash contains the SHA 256 digest of the current client certificate; this
-	// is a bytestring of 64 hexadecimal characters.
-	Hash []byte
+	// is a string of 64 hexadecimal characters. This can be converted to the raw
+	// bytes underlying the hex string via `hex.DecodeString(xe.Hash)`.
+	Hash string
 	// Cert contains the entire client certificate in URL encoded PEM format.
 	// It is present here as a `string` and can be parsed to an `x509.Certificate`
 	// if desired.
@@ -149,7 +150,10 @@ func fillXFCCKeyValue(key, element string, value []rune, ele *XFCCElement) (err 
 		}
 		ele.By = string(value)
 	case "hash":
-		return nil
+		if len(ele.Hash) > 0 {
+			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", key)
+		}
+		ele.Hash = string(value)
 	case "cert":
 		return nil
 	case "chain":
