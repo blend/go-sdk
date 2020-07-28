@@ -4,6 +4,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"net/url"
+	"regexp"
 	"testing"
 
 	sdkAssert "github.com/blend/go-sdk/assert"
@@ -68,13 +69,14 @@ func TestXFCCElementDecodeBy(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	type testCase struct {
-		By       string
-		Expected *url.URL
-		Error    string
+		By          string
+		Expected    *url.URL
+		ErrorRegexp *regexp.Regexp
 	}
 	testCases := []testCase{
 		{By: "", Expected: &url.URL{}},
-		{By: "\n", Error: `parse "\n": net/url: invalid control character in URL`},
+		// NOTE: Regex needed to support error format changes from go1.13 to go1.14
+		{By: "\n", ErrorRegexp: regexp.MustCompile(`(?m)^parse ("\\n"|\n): net/url: invalid control character in URL$`)},
 		{
 			By: "spiffe://cluster.local/ns/blend/sa/yule",
 			Expected: &url.URL{
@@ -88,8 +90,8 @@ func TestXFCCElementDecodeBy(t *testing.T) {
 		xe := envoyutil.XFCCElement{By: tc.By}
 		uri, err := xe.DecodeBy()
 		assert.Equal(tc.Expected, uri)
-		if tc.Error != "" {
-			assert.Equal(tc.Error, err.Error())
+		if tc.ErrorRegexp != nil {
+			assert.True(tc.ErrorRegexp.MatchString(err.Error()))
 		} else {
 			assert.Nil(err)
 		}
@@ -200,13 +202,14 @@ func TestXFCCElementDecodeURI(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	type testCase struct {
-		URI      string
-		Expected *url.URL
-		Error    string
+		URI         string
+		Expected    *url.URL
+		ErrorRegexp *regexp.Regexp
 	}
 	testCases := []testCase{
 		{URI: "", Expected: &url.URL{}},
-		{URI: "\r", Error: `parse "\r": net/url: invalid control character in URL`},
+		// NOTE: Regex needed to support error format changes from go1.13 to go1.14
+		{URI: "\r", ErrorRegexp: regexp.MustCompile(`(?m)^parse ("\\r"|\r): net/url: invalid control character in URL$`)},
 		{
 			URI: "spiffe://cluster.local/ns/first/sa/furst",
 			Expected: &url.URL{
@@ -220,8 +223,8 @@ func TestXFCCElementDecodeURI(t *testing.T) {
 		xe := envoyutil.XFCCElement{URI: tc.URI}
 		uri, err := xe.DecodeURI()
 		assert.Equal(tc.Expected, uri)
-		if tc.Error != "" {
-			assert.Equal(tc.Error, err.Error())
+		if tc.ErrorRegexp != nil {
+			assert.True(tc.ErrorRegexp.MatchString(err.Error()))
 		} else {
 			assert.Nil(err)
 		}
