@@ -200,7 +200,7 @@ type xfccParser struct {
 // ParseXFCC parses the XFCC header.
 func ParseXFCC(header string) (XFCC, error) {
 	xp := &xfccParser{
-		Key: make([]rune, 0, initialKeyCapacity),
+		Key:   make([]rune, 0, initialKeyCapacity),
 		Value: make([]rune, 0, initialValueCapacity),
 		State: parseXFCCKey,
 	}
@@ -214,24 +214,9 @@ func ParseXFCC(header string) (XFCC, error) {
 		case parseXFCCValueStart:
 			xp.HandleValueStartCharacter()
 		case parseXFCCValue:
-			if xp.Char == ',' || xp.Char == ';' {
-				if len(xp.Key) == 0 || len(xp.Value) == 0 {
-					return XFCC{}, ex.New(ErrXFCCParsing).WithMessage("Key or Value missing")
-				}
-				err := xp.FillXFCCKeyValue()
-				if err != nil {
-					return XFCC{}, err
-				}
-
-				xp.Key = make([]rune, 0, initialKeyCapacity)
-				xp.Value = make([]rune, 0, initialValueCapacity)
-				xp.State = parseXFCCKey
-				if xp.Char == ',' {
-					xp.Parsed = append(xp.Parsed, xp.Element)
-					xp.Element = XFCCElement{}
-				}
-			} else {
-				xp.Value = append(xp.Value, xp.Char)
+			err := xp.HandleValueCharacter()
+			if err != nil {
+				return XFCC{}, err
 			}
 		case parseXFCCValueQuoted:
 			if xp.Char == '\\' {
@@ -369,4 +354,30 @@ func (xp *xfccParser) HandleValueStartCharacter() {
 		xp.Value = append(xp.Value, xp.Char)
 		xp.State = parseXFCCValue
 	}
+}
+
+// HandleValueCharacter advances the state machine if the current state is
+// `parseXFCCValue`.
+func (xp *xfccParser) HandleValueCharacter() error {
+	if xp.Char == ',' || xp.Char == ';' {
+		if len(xp.Key) == 0 || len(xp.Value) == 0 {
+			return ex.New(ErrXFCCParsing).WithMessage("Key or Value missing")
+		}
+		err := xp.FillXFCCKeyValue()
+		if err != nil {
+			return err
+		}
+
+		xp.Key = make([]rune, 0, initialKeyCapacity)
+		xp.Value = make([]rune, 0, initialValueCapacity)
+		xp.State = parseXFCCKey
+		if xp.Char == ',' {
+			xp.Parsed = append(xp.Parsed, xp.Element)
+			xp.Element = XFCCElement{}
+		}
+	} else {
+		xp.Value = append(xp.Value, xp.Char)
+	}
+
+	return nil
 }
