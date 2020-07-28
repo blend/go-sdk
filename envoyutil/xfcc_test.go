@@ -199,11 +199,18 @@ func TestParseXFCCElement(t *testing.T) {
 
 	ele, err = envoyutil.ParseXFCCElement(xfccElementChainTest)
 	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{}, ele)
+	assert.Equal(envoyutil.XFCCElement{Chain: xfccElementTestCertEncoded}, ele)
 
 	ele, err = envoyutil.ParseXFCCElement(xfccElementChainTest + ";" + xfccElementChainTest)
-	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{}, ele)
+	except, ok = err.(*ex.Ex)
+	assert.True(ok)
+	assert.NotNil(except)
+	expectedErr = &ex.Ex{
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    `Key already encountered "chain"`,
+		StackTrace: except.StackTrace,
+	}
+	assert.Equal(expectedErr, except)
 
 	ele, err = envoyutil.ParseXFCCElement(xfccElementSubjectTest)
 	assert.Nil(err)
@@ -272,7 +279,7 @@ func TestParseXFCCElement(t *testing.T) {
 
 	ele, err = envoyutil.ParseXFCCElement("chain=" + xfccElementMalformedEncoding)
 	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{}, ele)
+	assert.Equal(envoyutil.XFCCElement{Chain: "%"}, ele)
 
 	ele, err = envoyutil.ParseXFCCElement("=;")
 	assert.NotNil(err)
