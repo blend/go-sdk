@@ -189,6 +189,7 @@ const (
 
 // xfccParser holds state while an XFCC header is being parsed.
 type xfccParser struct {
+	State   parseXFCCState
 	Char    rune
 	Key     []rune
 	Value   []rune
@@ -199,28 +200,28 @@ type xfccParser struct {
 func ParseXFCC(header string) (XFCC, error) {
 	xfcc := XFCC{}
 
-	state := parseXFCCKey
 	xp := &xfccParser{
 		Key: make([]rune, 0, initialKeyCapacity),
 		Value: make([]rune, 0, initialValueCapacity),
+		State: parseXFCCKey,
 	}
 	asRunes := []rune(header)
 	i := 0
 	for i < len(asRunes) {
 		xp.Char = asRunes[i]
-		switch state {
+		switch xp.State {
 		case parseXFCCKey:
 			if xp.Char == '=' {
-				state = parseXFCCValueStart
+				xp.State = parseXFCCValueStart
 			} else {
 				xp.Key = append(xp.Key, xp.Char)
 			}
 		case parseXFCCValueStart:
 			if xp.Char == '"' {
-				state = parseXFCCValueQuoted
+				xp.State = parseXFCCValueQuoted
 			} else {
 				xp.Value = append(xp.Value, xp.Char)
-				state = parseXFCCValue
+				xp.State = parseXFCCValue
 			}
 		case parseXFCCValue:
 			if xp.Char == ',' || xp.Char == ';' {
@@ -234,7 +235,7 @@ func ParseXFCC(header string) (XFCC, error) {
 
 				xp.Key = make([]rune, 0, initialKeyCapacity)
 				xp.Value = make([]rune, 0, initialValueCapacity)
-				state = parseXFCCKey
+				xp.State = parseXFCCKey
 				if xp.Char == ',' {
 					xfcc = append(xfcc, xp.Element)
 					xp.Element = XFCCElement{}
@@ -275,7 +276,7 @@ func ParseXFCC(header string) (XFCC, error) {
 
 						xp.Key = make([]rune, 0, initialKeyCapacity)
 						xp.Value = make([]rune, 0, initialValueCapacity)
-						state = parseXFCCKey
+						xp.State = parseXFCCKey
 						if asRunes[nextIndex] == ',' {
 							xfcc = append(xfcc, xp.Element)
 							xp.Element = XFCCElement{}
@@ -286,7 +287,7 @@ func ParseXFCC(header string) (XFCC, error) {
 				} else {
 					// NOTE: If `nextIndex >= len(asRunes)` then we are at the end,
 					//       which is a no-op here.
-					state = parseXFCCKey
+					xp.State = parseXFCCKey
 				}
 			} else {
 				xp.Value = append(xp.Value, xp.Char)
