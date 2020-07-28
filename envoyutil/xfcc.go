@@ -226,7 +226,7 @@ func fillXFCCKeyValue(key, element string, value []rune, ele *XFCCElement) (err 
 		}
 		ele.URI = string(value)
 	case "dns":
-		return nil
+		ele.DNS = append(ele.DNS, string(value))
 	default:
 		return ex.New(ErrXFCCParsing).WithMessagef("Unknown key %q", key)
 	}

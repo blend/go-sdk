@@ -112,6 +112,10 @@ func TestXFCCElementDecodeCert(t *testing.T) {
 			Cert:  url.QueryEscape(xfccElementTestCert + "\n" + xfccElementTestCert),
 			Error: "Error Parsing X-Forwarded-Client-Cert; Incorrect number of certificates; expected 1 got 2",
 		},
+		{
+			Cert:  xfccElementMultiCertTest,
+			Error: "Error Parsing X-Forwarded-Client-Cert; Incorrect number of certificates; expected 1 got 0",
+		},
 	}
 	for _, tc := range testCases {
 		xe := envoyutil.XFCCElement{Cert: tc.Cert}
@@ -276,7 +280,11 @@ func TestParseXFCCElement(t *testing.T) {
 
 	ele, err = envoyutil.ParseXFCCElement(xfccElementDNSTest)
 	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{}, ele)
+	assert.Equal(envoyutil.XFCCElement{DNS: []string{"http://frontend.lyft.com"}}, ele)
+
+	ele, err = envoyutil.ParseXFCCElement("dns=web.invalid;dns=blend.local.invalid")
+	assert.Nil(err)
+	assert.Equal(envoyutil.XFCCElement{DNS: []string{"web.invalid", "blend.local.invalid"}}, ele)
 
 	_, err = envoyutil.ParseXFCCElement(xfccElementNoneTest)
 	assert.NotNil(err)
@@ -309,11 +317,7 @@ func TestParseXFCCElement(t *testing.T) {
 
 	ele, err = envoyutil.ParseXFCCElement(xfccElementEndTest)
 	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{}, ele)
-
-	_, err = envoyutil.ParseXFCCElement(xfccElementMultiCertTest)
-	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{}, ele)
+	assert.Equal(envoyutil.XFCCElement{DNS: []string{"http://frontend.lyft.com"}}, ele)
 
 	ele, err = envoyutil.ParseXFCCElement("cert=" + xfccElementMalformedEncoding)
 	assert.Nil(err)
