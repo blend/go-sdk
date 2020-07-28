@@ -221,53 +221,9 @@ func ParseXFCC(header string) (XFCC, error) {
 				return XFCC{}, err
 			}
 		case parseXFCCValueQuoted:
-			if char == '\\' {
-				nextIndex := xp.Index + 1
-				if nextIndex < len(xp.Header) && xp.Header[nextIndex] == '"' {
-					// Consume two characters at once here (since we have an
-					// escaped quote).
-					xp.Value = append(xp.Value, '"')
-					xp.Index = nextIndex
-				} else {
-					xp.Value = append(xp.Value, char)
-				}
-			} else if char == '"' {
-				// Since the **escaped quote** case `\"` has already been
-				// covered, this case should only occur in the closing quote
-				// case.
-				nextIndex := xp.Index + 1
-				if nextIndex < len(xp.Header) {
-					if xp.Header[nextIndex] == ';' || xp.Header[nextIndex] == ',' {
-						// Consume two characters at once here (since we have an
-						// closing quote).
-						xp.Index = nextIndex
-
-						if len(xp.Key) == 0 {
-							// Quoted values, e.g. `""`, are allowed to be empty.
-							return XFCC{}, ex.New(ErrXFCCParsing).WithMessage("Key missing")
-						}
-						err := xp.FillXFCCKeyValue()
-						if err != nil {
-							return XFCC{}, err
-						}
-
-						xp.Key = make([]rune, 0, initialKeyCapacity)
-						xp.Value = make([]rune, 0, initialValueCapacity)
-						xp.State = parseXFCCKey
-						if xp.Header[nextIndex] == ',' {
-							xp.Parsed = append(xp.Parsed, xp.Element)
-							xp.Element = XFCCElement{}
-						}
-					} else {
-						return XFCC{}, ex.New(ErrXFCCParsing).WithMessage("Closing quote not followed by `;`.")
-					}
-				} else {
-					// NOTE: If `nextIndex >= len(xp.Header)` then we are at the end,
-					//       which is a no-op here.
-					xp.State = parseXFCCKey
-				}
-			} else {
-				xp.Value = append(xp.Value, char)
+			err := xp.HandleQuotedValueCharacter(char)
+			if err != nil {
+				return XFCC{}, err
 			}
 		}
 
@@ -376,6 +332,61 @@ func (xp *xfccParser) HandleValueCharacter(char rune) error {
 		if char == ',' {
 			xp.Parsed = append(xp.Parsed, xp.Element)
 			xp.Element = XFCCElement{}
+		}
+	} else {
+		xp.Value = append(xp.Value, char)
+	}
+
+	return nil
+}
+
+// HandleQuotedValueCharacter advances the state machine if the current state is
+// `parseXFCCValueQuoted`.
+func (xp *xfccParser) HandleQuotedValueCharacter(char rune) error {
+	if char == '\\' {
+		nextIndex := xp.Index + 1
+		if nextIndex < len(xp.Header) && xp.Header[nextIndex] == '"' {
+			// Consume two characters at once here (since we have an
+			// escaped quote).
+			xp.Value = append(xp.Value, '"')
+			xp.Index = nextIndex
+		} else {
+			xp.Value = append(xp.Value, char)
+		}
+	} else if char == '"' {
+		// Since the **escaped quote** case `\"` has already been
+		// covered, this case should only occur in the closing quote
+		// case.
+		nextIndex := xp.Index + 1
+		if nextIndex < len(xp.Header) {
+			if xp.Header[nextIndex] == ';' || xp.Header[nextIndex] == ',' {
+				// Consume two characters at once here (since we have an
+				// closing quote).
+				xp.Index = nextIndex
+
+				if len(xp.Key) == 0 {
+					// Quoted values, e.g. `""`, are allowed to be empty.
+					return ex.New(ErrXFCCParsing).WithMessage("Key missing")
+				}
+				err := xp.FillXFCCKeyValue()
+				if err != nil {
+					return err
+				}
+
+				xp.Key = make([]rune, 0, initialKeyCapacity)
+				xp.Value = make([]rune, 0, initialValueCapacity)
+				xp.State = parseXFCCKey
+				if xp.Header[nextIndex] == ',' {
+					xp.Parsed = append(xp.Parsed, xp.Element)
+					xp.Element = XFCCElement{}
+				}
+			} else {
+				return ex.New(ErrXFCCParsing).WithMessage("Closing quote not followed by `;`.")
+			}
+		} else {
+			// NOTE: If `nextIndex >= len(xp.Header)` then we are at the end,
+			//       which is a no-op here.
+			xp.State = parseXFCCKey
 		}
 	} else {
 		xp.Value = append(xp.Value, char)
