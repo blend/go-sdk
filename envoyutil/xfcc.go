@@ -248,9 +248,9 @@ func ParseXFCC(header string) (XFCC, error) {
 	return xp.Parsed, nil
 }
 
-// FillXFCCKeyValue takes the currently active `.Key` and `.Value` and populates
+// FillKeyValue takes the currently active `.Key` and `.Value` and populates
 // the current `.Element`.
-func (xp *xfccParser) FillXFCCKeyValue() error {
+func (xp *xfccParser) FillKeyValue() error {
 	keyLower := strings.ToLower(string(xp.Key))
 	switch keyLower {
 	case "by":
@@ -320,7 +320,7 @@ func (xp *xfccParser) HandleValueCharacter(char rune) error {
 		if len(xp.Key) == 0 || len(xp.Value) == 0 {
 			return ex.New(ErrXFCCParsing).WithMessage("Key or Value missing")
 		}
-		err := xp.FillXFCCKeyValue()
+		err := xp.FillKeyValue()
 		if err != nil {
 			return err
 		}
@@ -367,7 +367,7 @@ func (xp *xfccParser) HandleQuotedValueCharacter(char rune) error {
 					// Quoted values, e.g. `""`, are allowed to be empty.
 					return ex.New(ErrXFCCParsing).WithMessage("Key missing")
 				}
-				err := xp.FillXFCCKeyValue()
+				err := xp.FillKeyValue()
 				if err != nil {
 					return err
 				}
@@ -399,7 +399,7 @@ func (xp *xfccParser) HandleQuotedValueCharacter(char rune) error {
 // if need be.
 func (xp *xfccParser) Finalize() error {
 	if len(xp.Key) > 0 && len(xp.Value) > 0 {
-		err := xp.FillXFCCKeyValue()
+		err := xp.FillKeyValue()
 		if err != nil {
 			return err
 		}
