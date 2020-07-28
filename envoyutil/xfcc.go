@@ -216,7 +216,10 @@ func fillXFCCKeyValue(key, element string, value []rune, ele *XFCCElement) (err 
 		}
 		ele.Chain = string(value)
 	case "subject":
-		return nil
+		if len(ele.Subject) > 0 {
+			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", key)
+		}
+		ele.Subject = string(value)
 	case "uri":
 		if ele.URI != "" {
 			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", key)

@@ -249,11 +249,18 @@ func TestParseXFCCElement(t *testing.T) {
 
 	ele, err = envoyutil.ParseXFCCElement(xfccElementSubjectTest)
 	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{}, ele)
+	assert.Equal(envoyutil.XFCCElement{Subject: `"/C=US/ST=CA/L=San Francisco/OU=Lyft/CN=Test Client"`}, ele)
 
 	ele, err = envoyutil.ParseXFCCElement(xfccElementSubjectTest + ";" + xfccElementSubjectTest)
-	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{}, ele)
+	except, ok = err.(*ex.Ex)
+	assert.True(ok)
+	assert.NotNil(except)
+	expectedErr = &ex.Ex{
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    `Key already encountered "subject"`,
+		StackTrace: except.StackTrace,
+	}
+	assert.Equal(expectedErr, except)
 
 	ele, err = envoyutil.ParseXFCCElement(xfccElementURITest)
 	assert.Nil(err)
@@ -328,9 +335,10 @@ func TestParseXFCCElement(t *testing.T) {
 	ele, err = envoyutil.ParseXFCCElement(`By=spiffe://cluster.local/ns/blend/sa/protocol;Hash=52114972613efb0820c5e32bfee0f0ee2a84859f7169da6c222300ef852a1129;Subject="";URI=spiffe://cluster.local/ns/blend/sa/world`)
 	assert.Nil(err)
 	expected = envoyutil.XFCCElement{
-		By:   "spiffe://cluster.local/ns/blend/sa/protocol",
-		Hash: "52114972613efb0820c5e32bfee0f0ee2a84859f7169da6c222300ef852a1129",
-		URI:  "spiffe://cluster.local/ns/blend/sa/world",
+		By:      "spiffe://cluster.local/ns/blend/sa/protocol",
+		Hash:    "52114972613efb0820c5e32bfee0f0ee2a84859f7169da6c222300ef852a1129",
+		Subject: `""`,
+		URI:     "spiffe://cluster.local/ns/blend/sa/world",
 	}
 	assert.Equal(expected, ele)
 }
@@ -342,14 +350,16 @@ func TestParseXFCC(t *testing.T) {
 	assert.Nil(err)
 	expected := envoyutil.XFCC{
 		envoyutil.XFCCElement{
-			By:   "spiffe://cluster.local/ns/blend/sa/yule",
-			Hash: "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
-			URI:  "spiffe://cluster.local/ns/blend/sa/cheer",
+			By:      "spiffe://cluster.local/ns/blend/sa/yule",
+			Hash:    "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
+			Subject: "/C=US/ST=CA/L=San Francisco/OU=Lyft/CN=Test Client",
+			URI:     "spiffe://cluster.local/ns/blend/sa/cheer",
 		},
 		envoyutil.XFCCElement{
-			By:   "spiffe://cluster.local/ns/blend/sa/yule",
-			Hash: "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
-			URI:  "spiffe://cluster.local/ns/blend/sa/cheer",
+			By:      "spiffe://cluster.local/ns/blend/sa/yule",
+			Hash:    "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
+			Subject: "/C=US/ST=CA/L=San Francisco/OU=Lyft/CN=Test Client",
+			URI:     "spiffe://cluster.local/ns/blend/sa/cheer",
 		},
 	}
 	assert.Equal(expected, xfcc)
