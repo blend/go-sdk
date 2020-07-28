@@ -276,12 +276,16 @@ func TestParseXFCCElement(t *testing.T) {
 	assert.Equal(envoyutil.XFCCElement{By: "spiffe://cluster.local/ns/blend/sa/tide"}, ele)
 
 	ele, err = envoyutil.ParseXFCCElement(xfccElementByTest + ";" + xfccElementByTest)
-	assert.NotNil(err)
 	except, ok := err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
-	assert.Equal(envoyutil.ErrXFCCParsing, except.Class)
-	assert.Equal(envoyutil.XFCCElement{By: "spiffe://cluster.local/ns/blend/sa/tide"}, ele)
+	expectedErr := &ex.Ex{
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    `Key already encountered "by"`,
+		StackTrace: except.StackTrace,
+	}
+	assert.Equal(expectedErr, except)
+	assert.Equal(envoyutil.XFCCElement{}, ele)
 
 	ele, err = envoyutil.ParseXFCCElement(xfccElementHashTest)
 	assert.Nil(err)
@@ -291,7 +295,7 @@ func TestParseXFCCElement(t *testing.T) {
 	except, ok = err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
-	expectedErr := &ex.Ex{
+	expectedErr = &ex.Ex{
 		Class:      envoyutil.ErrXFCCParsing,
 		Message:    `Key already encountered "hash"`,
 		StackTrace: except.StackTrace,
@@ -348,12 +352,16 @@ func TestParseXFCCElement(t *testing.T) {
 	assert.Equal(envoyutil.XFCCElement{URI: "spiffe://cluster.local/ns/blend/sa/quasar"}, ele)
 
 	ele, err = envoyutil.ParseXFCCElement(xfccElementURITest + ";" + xfccElementURITest)
-	assert.NotNil(err)
 	except, ok = err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
-	assert.Equal(envoyutil.ErrXFCCParsing, except.Class)
-	assert.Equal(envoyutil.XFCCElement{URI: "spiffe://cluster.local/ns/blend/sa/quasar"}, ele)
+	expectedErr = &ex.Ex{
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    `Key already encountered "uri"`,
+		StackTrace: except.StackTrace,
+	}
+	assert.Equal(expectedErr, except)
+	assert.Equal(envoyutil.XFCCElement{}, ele)
 
 	ele, err = envoyutil.ParseXFCCElement(xfccElementDNSTest)
 	assert.Nil(err)
@@ -471,6 +479,19 @@ func TestParseXFCCElement(t *testing.T) {
 	ele, err = envoyutil.ParseXFCCElement(`By="first\tsecond"`)
 	assert.Nil(err)
 	assert.Equal(envoyutil.XFCCElement{By: "first\\tsecond"}, ele)
+
+	// COVERAGE for legacy stub.
+	ele, err = envoyutil.ParseXFCCElement(`By=a,URI=b`)
+	except, ok = err.(*ex.Ex)
+	assert.True(ok)
+	assert.NotNil(except)
+	expectedErr = &ex.Ex{
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    "WRENCH",
+		StackTrace: except.StackTrace,
+	}
+	assert.Equal(expectedErr, except)
+	assert.Equal(envoyutil.XFCCElement{}, ele)
 }
 
 func TestParseXFCC(t *testing.T) {
@@ -500,4 +521,13 @@ func TestParseXFCC(t *testing.T) {
 	assert.True(ok)
 	assert.NotNil(except)
 	assert.Equal(envoyutil.ErrXFCCParsing, except.Class)
+
+	// Quoted value at element boundary.
+	xfcc, err = envoyutil.ParseXFCC(`by="me",uri=you`)
+	assert.Nil(err)
+	expected = envoyutil.XFCC{
+		envoyutil.XFCCElement{By: "me"},
+		envoyutil.XFCCElement{URI: "you"},
+	}
+	assert.Equal(expected, xfcc)
 }

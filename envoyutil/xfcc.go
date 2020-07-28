@@ -184,27 +184,14 @@ const (
 	parseXFCCValueQuoted
 )
 
-// ParseXFCC parses the XFCC header
+// ParseXFCC parses the XFCC header.
 func ParseXFCC(header string) (XFCC, error) {
 	xfcc := XFCC{}
-	elements := strings.Split(header, ",")
-	for _, element := range elements {
-		ele, err := ParseXFCCElement(element)
-		if err != nil {
-			return XFCC{}, err
-		}
-		xfcc = append(xfcc, ele)
-	}
-	return xfcc, nil
-}
 
-// ParseXFCCElement parses an element out of the given string. An error is returned if the parser
-// encounters a key not in the valid list or the string is malformed
-func ParseXFCCElement(element string) (XFCCElement, error) {
 	state := parseXFCCKey
 	ele := XFCCElement{}
 	key := ""
-	asRunes := []rune(element)
+	asRunes := []rune(header)
 	value := make([]rune, 0, initialValueCapacity)
 	i := 0
 	for i < len(asRunes) {
@@ -224,18 +211,22 @@ func ParseXFCCElement(element string) (XFCCElement, error) {
 				state = parseXFCCValue
 			}
 		case parseXFCCValue:
-			if char == ';' {
+			if char == ',' || char == ';' {
 				if len(key) == 0 || len(value) == 0 {
-					return XFCCElement{}, ex.New(ErrXFCCParsing).WithMessage("Key or Value missing")
+					return XFCC{}, ex.New(ErrXFCCParsing).WithMessage("Key or Value missing")
 				}
 				err := fillXFCCKeyValue(key, value, &ele)
 				if err != nil {
-					return XFCCElement{}, err
+					return XFCC{}, err
 				}
 
 				key = ""
 				value = make([]rune, 0, initialValueCapacity)
 				state = parseXFCCKey
+				if char == ',' {
+					xfcc = append(xfcc, ele)
+					ele = XFCCElement{}
+				}
 			} else {
 				value = append(value, char)
 			}
@@ -256,26 +247,30 @@ func ParseXFCCElement(element string) (XFCCElement, error) {
 				// case.
 				nextIndex := i + 1
 				if nextIndex < len(asRunes) {
-					if asRunes[nextIndex] != ';' {
-						return ele, ex.New(ErrXFCCParsing).WithMessage("Closing quote not followed by `;`.")
-					}
+					if asRunes[nextIndex] == ';' || asRunes[nextIndex] == ',' {
+						// Consume two characters at once here (since we have an
+						// closing quote).
+						i = nextIndex
 
-					// Consume two characters at once here (since we have an
-					// closing quote).
-					i = nextIndex
+						if len(key) == 0 {
+							// Quoted values, e.g. `""`, are allowed to be empty.
+							return XFCC{}, ex.New(ErrXFCCParsing).WithMessage("Key missing")
+						}
+						err := fillXFCCKeyValue(key, value, &ele)
+						if err != nil {
+							return XFCC{}, err
+						}
 
-					if len(key) == 0 {
-						// Quoted values, e.g. `""`, are allowed to be empty.
-						return XFCCElement{}, ex.New(ErrXFCCParsing).WithMessage("Key missing")
+						key = ""
+						value = make([]rune, 0, initialValueCapacity)
+						state = parseXFCCKey
+						if asRunes[nextIndex] == ',' {
+							xfcc = append(xfcc, ele)
+							ele = XFCCElement{}
+						}
+					} else {
+						return XFCC{}, ex.New(ErrXFCCParsing).WithMessage("Closing quote not followed by `;`.")
 					}
-					err := fillXFCCKeyValue(key, value, &ele)
-					if err != nil {
-						return XFCCElement{}, err
-					}
-
-					key = ""
-					value = []rune{}
-					state = parseXFCCKey
 				} else {
 					// NOTE: If `nextIndex >= len(asRunes)` then we are at the end,
 					//       which is a no-op here.
@@ -292,14 +287,34 @@ func ParseXFCCElement(element string) (XFCCElement, error) {
 	}
 
 	if len(key) > 0 && len(value) > 0 {
-		return ele, fillXFCCKeyValue(key, value, &ele)
+		err := fillXFCCKeyValue(key, value, &ele)
+		if err != nil {
+			return XFCC{}, err
+		}
+		xfcc = append(xfcc, ele)
+		return xfcc, nil
 	}
 
 	if len(key) > 0 || len(value) > 0 {
-		return XFCCElement{}, ex.New(ErrXFCCParsing).WithMessage("Key or value found but not both")
+		return XFCC{}, ex.New(ErrXFCCParsing).WithMessage("Key or value found but not both")
 	}
 
-	return ele, nil
+	xfcc = append(xfcc, ele)
+	return xfcc, nil
+}
+
+// ParseXFCCElement is a legacy stub (intact now just to avoid rewriting too
+// many tests).
+func ParseXFCCElement(element string) (XFCCElement, error) {
+	xfcc, err := ParseXFCC(element)
+	if err != nil {
+		return XFCCElement{}, err
+	}
+	if len(xfcc) != 1 {
+		return XFCCElement{}, ex.New(ErrXFCCParsing).WithMessage("WRENCH")
+	}
+
+	return xfcc[0], nil
 }
 
 func fillXFCCKeyValue(key string, value []rune, ele *XFCCElement) (err error) {
