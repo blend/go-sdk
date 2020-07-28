@@ -170,6 +170,9 @@ const (
 	// ErrXFCCParsing is the class of error returned when parsing XFCC fails
 	ErrXFCCParsing = ex.Class("Error Parsing X-Forwarded-Client-Cert")
 
+	// initialValueCapacity is the capacity used for a key in a key-value
+	// pair from an XFCC header.
+	initialKeyCapacity = 4
 	// initialValueCapacity is the capacity used for a value in a key-value
 	// pair from an XFCC header.
 	initialValueCapacity = 8
@@ -190,7 +193,7 @@ func ParseXFCC(header string) (XFCC, error) {
 
 	state := parseXFCCKey
 	ele := XFCCElement{}
-	key := ""
+	key := make([]rune, 0, initialKeyCapacity)
 	asRunes := []rune(header)
 	value := make([]rune, 0, initialValueCapacity)
 	i := 0
@@ -201,7 +204,7 @@ func ParseXFCC(header string) (XFCC, error) {
 			if char == '=' {
 				state = parseXFCCValueStart
 			} else {
-				key += string(char)
+				key = append(key, char)
 			}
 		case parseXFCCValueStart:
 			if char == '"' {
@@ -220,7 +223,7 @@ func ParseXFCC(header string) (XFCC, error) {
 					return XFCC{}, err
 				}
 
-				key = ""
+				key = make([]rune, 0, initialKeyCapacity)
 				value = make([]rune, 0, initialValueCapacity)
 				state = parseXFCCKey
 				if char == ',' {
@@ -261,7 +264,7 @@ func ParseXFCC(header string) (XFCC, error) {
 							return XFCC{}, err
 						}
 
-						key = ""
+						key = make([]rune, 0, initialKeyCapacity)
 						value = make([]rune, 0, initialValueCapacity)
 						state = parseXFCCKey
 						if asRunes[nextIndex] == ',' {
@@ -303,43 +306,43 @@ func ParseXFCC(header string) (XFCC, error) {
 	return xfcc, nil
 }
 
-func fillXFCCKeyValue(key string, value []rune, ele *XFCCElement) (err error) {
-	key = strings.ToLower(key)
-	switch key {
+func fillXFCCKeyValue(key, value []rune, ele *XFCCElement) (err error) {
+	keyLower := strings.ToLower(string(key))
+	switch keyLower {
 	case "by":
 		if ele.By != "" {
-			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", key)
+			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", keyLower)
 		}
 		ele.By = string(value)
 	case "hash":
 		if len(ele.Hash) > 0 {
-			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", key)
+			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", keyLower)
 		}
 		ele.Hash = string(value)
 	case "cert":
 		if len(ele.Cert) > 0 {
-			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", key)
+			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", keyLower)
 		}
 		ele.Cert = string(value)
 	case "chain":
 		if len(ele.Chain) > 0 {
-			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", key)
+			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", keyLower)
 		}
 		ele.Chain = string(value)
 	case "subject":
 		if len(ele.Subject) > 0 {
-			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", key)
+			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", keyLower)
 		}
 		ele.Subject = string(value)
 	case "uri":
 		if ele.URI != "" {
-			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", key)
+			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", keyLower)
 		}
 		ele.URI = string(value)
 	case "dns":
 		ele.DNS = append(ele.DNS, string(value))
 	default:
-		return ex.New(ErrXFCCParsing).WithMessagef("Unknown key %q", key)
+		return ex.New(ErrXFCCParsing).WithMessagef("Unknown key %q", keyLower)
 	}
 	return nil
 }
