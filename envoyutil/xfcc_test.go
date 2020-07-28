@@ -253,6 +253,10 @@ func TestXFCCElementString(t *testing.T) {
 			Element:  envoyutil.XFCCElement{DNS: []string{"web.invalid", "bye.invalid"}},
 			Expected: "DNS=web.invalid;DNS=bye.invalid",
 		},
+		{
+			Element:  envoyutil.XFCCElement{By: "a,b=10", URI: `c; "then" again`},
+			Expected: "By=\"a,b=10\";URI=\"c; \\\"then\\\" again\"",
+		},
 	}
 	for _, tc := range testCases {
 		asString := tc.Element.String()
@@ -261,11 +265,6 @@ func TestXFCCElementString(t *testing.T) {
 		assert.Nil(err)
 		assert.Equal(envoyutil.XFCC{tc.Element}, parsed)
 	}
-
-	// NOTE: For quoting and unquoting, `ParseXFCC()` is not fully an
-	//       inverse to `XFCCElement.String()`.
-	xe := envoyutil.XFCCElement{By: "a,b=10", URI: `c; "then" again`}
-	assert.Equal("By=\"a,b=10\";URI=\"c; \\\"then\\\" again\"", xe.String())
 }
 
 func TestParseXFCC(t *testing.T) {
