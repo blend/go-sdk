@@ -1,12 +1,9 @@
 package envoyutil
 
 import (
-	"fmt"
 	"net/http"
 
-	"github.com/blend/go-sdk/collections"
 	"github.com/blend/go-sdk/ex"
-	"github.com/blend/go-sdk/spiffeutil"
 )
 
 const (
@@ -65,7 +62,6 @@ func ExtractAndVerifyClientIdentity(req *http.Request, cip ClientIdentityProvide
 		if verifier == nil {
 			return "", &XFCCFatalError{Class: ErrVerifierNil, XFCC: xfccValue}
 		}
-
 		err := verifier(xfcc)
 		if err != nil {
 			return "", err
@@ -74,30 +70,6 @@ func ExtractAndVerifyClientIdentity(req *http.Request, cip ClientIdentityProvide
 
 	// Do final extraction.
 	return cip(xfcc)
-}
-
-// ClientWorkloadID determines the SPIFFE workload identifier for the client.
-// This function assumes the client identity is in the `URI` field and that field
-// is a SPIFFE URI.
-func ClientWorkloadID(trustDomain string, xfcc XFCCElement) (string, error) {
-	pu, err := spiffeutil.Parse(xfcc.URI)
-	// NOTE: The `pu == nil` check is redundant, we expect `spiffeutil.Parse()`
-	//       not to violate the invariant that `pu != nil` when `err == nil`.
-	if err != nil || pu == nil {
-		return "", &XFCCExtractionError{
-			Class: ErrInvalidClientIdentity,
-			XFCC:  xfcc.String(),
-		}
-	}
-
-	if pu.TrustDomain != trustDomain {
-		return "", &XFCCValidationError{
-			Class: ErrInvalidClientIdentity,
-			XFCC:  xfcc.String(),
-		}
-	}
-
-	return pu.WorkloadID, nil
 }
 
 // ClientIdentityFromSPIFFE produces a function satisfying `ClientIdentityProvider`.
@@ -109,30 +81,12 @@ func ClientWorkloadID(trustDomain string, xfcc XFCCElement) (string, error) {
 //
 // Additionally, it takes a variadic input of `denied` client identities that
 // should not pass validation.
-func ClientIdentityFromSPIFFE(trustDomain string, denied ...string) ClientIdentityProvider {
-	deniedSet := collections.NewSetOfString(denied...)
-	return func(xfcc XFCCElement) (string, error) {
-		workloadID, err := ClientWorkloadID(trustDomain, xfcc)
-		if err != nil {
-			return "", err
-		}
-
-		kw, err := spiffeutil.ParseKubernetesWorkloadID(workloadID)
-		if err != nil || kw == nil {
-			return "", &XFCCExtractionError{
-				Class: ErrInvalidClientIdentity,
-				XFCC:  xfcc.String(),
-			}
-		}
-
-		clientIdentity := fmt.Sprintf("%s.%s", kw.ServiceAccount, kw.Namespace)
-		if deniedSet.Contains(clientIdentity) {
-			return "", &XFCCValidationError{
-				Class: ErrDeniedClientIdentity,
-				XFCC:  xfcc.String(),
-			}
-		}
-
-		return clientIdentity, nil
+func ClientIdentityFromSPIFFE(opts ...ClientIdentityProcessorOption) ClientIdentityProvider {
+	processor := ClientIdentityProcessor{
+		WorkloadFormatter: DefaultWorkloadFormatter,
 	}
+	for _, opt := range opts {
+		opt(&processor)
+	}
+	return processor.ClientIdentityProvider
 }

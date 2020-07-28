@@ -160,7 +160,10 @@ func TestClientIdentityFromSPIFFE(t *testing.T) {
 		assert.Len(xfccElements, 1)
 		xfcc := xfccElements[0]
 
-		cip := envoyutil.ClientIdentityFromSPIFFE(tc.TrustDomain, tc.Denied...)
+		cip := envoyutil.ClientIdentityFromSPIFFE(
+			envoyutil.OptAllowedTrustDomains(tc.TrustDomain),
+			envoyutil.OptDeniedTrustDomains(tc.Denied...),
+		)
 		clientIdentity, err := cip(xfcc)
 		assert.Equal(tc.ClientIdentity, clientIdentity)
 
