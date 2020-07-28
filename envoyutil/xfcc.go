@@ -78,6 +78,21 @@ func (xe XFCCElement) DecodeCert() (*x509.Certificate, error) {
 	return parsed[0], err
 }
 
+// DecodeChain decodes the `Chain` element from a URL encoded PEM to a
+// `[]x509.Certificate`.
+func (xe XFCCElement) DecodeChain() ([]*x509.Certificate, error) {
+	if xe.Chain == "" {
+		return nil, nil
+	}
+
+	value, err := url.QueryUnescape(xe.Chain)
+	if err != nil {
+		return nil, err
+	}
+
+	return certutil.ParseCertPEM([]byte(value))
+}
+
 // maybeQuoted quotes a string value that may need to be quoted to be part of an
 // XFCC header. It will use `%q` formatting to quote the value if it contains any
 // of `,` (comma), `;` (semi-colon), `=` (equals) or `"` (double quote).

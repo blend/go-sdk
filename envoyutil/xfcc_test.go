@@ -125,6 +125,41 @@ func TestXFCCElementDecodeCert(t *testing.T) {
 	}
 }
 
+func TestXFCCElementDecodeChain(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	parsedCerts, err := certutil.ParseCertPEM([]byte(xfccElementTestCert + "\n" + xfccElementTestCert))
+	assert.Nil(err)
+
+	type testCase struct {
+		Chain  string
+		Parsed []*x509.Certificate
+		Error  string
+	}
+	testCases := []testCase{
+		{Chain: ""},
+		{
+			Chain:  url.QueryEscape(xfccElementTestCert + "\n" + xfccElementTestCert),
+			Parsed: parsedCerts,
+		},
+		{Chain: "%", Error: `invalid URL escape "%"`},
+		{
+			Chain: "-----BEGIN CERTIFICATE-----\nnope\n-----END CERTIFICATE-----\n",
+			Error: "asn1: syntax error: truncated tag or length",
+		},
+	}
+	for _, tc := range testCases {
+		xe := envoyutil.XFCCElement{Chain: tc.Chain}
+		chain, err := xe.DecodeChain()
+		if tc.Error != "" {
+			assert.Equal(tc.Error, fmt.Sprintf("%v", err))
+		} else {
+			assert.Nil(err)
+		}
+		assert.Equal(tc.Parsed, chain)
+	}
+}
+
 func TestXFCCElementString(t *testing.T) {
 	assert := sdkAssert.New(t)
 
