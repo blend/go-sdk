@@ -239,7 +239,6 @@ func TestXFCCElementString(t *testing.T) {
 		Expected string
 	}
 	testCases := []testCase{
-		{Element: envoyutil.XFCCElement{}, Expected: ""},
 		{Element: envoyutil.XFCCElement{By: "hi"}, Expected: "By=hi"},
 		{Element: envoyutil.XFCCElement{Hash: "1389ab1"}, Expected: "Hash=1389ab1"},
 		{Element: envoyutil.XFCCElement{Cert: "anything-goes"}, Expected: "Cert=anything-goes"},
@@ -265,6 +264,10 @@ func TestXFCCElementString(t *testing.T) {
 		assert.Nil(err)
 		assert.Equal(envoyutil.XFCC{tc.Element}, parsed)
 	}
+
+	element := envoyutil.XFCCElement{}
+	asString := element.String()
+	assert.Equal("", asString)
 }
 
 func TestParseXFCC(t *testing.T) {
@@ -440,13 +443,16 @@ func TestParseXFCC(t *testing.T) {
 	assert.Equal(envoyutil.ErrXFCCParsing, except.Class)
 
 	ele, err = envoyutil.ParseXFCC(xfccElementEndTest)
-	assert.Nil(err)
-	expected = envoyutil.XFCC{
-		envoyutil.XFCCElement{
-			DNS: []string{"http://frontend.lyft.com"},
-		},
+	except, ok = err.(*ex.Ex)
+	assert.True(ok)
+	assert.NotNil(except)
+	expectedErr = &ex.Ex{
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    "Ends with separator character",
+		StackTrace: except.StackTrace,
 	}
-	assert.Equal(expected, ele)
+	assert.Equal(expectedErr, except)
+	assert.Equal(envoyutil.XFCC{}, ele)
 
 	ele, err = envoyutil.ParseXFCC("cert=" + xfccElementMalformedEncoding)
 	assert.Nil(err)
@@ -588,18 +594,32 @@ func TestParseXFCC(t *testing.T) {
 
 	// KV separator is the last character
 	xfcc, err = envoyutil.ParseXFCC("by=cliffhanger;")
-	assert.Nil(err)
-	expected = envoyutil.XFCC{
-		envoyutil.XFCCElement{By: "cliffhanger"},
+	except, ok = err.(*ex.Ex)
+	assert.True(ok)
+	assert.NotNil(except)
+	expectedErr = &ex.Ex{
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    "Ends with separator character",
+		StackTrace: except.StackTrace,
 	}
-	assert.Equal(expected, xfcc)
+	assert.Equal(expectedErr, except)
+	assert.Equal(envoyutil.XFCC{}, ele)
 
 	// Element separator is the last character
 	xfcc, err = envoyutil.ParseXFCC("uri=cliffhanger,")
-	assert.Nil(err)
-	expected = envoyutil.XFCC{
-		envoyutil.XFCCElement{URI: "cliffhanger"},
-		envoyutil.XFCCElement{},
+	except, ok = err.(*ex.Ex)
+	assert.True(ok)
+	assert.NotNil(except)
+	expectedErr = &ex.Ex{
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    "Ends with separator character",
+		StackTrace: except.StackTrace,
 	}
-	assert.Equal(expected, xfcc)
+	assert.Equal(expectedErr, except)
+	assert.Equal(envoyutil.XFCC{}, ele)
+
+	// Empty header
+	xfcc, err = envoyutil.ParseXFCC("")
+	assert.Nil(err)
+	assert.Equal(envoyutil.XFCC{}, ele)
 }

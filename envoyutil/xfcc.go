@@ -200,12 +200,20 @@ type xfccParser struct {
 
 // ParseXFCC parses the XFCC header.
 func ParseXFCC(header string) (XFCC, error) {
+	if header == "" {
+		return XFCC{}, nil
+	}
+
 	xp := &xfccParser{
 		Header: []rune(header),
 		Index:  0,
 		State:  parseXFCCKey,
 		Key:    make([]rune, 0, initialKeyCapacity),
 		Value:  make([]rune, 0, initialValueCapacity),
+	}
+	lastCharacter := xp.Header[len(xp.Header)-1]
+	if lastCharacter == ',' || lastCharacter == ';' {
+		return XFCC{}, ex.New(ErrXFCCParsing).WithMessage("Ends with separator character")
 	}
 
 	for xp.Index < len(xp.Header) {
