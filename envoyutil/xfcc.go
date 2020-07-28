@@ -211,18 +211,9 @@ func ParseXFCC(header string) (XFCC, error) {
 		xp.Char = asRunes[i]
 		switch xp.State {
 		case parseXFCCKey:
-			if xp.Char == '=' {
-				xp.State = parseXFCCValueStart
-			} else {
-				xp.Key = append(xp.Key, xp.Char)
-			}
+			xp.HandleKeyCharacter()
 		case parseXFCCValueStart:
-			if xp.Char == '"' {
-				xp.State = parseXFCCValueQuoted
-			} else {
-				xp.Value = append(xp.Value, xp.Char)
-				xp.State = parseXFCCValue
-			}
+			xp.HandleValueStartCharacter()
 		case parseXFCCValue:
 			if xp.Char == ',' || xp.Char == ';' {
 				if len(xp.Key) == 0 || len(xp.Value) == 0 {
@@ -358,4 +349,25 @@ func (xp *xfccParser) FillXFCCKeyValue() error {
 	}
 
 	return nil
+}
+
+// HandleKeyCharacter advances the state machine if the current state is
+// `parseXFCCKey`.
+func (xp *xfccParser) HandleKeyCharacter() {
+	if xp.Char == '=' {
+		xp.State = parseXFCCValueStart
+	} else {
+		xp.Key = append(xp.Key, xp.Char)
+	}
+}
+
+// HandleValueStartCharacter advances the state machine if the current state is
+// `parseXFCCValueStart`.
+func (xp *xfccParser) HandleValueStartCharacter() {
+	if xp.Char == '"' {
+		xp.State = parseXFCCValueQuoted
+	} else {
+		xp.Value = append(xp.Value, xp.Char)
+		xp.State = parseXFCCValue
+	}
 }
