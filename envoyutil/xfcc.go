@@ -227,7 +227,7 @@ func ParseXFCC(header string) (XFCC, error) {
 				if len(xp.Key) == 0 || len(xp.Value) == 0 {
 					return XFCC{}, ex.New(ErrXFCCParsing).WithMessage("Key or Value missing")
 				}
-				err := fillXFCCKeyValue(xp)
+				err := xp.FillXFCCKeyValue()
 				if err != nil {
 					return XFCC{}, err
 				}
@@ -268,7 +268,7 @@ func ParseXFCC(header string) (XFCC, error) {
 							// Quoted values, e.g. `""`, are allowed to be empty.
 							return XFCC{}, ex.New(ErrXFCCParsing).WithMessage("Key missing")
 						}
-						err := fillXFCCKeyValue(xp)
+						err := xp.FillXFCCKeyValue()
 						if err != nil {
 							return XFCC{}, err
 						}
@@ -299,7 +299,7 @@ func ParseXFCC(header string) (XFCC, error) {
 	}
 
 	if len(xp.Key) > 0 && len(xp.Value) > 0 {
-		err := fillXFCCKeyValue(xp)
+		err := xp.FillXFCCKeyValue()
 		if err != nil {
 			return XFCC{}, err
 		}
@@ -315,7 +315,9 @@ func ParseXFCC(header string) (XFCC, error) {
 	return xfcc, nil
 }
 
-func fillXFCCKeyValue(xp *xfccParser) (err error) {
+// FillXFCCKeyValue takes the currently active `.Key` and `.Value` and populates
+// the current `.Element`.
+func (xp *xfccParser) FillXFCCKeyValue() error {
 	keyLower := strings.ToLower(string(xp.Key))
 	switch keyLower {
 	case "by":
@@ -353,5 +355,6 @@ func fillXFCCKeyValue(xp *xfccParser) (err error) {
 	default:
 		return ex.New(ErrXFCCParsing).WithMessagef("Unknown key %q", keyLower)
 	}
+
 	return nil
 }
