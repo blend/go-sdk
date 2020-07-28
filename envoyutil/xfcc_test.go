@@ -585,4 +585,21 @@ func TestParseXFCC(t *testing.T) {
 		envoyutil.XFCCElement{URI: "you"},
 	}
 	assert.Equal(expected, xfcc)
+
+	// KV separator is the last character
+	xfcc, err = envoyutil.ParseXFCC("by=cliffhanger;")
+	assert.Nil(err)
+	expected = envoyutil.XFCC{
+		envoyutil.XFCCElement{By: "cliffhanger"},
+	}
+	assert.Equal(expected, xfcc)
+
+	// Element separator is the last character
+	xfcc, err = envoyutil.ParseXFCC("uri=cliffhanger,")
+	assert.Nil(err)
+	expected = envoyutil.XFCC{
+		envoyutil.XFCCElement{URI: "cliffhanger"},
+		envoyutil.XFCCElement{},
+	}
+	assert.Equal(expected, xfcc)
 }
