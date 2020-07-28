@@ -189,9 +189,10 @@ const (
 
 // xfccParser holds state while an XFCC header is being parsed.
 type xfccParser struct {
-	Char  rune
-	Key   []rune
-	Value []rune
+	Char    rune
+	Key     []rune
+	Value   []rune
+	Element XFCCElement
 }
 
 // ParseXFCC parses the XFCC header.
@@ -199,8 +200,7 @@ func ParseXFCC(header string) (XFCC, error) {
 	xfcc := XFCC{}
 
 	state := parseXFCCKey
-	ele := XFCCElement{}
-	xp := xfccParser{
+	xp := &xfccParser{
 		Key: make([]rune, 0, initialKeyCapacity),
 		Value: make([]rune, 0, initialValueCapacity),
 	}
@@ -227,7 +227,7 @@ func ParseXFCC(header string) (XFCC, error) {
 				if len(xp.Key) == 0 || len(xp.Value) == 0 {
 					return XFCC{}, ex.New(ErrXFCCParsing).WithMessage("Key or Value missing")
 				}
-				err := fillXFCCKeyValue(xp, &ele)
+				err := fillXFCCKeyValue(xp)
 				if err != nil {
 					return XFCC{}, err
 				}
@@ -236,8 +236,8 @@ func ParseXFCC(header string) (XFCC, error) {
 				xp.Value = make([]rune, 0, initialValueCapacity)
 				state = parseXFCCKey
 				if xp.Char == ',' {
-					xfcc = append(xfcc, ele)
-					ele = XFCCElement{}
+					xfcc = append(xfcc, xp.Element)
+					xp.Element = XFCCElement{}
 				}
 			} else {
 				xp.Value = append(xp.Value, xp.Char)
@@ -268,7 +268,7 @@ func ParseXFCC(header string) (XFCC, error) {
 							// Quoted values, e.g. `""`, are allowed to be empty.
 							return XFCC{}, ex.New(ErrXFCCParsing).WithMessage("Key missing")
 						}
-						err := fillXFCCKeyValue(xp, &ele)
+						err := fillXFCCKeyValue(xp)
 						if err != nil {
 							return XFCC{}, err
 						}
@@ -277,8 +277,8 @@ func ParseXFCC(header string) (XFCC, error) {
 						xp.Value = make([]rune, 0, initialValueCapacity)
 						state = parseXFCCKey
 						if asRunes[nextIndex] == ',' {
-							xfcc = append(xfcc, ele)
-							ele = XFCCElement{}
+							xfcc = append(xfcc, xp.Element)
+							xp.Element = XFCCElement{}
 						}
 					} else {
 						return XFCC{}, ex.New(ErrXFCCParsing).WithMessage("Closing quote not followed by `;`.")
@@ -299,11 +299,11 @@ func ParseXFCC(header string) (XFCC, error) {
 	}
 
 	if len(xp.Key) > 0 && len(xp.Value) > 0 {
-		err := fillXFCCKeyValue(xp, &ele)
+		err := fillXFCCKeyValue(xp)
 		if err != nil {
 			return XFCC{}, err
 		}
-		xfcc = append(xfcc, ele)
+		xfcc = append(xfcc, xp.Element)
 		return xfcc, nil
 	}
 
@@ -311,45 +311,45 @@ func ParseXFCC(header string) (XFCC, error) {
 		return XFCC{}, ex.New(ErrXFCCParsing).WithMessage("Key or value found but not both")
 	}
 
-	xfcc = append(xfcc, ele)
+	xfcc = append(xfcc, xp.Element)
 	return xfcc, nil
 }
 
-func fillXFCCKeyValue(xp xfccParser, ele *XFCCElement) (err error) {
+func fillXFCCKeyValue(xp *xfccParser) (err error) {
 	keyLower := strings.ToLower(string(xp.Key))
 	switch keyLower {
 	case "by":
-		if ele.By != "" {
+		if xp.Element.By != "" {
 			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", keyLower)
 		}
-		ele.By = string(xp.Value)
+		xp.Element.By = string(xp.Value)
 	case "hash":
-		if len(ele.Hash) > 0 {
+		if len(xp.Element.Hash) > 0 {
 			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", keyLower)
 		}
-		ele.Hash = string(xp.Value)
+		xp.Element.Hash = string(xp.Value)
 	case "cert":
-		if len(ele.Cert) > 0 {
+		if len(xp.Element.Cert) > 0 {
 			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", keyLower)
 		}
-		ele.Cert = string(xp.Value)
+		xp.Element.Cert = string(xp.Value)
 	case "chain":
-		if len(ele.Chain) > 0 {
+		if len(xp.Element.Chain) > 0 {
 			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", keyLower)
 		}
-		ele.Chain = string(xp.Value)
+		xp.Element.Chain = string(xp.Value)
 	case "subject":
-		if len(ele.Subject) > 0 {
+		if len(xp.Element.Subject) > 0 {
 			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", keyLower)
 		}
-		ele.Subject = string(xp.Value)
+		xp.Element.Subject = string(xp.Value)
 	case "uri":
-		if ele.URI != "" {
+		if xp.Element.URI != "" {
 			return ex.New(ErrXFCCParsing).WithMessagef("Key already encountered %q", keyLower)
 		}
-		ele.URI = string(xp.Value)
+		xp.Element.URI = string(xp.Value)
 	case "dns":
-		ele.DNS = append(ele.DNS, string(xp.Value))
+		xp.Element.DNS = append(xp.Element.DNS, string(xp.Value))
 	default:
 		return ex.New(ErrXFCCParsing).WithMessagef("Unknown key %q", keyLower)
 	}
