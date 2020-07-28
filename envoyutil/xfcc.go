@@ -20,8 +20,7 @@ type XFCC []XFCCElement
 // XFCCElement is an element in an XFCC header (see `XFCC`).
 type XFCCElement struct {
 	// By contains Subject Alternative Name (URI type) of the current proxy's
-	// certificate.	It is present here as a `string` and can be parsed to a
-	// `url.URL` if desired.
+	// certificate.	This can be decoded as a `*url.URL` via `xe.DecodeBy()`.
 	By string
 	// Hash contains the SHA 256 digest of the current client certificate; this
 	// is a string of 64 hexadecimal characters. This can be converted to the raw
@@ -37,12 +36,17 @@ type XFCCElement struct {
 	// Subject contains the `Subject` field of the current client certificate.
 	Subject string
 	// URI contains the URI SAN of the current client certificate (assumes only
-	// one URI SAN).
+	// one URI SAN). This can be decoded as a `*url.URL` via `xe.DecodeURI()`.
 	URI string
 	// DNS contains the DNS SANs of the current client certificate. A client
 	// certificate may contain multiple DNS SANs, each will be a separate
 	// key-value pair in the XFCC element.
 	DNS []string
+}
+
+// DecodeBy decodes the `By` element from a URI string to a `*url.URL`.
+func (xe XFCCElement) DecodeBy() (*url.URL, error) {
+	return url.Parse(xe.By)
 }
 
 // DecodeHash decodes the `Hash` element from a hex string to raw bytes.
@@ -91,6 +95,11 @@ func (xe XFCCElement) DecodeChain() ([]*x509.Certificate, error) {
 	}
 
 	return certutil.ParseCertPEM([]byte(value))
+}
+
+// DecodeURI decodes the `URI` element from a URI string to a `*url.URL`.
+func (xe XFCCElement) DecodeURI() (*url.URL, error) {
+	return url.Parse(xe.URI)
 }
 
 // maybeQuoted quotes a string value that may need to be quoted to be part of an

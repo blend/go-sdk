@@ -64,6 +64,38 @@ JmUY+1YGMn7qbeHTma33N28Ec7hK+WByul746Nro
 -----END CERTIFICATE-----`
 )
 
+func TestXFCCElementDecodeBy(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	type testCase struct {
+		By       string
+		Expected *url.URL
+		Error    string
+	}
+	testCases := []testCase{
+		{By: "", Expected: &url.URL{}},
+		{By: "\n", Error: `parse "\n": net/url: invalid control character in URL`},
+		{
+			By: "spiffe://cluster.local/ns/blend/sa/yule",
+			Expected: &url.URL{
+				Scheme: "spiffe",
+				Host:   "cluster.local",
+				Path:   "/ns/blend/sa/yule",
+			},
+		},
+	}
+	for _, tc := range testCases {
+		xe := envoyutil.XFCCElement{By: tc.By}
+		uri, err := xe.DecodeBy()
+		assert.Equal(tc.Expected, uri)
+		if tc.Error != "" {
+			assert.Equal(tc.Error, err.Error())
+		} else {
+			assert.Nil(err)
+		}
+	}
+}
+
 func TestXFCCElementDecodeHash(t *testing.T) {
 	assert := sdkAssert.New(t)
 
@@ -161,6 +193,38 @@ func TestXFCCElementDecodeChain(t *testing.T) {
 			assert.Nil(err)
 		}
 		assert.Equal(tc.Parsed, chain)
+	}
+}
+
+func TestXFCCElementDecodeURI(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	type testCase struct {
+		URI      string
+		Expected *url.URL
+		Error    string
+	}
+	testCases := []testCase{
+		{URI: "", Expected: &url.URL{}},
+		{URI: "\r", Error: `parse "\r": net/url: invalid control character in URL`},
+		{
+			URI: "spiffe://cluster.local/ns/first/sa/furst",
+			Expected: &url.URL{
+				Scheme: "spiffe",
+				Host:   "cluster.local",
+				Path:   "/ns/first/sa/furst",
+			},
+		},
+	}
+	for _, tc := range testCases {
+		xe := envoyutil.XFCCElement{URI: tc.URI}
+		uri, err := xe.DecodeURI()
+		assert.Equal(tc.Expected, uri)
+		if tc.Error != "" {
+			assert.Equal(tc.Error, err.Error())
+		} else {
+			assert.Nil(err)
+		}
 	}
 }
 
