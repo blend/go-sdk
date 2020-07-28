@@ -228,7 +228,7 @@ func ParseXFCCElement(element string) (XFCCElement, error) {
 				if len(key) == 0 || len(value) == 0 {
 					return XFCCElement{}, ex.New(ErrXFCCParsing).WithMessage("Key or Value missing")
 				}
-				err := fillXFCCKeyValue(key, element, value, &ele)
+				err := fillXFCCKeyValue(key, value, &ele)
 				if err != nil {
 					return XFCCElement{}, err
 				}
@@ -268,7 +268,7 @@ func ParseXFCCElement(element string) (XFCCElement, error) {
 						// Quoted values, e.g. `""`, are allowed to be empty.
 						return XFCCElement{}, ex.New(ErrXFCCParsing).WithMessage("Key missing")
 					}
-					err := fillXFCCKeyValue(key, element, value, &ele)
+					err := fillXFCCKeyValue(key, value, &ele)
 					if err != nil {
 						return XFCCElement{}, err
 					}
@@ -292,7 +292,7 @@ func ParseXFCCElement(element string) (XFCCElement, error) {
 	}
 
 	if len(key) > 0 && len(value) > 0 {
-		return ele, fillXFCCKeyValue(key, element, value, &ele)
+		return ele, fillXFCCKeyValue(key, value, &ele)
 	}
 
 	if len(key) > 0 || len(value) > 0 {
@@ -302,7 +302,7 @@ func ParseXFCCElement(element string) (XFCCElement, error) {
 	return ele, nil
 }
 
-func fillXFCCKeyValue(key, element string, value []rune, ele *XFCCElement) (err error) {
+func fillXFCCKeyValue(key string, value []rune, ele *XFCCElement) (err error) {
 	key = strings.ToLower(key)
 	switch key {
 	case "by":
