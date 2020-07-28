@@ -232,21 +232,37 @@ func TestXFCCElementString(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	type testCase struct {
-		By       string
-		URI      string
+		Element  *envoyutil.XFCCElement
 		Expected string
+		Override *envoyutil.XFCCElement
 	}
 	testCases := []testCase{
-		{Expected: ""},
-		{By: "hi", Expected: "By=hi"},
-		{URI: "bye", Expected: "URI=bye"},
+		{Element: &envoyutil.XFCCElement{}, Expected: ""},
+		{Element: &envoyutil.XFCCElement{By: "hi"}, Expected: "By=hi"},
+		{Element: &envoyutil.XFCCElement{Hash: "1389ab1"}, Expected: "Hash=1389ab1"},
+		{Element: &envoyutil.XFCCElement{Cert: "anything-goes"}, Expected: "Cert=anything-goes"},
+		{Element: &envoyutil.XFCCElement{Chain: "anything-goes"}, Expected: "Chain=anything-goes"},
+		{
+			Element:  &envoyutil.XFCCElement{Subject: "OU=Blent/CN=Test Client"},
+			Expected: `Subject="OU=Blent/CN=Test Client"`,
+			Override: &envoyutil.XFCCElement{Subject: `"OU=Blent/CN=Test Client"`},
+		},
+		{Element: &envoyutil.XFCCElement{URI: "bye"}, Expected: "URI=bye"},
+		{
+			Element:  &envoyutil.XFCCElement{DNS: []string{"web.invalid", "bye.invalid"}},
+			Expected: "DNS=web.invalid;DNS=bye.invalid",
+		},
 	}
 	for _, tc := range testCases {
-		xe := envoyutil.XFCCElement{By: tc.By, URI: tc.URI}
-		assert.Equal(tc.Expected, xe.String())
-		parsed, err := envoyutil.ParseXFCCElement(xe.String())
+		asString := tc.Element.String()
+		assert.Equal(tc.Expected, asString)
+		parsed, err := envoyutil.ParseXFCCElement(asString)
 		assert.Nil(err)
-		assert.Equal(xe, parsed)
+		if tc.Override != nil {
+			assert.Equal(tc.Override, &parsed)
+		} else {
+			assert.Equal(tc.Element, &parsed)
+		}
 	}
 
 	// NOTE: For quoting and unquoting, `ParseXFCCElement()` is not fully an

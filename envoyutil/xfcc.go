@@ -119,9 +119,25 @@ func (xe XFCCElement) String() string {
 	if xe.By != "" {
 		parts = append(parts, fmt.Sprintf("By=%s", maybeQuoted(xe.By)))
 	}
+	if xe.Hash != "" {
+		parts = append(parts, fmt.Sprintf("Hash=%s", maybeQuoted(xe.Hash)))
+	}
+	if xe.Cert != "" {
+		parts = append(parts, fmt.Sprintf("Cert=%s", maybeQuoted(xe.Cert)))
+	}
+	if xe.Chain != "" {
+		parts = append(parts, fmt.Sprintf("Chain=%s", maybeQuoted(xe.Chain)))
+	}
+	if xe.Subject != "" {
+		parts = append(parts, fmt.Sprintf("Subject=%q", xe.Subject))
+	}
 	if xe.URI != "" {
 		parts = append(parts, fmt.Sprintf("URI=%s", maybeQuoted(xe.URI)))
 	}
+	for _, dnsSAN := range xe.DNS {
+		parts = append(parts, fmt.Sprintf("DNS=%s", maybeQuoted(dnsSAN)))
+	}
+
 	return strings.Join(parts, ";")
 }
 
