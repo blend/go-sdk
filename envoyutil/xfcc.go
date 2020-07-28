@@ -194,12 +194,11 @@ type xfccParser struct {
 	Key     []rune
 	Value   []rune
 	Element XFCCElement
+	Parsed  XFCC
 }
 
 // ParseXFCC parses the XFCC header.
 func ParseXFCC(header string) (XFCC, error) {
-	xfcc := XFCC{}
-
 	xp := &xfccParser{
 		Key: make([]rune, 0, initialKeyCapacity),
 		Value: make([]rune, 0, initialValueCapacity),
@@ -228,7 +227,7 @@ func ParseXFCC(header string) (XFCC, error) {
 				xp.Value = make([]rune, 0, initialValueCapacity)
 				xp.State = parseXFCCKey
 				if xp.Char == ',' {
-					xfcc = append(xfcc, xp.Element)
+					xp.Parsed = append(xp.Parsed, xp.Element)
 					xp.Element = XFCCElement{}
 				}
 			} else {
@@ -269,7 +268,7 @@ func ParseXFCC(header string) (XFCC, error) {
 						xp.Value = make([]rune, 0, initialValueCapacity)
 						xp.State = parseXFCCKey
 						if asRunes[nextIndex] == ',' {
-							xfcc = append(xfcc, xp.Element)
+							xp.Parsed = append(xp.Parsed, xp.Element)
 							xp.Element = XFCCElement{}
 						}
 					} else {
@@ -295,16 +294,16 @@ func ParseXFCC(header string) (XFCC, error) {
 		if err != nil {
 			return XFCC{}, err
 		}
-		xfcc = append(xfcc, xp.Element)
-		return xfcc, nil
+		xp.Parsed = append(xp.Parsed, xp.Element)
+		return xp.Parsed, nil
 	}
 
 	if len(xp.Key) > 0 || len(xp.Value) > 0 {
 		return XFCC{}, ex.New(ErrXFCCParsing).WithMessage("Key or value found but not both")
 	}
 
-	xfcc = append(xfcc, xp.Element)
-	return xfcc, nil
+	xp.Parsed = append(xp.Parsed, xp.Element)
+	return xp.Parsed, nil
 }
 
 // FillXFCCKeyValue takes the currently active `.Key` and `.Value` and populates
