@@ -31,8 +31,8 @@ type XFCCElement struct {
 	// This can be decoded as a `*x509.Certificate` via `xe.DecodeCert()`.
 	Cert string
 	// Chain contains entire client certificate chain (including the leaf certificate)
-	// in URL encoded PEM format. It is present here as a `string` and can be parsed
-	// to a `[]x509.Certificate` if desired.
+	// in URL encoded PEM format. This can be decoded as a `[]*x509.Certificate` via
+	// `xe.DecodeChain()`.
 	Chain string
 	// Subject contains the `Subject` field of the current client certificate.
 	Subject string
