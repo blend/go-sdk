@@ -235,47 +235,50 @@ func TestXFCCElementString(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	type testCase struct {
-		Element  *envoyutil.XFCCElement
+		Element  envoyutil.XFCCElement
 		Expected string
 	}
 	testCases := []testCase{
-		{Element: &envoyutil.XFCCElement{}, Expected: ""},
-		{Element: &envoyutil.XFCCElement{By: "hi"}, Expected: "By=hi"},
-		{Element: &envoyutil.XFCCElement{Hash: "1389ab1"}, Expected: "Hash=1389ab1"},
-		{Element: &envoyutil.XFCCElement{Cert: "anything-goes"}, Expected: "Cert=anything-goes"},
-		{Element: &envoyutil.XFCCElement{Chain: "anything-goes"}, Expected: "Chain=anything-goes"},
+		{Element: envoyutil.XFCCElement{}, Expected: ""},
+		{Element: envoyutil.XFCCElement{By: "hi"}, Expected: "By=hi"},
+		{Element: envoyutil.XFCCElement{Hash: "1389ab1"}, Expected: "Hash=1389ab1"},
+		{Element: envoyutil.XFCCElement{Cert: "anything-goes"}, Expected: "Cert=anything-goes"},
+		{Element: envoyutil.XFCCElement{Chain: "anything-goes"}, Expected: "Chain=anything-goes"},
 		{
-			Element:  &envoyutil.XFCCElement{Subject: "OU=Blent/CN=Test Client"},
+			Element:  envoyutil.XFCCElement{Subject: "OU=Blent/CN=Test Client"},
 			Expected: `Subject="OU=Blent/CN=Test Client"`,
 		},
-		{Element: &envoyutil.XFCCElement{URI: "bye"}, Expected: "URI=bye"},
+		{Element: envoyutil.XFCCElement{URI: "bye"}, Expected: "URI=bye"},
 		{
-			Element:  &envoyutil.XFCCElement{DNS: []string{"web.invalid", "bye.invalid"}},
+			Element:  envoyutil.XFCCElement{DNS: []string{"web.invalid", "bye.invalid"}},
 			Expected: "DNS=web.invalid;DNS=bye.invalid",
 		},
 	}
 	for _, tc := range testCases {
 		asString := tc.Element.String()
 		assert.Equal(tc.Expected, asString)
-		parsed, err := envoyutil.ParseXFCCElement(asString)
+		parsed, err := envoyutil.ParseXFCC(asString)
 		assert.Nil(err)
-		assert.Equal(tc.Element, &parsed)
+		assert.Equal(envoyutil.XFCC{tc.Element}, parsed)
 	}
 
-	// NOTE: For quoting and unquoting, `ParseXFCCElement()` is not fully an
+	// NOTE: For quoting and unquoting, `ParseXFCC()` is not fully an
 	//       inverse to `XFCCElement.String()`.
 	xe := envoyutil.XFCCElement{By: "a,b=10", URI: `c; "then" again`}
 	assert.Equal("By=\"a,b=10\";URI=\"c; \\\"then\\\" again\"", xe.String())
 }
 
-func TestParseXFCCElement(t *testing.T) {
+func TestParseXFCC(t *testing.T) {
 	assert := sdkAssert.New(t)
 
-	ele, err := envoyutil.ParseXFCCElement(xfccElementByTest)
+	ele, err := envoyutil.ParseXFCC(xfccElementByTest)
 	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{By: "spiffe://cluster.local/ns/blend/sa/tide"}, ele)
+	expected := envoyutil.XFCC{
+		envoyutil.XFCCElement{By: "spiffe://cluster.local/ns/blend/sa/tide"},
+	}
+	assert.Equal(expected, ele)
 
-	ele, err = envoyutil.ParseXFCCElement(xfccElementByTest + ";" + xfccElementByTest)
+	ele, err = envoyutil.ParseXFCC(xfccElementByTest + ";" + xfccElementByTest)
 	except, ok := err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
@@ -285,13 +288,18 @@ func TestParseXFCCElement(t *testing.T) {
 		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
-	assert.Equal(envoyutil.XFCCElement{}, ele)
+	assert.Equal(envoyutil.XFCC{}, ele)
 
-	ele, err = envoyutil.ParseXFCCElement(xfccElementHashTest)
+	ele, err = envoyutil.ParseXFCC(xfccElementHashTest)
 	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{Hash: "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688"}, ele)
+	expected = envoyutil.XFCC{
+		envoyutil.XFCCElement{
+			Hash: "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
+		},
+	}
+	assert.Equal(expected, ele)
 
-	ele, err = envoyutil.ParseXFCCElement(xfccElementHashTest + ";" + xfccElementHashTest)
+	ele, err = envoyutil.ParseXFCC(xfccElementHashTest + ";" + xfccElementHashTest)
 	except, ok = err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
@@ -302,11 +310,16 @@ func TestParseXFCCElement(t *testing.T) {
 	}
 	assert.Equal(expectedErr, except)
 
-	ele, err = envoyutil.ParseXFCCElement(xfccElementCertTest)
+	ele, err = envoyutil.ParseXFCC(xfccElementCertTest)
 	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{Cert: xfccElementTestCertEncoded}, ele)
+	expected = envoyutil.XFCC{
+		envoyutil.XFCCElement{
+			Cert: xfccElementTestCertEncoded,
+		},
+	}
+	assert.Equal(expected, ele)
 
-	ele, err = envoyutil.ParseXFCCElement(xfccElementCertTest + ";" + xfccElementCertTest)
+	ele, err = envoyutil.ParseXFCC(xfccElementCertTest + ";" + xfccElementCertTest)
 	except, ok = err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
@@ -317,11 +330,16 @@ func TestParseXFCCElement(t *testing.T) {
 	}
 	assert.Equal(expectedErr, except)
 
-	ele, err = envoyutil.ParseXFCCElement(xfccElementChainTest)
+	ele, err = envoyutil.ParseXFCC(xfccElementChainTest)
 	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{Chain: xfccElementTestCertEncoded}, ele)
+	expected = envoyutil.XFCC{
+		envoyutil.XFCCElement{
+			Chain: xfccElementTestCertEncoded,
+		},
+	}
+	assert.Equal(expected, ele)
 
-	ele, err = envoyutil.ParseXFCCElement(xfccElementChainTest + ";" + xfccElementChainTest)
+	ele, err = envoyutil.ParseXFCC(xfccElementChainTest + ";" + xfccElementChainTest)
 	except, ok = err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
@@ -332,11 +350,16 @@ func TestParseXFCCElement(t *testing.T) {
 	}
 	assert.Equal(expectedErr, except)
 
-	ele, err = envoyutil.ParseXFCCElement(xfccElementSubjectTest)
+	ele, err = envoyutil.ParseXFCC(xfccElementSubjectTest)
 	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{Subject: "/C=US/ST=CA/L=San Francisco/OU=Lyft/CN=Test Client"}, ele)
+	expected = envoyutil.XFCC{
+		envoyutil.XFCCElement{
+			Subject: "/C=US/ST=CA/L=San Francisco/OU=Lyft/CN=Test Client",
+		},
+	}
+	assert.Equal(expected, ele)
 
-	ele, err = envoyutil.ParseXFCCElement(xfccElementSubjectTest + ";" + xfccElementSubjectTest)
+	ele, err = envoyutil.ParseXFCC(xfccElementSubjectTest + ";" + xfccElementSubjectTest)
 	except, ok = err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
@@ -347,11 +370,16 @@ func TestParseXFCCElement(t *testing.T) {
 	}
 	assert.Equal(expectedErr, except)
 
-	ele, err = envoyutil.ParseXFCCElement(xfccElementURITest)
+	ele, err = envoyutil.ParseXFCC(xfccElementURITest)
 	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{URI: "spiffe://cluster.local/ns/blend/sa/quasar"}, ele)
+	expected = envoyutil.XFCC{
+		envoyutil.XFCCElement{
+			URI: "spiffe://cluster.local/ns/blend/sa/quasar",
+		},
+	}
+	assert.Equal(expected, ele)
 
-	ele, err = envoyutil.ParseXFCCElement(xfccElementURITest + ";" + xfccElementURITest)
+	ele, err = envoyutil.ParseXFCC(xfccElementURITest + ";" + xfccElementURITest)
 	except, ok = err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
@@ -361,79 +389,108 @@ func TestParseXFCCElement(t *testing.T) {
 		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
-	assert.Equal(envoyutil.XFCCElement{}, ele)
+	assert.Equal(envoyutil.XFCC{}, ele)
 
-	ele, err = envoyutil.ParseXFCCElement(xfccElementDNSTest)
+	ele, err = envoyutil.ParseXFCC(xfccElementDNSTest)
 	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{DNS: []string{"http://frontend.lyft.com"}}, ele)
-
-	ele, err = envoyutil.ParseXFCCElement("dns=web.invalid;dns=blend.local.invalid")
-	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{DNS: []string{"web.invalid", "blend.local.invalid"}}, ele)
-
-	_, err = envoyutil.ParseXFCCElement(xfccElementNoneTest)
-	assert.NotNil(err)
-	except, ok = err.(*ex.Ex)
-	assert.True(ok)
-	assert.NotNil(except)
-	assert.Equal(envoyutil.ErrXFCCParsing, except.Class)
-
-	ele, err = envoyutil.ParseXFCCElement(xfccElementMultiTest)
-	assert.Nil(err)
-	expected := envoyutil.XFCCElement{
-		By:   "spiffe://cluster.local/ns/blend/sa/laser",
-		Hash: "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
+	expected = envoyutil.XFCC{
+		envoyutil.XFCCElement{
+			DNS: []string{"http://frontend.lyft.com"},
+		},
 	}
 	assert.Equal(expected, ele)
 
-	_, err = envoyutil.ParseXFCCElement(xfccElementMalformedKeyTest)
+	ele, err = envoyutil.ParseXFCC("dns=web.invalid;dns=blend.local.invalid")
+	assert.Nil(err)
+	expected = envoyutil.XFCC{
+		envoyutil.XFCCElement{
+			DNS: []string{"web.invalid", "blend.local.invalid"},
+		},
+	}
+	assert.Equal(expected, ele)
+
+	_, err = envoyutil.ParseXFCC(xfccElementNoneTest)
 	assert.NotNil(err)
 	except, ok = err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
 	assert.Equal(envoyutil.ErrXFCCParsing, except.Class)
 
-	_, err = envoyutil.ParseXFCCElement(xfccElementMultiMalformedKeyTest)
+	ele, err = envoyutil.ParseXFCC(xfccElementMultiTest)
+	assert.Nil(err)
+	expected = envoyutil.XFCC{
+		envoyutil.XFCCElement{
+			By:   "spiffe://cluster.local/ns/blend/sa/laser",
+			Hash: "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
+		},
+	}
+	assert.Equal(expected, ele)
+
+	_, err = envoyutil.ParseXFCC(xfccElementMalformedKeyTest)
 	assert.NotNil(err)
 	except, ok = err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
 	assert.Equal(envoyutil.ErrXFCCParsing, except.Class)
 
-	ele, err = envoyutil.ParseXFCCElement(xfccElementEndTest)
-	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{DNS: []string{"http://frontend.lyft.com"}}, ele)
-
-	ele, err = envoyutil.ParseXFCCElement("cert=" + xfccElementMalformedEncoding)
-	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{Cert: "%"}, ele)
-
-	ele, err = envoyutil.ParseXFCCElement("chain=" + xfccElementMalformedEncoding)
-	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{Chain: "%"}, ele)
-
-	ele, err = envoyutil.ParseXFCCElement("=;")
+	_, err = envoyutil.ParseXFCC(xfccElementMultiMalformedKeyTest)
 	assert.NotNil(err)
 	except, ok = err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
 	assert.Equal(envoyutil.ErrXFCCParsing, except.Class)
-	assert.Equal(envoyutil.XFCCElement{}, ele)
+
+	ele, err = envoyutil.ParseXFCC(xfccElementEndTest)
+	assert.Nil(err)
+	expected = envoyutil.XFCC{
+		envoyutil.XFCCElement{
+			DNS: []string{"http://frontend.lyft.com"},
+		},
+	}
+	assert.Equal(expected, ele)
+
+	ele, err = envoyutil.ParseXFCC("cert=" + xfccElementMalformedEncoding)
+	assert.Nil(err)
+	expected = envoyutil.XFCC{
+		envoyutil.XFCCElement{
+			Cert: "%",
+		},
+	}
+	assert.Equal(expected, ele)
+
+	ele, err = envoyutil.ParseXFCC("chain=" + xfccElementMalformedEncoding)
+	assert.Nil(err)
+	expected = envoyutil.XFCC{
+		envoyutil.XFCCElement{
+			Chain: "%",
+		},
+	}
+	assert.Equal(expected, ele)
+
+	ele, err = envoyutil.ParseXFCC("=;")
+	assert.NotNil(err)
+	except, ok = err.(*ex.Ex)
+	assert.True(ok)
+	assert.NotNil(except)
+	assert.Equal(envoyutil.ErrXFCCParsing, except.Class)
+	assert.Equal(envoyutil.XFCC{}, ele)
 
 	// Test empty subject
-	ele, err = envoyutil.ParseXFCCElement(`By=spiffe://cluster.local/ns/blend/sa/protocol;Hash=52114972613efb0820c5e32bfee0f0ee2a84859f7169da6c222300ef852a1129;Subject="";URI=spiffe://cluster.local/ns/blend/sa/world`)
+	ele, err = envoyutil.ParseXFCC(`By=spiffe://cluster.local/ns/blend/sa/protocol;Hash=52114972613efb0820c5e32bfee0f0ee2a84859f7169da6c222300ef852a1129;Subject="";URI=spiffe://cluster.local/ns/blend/sa/world`)
 	assert.Nil(err)
-	expected = envoyutil.XFCCElement{
-		By:      "spiffe://cluster.local/ns/blend/sa/protocol",
-		Hash:    "52114972613efb0820c5e32bfee0f0ee2a84859f7169da6c222300ef852a1129",
-		Subject: "",
-		URI:     "spiffe://cluster.local/ns/blend/sa/world",
+	expected = envoyutil.XFCC{
+		envoyutil.XFCCElement{
+			By:      "spiffe://cluster.local/ns/blend/sa/protocol",
+			Hash:    "52114972613efb0820c5e32bfee0f0ee2a84859f7169da6c222300ef852a1129",
+			Subject: "",
+			URI:     "spiffe://cluster.local/ns/blend/sa/world",
+		},
 	}
 	assert.Equal(expected, ele)
 
 	// Quoted value with empty key.
-	ele, err = envoyutil.ParseXFCCElement(`="a";b=20`)
-	assert.Equal(envoyutil.XFCCElement{}, ele)
+	ele, err = envoyutil.ParseXFCC(`="a";b=20`)
+	assert.Equal(envoyutil.XFCC{}, ele)
 	except, ok = err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
@@ -445,8 +502,8 @@ func TestParseXFCCElement(t *testing.T) {
 	assert.Equal(expectedErr, except)
 
 	// Quoted value with invalid key.
-	ele, err = envoyutil.ParseXFCCElement(`wrong="quoted";by=next`)
-	assert.Equal(envoyutil.XFCCElement{}, ele)
+	ele, err = envoyutil.ParseXFCC(`wrong="quoted";by=next`)
+	assert.Equal(envoyutil.XFCC{}, ele)
 	except, ok = err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
@@ -458,8 +515,8 @@ func TestParseXFCCElement(t *testing.T) {
 	assert.Equal(expectedErr, except)
 
 	// Closing quoted not following by `;`
-	ele, err = envoyutil.ParseXFCCElement(`a="b"---`)
-	assert.Equal(envoyutil.XFCCElement{}, ele)
+	ele, err = envoyutil.ParseXFCC(`a="b"---`)
+	assert.Equal(envoyutil.XFCC{}, ele)
 	except, ok = err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
@@ -471,35 +528,29 @@ func TestParseXFCCElement(t *testing.T) {
 	assert.Equal(expectedErr, except)
 
 	// Escaped quotes and other characters work as expected.
-	ele, err = envoyutil.ParseXFCCElement(`By="a,b=10";URI="c; \"then\" again"`)
+	ele, err = envoyutil.ParseXFCC(`By="a,b=10";URI="c; \"then\" again"`)
 	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{By: "a,b=10", URI: `c; "then" again`}, ele)
+	expected = envoyutil.XFCC{
+		envoyutil.XFCCElement{
+			By:  "a,b=10",
+			URI: `c; "then" again`,
+		},
+	}
+	assert.Equal(expected, ele)
 
 	// Bare escape character works fine (when not followed by a quote).
-	ele, err = envoyutil.ParseXFCCElement(`By="first\tsecond"`)
+	ele, err = envoyutil.ParseXFCC(`By="first\tsecond"`)
 	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{By: "first\\tsecond"}, ele)
-
-	// COVERAGE for legacy stub.
-	ele, err = envoyutil.ParseXFCCElement(`By=a,URI=b`)
-	except, ok = err.(*ex.Ex)
-	assert.True(ok)
-	assert.NotNil(except)
-	expectedErr = &ex.Ex{
-		Class:      envoyutil.ErrXFCCParsing,
-		Message:    "WRENCH",
-		StackTrace: except.StackTrace,
+	expected = envoyutil.XFCC{
+		envoyutil.XFCCElement{
+			By: "first\\tsecond",
+		},
 	}
-	assert.Equal(expectedErr, except)
-	assert.Equal(envoyutil.XFCCElement{}, ele)
-}
-
-func TestParseXFCC(t *testing.T) {
-	assert := sdkAssert.New(t)
+	assert.Equal(expected, ele)
 
 	xfcc, err := envoyutil.ParseXFCC(fullXFCCTest + "," + fullXFCCTest)
 	assert.Nil(err)
-	expected := envoyutil.XFCC{
+	expected = envoyutil.XFCC{
 		envoyutil.XFCCElement{
 			By:      "spiffe://cluster.local/ns/blend/sa/yule",
 			Hash:    "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
@@ -515,12 +566,17 @@ func TestParseXFCC(t *testing.T) {
 	}
 	assert.Equal(expected, xfcc)
 
-	_, err = envoyutil.ParseXFCC(xfccElementMalformedKeyTest)
-	assert.NotNil(err)
-	except, ok := err.(*ex.Ex)
+	ele, err = envoyutil.ParseXFCC(xfccElementMalformedKeyTest)
+	except, ok = err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
-	assert.Equal(envoyutil.ErrXFCCParsing, except.Class)
+	expectedErr = &ex.Ex{
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    "Key or value found but not both",
+		StackTrace: except.StackTrace,
+	}
+	assert.Equal(expectedErr, except)
+	assert.Equal(envoyutil.XFCC{}, ele)
 
 	// Quoted value at element boundary.
 	xfcc, err = envoyutil.ParseXFCC(`by="me",uri=you`)

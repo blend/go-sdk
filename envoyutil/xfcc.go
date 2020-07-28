@@ -303,20 +303,6 @@ func ParseXFCC(header string) (XFCC, error) {
 	return xfcc, nil
 }
 
-// ParseXFCCElement is a legacy stub (intact now just to avoid rewriting too
-// many tests).
-func ParseXFCCElement(element string) (XFCCElement, error) {
-	xfcc, err := ParseXFCC(element)
-	if err != nil {
-		return XFCCElement{}, err
-	}
-	if len(xfcc) != 1 {
-		return XFCCElement{}, ex.New(ErrXFCCParsing).WithMessage("WRENCH")
-	}
-
-	return xfcc[0], nil
-}
-
 func fillXFCCKeyValue(key string, value []rune, ele *XFCCElement) (err error) {
 	key = strings.ToLower(key)
 	switch key {
