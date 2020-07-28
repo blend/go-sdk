@@ -189,8 +189,9 @@ const (
 
 // xfccParser holds state while an XFCC header is being parsed.
 type xfccParser struct {
+	Header  []rune
+	Index   int
 	State   parseXFCCState
-	Char    rune
 	Key     []rune
 	Value   []rune
 	Element XFCCElement
@@ -200,45 +201,46 @@ type xfccParser struct {
 // ParseXFCC parses the XFCC header.
 func ParseXFCC(header string) (XFCC, error) {
 	xp := &xfccParser{
-		Key:   make([]rune, 0, initialKeyCapacity),
-		Value: make([]rune, 0, initialValueCapacity),
-		State: parseXFCCKey,
+		Header: []rune(header),
+		Index:  0,
+		State:  parseXFCCKey,
+		Key:    make([]rune, 0, initialKeyCapacity),
+		Value:  make([]rune, 0, initialValueCapacity),
 	}
-	asRunes := []rune(header)
-	i := 0
-	for i < len(asRunes) {
-		xp.Char = asRunes[i]
+
+	for xp.Index < len(xp.Header) {
+		char := xp.Header[xp.Index]
 		switch xp.State {
 		case parseXFCCKey:
-			xp.HandleKeyCharacter()
+			xp.HandleKeyCharacter(char)
 		case parseXFCCValueStart:
-			xp.HandleValueStartCharacter()
+			xp.HandleValueStartCharacter(char)
 		case parseXFCCValue:
-			err := xp.HandleValueCharacter()
+			err := xp.HandleValueCharacter(char)
 			if err != nil {
 				return XFCC{}, err
 			}
 		case parseXFCCValueQuoted:
-			if xp.Char == '\\' {
-				nextIndex := i + 1
-				if nextIndex < len(asRunes) && asRunes[nextIndex] == '"' {
+			if char == '\\' {
+				nextIndex := xp.Index + 1
+				if nextIndex < len(xp.Header) && xp.Header[nextIndex] == '"' {
 					// Consume two characters at once here (since we have an
 					// escaped quote).
 					xp.Value = append(xp.Value, '"')
-					i = nextIndex
+					xp.Index = nextIndex
 				} else {
-					xp.Value = append(xp.Value, xp.Char)
+					xp.Value = append(xp.Value, char)
 				}
-			} else if xp.Char == '"' {
+			} else if char == '"' {
 				// Since the **escaped quote** case `\"` has already been
 				// covered, this case should only occur in the closing quote
 				// case.
-				nextIndex := i + 1
-				if nextIndex < len(asRunes) {
-					if asRunes[nextIndex] == ';' || asRunes[nextIndex] == ',' {
+				nextIndex := xp.Index + 1
+				if nextIndex < len(xp.Header) {
+					if xp.Header[nextIndex] == ';' || xp.Header[nextIndex] == ',' {
 						// Consume two characters at once here (since we have an
 						// closing quote).
-						i = nextIndex
+						xp.Index = nextIndex
 
 						if len(xp.Key) == 0 {
 							// Quoted values, e.g. `""`, are allowed to be empty.
@@ -252,7 +254,7 @@ func ParseXFCC(header string) (XFCC, error) {
 						xp.Key = make([]rune, 0, initialKeyCapacity)
 						xp.Value = make([]rune, 0, initialValueCapacity)
 						xp.State = parseXFCCKey
-						if asRunes[nextIndex] == ',' {
+						if xp.Header[nextIndex] == ',' {
 							xp.Parsed = append(xp.Parsed, xp.Element)
 							xp.Element = XFCCElement{}
 						}
@@ -260,18 +262,18 @@ func ParseXFCC(header string) (XFCC, error) {
 						return XFCC{}, ex.New(ErrXFCCParsing).WithMessage("Closing quote not followed by `;`.")
 					}
 				} else {
-					// NOTE: If `nextIndex >= len(asRunes)` then we are at the end,
+					// NOTE: If `nextIndex >= len(xp.Header)` then we are at the end,
 					//       which is a no-op here.
 					xp.State = parseXFCCKey
 				}
 			} else {
-				xp.Value = append(xp.Value, xp.Char)
+				xp.Value = append(xp.Value, char)
 			}
 		}
 
-		// Increment `i` for the next iteration. (Note that branches of the `switch`
-		// statement may have already incremented `i` as well.)
-		i++
+		// Increment the index for the next iteration. (Note that branches of the
+		// `switch` statement may have already incremented `i` as well.)
+		xp.Index++
 	}
 
 	if len(xp.Key) > 0 && len(xp.Value) > 0 {
@@ -337,29 +339,29 @@ func (xp *xfccParser) FillXFCCKeyValue() error {
 
 // HandleKeyCharacter advances the state machine if the current state is
 // `parseXFCCKey`.
-func (xp *xfccParser) HandleKeyCharacter() {
-	if xp.Char == '=' {
+func (xp *xfccParser) HandleKeyCharacter(char rune) {
+	if char == '=' {
 		xp.State = parseXFCCValueStart
 	} else {
-		xp.Key = append(xp.Key, xp.Char)
+		xp.Key = append(xp.Key, char)
 	}
 }
 
 // HandleValueStartCharacter advances the state machine if the current state is
 // `parseXFCCValueStart`.
-func (xp *xfccParser) HandleValueStartCharacter() {
-	if xp.Char == '"' {
+func (xp *xfccParser) HandleValueStartCharacter(char rune) {
+	if char == '"' {
 		xp.State = parseXFCCValueQuoted
 	} else {
-		xp.Value = append(xp.Value, xp.Char)
+		xp.Value = append(xp.Value, char)
 		xp.State = parseXFCCValue
 	}
 }
 
 // HandleValueCharacter advances the state machine if the current state is
 // `parseXFCCValue`.
-func (xp *xfccParser) HandleValueCharacter() error {
-	if xp.Char == ',' || xp.Char == ';' {
+func (xp *xfccParser) HandleValueCharacter(char rune) error {
+	if char == ',' || char == ';' {
 		if len(xp.Key) == 0 || len(xp.Value) == 0 {
 			return ex.New(ErrXFCCParsing).WithMessage("Key or Value missing")
 		}
@@ -371,12 +373,12 @@ func (xp *xfccParser) HandleValueCharacter() error {
 		xp.Key = make([]rune, 0, initialKeyCapacity)
 		xp.Value = make([]rune, 0, initialValueCapacity)
 		xp.State = parseXFCCKey
-		if xp.Char == ',' {
+		if char == ',' {
 			xp.Parsed = append(xp.Parsed, xp.Element)
 			xp.Element = XFCCElement{}
 		}
 	} else {
-		xp.Value = append(xp.Value, xp.Char)
+		xp.Value = append(xp.Value, char)
 	}
 
 	return nil
