@@ -9,7 +9,6 @@ import (
 
 	"github.com/blend/go-sdk/certutil"
 	"github.com/blend/go-sdk/ex"
-	"github.com/blend/go-sdk/stringutil"
 )
 
 // XFCC represents a proxy header containing certificate information for the client
@@ -180,13 +179,15 @@ type parseXFCCState int
 
 const (
 	parseXFCCKey parseXFCCState = iota
+	parseXFCCValueStart
 	parseXFCCValue
+	parseXFCCValueQuoted
 )
 
 // ParseXFCC parses the XFCC header
 func ParseXFCC(header string) (XFCC, error) {
 	xfcc := XFCC{}
-	elements := stringutil.SplitCSV(header)
+	elements := strings.Split(header, ",")
 	for _, element := range elements {
 		ele, err := ParseXFCCElement(element)
 		if err != nil {
@@ -203,14 +204,24 @@ func ParseXFCCElement(element string) (XFCCElement, error) {
 	state := parseXFCCKey
 	ele := XFCCElement{}
 	key := ""
+	asRunes := []rune(element)
 	value := make([]rune, 0, initialValueCapacity)
-	for _, char := range element {
+	i := 0
+	for i < len(asRunes) {
+		char := asRunes[i]
 		switch state {
 		case parseXFCCKey:
 			if char == '=' {
-				state = parseXFCCValue
+				state = parseXFCCValueStart
 			} else {
 				key += string(char)
+			}
+		case parseXFCCValueStart:
+			if char == '"' {
+				state = parseXFCCValueQuoted
+			} else {
+				value = append(value, char)
+				state = parseXFCCValue
 			}
 		case parseXFCCValue:
 			if char == ';' {
@@ -228,7 +239,56 @@ func ParseXFCCElement(element string) (XFCCElement, error) {
 			} else {
 				value = append(value, char)
 			}
+		case parseXFCCValueQuoted:
+			if char == '\\' {
+				nextIndex := i + 1
+				if nextIndex < len(asRunes) && asRunes[nextIndex] == '"' {
+					// Consume two characters at once here (since we have an
+					// escaped quote).
+					value = append(value, '"')
+					i = nextIndex
+				} else {
+					value = append(value, char)
+				}
+			} else if char == '"' {
+				// Since the **escaped quote** case `\"` has already been
+				// covered, this case should only occur in the closing quote
+				// case.
+				nextIndex := i + 1
+				if nextIndex < len(asRunes) {
+					if asRunes[nextIndex] != ';' {
+						return ele, ex.New(ErrXFCCParsing).WithMessage("Closing quote not followed by `;`.")
+					}
+
+					// Consume two characters at once here (since we have an
+					// closing quote).
+					i = nextIndex
+
+					if len(key) == 0 {
+						// Quoted values, e.g. `""`, are allowed to be empty.
+						return XFCCElement{}, ex.New(ErrXFCCParsing).WithMessage("Key missing")
+					}
+					err := fillXFCCKeyValue(key, element, value, &ele)
+					if err != nil {
+						return XFCCElement{}, err
+					}
+
+					key = ""
+					value = []rune{}
+					state = parseXFCCKey
+				} else {
+					// NOTE: If `nextIndex >= len(asRunes)` then we are at the end,
+					//       which is a no-op here.
+					state = parseXFCCKey
+				}
+			} else {
+				value = append(value, char)
+			}
 		}
+
+		// Increment `i` for the next iteration. (Note that branches of the `switch`
+		// statement may have already incremented `i` as well.)
+		i++
 	}
 
 	if len(key) > 0 && len(value) > 0 {

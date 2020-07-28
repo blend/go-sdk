@@ -237,7 +237,6 @@ func TestXFCCElementString(t *testing.T) {
 	type testCase struct {
 		Element  *envoyutil.XFCCElement
 		Expected string
-		Override *envoyutil.XFCCElement
 	}
 	testCases := []testCase{
 		{Element: &envoyutil.XFCCElement{}, Expected: ""},
@@ -248,7 +247,6 @@ func TestXFCCElementString(t *testing.T) {
 		{
 			Element:  &envoyutil.XFCCElement{Subject: "OU=Blent/CN=Test Client"},
 			Expected: `Subject="OU=Blent/CN=Test Client"`,
-			Override: &envoyutil.XFCCElement{Subject: `"OU=Blent/CN=Test Client"`},
 		},
 		{Element: &envoyutil.XFCCElement{URI: "bye"}, Expected: "URI=bye"},
 		{
@@ -261,11 +259,7 @@ func TestXFCCElementString(t *testing.T) {
 		assert.Equal(tc.Expected, asString)
 		parsed, err := envoyutil.ParseXFCCElement(asString)
 		assert.Nil(err)
-		if tc.Override != nil {
-			assert.Equal(tc.Override, &parsed)
-		} else {
-			assert.Equal(tc.Element, &parsed)
-		}
+		assert.Equal(tc.Element, &parsed)
 	}
 
 	// NOTE: For quoting and unquoting, `ParseXFCCElement()` is not fully an
@@ -336,7 +330,7 @@ func TestParseXFCCElement(t *testing.T) {
 
 	ele, err = envoyutil.ParseXFCCElement(xfccElementSubjectTest)
 	assert.Nil(err)
-	assert.Equal(envoyutil.XFCCElement{Subject: `"/C=US/ST=CA/L=San Francisco/OU=Lyft/CN=Test Client"`}, ele)
+	assert.Equal(envoyutil.XFCCElement{Subject: "/C=US/ST=CA/L=San Francisco/OU=Lyft/CN=Test Client"}, ele)
 
 	ele, err = envoyutil.ParseXFCCElement(xfccElementSubjectTest + ";" + xfccElementSubjectTest)
 	except, ok = err.(*ex.Ex)
@@ -424,10 +418,59 @@ func TestParseXFCCElement(t *testing.T) {
 	expected = envoyutil.XFCCElement{
 		By:      "spiffe://cluster.local/ns/blend/sa/protocol",
 		Hash:    "52114972613efb0820c5e32bfee0f0ee2a84859f7169da6c222300ef852a1129",
-		Subject: `""`,
+		Subject: "",
 		URI:     "spiffe://cluster.local/ns/blend/sa/world",
 	}
 	assert.Equal(expected, ele)
+
+	// Quoted value with empty key.
+	ele, err = envoyutil.ParseXFCCElement(`="a";b=20`)
+	assert.Equal(envoyutil.XFCCElement{}, ele)
+	except, ok = err.(*ex.Ex)
+	assert.True(ok)
+	assert.NotNil(except)
+	expectedErr = &ex.Ex{
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    "Key missing",
+		StackTrace: except.StackTrace,
+	}
+	assert.Equal(expectedErr, except)
+
+	// Quoted value with invalid key.
+	ele, err = envoyutil.ParseXFCCElement(`wrong="quoted";by=next`)
+	assert.Equal(envoyutil.XFCCElement{}, ele)
+	except, ok = err.(*ex.Ex)
+	assert.True(ok)
+	assert.NotNil(except)
+	expectedErr = &ex.Ex{
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    `Unknown key "wrong"`,
+		StackTrace: except.StackTrace,
+	}
+	assert.Equal(expectedErr, except)
+
+	// Closing quoted not following by `;`
+	ele, err = envoyutil.ParseXFCCElement(`a="b"---`)
+	assert.Equal(envoyutil.XFCCElement{}, ele)
+	except, ok = err.(*ex.Ex)
+	assert.True(ok)
+	assert.NotNil(except)
+	expectedErr = &ex.Ex{
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    "Closing quote not followed by `;`.",
+		StackTrace: except.StackTrace,
+	}
+	assert.Equal(expectedErr, except)
+
+	// Escaped quotes and other characters work as expected.
+	ele, err = envoyutil.ParseXFCCElement(`By="a,b=10";URI="c; \"then\" again"`)
+	assert.Nil(err)
+	assert.Equal(envoyutil.XFCCElement{By: "a,b=10", URI: `c; "then" again`}, ele)
+
+	// Bare escape character works fine (when not followed by a quote).
+	ele, err = envoyutil.ParseXFCCElement(`By="first\tsecond"`)
+	assert.Nil(err)
+	assert.Equal(envoyutil.XFCCElement{By: "first\\tsecond"}, ele)
 }
 
 func TestParseXFCC(t *testing.T) {
