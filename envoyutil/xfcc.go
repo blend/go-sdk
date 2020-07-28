@@ -232,20 +232,11 @@ func ParseXFCC(header string) (XFCC, error) {
 		xp.Index++
 	}
 
-	if len(xp.Key) > 0 && len(xp.Value) > 0 {
-		err := xp.FillXFCCKeyValue()
-		if err != nil {
-			return XFCC{}, err
-		}
-		xp.Parsed = append(xp.Parsed, xp.Element)
-		return xp.Parsed, nil
+	err := xp.Finalize()
+	if err != nil {
+		return XFCC{}, err
 	}
 
-	if len(xp.Key) > 0 || len(xp.Value) > 0 {
-		return XFCC{}, ex.New(ErrXFCCParsing).WithMessage("Key or value found but not both")
-	}
-
-	xp.Parsed = append(xp.Parsed, xp.Element)
 	return xp.Parsed, nil
 }
 
@@ -392,5 +383,22 @@ func (xp *xfccParser) HandleQuotedValueCharacter(char rune) error {
 		xp.Value = append(xp.Value, char)
 	}
 
+	return nil
+}
+
+// Finalize runs when the state machine has exhausted the `.Header`. It consumes
+// any remaining `.Key` or `.Value` slices and adds them to the return value
+// if need be.
+func (xp *xfccParser) Finalize() error {
+	if len(xp.Key) > 0 && len(xp.Value) > 0 {
+		err := xp.FillXFCCKeyValue()
+		if err != nil {
+			return err
+		}
+	} else if len(xp.Key) > 0 || len(xp.Value) > 0 {
+		return ex.New(ErrXFCCParsing).WithMessage("Key or value found but not both")
+	}
+
+	xp.Parsed = append(xp.Parsed, xp.Element)
 	return nil
 }
