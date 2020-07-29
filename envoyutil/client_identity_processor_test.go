@@ -78,10 +78,8 @@ func TestOptFormatClientIdentity(t *testing.T) {
 		FormatClientIdentity: envoyutil.KubernetesClientIdentityFormatter,
 	}
 	sentinel := uuid.V4().ToFullString()
-	var fn envoyutil.ClientIdentityFormatter = func(_ envoyutil.XFCCElement, _ *spiffeutil.ParsedURI) (string, error) {
-		return sentinel, nil
-	}
-	opt := envoyutil.OptFormatClientIdentity(fn)
+	formatter := makeMockFormatter(sentinel)
+	opt := envoyutil.OptFormatClientIdentity(formatter)
 	opt(cip)
 
 	// Can't compare functions for equality, see https://github.com/blend/go-sdk/issues/167
@@ -89,4 +87,59 @@ func TestOptFormatClientIdentity(t *testing.T) {
 	s, err := cip.FormatClientIdentity(envoyutil.XFCCElement{}, nil)
 	assert.Equal(sentinel, s)
 	assert.Nil(err)
+}
+
+func TestClientIdentityProcessorClientIdentityProvider(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	// Use explicit `FormatClientIdentity`.
+	cip := envoyutil.ClientIdentityProcessor{
+		FormatClientIdentity: makeMockFormatter("sentinel"),
+	}
+	xfcc := envoyutil.XFCCElement{URI: "spiffe://cluster.local/ns/foo/sa/bar"}
+	clientID, err := cip.ClientIdentityProvider(xfcc)
+	assert.Equal("sentinel", clientID)
+	assert.Nil(err)
+
+	// Trust domain denied; fallback to default `FormatClientIdentity`.
+	cip = envoyutil.ClientIdentityProcessor{
+		DeniedTrustDomains: []string{"cluster.local"},
+	}
+	clientID, err = cip.ClientIdentityProvider(xfcc)
+	assert.Equal("", clientID)
+	assert.True(envoyutil.IsValidationError(err))
+	expected := &envoyutil.XFCCValidationError{
+		Class:    envoyutil.ErrInvalidClientIdentity,
+		XFCC:     xfcc.String(),
+		Metadata: map[string]string{"trustDomain": "cluster.local"},
+	}
+	assert.Equal(expected, err)
+
+	// Client ID not among allow list; fallback to default `FormatClientIdentity`.
+	cip = envoyutil.ClientIdentityProcessor{
+		AllowedClientIdentities: collections.NewSetOfString("ecks.why"),
+	}
+	clientID, err = cip.ClientIdentityProvider(xfcc)
+	assert.Equal("", clientID)
+	assert.True(envoyutil.IsValidationError(err))
+	expected = &envoyutil.XFCCValidationError{
+		Class:    envoyutil.ErrDeniedClientIdentity,
+		XFCC:     xfcc.String(),
+		Metadata: map[string]string{"clientID": "bar.foo"},
+	}
+	assert.Equal(expected, err)
+
+	// Client ID among allow list; fallback to default `FormatClientIdentity`.
+	cip = envoyutil.ClientIdentityProcessor{
+		AllowedClientIdentities: collections.NewSetOfString("ecks.why", "bar.foo"),
+	}
+	clientID, err = cip.ClientIdentityProvider(xfcc)
+	assert.Equal("bar.foo", clientID)
+	assert.Nil(err)
+}
+
+func makeMockFormatter(clientID string) envoyutil.ClientIdentityFormatter {
+	return func(_ envoyutil.XFCCElement, _ *spiffeutil.ParsedURI) (string, error) {
+		return clientID, nil
+	}
 }
