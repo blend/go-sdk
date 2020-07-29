@@ -27,6 +27,20 @@ func OptDeniedTrustDomains(trustDomains ...string) ClientIdentityProcessorOption
 	}
 }
 
+// OptAllowedClientIdentities adds allowed client identities to the processor.
+func OptAllowedClientIdentities(clientIDs ...string) ClientIdentityProcessorOption {
+	return func(cip *ClientIdentityProcessor) {
+		cip.AllowedClientIdentities = append(cip.AllowedClientIdentities, clientIDs...)
+	}
+}
+
+// OptDeniedClientIdentities adds denied client identities to the processor.
+func OptDeniedClientIdentities(clientIDs ...string) ClientIdentityProcessorOption {
+	return func(cip *ClientIdentityProcessor) {
+		cip.DeniedClientIdentities = append(cip.DeniedClientIdentities, clientIDs...)
+	}
+}
+
 // OptFormatClientIdentity sets the `FormatClientIdentity` on the processor.
 func OptFormatClientIdentity(formatter ClientIdentityFormatter) ClientIdentityProcessorOption {
 	return func(cip *ClientIdentityProcessor) {
@@ -56,11 +70,15 @@ func KubernetesClientIdentityFormatter(xfcc XFCCElement, pu *spiffeutil.ParsedUR
 // identity string from a parsed SPIFFE URI.
 type ClientIdentityFormatter = func(XFCCElement, *spiffeutil.ParsedURI) (string, error)
 
-// ClientIdentityProcessor is a client identity processor.
+// ClientIdentityProcessor provides configurable fields that can be used to
+// help validate a parsed SPIFFE URI and produce and validate a client identity
+// from a parsed SPIFFE URI.
 type ClientIdentityProcessor struct {
-	AllowedTrustDomains  []string
-	DeniedTrustDomains   []string
-	FormatClientIdentity ClientIdentityFormatter
+	AllowedTrustDomains     []string
+	DeniedTrustDomains      []string
+	AllowedClientIdentities []string
+	DeniedClientIdentities  []string
+	FormatClientIdentity    ClientIdentityFormatter
 }
 
 // ClientIdentityProvider returns a client identity provider for the given rule options.
