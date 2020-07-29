@@ -106,6 +106,12 @@ func (cip ClientIdentityProcessor) ClientIdentityProvider(xfcc XFCCElement) (str
 		return "", err
 	}
 
+	if err := cip.ProcessAllowedClientIdentities(xfcc, clientID); err != nil {
+		return "", err
+	}
+	if err := cip.ProcessDeniedClientIdentities(xfcc, clientID); err != nil {
+		return "", err
+	}
 	return clientID, nil
 }
 
@@ -136,6 +142,46 @@ func (cip ClientIdentityProcessor) ProcessDeniedTrustDomains(xfcc XFCCElement, p
 				Class: ErrDeniedClientIdentity,
 				XFCC:  xfcc.String(),
 			}
+		}
+	}
+
+	return nil
+}
+
+// ProcessAllowedClientIdentities returns an error if an allow list is configured
+// and a client ID does not match any elements in the list.
+func (cip ClientIdentityProcessor) ProcessAllowedClientIdentities(xfcc XFCCElement, clientID string) error {
+	if cip.AllowedClientIdentities.Len() == 0 {
+		return nil
+	}
+
+	if cip.AllowedClientIdentities.Contains(clientID) {
+		return nil
+	}
+
+	return &XFCCValidationError{
+		Class: ErrInvalidClientIdentity,
+		XFCC:  xfcc.String(),
+		Metadata: map[string]string{
+			"clientID": clientID,
+		},
+	}
+}
+
+// ProcessDeniedClientIdentities returns an error if a denied list is configured
+// and a client ID matches any elements in the list.
+func (cip ClientIdentityProcessor) ProcessDeniedClientIdentities(xfcc XFCCElement, clientID string) error {
+	if cip.DeniedClientIdentities.Len() == 0 {
+		return nil
+	}
+
+	if cip.DeniedClientIdentities.Contains(clientID) {
+		return &XFCCValidationError{
+			Class: ErrInvalidClientIdentity,
+			XFCC:  xfcc.String(),
+			Metadata: map[string]string{
+				"clientID": clientID,
+			},
 		}
 	}
 
