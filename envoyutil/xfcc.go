@@ -46,12 +46,22 @@ type XFCCElement struct {
 
 // DecodeBy decodes the `By` element from a URI string to a `*url.URL`.
 func (xe XFCCElement) DecodeBy() (*url.URL, error) {
-	return url.Parse(xe.By)
+	u, err := url.Parse(xe.By)
+	if err != nil {
+		return nil, ex.New(err)
+	}
+
+	return u, nil
 }
 
 // DecodeHash decodes the `Hash` element from a hex string to raw bytes.
 func (xe XFCCElement) DecodeHash() ([]byte, error) {
-	return hex.DecodeString(xe.Hash)
+	bs, err := hex.DecodeString(xe.Hash)
+	if err != nil {
+		return nil, ex.New(err)
+	}
+
+	return bs, nil
 }
 
 // DecodeCert decodes the `Cert` element from a URL encoded PEM to a
@@ -63,12 +73,12 @@ func (xe XFCCElement) DecodeCert() (*x509.Certificate, error) {
 
 	value, err := url.QueryUnescape(xe.Cert)
 	if err != nil {
-		return nil, err
+		return nil, ex.New(err)
 	}
 
 	parsed, err := certutil.ParseCertPEM([]byte(value))
 	if err != nil {
-		return nil, err
+		return nil, ex.New(err)
 	}
 
 	if len(parsed) != 1 {
@@ -79,7 +89,7 @@ func (xe XFCCElement) DecodeCert() (*x509.Certificate, error) {
 		return nil, err
 	}
 
-	return parsed[0], err
+	return parsed[0], nil
 }
 
 // DecodeChain decodes the `Chain` element from a URL encoded PEM to a
@@ -91,15 +101,26 @@ func (xe XFCCElement) DecodeChain() ([]*x509.Certificate, error) {
 
 	value, err := url.QueryUnescape(xe.Chain)
 	if err != nil {
-		return nil, err
+		return nil, ex.New(err)
 	}
 
-	return certutil.ParseCertPEM([]byte(value))
+	parsed, err := certutil.ParseCertPEM([]byte(value))
+	if err != nil {
+		return nil, ex.New(err)
+	}
+
+	return parsed, nil
+
 }
 
 // DecodeURI decodes the `URI` element from a URI string to a `*url.URL`.
 func (xe XFCCElement) DecodeURI() (*url.URL, error) {
-	return url.Parse(xe.URI)
+	u, err := url.Parse(xe.URI)
+	if err != nil {
+		return nil, ex.New(err)
+	}
+
+	return u, nil
 }
 
 // maybeQuoted quotes a string value that may need to be quoted to be part of an

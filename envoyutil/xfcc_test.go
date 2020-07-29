@@ -109,7 +109,7 @@ func TestXFCCElementDecodeHash(t *testing.T) {
 	testCases := []testCase{
 		{Hash: "", Expected: []byte("")},
 		{Hash: "41434944", Expected: []byte("ACID")},
-		{Hash: "x", Expected: []byte(""), Error: "encoding/hex: invalid byte: U+0078 'x'"},
+		{Hash: "x", Expected: nil, Error: "encoding/hex: invalid byte: U+0078 'x'"},
 	}
 	for _, tc := range testCases {
 		xe := envoyutil.XFCCElement{Hash: tc.Hash}
