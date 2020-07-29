@@ -89,8 +89,8 @@ type ClientIdentityProcessor struct {
 }
 
 // ClientIdentityProvider returns a client identity; it uses the configured rules
-// to validate and format the client identity by the `URI` field of the XFCC
-// element. If `FormatClientIdentity` has not been specified, the
+// to validate and format the client identity by parsing the `URI` field of the
+// XFCC element. If `FormatClientIdentity` has not been specified, the
 // `KubernetesClientIdentityFormatter()` function will be used as a fallback.
 //
 // This function satisfies the `ClientIdentityProvider` interface.
