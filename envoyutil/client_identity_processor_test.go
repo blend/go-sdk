@@ -97,16 +97,16 @@ func TestClientIdentityProcessorClientIdentityProvider(t *testing.T) {
 		FormatClientIdentity: makeMockFormatter("sentinel"),
 	}
 	xfcc := envoyutil.XFCCElement{URI: "spiffe://cluster.local/ns/foo/sa/bar"}
-	clientID, err := cip.ClientIdentityProvider(xfcc)
-	assert.Equal("sentinel", clientID)
+	clientIdentity, err := cip.ClientIdentityProvider(xfcc)
+	assert.Equal("sentinel", clientIdentity)
 	assert.Nil(err)
 
 	// Trust domain denied; fallback to default `FormatClientIdentity`.
 	cip = envoyutil.ClientIdentityProcessor{
 		DeniedTrustDomains: []string{"cluster.local"},
 	}
-	clientID, err = cip.ClientIdentityProvider(xfcc)
-	assert.Equal("", clientID)
+	clientIdentity, err = cip.ClientIdentityProvider(xfcc)
+	assert.Equal("", clientIdentity)
 	assert.True(envoyutil.IsValidationError(err))
 	expected := &envoyutil.XFCCValidationError{
 		Class:    envoyutil.ErrInvalidClientIdentity,
@@ -115,31 +115,31 @@ func TestClientIdentityProcessorClientIdentityProvider(t *testing.T) {
 	}
 	assert.Equal(expected, err)
 
-	// Client ID not among allow list; fallback to default `FormatClientIdentity`.
+	// Client identity not among allow list; fallback to default `FormatClientIdentity`.
 	cip = envoyutil.ClientIdentityProcessor{
 		AllowedClientIdentities: collections.NewSetOfString("ecks.why"),
 	}
-	clientID, err = cip.ClientIdentityProvider(xfcc)
-	assert.Equal("", clientID)
+	clientIdentity, err = cip.ClientIdentityProvider(xfcc)
+	assert.Equal("", clientIdentity)
 	assert.True(envoyutil.IsValidationError(err))
 	expected = &envoyutil.XFCCValidationError{
 		Class:    envoyutil.ErrDeniedClientIdentity,
 		XFCC:     xfcc.String(),
-		Metadata: map[string]string{"clientID": "bar.foo"},
+		Metadata: map[string]string{"clientIdentity": "bar.foo"},
 	}
 	assert.Equal(expected, err)
 
-	// Client ID among allow list; fallback to default `FormatClientIdentity`.
+	// Client identity among allow list; fallback to default `FormatClientIdentity`.
 	cip = envoyutil.ClientIdentityProcessor{
 		AllowedClientIdentities: collections.NewSetOfString("ecks.why", "bar.foo"),
 	}
-	clientID, err = cip.ClientIdentityProvider(xfcc)
-	assert.Equal("bar.foo", clientID)
+	clientIdentity, err = cip.ClientIdentityProvider(xfcc)
+	assert.Equal("bar.foo", clientIdentity)
 	assert.Nil(err)
 }
 
-func makeMockFormatter(clientID string) envoyutil.ClientIdentityFormatter {
+func makeMockFormatter(clientIdentity string) envoyutil.ClientIdentityFormatter {
 	return func(_ envoyutil.XFCCElement, _ *spiffeutil.ParsedURI) (string, error) {
-		return clientID, nil
+		return clientIdentity, nil
 	}
 }

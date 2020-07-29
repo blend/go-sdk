@@ -31,19 +31,19 @@ func OptDeniedTrustDomains(trustDomains ...string) ClientIdentityProcessorOption
 }
 
 // OptAllowedClientIdentities adds allowed client identities to the processor.
-func OptAllowedClientIdentities(clientIDs ...string) ClientIdentityProcessorOption {
+func OptAllowedClientIdentities(clientIdentities ...string) ClientIdentityProcessorOption {
 	return func(cip *ClientIdentityProcessor) {
 		cip.AllowedClientIdentities = cip.AllowedClientIdentities.Union(
-			collections.NewSetOfString(clientIDs...),
+			collections.NewSetOfString(clientIdentities...),
 		)
 	}
 }
 
 // OptDeniedClientIdentities adds denied client identities to the processor.
-func OptDeniedClientIdentities(clientIDs ...string) ClientIdentityProcessorOption {
+func OptDeniedClientIdentities(clientIdentities ...string) ClientIdentityProcessorOption {
 	return func(cip *ClientIdentityProcessor) {
 		cip.DeniedClientIdentities = cip.DeniedClientIdentities.Union(
-			collections.NewSetOfString(clientIDs...),
+			collections.NewSetOfString(clientIdentities...),
 		)
 	}
 }
@@ -112,18 +112,18 @@ func (cip ClientIdentityProcessor) ClientIdentityProvider(xfcc XFCCElement) (str
 		return "", err
 	}
 
-	clientID, err := cip.formatClientID(xfcc, pu)
+	clientIdentity, err := cip.formatClientIdentity(xfcc, pu)
 	if err != nil {
 		return "", err
 	}
 
-	if err := cip.ProcessAllowedClientIdentities(xfcc, clientID); err != nil {
+	if err := cip.ProcessAllowedClientIdentities(xfcc, clientIdentity); err != nil {
 		return "", err
 	}
-	if err := cip.ProcessDeniedClientIdentities(xfcc, clientID); err != nil {
+	if err := cip.ProcessDeniedClientIdentities(xfcc, clientIdentity); err != nil {
 		return "", err
 	}
-	return clientID, nil
+	return clientIdentity, nil
 }
 
 // ProcessAllowedTrustDomains returns an error if an allow list is configured
@@ -169,12 +169,12 @@ func (cip ClientIdentityProcessor) ProcessDeniedTrustDomains(xfcc XFCCElement, p
 
 // ProcessAllowedClientIdentities returns an error if an allow list is configured
 // and the client identity does not match any elements in the list.
-func (cip ClientIdentityProcessor) ProcessAllowedClientIdentities(xfcc XFCCElement, clientID string) error {
+func (cip ClientIdentityProcessor) ProcessAllowedClientIdentities(xfcc XFCCElement, clientIdentity string) error {
 	if cip.AllowedClientIdentities.Len() == 0 {
 		return nil
 	}
 
-	if cip.AllowedClientIdentities.Contains(clientID) {
+	if cip.AllowedClientIdentities.Contains(clientIdentity) {
 		return nil
 	}
 
@@ -182,24 +182,24 @@ func (cip ClientIdentityProcessor) ProcessAllowedClientIdentities(xfcc XFCCEleme
 		Class: ErrDeniedClientIdentity,
 		XFCC:  xfcc.String(),
 		Metadata: map[string]string{
-			"clientID": clientID,
+			"clientIdentity": clientIdentity,
 		},
 	}
 }
 
 // ProcessDeniedClientIdentities returns an error if a denied list is configured
 // and the client identity matches any elements in the list.
-func (cip ClientIdentityProcessor) ProcessDeniedClientIdentities(xfcc XFCCElement, clientID string) error {
+func (cip ClientIdentityProcessor) ProcessDeniedClientIdentities(xfcc XFCCElement, clientIdentity string) error {
 	if cip.DeniedClientIdentities.Len() == 0 {
 		return nil
 	}
 
-	if cip.DeniedClientIdentities.Contains(clientID) {
+	if cip.DeniedClientIdentities.Contains(clientIdentity) {
 		return &XFCCValidationError{
 			Class: ErrDeniedClientIdentity,
 			XFCC:  xfcc.String(),
 			Metadata: map[string]string{
-				"clientID": clientID,
+				"clientIdentity": clientIdentity,
 			},
 		}
 	}
@@ -207,9 +207,9 @@ func (cip ClientIdentityProcessor) ProcessDeniedClientIdentities(xfcc XFCCElemen
 	return nil
 }
 
-// formatClientID invokes the `FormatClientIdentity` on the current processor
+// formatClientIdentity invokes the `FormatClientIdentity` on the current processor
 // or falls back to `KubernetesClientIdentityFormatter()` if it is not set.
-func (cip ClientIdentityProcessor) formatClientID(xfcc XFCCElement, pu *spiffeutil.ParsedURI) (string, error) {
+func (cip ClientIdentityProcessor) formatClientIdentity(xfcc XFCCElement, pu *spiffeutil.ParsedURI) (string, error) {
 	if cip.FormatClientIdentity != nil {
 		return cip.FormatClientIdentity(xfcc, pu)
 	}

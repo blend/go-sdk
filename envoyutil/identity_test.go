@@ -139,7 +139,7 @@ func TestClientIdentityFromSPIFFE(t *testing.T) {
 			TrustDomain: "cluster.local",
 			ErrorType:   "XFCCValidationError",
 			Class:       envoyutil.ErrDeniedClientIdentity,
-			Metadata:    map[string]string{"clientID": "bulb.light4"},
+			Metadata:    map[string]string{"clientIdentity": "bulb.light4"},
 			Denied:      []string{"bulb.light4"},
 		},
 		{
@@ -153,7 +153,7 @@ func TestClientIdentityFromSPIFFE(t *testing.T) {
 			TrustDomain: "cluster.local",
 			ErrorType:   "XFCCValidationError",
 			Class:       envoyutil.ErrDeniedClientIdentity,
-			Metadata:    map[string]string{"clientID": "bulb.light6"},
+			Metadata:    map[string]string{"clientIdentity": "bulb.light6"},
 			Denied:      []string{"not.me", "bulb.light6", "also.not-me"},
 		},
 	}
