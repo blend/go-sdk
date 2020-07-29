@@ -170,6 +170,10 @@ const (
 const (
 	// ErrXFCCParsing is the class of error returned when parsing XFCC fails
 	ErrXFCCParsing = ex.Class("Error Parsing X-Forwarded-Client-Cert")
+
+	// initialValueCapacity is the capacity used for a value in a key-value
+	// pair from an XFCC header.
+	initialValueCapacity = 8
 )
 
 type parseXFCCState int
@@ -199,7 +203,7 @@ func ParseXFCCElement(element string) (XFCCElement, error) {
 	state := parseXFCCKey
 	ele := XFCCElement{}
 	key := ""
-	value := []rune{}
+	value := make([]rune, 0, initialValueCapacity)
 	for _, char := range element {
 		switch state {
 		case parseXFCCKey:
@@ -219,7 +223,7 @@ func ParseXFCCElement(element string) (XFCCElement, error) {
 				}
 
 				key = ""
-				value = []rune{}
+				value = make([]rune, 0, initialValueCapacity)
 				state = parseXFCCKey
 			} else {
 				value = append(value, char)
