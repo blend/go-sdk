@@ -130,6 +130,9 @@ func (cip ClientIdentityProcessor) ProcessAllowedTrustDomains(xfcc XFCCElement, 
 	return &XFCCValidationError{
 		Class: ErrInvalidClientIdentity,
 		XFCC:  xfcc.String(),
+		Metadata: map[string]string{
+			"trustDomain": pu.TrustDomain,
+		},
 	}
 }
 
@@ -141,6 +144,9 @@ func (cip ClientIdentityProcessor) ProcessDeniedTrustDomains(xfcc XFCCElement, p
 			return &XFCCValidationError{
 				Class: ErrDeniedClientIdentity,
 				XFCC:  xfcc.String(),
+				Metadata: map[string]string{
+					"trustDomain": pu.TrustDomain,
+				},
 			}
 		}
 	}
