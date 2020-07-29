@@ -104,32 +104,32 @@ func (cip ClientIdentityProcessor) ClientIdentityProvider(xfcc XFCCElement) (str
 // ProcessAllowed returns an error if an allow list is configured and a trust domain does not match
 // any elements in the list.
 func (cip ClientIdentityProcessor) ProcessAllowed(xfcc XFCCElement, pu *spiffeutil.ParsedURI) error {
-	if len(cip.AllowedTrustDomains) > 0 {
-		for _, allowed := range cip.AllowedTrustDomains {
-			if strings.EqualFold(pu.TrustDomain, allowed) {
-				return nil
-			}
-		}
-		return &XFCCValidationError{
-			Class: ErrInvalidClientIdentity,
-			XFCC:  xfcc.String(),
+	if len(cip.AllowedTrustDomains) == 0 {
+		return nil
+	}
+
+	for _, allowed := range cip.AllowedTrustDomains {
+		if strings.EqualFold(pu.TrustDomain, allowed) {
+			return nil
 		}
 	}
-	return nil
+	return &XFCCValidationError{
+		Class: ErrInvalidClientIdentity,
+		XFCC:  xfcc.String(),
+	}
 }
 
 // ProcessDenied returns an error if a denied list is configured and a trust domain matches
 // any elements in the list.
 func (cip ClientIdentityProcessor) ProcessDenied(xfcc XFCCElement, pu *spiffeutil.ParsedURI) error {
-	if len(cip.DeniedTrustDomains) > 0 {
-		for _, denied := range cip.DeniedTrustDomains {
-			if strings.EqualFold(pu.TrustDomain, denied) {
-				return &XFCCValidationError{
-					Class: ErrDeniedClientIdentity,
-					XFCC:  xfcc.String(),
-				}
+	for _, denied := range cip.DeniedTrustDomains {
+		if strings.EqualFold(pu.TrustDomain, denied) {
+			return &XFCCValidationError{
+				Class: ErrDeniedClientIdentity,
+				XFCC:  xfcc.String(),
 			}
 		}
 	}
+
 	return nil
 }
