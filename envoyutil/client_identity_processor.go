@@ -7,6 +7,12 @@ import (
 	"github.com/blend/go-sdk/spiffeutil"
 )
 
+// NOTE: Ensure that
+//       - `KubernetesClientIdentityFormatter` satisfies `ClientIdentityFormatter`
+var (
+	_ ClientIdentityFormatter = KubernetesClientIdentityFormatter
+)
+
 // OptAllowedTrustDomains adds allowed trust domains to the processor.
 func OptAllowedTrustDomains(trustDomains ...string) ClientIdentityProcessorOption {
 	return func(cip *ClientIdentityProcessor) {
@@ -24,8 +30,11 @@ func OptDeniedTrustDomains(trustDomains ...string) ClientIdentityProcessorOption
 // ClientIdentityProcessorOption mutates a client identity processor.
 type ClientIdentityProcessorOption func(*ClientIdentityProcessor)
 
-// DefaultWorkloadFormatter is a default workload formatter.
-func DefaultWorkloadFormatter(xfcc XFCCElement, pu *spiffeutil.ParsedURI) (string, error) {
+// KubernetesClientIdentityFormatter assumes the SPIFFE URI contains a Kubernetes
+// workload ID of the form `ns/{namespace}/sa/{serviceAccount}` and formats the
+// client identity as `{serviceAccount}.{namespace}`. This function satisfies the
+// `ClientIdentityFormatter` interface.
+func KubernetesClientIdentityFormatter(xfcc XFCCElement, pu *spiffeutil.ParsedURI) (string, error) {
 	kw, err := spiffeutil.ParseKubernetesWorkloadID(pu.WorkloadID)
 	if err != nil {
 		return "", &XFCCExtractionError{
@@ -36,14 +45,20 @@ func DefaultWorkloadFormatter(xfcc XFCCElement, pu *spiffeutil.ParsedURI) (strin
 	return fmt.Sprintf("%s.%s", kw.ServiceAccount, kw.Namespace), nil
 }
 
+// ClientIdentityFormatter describes functions that will produce a client
+// identity string from a parsed SPIFFE URI.
+type ClientIdentityFormatter = func(XFCCElement, *spiffeutil.ParsedURI) (string, error)
+
 // ClientIdentityProcessor is a client identity processor.
 type ClientIdentityProcessor struct {
 	AllowedTrustDomains []string
 	DeniedTrustDomains  []string
-	WorkloadFormatter   func(XFCCElement, *spiffeutil.ParsedURI) (string, error)
+	WorkloadFormatter   ClientIdentityFormatter
 }
 
 // ClientIdentityProvider returns a client identity provider for the given rule options.
+// If a `WorkloadFormatter` has not been specified, the `KubernetesClientIdentityFormatter()`
+// function will be used as a fallback.
 func (cip ClientIdentityProcessor) ClientIdentityProvider(xfcc XFCCElement) (string, error) {
 	pu, err := spiffeutil.Parse(xfcc.URI)
 	if err != nil {
@@ -58,7 +73,7 @@ func (cip ClientIdentityProcessor) ClientIdentityProvider(xfcc XFCCElement) (str
 	if cip.WorkloadFormatter != nil {
 		return cip.WorkloadFormatter(xfcc, pu)
 	}
-	return DefaultWorkloadFormatter(xfcc, pu)
+	return KubernetesClientIdentityFormatter(xfcc, pu)
 }
 
 // ProcessAllowed returns an error if an allow list is configured and a trust domain does not match

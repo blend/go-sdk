@@ -83,7 +83,7 @@ func ExtractAndVerifyClientIdentity(req *http.Request, cip ClientIdentityProvide
 // should not pass validation.
 func ClientIdentityFromSPIFFE(opts ...ClientIdentityProcessorOption) ClientIdentityProvider {
 	processor := ClientIdentityProcessor{
-		WorkloadFormatter: DefaultWorkloadFormatter,
+		WorkloadFormatter: KubernetesClientIdentityFormatter,
 	}
 	for _, opt := range opts {
 		opt(&processor)
