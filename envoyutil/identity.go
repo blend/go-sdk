@@ -75,12 +75,19 @@ func ExtractAndVerifyClientIdentity(req *http.Request, cip ClientIdentityProvide
 // ClientIdentityFromSPIFFE produces a function satisfying `ClientIdentityProvider`.
 //
 // This function assumes the client identity is in the `URI` field and that field
-// is a SPIFFE URI. Further, it assumes the workload identifier identifies a
-// Kubernetes service account, of the form  `ns/{namespace}/sa/{serviceAccount}`.
-// After parsing, the returned value is of the form `{namespace}.{serviceAccount}`.
+// is a SPIFFE URI.
+//
+// It delegates processing of that SPIFFE URI via the `ClientIdentityProcessor`
+// type. The options supported can
+// - Provide an allow list for the trust domain in the SPIFFE URI
+// - Provide a deny list for the trust domain in the SPIFFE URI
+// - Provide a function to produce a client identity string from the SPIFFE
+//   URI (likely from the workload ID in the SPIFFE URI); if no option is
+//   provided for this the default will use `KubernetesClientIdentityFormatter`.
 //
 // Additionally, it takes a variadic input of `denied` client identities that
 // should not pass validation.
+// TODO: Add back support for the above comment.
 func ClientIdentityFromSPIFFE(opts ...ClientIdentityProcessorOption) ClientIdentityProvider {
 	processor := ClientIdentityProcessor{
 		FormatClientIdentity: KubernetesClientIdentityFormatter,

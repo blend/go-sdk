@@ -27,6 +27,13 @@ func OptDeniedTrustDomains(trustDomains ...string) ClientIdentityProcessorOption
 	}
 }
 
+// OptFormatClientIdentity sets the `FormatClientIdentity` on the processor.
+func OptFormatClientIdentity(formatter ClientIdentityFormatter) ClientIdentityProcessorOption {
+	return func(cip *ClientIdentityProcessor) {
+		cip.FormatClientIdentity = formatter
+	}
+}
+
 // ClientIdentityProcessorOption mutates a client identity processor.
 type ClientIdentityProcessorOption func(*ClientIdentityProcessor)
 
