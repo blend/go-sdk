@@ -51,9 +51,9 @@ type ClientIdentityFormatter = func(XFCCElement, *spiffeutil.ParsedURI) (string,
 
 // ClientIdentityProcessor is a client identity processor.
 type ClientIdentityProcessor struct {
-	AllowedTrustDomains []string
-	DeniedTrustDomains  []string
-	WorkloadFormatter   ClientIdentityFormatter
+	AllowedTrustDomains  []string
+	DeniedTrustDomains   []string
+	FormatClientIdentity ClientIdentityFormatter
 }
 
 // ClientIdentityProvider returns a client identity provider for the given rule options.
@@ -70,8 +70,8 @@ func (cip ClientIdentityProcessor) ClientIdentityProvider(xfcc XFCCElement) (str
 	if err := cip.ProcessDenied(xfcc, pu); err != nil {
 		return "", err
 	}
-	if cip.WorkloadFormatter != nil {
-		return cip.WorkloadFormatter(xfcc, pu)
+	if cip.FormatClientIdentity != nil {
+		return cip.FormatClientIdentity(xfcc, pu)
 	}
 	return KubernetesClientIdentityFormatter(xfcc, pu)
 }
