@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/blend/go-sdk/collections"
 	"github.com/blend/go-sdk/spiffeutil"
 )
 
@@ -30,14 +31,18 @@ func OptDeniedTrustDomains(trustDomains ...string) ClientIdentityProcessorOption
 // OptAllowedClientIdentities adds allowed client identities to the processor.
 func OptAllowedClientIdentities(clientIDs ...string) ClientIdentityProcessorOption {
 	return func(cip *ClientIdentityProcessor) {
-		cip.AllowedClientIdentities = append(cip.AllowedClientIdentities, clientIDs...)
+		cip.AllowedClientIdentities = cip.AllowedClientIdentities.Union(
+			collections.NewSetOfString(clientIDs...),
+		)
 	}
 }
 
 // OptDeniedClientIdentities adds denied client identities to the processor.
 func OptDeniedClientIdentities(clientIDs ...string) ClientIdentityProcessorOption {
 	return func(cip *ClientIdentityProcessor) {
-		cip.DeniedClientIdentities = append(cip.DeniedClientIdentities, clientIDs...)
+		cip.DeniedClientIdentities = cip.DeniedClientIdentities.Union(
+			collections.NewSetOfString(clientIDs...),
+		)
 	}
 }
 
@@ -76,8 +81,8 @@ type ClientIdentityFormatter = func(XFCCElement, *spiffeutil.ParsedURI) (string,
 type ClientIdentityProcessor struct {
 	AllowedTrustDomains     []string
 	DeniedTrustDomains      []string
-	AllowedClientIdentities []string
-	DeniedClientIdentities  []string
+	AllowedClientIdentities collections.SetOfString
+	DeniedClientIdentities  collections.SetOfString
 	FormatClientIdentity    ClientIdentityFormatter
 }
 
