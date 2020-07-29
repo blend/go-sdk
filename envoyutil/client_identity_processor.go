@@ -91,9 +91,15 @@ type ClientIdentityProcessor struct {
 // function will be used as a fallback.
 func (cip ClientIdentityProcessor) ClientIdentityProvider(xfcc XFCCElement) (string, error) {
 	pu, err := spiffeutil.Parse(xfcc.URI)
-	if err != nil {
-		return "", err
+	// NOTE: The `pu == nil` check is redundant, we expect `spiffeutil.Parse()`
+	//       not to violate the invariant that `pu != nil` when `err == nil`.
+	if err != nil || pu == nil {
+		return "", &XFCCExtractionError{
+			Class: ErrInvalidClientIdentity,
+			XFCC:  xfcc.String(),
+		}
 	}
+
 	if err := cip.ProcessAllowedTrustDomains(xfcc, pu); err != nil {
 		return "", err
 	}
@@ -142,7 +148,7 @@ func (cip ClientIdentityProcessor) ProcessDeniedTrustDomains(xfcc XFCCElement, p
 	for _, denied := range cip.DeniedTrustDomains {
 		if strings.EqualFold(pu.TrustDomain, denied) {
 			return &XFCCValidationError{
-				Class: ErrDeniedClientIdentity,
+				Class: ErrInvalidClientIdentity,
 				XFCC:  xfcc.String(),
 				Metadata: map[string]string{
 					"trustDomain": pu.TrustDomain,
@@ -166,7 +172,7 @@ func (cip ClientIdentityProcessor) ProcessAllowedClientIdentities(xfcc XFCCEleme
 	}
 
 	return &XFCCValidationError{
-		Class: ErrInvalidClientIdentity,
+		Class: ErrDeniedClientIdentity,
 		XFCC:  xfcc.String(),
 		Metadata: map[string]string{
 			"clientID": clientID,
@@ -183,7 +189,7 @@ func (cip ClientIdentityProcessor) ProcessDeniedClientIdentities(xfcc XFCCElemen
 
 	if cip.DeniedClientIdentities.Contains(clientID) {
 		return &XFCCValidationError{
-			Class: ErrInvalidClientIdentity,
+			Class: ErrDeniedClientIdentity,
 			XFCC:  xfcc.String(),
 			Metadata: map[string]string{
 				"clientID": clientID,

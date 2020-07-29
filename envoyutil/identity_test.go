@@ -107,6 +107,7 @@ func TestClientIdentityFromSPIFFE(t *testing.T) {
 		ClientIdentity string
 		ErrorType      string
 		Class          ex.Class
+		Metadata       interface{}
 		Denied         []string
 	}
 	testCases := []testCase{
@@ -125,6 +126,7 @@ func TestClientIdentityFromSPIFFE(t *testing.T) {
 			TrustDomain: "k8s.local",
 			ErrorType:   "XFCCValidationError",
 			Class:       envoyutil.ErrInvalidClientIdentity,
+			Metadata:    map[string]string{"trustDomain": "cluster.local"},
 		},
 		{
 			XFCC:        "URI=spiffe://cluster.local/ns/light3/sa/bulb/extra",
@@ -137,6 +139,7 @@ func TestClientIdentityFromSPIFFE(t *testing.T) {
 			TrustDomain: "cluster.local",
 			ErrorType:   "XFCCValidationError",
 			Class:       envoyutil.ErrDeniedClientIdentity,
+			Metadata:    map[string]string{"clientID": "bulb.light4"},
 			Denied:      []string{"bulb.light4"},
 		},
 		{
@@ -150,6 +153,7 @@ func TestClientIdentityFromSPIFFE(t *testing.T) {
 			TrustDomain: "cluster.local",
 			ErrorType:   "XFCCValidationError",
 			Class:       envoyutil.ErrDeniedClientIdentity,
+			Metadata:    map[string]string{"clientID": "bulb.light6"},
 			Denied:      []string{"not.me", "bulb.light6", "also.not-me"},
 		},
 	}
@@ -162,7 +166,7 @@ func TestClientIdentityFromSPIFFE(t *testing.T) {
 
 		cip := envoyutil.ClientIdentityFromSPIFFE(
 			envoyutil.OptAllowedTrustDomains(tc.TrustDomain),
-			envoyutil.OptDeniedTrustDomains(tc.Denied...),
+			envoyutil.OptDeniedClientIdentities(tc.Denied...),
 		)
 		clientIdentity, err := cip(xfcc)
 		assert.Equal(tc.ClientIdentity, clientIdentity)
@@ -170,11 +174,11 @@ func TestClientIdentityFromSPIFFE(t *testing.T) {
 		switch tc.ErrorType {
 		case "XFCCExtractionError":
 			assert.True(envoyutil.IsExtractionError(err), tc)
-			expected := &envoyutil.XFCCExtractionError{Class: tc.Class, XFCC: tc.XFCC}
+			expected := &envoyutil.XFCCExtractionError{Class: tc.Class, XFCC: tc.XFCC, Metadata: tc.Metadata}
 			assert.Equal(expected, err, tc)
 		case "XFCCValidationError":
 			assert.True(envoyutil.IsValidationError(err), tc)
-			expected := &envoyutil.XFCCValidationError{Class: tc.Class, XFCC: tc.XFCC}
+			expected := &envoyutil.XFCCValidationError{Class: tc.Class, XFCC: tc.XFCC, Metadata: tc.Metadata}
 			assert.Equal(expected, err, tc)
 		default:
 			assert.Nil(err, tc)
