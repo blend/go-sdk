@@ -40,7 +40,6 @@ func DefaultWorkloadFormatter(xfcc XFCCElement, pu *spiffeutil.ParsedURI) (strin
 type ClientIdentityProcessor struct {
 	AllowedTrustDomains []string
 	DeniedTrustDomains  []string
-	Custom              []VerifyXFCC
 	WorkloadFormatter   func(XFCCElement, *spiffeutil.ParsedURI) (string, error)
 }
 
