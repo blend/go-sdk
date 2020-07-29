@@ -89,10 +89,10 @@ func (cip ClientIdentityProcessor) ClientIdentityProvider(xfcc XFCCElement) (str
 	if err != nil {
 		return "", err
 	}
-	if err := cip.ProcessAllowed(xfcc, pu); err != nil {
+	if err := cip.ProcessAllowedTrustDomains(xfcc, pu); err != nil {
 		return "", err
 	}
-	if err := cip.ProcessDenied(xfcc, pu); err != nil {
+	if err := cip.ProcessDeniedTrustDomains(xfcc, pu); err != nil {
 		return "", err
 	}
 
@@ -104,9 +104,9 @@ func (cip ClientIdentityProcessor) ClientIdentityProvider(xfcc XFCCElement) (str
 	return clientID, nil
 }
 
-// ProcessAllowed returns an error if an allow list is configured and a trust domain does not match
-// any elements in the list.
-func (cip ClientIdentityProcessor) ProcessAllowed(xfcc XFCCElement, pu *spiffeutil.ParsedURI) error {
+// ProcessAllowedTrustDomains returns an error if an allow list is configured
+// and a trust domain does not match any elements in the list.
+func (cip ClientIdentityProcessor) ProcessAllowedTrustDomains(xfcc XFCCElement, pu *spiffeutil.ParsedURI) error {
 	if len(cip.AllowedTrustDomains) == 0 {
 		return nil
 	}
@@ -122,9 +122,9 @@ func (cip ClientIdentityProcessor) ProcessAllowed(xfcc XFCCElement, pu *spiffeut
 	}
 }
 
-// ProcessDenied returns an error if a denied list is configured and a trust domain matches
-// any elements in the list.
-func (cip ClientIdentityProcessor) ProcessDenied(xfcc XFCCElement, pu *spiffeutil.ParsedURI) error {
+// ProcessDeniedTrustDomains returns an error if a denied list is configured
+// and a trust domain matches any elements in the list.
+func (cip ClientIdentityProcessor) ProcessDeniedTrustDomains(xfcc XFCCElement, pu *spiffeutil.ParsedURI) error {
 	for _, denied := range cip.DeniedTrustDomains {
 		if strings.EqualFold(pu.TrustDomain, denied) {
 			return &XFCCValidationError{
