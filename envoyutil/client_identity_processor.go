@@ -95,10 +95,13 @@ func (cip ClientIdentityProcessor) ClientIdentityProvider(xfcc XFCCElement) (str
 	if err := cip.ProcessDenied(xfcc, pu); err != nil {
 		return "", err
 	}
-	if cip.FormatClientIdentity != nil {
-		return cip.FormatClientIdentity(xfcc, pu)
+
+	clientID, err := cip.formatClientID(xfcc, pu)
+	if err != nil {
+		return "", err
 	}
-	return KubernetesClientIdentityFormatter(xfcc, pu)
+
+	return clientID, nil
 }
 
 // ProcessAllowed returns an error if an allow list is configured and a trust domain does not match
@@ -132,4 +135,11 @@ func (cip ClientIdentityProcessor) ProcessDenied(xfcc XFCCElement, pu *spiffeuti
 	}
 
 	return nil
+}
+
+func (cip ClientIdentityProcessor) formatClientID(xfcc XFCCElement, pu *spiffeutil.ParsedURI) (string, error) {
+	if cip.FormatClientIdentity != nil {
+		return cip.FormatClientIdentity(xfcc, pu)
+	}
+	return KubernetesClientIdentityFormatter(xfcc, pu)
 }
