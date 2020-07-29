@@ -47,7 +47,7 @@ type XFCCElement struct {
 func (xe XFCCElement) DecodeBy() (*url.URL, error) {
 	u, err := url.Parse(xe.By)
 	if err != nil {
-		return nil, ex.New(err)
+		return nil, ex.New(ErrXFCCParsing).WithInner(err)
 	}
 
 	return u, nil
@@ -57,7 +57,7 @@ func (xe XFCCElement) DecodeBy() (*url.URL, error) {
 func (xe XFCCElement) DecodeHash() ([]byte, error) {
 	bs, err := hex.DecodeString(xe.Hash)
 	if err != nil {
-		return nil, ex.New(err)
+		return nil, ex.New(ErrXFCCParsing).WithInner(err)
 	}
 
 	return bs, nil
@@ -72,12 +72,12 @@ func (xe XFCCElement) DecodeCert() (*x509.Certificate, error) {
 
 	value, err := url.QueryUnescape(xe.Cert)
 	if err != nil {
-		return nil, ex.New(err)
+		return nil, ex.New(ErrXFCCParsing).WithInner(err)
 	}
 
 	parsed, err := certutil.ParseCertPEM([]byte(value))
 	if err != nil {
-		return nil, ex.New(err)
+		return nil, ex.New(ErrXFCCParsing).WithInner(err)
 	}
 
 	if len(parsed) != 1 {
@@ -100,12 +100,12 @@ func (xe XFCCElement) DecodeChain() ([]*x509.Certificate, error) {
 
 	value, err := url.QueryUnescape(xe.Chain)
 	if err != nil {
-		return nil, ex.New(err)
+		return nil, ex.New(ErrXFCCParsing).WithInner(err)
 	}
 
 	parsed, err := certutil.ParseCertPEM([]byte(value))
 	if err != nil {
-		return nil, ex.New(err)
+		return nil, ex.New(ErrXFCCParsing).WithInner(err)
 	}
 
 	return parsed, nil
@@ -116,7 +116,7 @@ func (xe XFCCElement) DecodeChain() ([]*x509.Certificate, error) {
 func (xe XFCCElement) DecodeURI() (*url.URL, error) {
 	u, err := url.Parse(xe.URI)
 	if err != nil {
-		return nil, ex.New(err)
+		return nil, ex.New(ErrXFCCParsing).WithInner(err)
 	}
 
 	return u, nil

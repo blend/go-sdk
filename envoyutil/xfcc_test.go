@@ -91,7 +91,10 @@ func TestXFCCElementDecodeBy(t *testing.T) {
 		uri, err := xe.DecodeBy()
 		assert.Equal(tc.Expected, uri)
 		if tc.ErrorRegexp != nil {
-			assert.True(tc.ErrorRegexp.MatchString(err.Error()))
+			asEx, ok := err.(*ex.Ex)
+			assert.True(ok)
+			assert.Equal(envoyutil.ErrXFCCParsing, asEx.Class)
+			assert.True(tc.ErrorRegexp.MatchString(asEx.Inner.Error()))
 		} else {
 			assert.Nil(err)
 		}
@@ -109,14 +112,14 @@ func TestXFCCElementDecodeHash(t *testing.T) {
 	testCases := []testCase{
 		{Hash: "", Expected: []byte("")},
 		{Hash: "41434944", Expected: []byte("ACID")},
-		{Hash: "x", Expected: nil, Error: "encoding/hex: invalid byte: U+0078 'x'"},
+		{Hash: "x", Expected: nil, Error: "Error Parsing X-Forwarded-Client-Cert\nencoding/hex: invalid byte: U+0078 'x'"},
 	}
 	for _, tc := range testCases {
 		xe := envoyutil.XFCCElement{Hash: tc.Hash}
 		decoded, err := xe.DecodeHash()
 		assert.Equal(tc.Expected, decoded)
 		if tc.Error != "" {
-			assert.Equal(tc.Error, err.Error())
+			assert.Equal(tc.Error, fmt.Sprintf("%v", err))
 		} else {
 			assert.Nil(err)
 		}
@@ -137,10 +140,10 @@ func TestXFCCElementDecodeCert(t *testing.T) {
 	testCases := []testCase{
 		{Cert: ""},
 		{Cert: xfccElementTestCertEncoded, Parsed: parsedCert[0]},
-		{Cert: "%", Error: `invalid URL escape "%"`},
+		{Cert: "%", Error: "Error Parsing X-Forwarded-Client-Cert\ninvalid URL escape \"%\""},
 		{
 			Cert:  "-----BEGIN CERTIFICATE-----\nnope\n-----END CERTIFICATE-----\n",
-			Error: "asn1: syntax error: truncated tag or length",
+			Error: "Error Parsing X-Forwarded-Client-Cert\nasn1: syntax error: truncated tag or length",
 		},
 		{
 			Cert:  url.QueryEscape(xfccElementTestCert + "\n" + xfccElementTestCert),
@@ -180,10 +183,10 @@ func TestXFCCElementDecodeChain(t *testing.T) {
 			Chain:  url.QueryEscape(xfccElementTestCert + "\n" + xfccElementTestCert),
 			Parsed: parsedCerts,
 		},
-		{Chain: "%", Error: `invalid URL escape "%"`},
+		{Chain: "%", Error: "Error Parsing X-Forwarded-Client-Cert\ninvalid URL escape \"%\""},
 		{
 			Chain: "-----BEGIN CERTIFICATE-----\nnope\n-----END CERTIFICATE-----\n",
-			Error: "asn1: syntax error: truncated tag or length",
+			Error: "Error Parsing X-Forwarded-Client-Cert\nasn1: syntax error: truncated tag or length",
 		},
 	}
 	for _, tc := range testCases {
@@ -224,7 +227,10 @@ func TestXFCCElementDecodeURI(t *testing.T) {
 		uri, err := xe.DecodeURI()
 		assert.Equal(tc.Expected, uri)
 		if tc.ErrorRegexp != nil {
-			assert.True(tc.ErrorRegexp.MatchString(err.Error()))
+			asEx, ok := err.(*ex.Ex)
+			assert.True(ok)
+			assert.Equal(envoyutil.ErrXFCCParsing, asEx.Class)
+			assert.True(tc.ErrorRegexp.MatchString(asEx.Inner.Error()))
 		} else {
 			assert.Nil(err)
 		}
