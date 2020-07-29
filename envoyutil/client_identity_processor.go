@@ -10,8 +10,10 @@ import (
 
 // NOTE: Ensure that
 //       - `KubernetesClientIdentityFormatter` satisfies `ClientIdentityFormatter`
+//       - `ClientIdentityProcessor.ClientIdentityProvider` satisfies `ClientIdentityProvider`
 var (
 	_ ClientIdentityFormatter = KubernetesClientIdentityFormatter
+	_ ClientIdentityProvider  = ClientIdentityProcessor{}.ClientIdentityProvider
 )
 
 // OptAllowedTrustDomains adds allowed trust domains to the processor.
@@ -86,9 +88,12 @@ type ClientIdentityProcessor struct {
 	FormatClientIdentity    ClientIdentityFormatter
 }
 
-// ClientIdentityProvider returns a client identity provider for the given rule options.
-// If a `WorkloadFormatter` has not been specified, the `KubernetesClientIdentityFormatter()`
-// function will be used as a fallback.
+// ClientIdentityProvider returns a client identity; it uses the configured rules
+// to validate and format the client identity by the `URI` field of the XFCC
+// element. If `FormatClientIdentity` has not been specified, the
+// `KubernetesClientIdentityFormatter()` function will be used as a fallback.
+//
+// This function satisfies the `ClientIdentityProvider` interface.
 func (cip ClientIdentityProcessor) ClientIdentityProvider(xfcc XFCCElement) (string, error) {
 	pu, err := spiffeutil.Parse(xfcc.URI)
 	// NOTE: The `pu == nil` check is redundant, we expect `spiffeutil.Parse()`
@@ -122,7 +127,8 @@ func (cip ClientIdentityProcessor) ClientIdentityProvider(xfcc XFCCElement) (str
 }
 
 // ProcessAllowedTrustDomains returns an error if an allow list is configured
-// and a trust domain does not match any elements in the list.
+// and the trust domain from the parsed SPIFFE URI does not match any elements
+// in the list.
 func (cip ClientIdentityProcessor) ProcessAllowedTrustDomains(xfcc XFCCElement, pu *spiffeutil.ParsedURI) error {
 	if len(cip.AllowedTrustDomains) == 0 {
 		return nil
@@ -143,7 +149,8 @@ func (cip ClientIdentityProcessor) ProcessAllowedTrustDomains(xfcc XFCCElement, 
 }
 
 // ProcessDeniedTrustDomains returns an error if a denied list is configured
-// and a trust domain matches any elements in the list.
+// and the trust domain from the parsed SPIFFE URI matches any elements in the
+// list.
 func (cip ClientIdentityProcessor) ProcessDeniedTrustDomains(xfcc XFCCElement, pu *spiffeutil.ParsedURI) error {
 	for _, denied := range cip.DeniedTrustDomains {
 		if strings.EqualFold(pu.TrustDomain, denied) {
@@ -161,7 +168,7 @@ func (cip ClientIdentityProcessor) ProcessDeniedTrustDomains(xfcc XFCCElement, p
 }
 
 // ProcessAllowedClientIdentities returns an error if an allow list is configured
-// and a client ID does not match any elements in the list.
+// and the client identity does not match any elements in the list.
 func (cip ClientIdentityProcessor) ProcessAllowedClientIdentities(xfcc XFCCElement, clientID string) error {
 	if cip.AllowedClientIdentities.Len() == 0 {
 		return nil
@@ -181,7 +188,7 @@ func (cip ClientIdentityProcessor) ProcessAllowedClientIdentities(xfcc XFCCEleme
 }
 
 // ProcessDeniedClientIdentities returns an error if a denied list is configured
-// and a client ID matches any elements in the list.
+// and the client identity matches any elements in the list.
 func (cip ClientIdentityProcessor) ProcessDeniedClientIdentities(xfcc XFCCElement, clientID string) error {
 	if cip.DeniedClientIdentities.Len() == 0 {
 		return nil
@@ -200,6 +207,8 @@ func (cip ClientIdentityProcessor) ProcessDeniedClientIdentities(xfcc XFCCElemen
 	return nil
 }
 
+// formatClientID invokes the `FormatClientIdentity` on the current processor
+// or falls back to `KubernetesClientIdentityFormatter()` if it is not set.
 func (cip ClientIdentityProcessor) formatClientID(xfcc XFCCElement, pu *spiffeutil.ParsedURI) (string, error) {
 	if cip.FormatClientIdentity != nil {
 		return cip.FormatClientIdentity(xfcc, pu)
