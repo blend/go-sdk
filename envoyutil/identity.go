@@ -13,7 +13,8 @@ const (
 	ErrInvalidXFCC = ex.Class("Invalid X-Forwarded-Client-Cert header")
 	// ErrInvalidClientIdentity is the error returned when XFCC has a missing / invalid client identity.
 	ErrInvalidClientIdentity = ex.Class("Client identity could not be determined from X-Forwarded-Client-Cert header")
-	// ErrDeniedClientIdentity is in the deny list.
+	// ErrDeniedClientIdentity is the error returned when a parsed client identity is in a deny list or
+	// not in an allow list.
 	ErrDeniedClientIdentity = ex.Class("Client identity from X-Forwarded-Client-Cert header is denied")
 	// ErrMissingExtractFunction is the message used when the "extract client
 	// identity" function is `nil` or not provided.
