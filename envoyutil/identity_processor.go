@@ -50,6 +50,15 @@ func OptAllowedIdentities(identities ...string) IdentityProcessorOption {
 	}
 }
 
+// OptDeniedIdentities adds denied identities to the processor.
+func OptDeniedIdentities(identities ...string) IdentityProcessorOption {
+	return func(ip *IdentityProcessor) {
+		ip.DeniedIdentities = ip.DeniedIdentities.Union(
+			collections.NewSetOfString(identities...),
+		)
+	}
+}
+
 // OptFormatIdentity sets the `FormatIdentity` on the processor.
 func OptFormatIdentity(formatter IdentityFormatter) IdentityProcessorOption {
 	return func(ip *IdentityProcessor) {
@@ -81,6 +90,7 @@ type IdentityProcessor struct {
 	AllowedTrustDomains []string
 	DeniedTrustDomains  []string
 	AllowedIdentities   collections.SetOfString
+	DeniedIdentities    collections.SetOfString
 	FormatIdentity      IdentityFormatter
 }
 
@@ -124,6 +134,9 @@ func (ip IdentityProcessor) IdentityProvider(xfcc XFCCElement) (string, error) {
 	}
 
 	if err := ip.ProcessAllowedIdentities(xfcc, identity); err != nil {
+		return "", err
+	}
+	if err := ip.ProcessDeniedIdentities(xfcc, identity); err != nil {
 		return "", err
 	}
 	return identity, nil
@@ -203,6 +216,26 @@ func (ip IdentityProcessor) ProcessAllowedIdentities(xfcc XFCCElement, identity 
 			ip.getIdentityKey(): identity,
 		},
 	}
+}
+
+// ProcessDeniedIdentities returns an error if a denied list is configured
+// and the identity matches any elements in the list.
+func (ip IdentityProcessor) ProcessDeniedIdentities(xfcc XFCCElement, identity string) error {
+	if ip.DeniedIdentities.Len() == 0 {
+		return nil
+	}
+
+	if ip.DeniedIdentities.Contains(identity) {
+		return &XFCCValidationError{
+			Class: ip.errDeniedIdentity(),
+			XFCC:  xfcc.String(),
+			Metadata: map[string]string{
+				ip.getIdentityKey(): identity,
+			},
+		}
+	}
+
+	return nil
 }
 
 // formatIdentity invokes the `FormatIdentity` on the current processor

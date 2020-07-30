@@ -69,6 +69,21 @@ func TestOptAllowedIdentities(t *testing.T) {
 	assert.Equal(expected, ip)
 }
 
+func TestOptDeniedIdentities(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	ip := &envoyutil.IdentityProcessor{
+		DeniedIdentities: collections.NewSetOfString("x.invalid", "y.invalid"),
+	}
+	opt := envoyutil.OptDeniedIdentities("y.invalid", "z.invalid")
+	opt(ip)
+
+	expected := &envoyutil.IdentityProcessor{
+		DeniedIdentities: collections.NewSetOfString("x.invalid", "y.invalid", "z.invalid"),
+	}
+	assert.Equal(expected, ip)
+}
+
 func TestOptFormatIdentity(t *testing.T) {
 	assert := sdkAssert.New(t)
 
@@ -210,6 +225,30 @@ func TestIdentityProcessorIdentityProvider(t *testing.T) {
 	// Extract server identity.
 	ip = envoyutil.IdentityProcessor{
 		Type: envoyutil.ServerIdentity,
+	}
+	serverIdentity, err = ip.IdentityProvider(xfcc)
+	assert.Equal("lyric.song", serverIdentity)
+	assert.Nil(err)
+
+	// Server identity is contained in deny list.
+	ip = envoyutil.IdentityProcessor{
+		Type:             envoyutil.ServerIdentity,
+		DeniedIdentities: collections.NewSetOfString("lyric.song"),
+	}
+	serverIdentity, err = ip.IdentityProvider(xfcc)
+	assert.Equal("", serverIdentity)
+	assert.True(envoyutil.IsValidationError(err))
+	expected = &envoyutil.XFCCValidationError{
+		Class:    envoyutil.ErrDeniedServerIdentity,
+		XFCC:     xfcc.String(),
+		Metadata: map[string]string{"serverIdentity": "lyric.song"},
+	}
+	assert.Equal(expected, err)
+
+	// Server identity is **not** contained in deny list.
+	ip = envoyutil.IdentityProcessor{
+		Type:             envoyutil.ServerIdentity,
+		DeniedIdentities: collections.NewSetOfString("not.music"),
 	}
 	serverIdentity, err = ip.IdentityProvider(xfcc)
 	assert.Equal("lyric.song", serverIdentity)
