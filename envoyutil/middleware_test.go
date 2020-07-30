@@ -154,6 +154,61 @@ func TestClientIdentityRequired(t *testing.T) {
 	assert.Equal("\"Internal Server Error\"\n", string(body))
 }
 
+func TestClientIdentityAware(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	app := web.MustNew()
+	cip := envoyutil.ClientIdentityFromSPIFFE(
+		envoyutil.OptDeniedIdentities("gw.blend"),
+	)
+	verifier := envoyutil.ServerIdentityFromSPIFFE(
+		envoyutil.OptAllowedIdentities("quasar.blend"),
+	)
+	app.GET("/",
+		func(_ *web.Ctx) web.Result {
+			return web.JSON.OK()
+		},
+		envoyutil.ClientIdentityAware(cip, verifier),
+		web.JSONProviderAsDefault,
+	)
+
+	meta, err := web.MockGet(app, "/").Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode, "Don't fail on missing header")
+
+	meta, err = web.MockGet(app, "/", r2.OptHeaderValue(envoyutil.HeaderXFCC, "something=bad")).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode, "Don't fail on malformed header")
+
+	meta, err = web.MockGet(app, "/", r2.OptHeaderValue(envoyutil.HeaderXFCC, `By=spiffe://cluster.local/ns/blend/sa/quasar;Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;Subject="/C=US/ST=CA/L=San Francisco/OU=Lyft/CN=Test Client"`)).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode, "Don't fail on missing workload")
+
+	meta, err = web.MockGet(app, "/", r2.OptHeaderValue(envoyutil.HeaderXFCC, `By=spiffe://cluster.local/ns/blend/sa/quasar;Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;Subject="/C=US/ST=CA/L=San Francisco/OU=Lyft/CN=Test Client";URI=spiffe://cluster.local/ns/blend/sa/gw`)).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode, "Don't fail on denied client identity")
+
+	meta, err = web.MockGet(app, "/", r2.OptHeaderValue(envoyutil.HeaderXFCC, `By=spiffe://cluster.local/ns/blend/sa/quasar;Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;Subject="/C=US/ST=CA/L=San Francisco/OU=Lyft/CN=Test Client";URI=spiffe://cluster.local/ns/blend/sa/books`)).Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, meta.StatusCode, "Success on valid header")
+
+	// Unrecoverable error: here we simulate `envoyutil` user error by using
+	// `nil` for `cip`.
+	app = web.MustNew()
+	app.GET(
+		"/",
+		func(ctx *web.Ctx) web.Result {
+			return web.JSON.OK()
+		},
+		envoyutil.ClientIdentityAware(nil),
+		web.JSONProviderAsDefault,
+	)
+	body, meta, err := web.MockGet(app, "/").Bytes()
+	assert.Nil(err)
+	assert.Equal(http.StatusInternalServerError, meta.StatusCode, "Fail on unrecoverable")
+	assert.Equal("\"Internal Server Error\"\n", string(body))
+}
+
 func invalidXFCCJSONEqual(assert *sdkAssert.Assertions, expected error, actual []byte) {
 	switch expected.(type) {
 	case *envoyutil.XFCCExtractionError:

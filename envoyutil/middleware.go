@@ -79,3 +79,28 @@ func ClientIdentityRequired(cip IdentityProvider, verifiers ...VerifyXFCC) web.M
 		}
 	}
 }
+
+// ClientIdentityAware produces a middleware function nearly identical to
+// `ClientIdentityRequired`. The primary difference is that this middleware will
+// **not** return an error HTTP response for extraction or validation errors;
+// it will still return a 500 Internal Server Error in unexpected failures.
+// In cases of extraction or validation errors, the middleware will pass along
+// to the next `action` and the client identity is not set on the current context.
+func ClientIdentityAware(cip IdentityProvider, verifiers ...VerifyXFCC) web.Middleware {
+	return func(action web.Action) web.Action {
+		return func(ctx *web.Ctx) web.Result {
+			clientIdentity, err := ExtractAndVerifyClientIdentity(ctx.Request, cip, verifiers...)
+			// Early exit for a no-op in cases of validation or extraction error.
+			if IsValidationError(err) || IsExtractionError(err) {
+				return action(ctx)
+			}
+
+			if err != nil {
+				return ctx.DefaultProvider.InternalError(nil)
+			}
+
+			ctx.WithStateValue(StateKeyClientIdentity, clientIdentity)
+			return action(ctx)
+		}
+	}
+}
