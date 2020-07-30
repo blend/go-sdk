@@ -186,6 +186,41 @@ func TestClientIdentityFromSPIFFE(t *testing.T) {
 	}
 }
 
+func TestServerIdentityFromSPIFFE(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	// Verifier returns `nil` error when server identity is valid.
+	verifier := envoyutil.ServerIdentityFromSPIFFE()
+	xfcc := envoyutil.XFCCElement{By: "spiffe://cluster.local/ns/time/sa/line"}
+	err := verifier(xfcc)
+	assert.Nil(err)
+
+	// Verifier returns extraction error when server identity is invalid.
+	verifier = envoyutil.ServerIdentityFromSPIFFE()
+	xfcc = envoyutil.XFCCElement{By: "not-spiffe"}
+	err = verifier(xfcc)
+	assert.True(envoyutil.IsExtractionError(err))
+	var expected error = &envoyutil.XFCCExtractionError{
+		Class: envoyutil.ErrInvalidServerIdentity,
+		XFCC:  xfcc.String(),
+	}
+	assert.Equal(expected, err)
+
+	// Verifier returns validation error when server identity is in deny list.
+	verifier = envoyutil.ServerIdentityFromSPIFFE(
+		envoyutil.OptDeniedIdentities("line.time"),
+	)
+	xfcc = envoyutil.XFCCElement{By: "spiffe://cluster.local/ns/time/sa/line"}
+	err = verifier(xfcc)
+	assert.True(envoyutil.IsValidationError(err))
+	expected = &envoyutil.XFCCValidationError{
+		Class:    envoyutil.ErrDeniedServerIdentity,
+		XFCC:     xfcc.String(),
+		Metadata: map[string]string{"serverIdentity": "line.time"},
+	}
+	assert.Equal(expected, err)
+}
+
 // extractJustURI satisfies `envoyutil.IdentityProvider` and just returns the URI.
 func extractJustURI(xfcc envoyutil.XFCCElement) (string, error) {
 	return xfcc.URI, nil
