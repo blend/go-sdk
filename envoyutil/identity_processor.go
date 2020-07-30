@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/blend/go-sdk/collections"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/spiffeutil"
 )
@@ -40,6 +41,15 @@ func OptDeniedTrustDomains(trustDomains ...string) IdentityProcessorOption {
 	}
 }
 
+// OptAllowedIdentities adds allowed identities to the processor.
+func OptAllowedIdentities(identities ...string) IdentityProcessorOption {
+	return func(ip *IdentityProcessor) {
+		ip.AllowedIdentities = ip.AllowedIdentities.Union(
+			collections.NewSetOfString(identities...),
+		)
+	}
+}
+
 // OptFormatIdentity sets the `FormatIdentity` on the processor.
 func OptFormatIdentity(formatter IdentityFormatter) IdentityProcessorOption {
 	return func(ip *IdentityProcessor) {
@@ -70,6 +80,7 @@ type IdentityProcessor struct {
 	Type                IdentityType
 	AllowedTrustDomains []string
 	DeniedTrustDomains  []string
+	AllowedIdentities   collections.SetOfString
 	FormatIdentity      IdentityFormatter
 }
 
@@ -112,6 +123,9 @@ func (ip IdentityProcessor) IdentityProvider(xfcc XFCCElement) (string, error) {
 		return "", err
 	}
 
+	if err := ip.ProcessAllowedIdentities(xfcc, identity); err != nil {
+		return "", err
+	}
 	return identity, nil
 }
 
@@ -171,6 +185,26 @@ func (ip IdentityProcessor) ProcessDeniedTrustDomains(xfcc XFCCElement, pu *spif
 	return nil
 }
 
+// ProcessAllowedIdentities returns an error if an allow list is configured
+// and the identity does not match any elements in the list.
+func (ip IdentityProcessor) ProcessAllowedIdentities(xfcc XFCCElement, identity string) error {
+	if ip.AllowedIdentities.Len() == 0 {
+		return nil
+	}
+
+	if ip.AllowedIdentities.Contains(identity) {
+		return nil
+	}
+
+	return &XFCCValidationError{
+		Class: ip.errDeniedIdentity(),
+		XFCC:  xfcc.String(),
+		Metadata: map[string]string{
+			ip.getIdentityKey(): identity,
+		},
+	}
+}
+
 // formatIdentity invokes the `FormatIdentity` on the current processor
 // or falls back to `KubernetesIdentityFormatter()` if it is not set.
 func (ip IdentityProcessor) formatIdentity(xfcc XFCCElement, pu *spiffeutil.ParsedURI) (string, error) {
@@ -190,6 +224,16 @@ func (ip IdentityProcessor) getURIForIdentity(xfcc XFCCElement) string {
 	return xfcc.By
 }
 
+// getIdentityKey returns a key to be used in error metadata indicating if a
+// value is client identity or server identity.
+func (ip IdentityProcessor) getIdentityKey() string {
+	if ip.Type == ClientIdentity {
+		return "clientIdentity"
+	}
+
+	return "serverIdentity"
+}
+
 // errInvalidIdentity maps the `Type` to a specific error class indicating
 // an invalid identity.
 func (ip IdentityProcessor) errInvalidIdentity() ex.Class {
@@ -198,4 +242,14 @@ func (ip IdentityProcessor) errInvalidIdentity() ex.Class {
 	}
 
 	return ErrInvalidServerIdentity
+}
+
+// errDeniedIdentity maps the `Type` to a specific error class indicating
+// a denied identity.
+func (ip IdentityProcessor) errDeniedIdentity() ex.Class {
+	if ip.Type == ClientIdentity {
+		return ErrDeniedClientIdentity
+	}
+
+	return ErrDeniedServerIdentity
 }

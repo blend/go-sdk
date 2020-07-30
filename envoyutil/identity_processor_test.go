@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	sdkAssert "github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/collections"
 	"github.com/blend/go-sdk/spiffeutil"
 	"github.com/blend/go-sdk/uuid"
 
@@ -49,6 +50,21 @@ func TestOptDeniedTrustDomains(t *testing.T) {
 
 	expected := &envoyutil.IdentityProcessor{
 		DeniedTrustDomains: []string{"y.invalid", "z.invalid"},
+	}
+	assert.Equal(expected, ip)
+}
+
+func TestOptAllowedIdentities(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	ip := &envoyutil.IdentityProcessor{
+		AllowedIdentities: collections.NewSetOfString("x.invalid", "y.invalid"),
+	}
+	opt := envoyutil.OptAllowedIdentities("y.invalid", "z.invalid")
+	opt(ip)
+
+	expected := &envoyutil.IdentityProcessor{
+		AllowedIdentities: collections.NewSetOfString("x.invalid", "y.invalid", "z.invalid"),
 	}
 	assert.Equal(expected, ip)
 }
@@ -154,11 +170,48 @@ func TestIdentityProcessorIdentityProvider(t *testing.T) {
 	assert.Equal("bar.foo", clientIdentity)
 	assert.Nil(err)
 
+	// Client identity not among allow list.
+	ip = envoyutil.IdentityProcessor{
+		AllowedIdentities: collections.NewSetOfString("ecks.why"),
+	}
+	clientIdentity, err = ip.IdentityProvider(xfcc)
+	assert.Equal("", clientIdentity)
+	assert.True(envoyutil.IsValidationError(err))
+	expected = &envoyutil.XFCCValidationError{
+		Class:    envoyutil.ErrDeniedClientIdentity,
+		XFCC:     xfcc.String(),
+		Metadata: map[string]string{"clientIdentity": "bar.foo"},
+	}
+	assert.Equal(expected, err)
+
+	// Server identity not among allow list.
+	ip = envoyutil.IdentityProcessor{
+		Type:              envoyutil.ServerIdentity,
+		AllowedIdentities: collections.NewSetOfString("ecks.why"),
+	}
+	serverIdentity, err := ip.IdentityProvider(xfcc)
+	assert.Equal("", serverIdentity)
+	assert.True(envoyutil.IsValidationError(err))
+	expected = &envoyutil.XFCCValidationError{
+		Class:    envoyutil.ErrDeniedServerIdentity,
+		XFCC:     xfcc.String(),
+		Metadata: map[string]string{"serverIdentity": "lyric.song"},
+	}
+	assert.Equal(expected, err)
+
+	// Client identity among allow list.
+	ip = envoyutil.IdentityProcessor{
+		AllowedIdentities: collections.NewSetOfString("ecks.why", "bar.foo"),
+	}
+	clientIdentity, err = ip.IdentityProvider(xfcc)
+	assert.Equal("bar.foo", clientIdentity)
+	assert.Nil(err)
+
 	// Extract server identity.
 	ip = envoyutil.IdentityProcessor{
 		Type: envoyutil.ServerIdentity,
 	}
-	serverIdentity, err := ip.IdentityProvider(xfcc)
+	serverIdentity, err = ip.IdentityProvider(xfcc)
 	assert.Equal("lyric.song", serverIdentity)
 	assert.Nil(err)
 
