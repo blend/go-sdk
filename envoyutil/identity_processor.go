@@ -1,7 +1,16 @@
 package envoyutil
 
 import (
+	"fmt"
+
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/spiffeutil"
+)
+
+// NOTE: Ensure that
+//       - `IdentityProcessor.KubernetesIdentityFormatter` satisfies `IdentityFormatter`
+var (
+	_ IdentityFormatter = IdentityProcessor{}.KubernetesIdentityFormatter
 )
 
 // IdentityProcessorOption mutates an identity processor.
@@ -43,4 +52,29 @@ const (
 type IdentityProcessor struct {
 	Type           IdentityType
 	FormatIdentity IdentityFormatter
+}
+
+// KubernetesIdentityFormatter assumes the SPIFFE URI contains a Kubernetes
+// workload ID of the form `ns/{namespace}/sa/{serviceAccount}` and formats the
+// identity as `{serviceAccount}.{namespace}`. This function satisfies the
+// `IdentityFormatter` interface.
+func (ip IdentityProcessor) KubernetesIdentityFormatter(xfcc XFCCElement, pu *spiffeutil.ParsedURI) (string, error) {
+	kw, err := spiffeutil.ParseKubernetesWorkloadID(pu.WorkloadID)
+	if err != nil {
+		return "", &XFCCExtractionError{
+			Class: ip.errInvalidIdentity(),
+			XFCC:  xfcc.String(),
+		}
+	}
+	return fmt.Sprintf("%s.%s", kw.ServiceAccount, kw.Namespace), nil
+}
+
+// errInvalidIdentity maps the `Type` to a specific error class indicating
+// an invalid identity.
+func (ip IdentityProcessor) errInvalidIdentity() ex.Class {
+	if ip.Type == ClientIdentity {
+		return ErrInvalidClientIdentity
+	}
+
+	return ErrInvalidServerIdentity
 }

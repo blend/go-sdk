@@ -41,6 +41,41 @@ func TestOptFormatIdentity(t *testing.T) {
 	assert.Nil(err)
 }
 
+func TestIdentityProcessorKubernetesIdentityFormatter(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	xfcc := envoyutil.XFCCElement{By: "anything", URI: "goes"}
+
+	// Valid identity.
+	ip := &envoyutil.IdentityProcessor{}
+	pu := &spiffeutil.ParsedURI{WorkloadID: "ns/packets/sa/ketchup"}
+	identity, err := ip.KubernetesIdentityFormatter(xfcc, pu)
+	assert.Equal("ketchup.packets", identity)
+	assert.Nil(err)
+
+	// Invalid client identity.
+	pu = &spiffeutil.ParsedURI{WorkloadID: "not-k8s"}
+	clientIdentity, err := ip.KubernetesIdentityFormatter(xfcc, pu)
+	assert.Equal("", clientIdentity)
+	assert.True(envoyutil.IsExtractionError(err))
+	expected := &envoyutil.XFCCExtractionError{
+		Class: envoyutil.ErrInvalidClientIdentity,
+		XFCC:  xfcc.String(),
+	}
+	assert.Equal(expected, err)
+
+	// Invalid server identity.
+	ip = &envoyutil.IdentityProcessor{Type: envoyutil.ServerIdentity}
+	serverIdentity, err := ip.KubernetesIdentityFormatter(xfcc, pu)
+	assert.Equal("", serverIdentity)
+	assert.True(envoyutil.IsExtractionError(err))
+	expected = &envoyutil.XFCCExtractionError{
+		Class: envoyutil.ErrInvalidServerIdentity,
+		XFCC:  xfcc.String(),
+	}
+	assert.Equal(expected, err)
+}
+
 func makeMockFormatter(identity string) envoyutil.IdentityFormatter {
 	return func(_ envoyutil.XFCCElement, _ *spiffeutil.ParsedURI) (string, error) {
 		return identity, nil
