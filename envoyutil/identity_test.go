@@ -109,7 +109,7 @@ func extractFailure(xfcc envoyutil.XFCCElement) (string, error) {
 }
 
 func makeVerifyXFCC(expectedBy string) envoyutil.VerifyXFCC {
-	return func(xfcc envoyutil.XFCCElement) *envoyutil.XFCCValidationError {
+	return func(xfcc envoyutil.XFCCElement) error {
 		if xfcc.By == expectedBy {
 			return nil
 		}

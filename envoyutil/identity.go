@@ -38,7 +38,7 @@ type IdentityProvider func(xfcc XFCCElement) (identity string, err error)
 // VerifyXFCC is an "extra" verifier for an XFCC, for example if the server
 // identity (from the `By` field in an XFCC element) should be verified in
 // addition to the client identity.
-type VerifyXFCC func(xfcc XFCCElement) (err *XFCCValidationError)
+type VerifyXFCC func(xfcc XFCCElement) error
 
 // ExtractAndVerifyClientIdentity enables extracting client identity from a request.
 // It does so by requiring the XFCC header to present and valid and contain exactly
