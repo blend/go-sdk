@@ -7,6 +7,20 @@ import (
 // IdentityProcessorOption mutates an identity processor.
 type IdentityProcessorOption func(*IdentityProcessor)
 
+// OptIdentityType sets the identity type for the processor.
+func OptIdentityType(it IdentityType) IdentityProcessorOption {
+	return func(ip *IdentityProcessor) {
+		ip.Type = it
+	}
+}
+
+// OptFormatIdentity sets the `FormatIdentity` on the processor.
+func OptFormatIdentity(formatter IdentityFormatter) IdentityProcessorOption {
+	return func(ip *IdentityProcessor) {
+		ip.FormatIdentity = formatter
+	}
+}
+
 // IdentityFormatter describes functions that will produce an identity string
 // from a parsed SPIFFE URI.
 type IdentityFormatter = func(XFCCElement, *spiffeutil.ParsedURI) (string, error)
