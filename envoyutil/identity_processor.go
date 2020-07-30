@@ -9,8 +9,10 @@ import (
 
 // NOTE: Ensure that
 //       - `IdentityProcessor.KubernetesIdentityFormatter` satisfies `IdentityFormatter`
+//       - `IdentityProcessor.IdentityProvider` satisfies `IdentityProvider`
 var (
 	_ IdentityFormatter = IdentityProcessor{}.KubernetesIdentityFormatter
+	_ IdentityProvider  = IdentityProcessor{}.IdentityProvider
 )
 
 // IdentityProcessorOption mutates an identity processor.
@@ -54,6 +56,41 @@ type IdentityProcessor struct {
 	FormatIdentity IdentityFormatter
 }
 
+// IdentityProvider returns a client or server identity; it uses the configured
+// rules to validate and format the identity by parsing the `URI` field (for
+// client identity) or `By` field (for server identity) of the XFCC element. If
+// `FormatIdentity` has not been specified, the `KubernetesIdentityFormatter()`
+// method will be used as a fallback.
+//
+// This method satisfies the `IdentityProvider` interface.
+func (ip IdentityProcessor) IdentityProvider(xfcc XFCCElement) (string, error) {
+	uriValue := ip.getURIForIdentity(xfcc)
+
+	if uriValue == "" {
+		return "", &XFCCValidationError{
+			Class: ip.errInvalidIdentity(),
+			XFCC:  xfcc.String(),
+		}
+	}
+
+	pu, err := spiffeutil.Parse(uriValue)
+	// NOTE: The `pu == nil` check is redundant, we expect `spiffeutil.Parse()`
+	//       not to violate the invariant that `pu != nil` when `err == nil`.
+	if err != nil || pu == nil {
+		return "", &XFCCExtractionError{
+			Class: ip.errInvalidIdentity(),
+			XFCC:  xfcc.String(),
+		}
+	}
+
+	identity, err := ip.formatIdentity(xfcc, pu)
+	if err != nil {
+		return "", err
+	}
+
+	return identity, nil
+}
+
 // KubernetesIdentityFormatter assumes the SPIFFE URI contains a Kubernetes
 // workload ID of the form `ns/{namespace}/sa/{serviceAccount}` and formats the
 // identity as `{serviceAccount}.{namespace}`. This function satisfies the
@@ -67,6 +104,25 @@ func (ip IdentityProcessor) KubernetesIdentityFormatter(xfcc XFCCElement, pu *sp
 		}
 	}
 	return fmt.Sprintf("%s.%s", kw.ServiceAccount, kw.Namespace), nil
+}
+
+// formatIdentity invokes the `FormatIdentity` on the current processor
+// or falls back to `KubernetesIdentityFormatter()` if it is not set.
+func (ip IdentityProcessor) formatIdentity(xfcc XFCCElement, pu *spiffeutil.ParsedURI) (string, error) {
+	if ip.FormatIdentity != nil {
+		return ip.FormatIdentity(xfcc, pu)
+	}
+	return ip.KubernetesIdentityFormatter(xfcc, pu)
+}
+
+// getURIForIdentity returns either the `URI` field if this processor has `Type`
+// "client identity" or the `By` field for the server identity.
+func (ip IdentityProcessor) getURIForIdentity(xfcc XFCCElement) string {
+	if ip.Type == ClientIdentity {
+		return xfcc.URI
+	}
+
+	return xfcc.By
 }
 
 // errInvalidIdentity maps the `Type` to a specific error class indicating

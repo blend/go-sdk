@@ -41,6 +41,66 @@ func TestOptFormatIdentity(t *testing.T) {
 	assert.Nil(err)
 }
 
+func TestIdentityProcessorIdentityProvider(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	// Empty URI value.
+	ip := envoyutil.IdentityProcessor{}
+	xfcc := envoyutil.XFCCElement{}
+	clientIdentity, err := ip.IdentityProvider(xfcc)
+	assert.Equal("", clientIdentity)
+	assert.True(envoyutil.IsValidationError(err))
+	var expected error = &envoyutil.XFCCValidationError{
+		Class: envoyutil.ErrInvalidClientIdentity,
+		XFCC:  xfcc.String(),
+	}
+	assert.Equal(expected, err)
+
+	// Invalid URI value.
+	ip = envoyutil.IdentityProcessor{}
+	xfcc = envoyutil.XFCCElement{URI: "spiffe://cluster.local/not-k8s"}
+	clientIdentity, err = ip.IdentityProvider(xfcc)
+	assert.Equal("", clientIdentity)
+	assert.True(envoyutil.IsExtractionError(err))
+	expected = &envoyutil.XFCCExtractionError{
+		Class: envoyutil.ErrInvalidClientIdentity,
+		XFCC:  xfcc.String(),
+	}
+	assert.Equal(expected, err)
+
+	// Use explicit `FormatIdentity`.
+	ip = envoyutil.IdentityProcessor{
+		FormatIdentity: makeMockFormatter("sentinel"),
+	}
+	xfcc = envoyutil.XFCCElement{
+		By:  "spiffe://cluster.local/ns/song/sa/lyric",
+		URI: "spiffe://cluster.local/ns/foo/sa/bar",
+	}
+	clientIdentity, err = ip.IdentityProvider(xfcc)
+	assert.Equal("sentinel", clientIdentity)
+	assert.Nil(err)
+
+	// Extract server identity.
+	ip = envoyutil.IdentityProcessor{
+		Type: envoyutil.ServerIdentity,
+	}
+	serverIdentity, err := ip.IdentityProvider(xfcc)
+	assert.Equal("lyric.song", serverIdentity)
+	assert.Nil(err)
+
+	// Invalid server identity.
+	xfcc = envoyutil.XFCCElement{By: "a=b"}
+	ip = envoyutil.IdentityProcessor{Type: envoyutil.ServerIdentity}
+	serverIdentity, err = ip.IdentityProvider(xfcc)
+	assert.Equal("", serverIdentity)
+	assert.True(envoyutil.IsExtractionError(err))
+	expected = &envoyutil.XFCCExtractionError{
+		Class: envoyutil.ErrInvalidServerIdentity,
+		XFCC:  xfcc.String(),
+	}
+	assert.Equal(expected, err)
+}
+
 func TestIdentityProcessorKubernetesIdentityFormatter(t *testing.T) {
 	assert := sdkAssert.New(t)
 
