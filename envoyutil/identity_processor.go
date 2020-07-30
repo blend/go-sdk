@@ -2,6 +2,7 @@ package envoyutil
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/spiffeutil"
@@ -22,6 +23,13 @@ type IdentityProcessorOption func(*IdentityProcessor)
 func OptIdentityType(it IdentityType) IdentityProcessorOption {
 	return func(ip *IdentityProcessor) {
 		ip.Type = it
+	}
+}
+
+// OptAllowedTrustDomains adds allowed trust domains to the processor.
+func OptAllowedTrustDomains(trustDomains ...string) IdentityProcessorOption {
+	return func(ip *IdentityProcessor) {
+		ip.AllowedTrustDomains = append(ip.AllowedTrustDomains, trustDomains...)
 	}
 }
 
@@ -52,8 +60,9 @@ const (
 // a parsed SPIFFE URI. The `Type` field determines if a client or server
 // identity should be provided; by default the type will be client identity.
 type IdentityProcessor struct {
-	Type           IdentityType
-	FormatIdentity IdentityFormatter
+	Type                IdentityType
+	AllowedTrustDomains []string
+	FormatIdentity      IdentityFormatter
 }
 
 // IdentityProvider returns a client or server identity; it uses the configured
@@ -83,6 +92,10 @@ func (ip IdentityProcessor) IdentityProvider(xfcc XFCCElement) (string, error) {
 		}
 	}
 
+	if err := ip.ProcessAllowedTrustDomains(xfcc, pu); err != nil {
+		return "", err
+	}
+
 	identity, err := ip.formatIdentity(xfcc, pu)
 	if err != nil {
 		return "", err
@@ -104,6 +117,28 @@ func (ip IdentityProcessor) KubernetesIdentityFormatter(xfcc XFCCElement, pu *sp
 		}
 	}
 	return fmt.Sprintf("%s.%s", kw.ServiceAccount, kw.Namespace), nil
+}
+
+// ProcessAllowedTrustDomains returns an error if an allow list is configured
+// and the trust domain from the parsed SPIFFE URI does not match any elements
+// in the list.
+func (ip IdentityProcessor) ProcessAllowedTrustDomains(xfcc XFCCElement, pu *spiffeutil.ParsedURI) error {
+	if len(ip.AllowedTrustDomains) == 0 {
+		return nil
+	}
+
+	for _, allowed := range ip.AllowedTrustDomains {
+		if strings.EqualFold(pu.TrustDomain, allowed) {
+			return nil
+		}
+	}
+	return &XFCCValidationError{
+		Class: ip.errInvalidIdentity(),
+		XFCC:  xfcc.String(),
+		Metadata: map[string]string{
+			"trustDomain": pu.TrustDomain,
+		},
+	}
 }
 
 // formatIdentity invokes the `FormatIdentity` on the current processor
