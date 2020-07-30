@@ -7,10 +7,22 @@ import (
 )
 
 const (
-	// ErrMissingXFCC is the error returned when XFCC is missing
+	// ErrMissingXFCC is the error returned when XFCC is missing.
 	ErrMissingXFCC = ex.Class("Missing X-Forwarded-Client-Cert header")
-	// ErrInvalidXFCC is the error returned when XFCC is invalid
+	// ErrInvalidXFCC is the error returned when XFCC is invalid.
 	ErrInvalidXFCC = ex.Class("Invalid X-Forwarded-Client-Cert header")
+	// ErrInvalidClientIdentity is the error returned when XFCC has a
+	// missing / invalid client identity.
+	ErrInvalidClientIdentity = ex.Class("Client identity could not be determined from X-Forwarded-Client-Cert header")
+	// ErrDeniedClientIdentity is the error returned when a parsed client identity is in a deny list or
+	// not in an allow list.
+	ErrDeniedClientIdentity = ex.Class("Client identity from X-Forwarded-Client-Cert header is denied")
+	// ErrInvalidServerIdentity is the error returned when XFCC has a
+	// missing / invalid client identity.
+	ErrInvalidServerIdentity = ex.Class("Server identity could not be determined from X-Forwarded-Client-Cert header")
+	// ErrDeniedServerIdentity is the error returned when a parsed client identity is in a deny list or
+	// not in an allow list.
+	ErrDeniedServerIdentity = ex.Class("Server identity from X-Forwarded-Client-Cert header is denied")
 	// ErrMissingExtractFunction is the message used when the "extract client
 	// identity" function is `nil` or not provided.
 	ErrMissingExtractFunction = ex.Class("Missing client identity extraction function")
