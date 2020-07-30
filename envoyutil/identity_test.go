@@ -98,6 +98,94 @@ func TestExtractAndVerifyClientIdentity(t *testing.T) {
 	}
 }
 
+func TestClientIdentityFromSPIFFE(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	type testCase struct {
+		XFCC           string
+		TrustDomain    string
+		ClientIdentity string
+		ErrorType      string
+		Class          ex.Class
+		Metadata       interface{}
+		Denied         []string
+	}
+	testCases := []testCase{
+		{
+			XFCC:      "URI=not-spiffe",
+			ErrorType: "XFCCExtractionError",
+			Class:     envoyutil.ErrInvalidClientIdentity,
+		},
+		{
+			XFCC:           "URI=spiffe://cluster.local/ns/light1/sa/bulb",
+			TrustDomain:    "cluster.local",
+			ClientIdentity: "bulb.light1",
+		},
+		{
+			XFCC:        "URI=spiffe://cluster.local/ns/light2/sa/bulb",
+			TrustDomain: "k8s.local",
+			ErrorType:   "XFCCValidationError",
+			Class:       envoyutil.ErrInvalidClientIdentity,
+			Metadata:    map[string]string{"trustDomain": "cluster.local"},
+		},
+		{
+			XFCC:        "URI=spiffe://cluster.local/ns/light3/sa/bulb/extra",
+			TrustDomain: "cluster.local",
+			ErrorType:   "XFCCExtractionError",
+			Class:       envoyutil.ErrInvalidClientIdentity,
+		},
+		{
+			XFCC:        "URI=spiffe://cluster.local/ns/light4/sa/bulb",
+			TrustDomain: "cluster.local",
+			ErrorType:   "XFCCValidationError",
+			Class:       envoyutil.ErrDeniedClientIdentity,
+			Metadata:    map[string]string{"clientIdentity": "bulb.light4"},
+			Denied:      []string{"bulb.light4"},
+		},
+		{
+			XFCC:           "URI=spiffe://cluster.local/ns/light5/sa/bulb",
+			TrustDomain:    "cluster.local",
+			ClientIdentity: "bulb.light5",
+			Denied:         []string{"not.me"},
+		},
+		{
+			XFCC:        "URI=spiffe://cluster.local/ns/light6/sa/bulb",
+			TrustDomain: "cluster.local",
+			ErrorType:   "XFCCValidationError",
+			Class:       envoyutil.ErrDeniedClientIdentity,
+			Metadata:    map[string]string{"clientIdentity": "bulb.light6"},
+			Denied:      []string{"not.me", "bulb.light6", "also.not-me"},
+		},
+	}
+
+	for _, tc := range testCases {
+		xfccElements, err := envoyutil.ParseXFCC(tc.XFCC)
+		assert.Nil(err)
+		assert.Len(xfccElements, 1)
+		xfcc := xfccElements[0]
+
+		cip := envoyutil.ClientIdentityFromSPIFFE(
+			envoyutil.OptAllowedTrustDomains(tc.TrustDomain),
+			envoyutil.OptDeniedIdentities(tc.Denied...),
+		)
+		clientIdentity, err := cip(xfcc)
+		assert.Equal(tc.ClientIdentity, clientIdentity)
+
+		switch tc.ErrorType {
+		case "XFCCExtractionError":
+			assert.True(envoyutil.IsExtractionError(err), tc)
+			expected := &envoyutil.XFCCExtractionError{Class: tc.Class, XFCC: tc.XFCC, Metadata: tc.Metadata}
+			assert.Equal(expected, err, tc)
+		case "XFCCValidationError":
+			assert.True(envoyutil.IsValidationError(err), tc)
+			expected := &envoyutil.XFCCValidationError{Class: tc.Class, XFCC: tc.XFCC, Metadata: tc.Metadata}
+			assert.Equal(expected, err, tc)
+		default:
+			assert.Nil(err, tc)
+		}
+	}
+}
+
 // extractJustURI satisfies `envoyutil.IdentityProvider` and just returns the URI.
 func extractJustURI(xfcc envoyutil.XFCCElement) (string, error) {
 	return xfcc.URI, nil
