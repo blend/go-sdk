@@ -38,6 +38,21 @@ func TestOptAllowedTrustDomains(t *testing.T) {
 	assert.Equal(expected, ip)
 }
 
+func TestOptDeniedTrustDomains(t *testing.T) {
+	assert := sdkAssert.New(t)
+
+	ip := &envoyutil.IdentityProcessor{
+		DeniedTrustDomains: []string{"y.invalid"},
+	}
+	opt := envoyutil.OptDeniedTrustDomains("z.invalid")
+	opt(ip)
+
+	expected := &envoyutil.IdentityProcessor{
+		DeniedTrustDomains: []string{"y.invalid", "z.invalid"},
+	}
+	assert.Equal(expected, ip)
+}
+
 func TestOptFormatIdentity(t *testing.T) {
 	assert := sdkAssert.New(t)
 
@@ -116,6 +131,28 @@ func TestIdentityProcessorIdentityProvider(t *testing.T) {
 		Metadata: map[string]string{"trustDomain": "cluster.local"},
 	}
 	assert.Equal(expected, err)
+
+	// Trust domain in deny list.
+	ip = envoyutil.IdentityProcessor{
+		DeniedTrustDomains: []string{"cluster.local"},
+	}
+	clientIdentity, err = ip.IdentityProvider(xfcc)
+	assert.Equal("", clientIdentity)
+	assert.True(envoyutil.IsValidationError(err))
+	expected = &envoyutil.XFCCValidationError{
+		Class:    envoyutil.ErrInvalidClientIdentity,
+		XFCC:     xfcc.String(),
+		Metadata: map[string]string{"trustDomain": "cluster.local"},
+	}
+	assert.Equal(expected, err)
+
+	// Trust domain not in deny list.
+	ip = envoyutil.IdentityProcessor{
+		DeniedTrustDomains: []string{"not-local.invalid"},
+	}
+	clientIdentity, err = ip.IdentityProvider(xfcc)
+	assert.Equal("bar.foo", clientIdentity)
+	assert.Nil(err)
 
 	// Extract server identity.
 	ip = envoyutil.IdentityProcessor{

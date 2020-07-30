@@ -33,6 +33,13 @@ func OptAllowedTrustDomains(trustDomains ...string) IdentityProcessorOption {
 	}
 }
 
+// OptDeniedTrustDomains adds denied trust domains to the processor.
+func OptDeniedTrustDomains(trustDomains ...string) IdentityProcessorOption {
+	return func(ip *IdentityProcessor) {
+		ip.DeniedTrustDomains = append(ip.DeniedTrustDomains, trustDomains...)
+	}
+}
+
 // OptFormatIdentity sets the `FormatIdentity` on the processor.
 func OptFormatIdentity(formatter IdentityFormatter) IdentityProcessorOption {
 	return func(ip *IdentityProcessor) {
@@ -62,6 +69,7 @@ const (
 type IdentityProcessor struct {
 	Type                IdentityType
 	AllowedTrustDomains []string
+	DeniedTrustDomains  []string
 	FormatIdentity      IdentityFormatter
 }
 
@@ -93,6 +101,9 @@ func (ip IdentityProcessor) IdentityProvider(xfcc XFCCElement) (string, error) {
 	}
 
 	if err := ip.ProcessAllowedTrustDomains(xfcc, pu); err != nil {
+		return "", err
+	}
+	if err := ip.ProcessDeniedTrustDomains(xfcc, pu); err != nil {
 		return "", err
 	}
 
@@ -139,6 +150,25 @@ func (ip IdentityProcessor) ProcessAllowedTrustDomains(xfcc XFCCElement, pu *spi
 			"trustDomain": pu.TrustDomain,
 		},
 	}
+}
+
+// ProcessDeniedTrustDomains returns an error if a denied list is configured
+// and the trust domain from the parsed SPIFFE URI matches any elements in the
+// list.
+func (ip IdentityProcessor) ProcessDeniedTrustDomains(xfcc XFCCElement, pu *spiffeutil.ParsedURI) error {
+	for _, denied := range ip.DeniedTrustDomains {
+		if strings.EqualFold(pu.TrustDomain, denied) {
+			return &XFCCValidationError{
+				Class: ip.errInvalidIdentity(),
+				XFCC:  xfcc.String(),
+				Metadata: map[string]string{
+					"trustDomain": pu.TrustDomain,
+				},
+			}
+		}
+	}
+
+	return nil
 }
 
 // formatIdentity invokes the `FormatIdentity` on the current processor
