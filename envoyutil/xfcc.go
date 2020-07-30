@@ -236,7 +236,7 @@ func ParseXFCC(header string) (XFCC, error) {
 		}
 
 		// Increment the index for the next iteration. (Note that branches of the
-		// `switch` statement may have already incremented `i` as well.)
+		// `switch` statement may have already incremented the index as well.)
 		xp.Index++
 	}
 
