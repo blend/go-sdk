@@ -98,7 +98,7 @@ func TestExtractAndVerifyClientIdentity(t *testing.T) {
 	}
 }
 
-func TestClientIdentityFromSPIFFE(t *testing.T) {
+func TestSPIFFEClientIdentityProvider(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	type testCase struct {
@@ -164,7 +164,7 @@ func TestClientIdentityFromSPIFFE(t *testing.T) {
 		assert.Len(xfccElements, 1)
 		xfcc := xfccElements[0]
 
-		cip := envoyutil.ClientIdentityFromSPIFFE(
+		cip := envoyutil.SPIFFEClientIdentityProvider(
 			envoyutil.OptAllowedTrustDomains(tc.TrustDomain),
 			envoyutil.OptDeniedIdentities(tc.Denied...),
 		)

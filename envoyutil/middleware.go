@@ -26,7 +26,7 @@ func GetClientIdentity(ctx *web.Ctx) string {
 // client identity used in a connection secured with mTLS.
 //
 // This parses the `X-Forwarded-Client-Cert` (XFCC) from a request and uses
-// a client identity provider (`cip`, e.g. see `ClientIdentityFromSPIFFE()`) to
+// a client identity provider (`cip`, e.g. see `SPIFFEClientIdentityProvider()`) to
 // determine the client identity. Additionally, optional `verifiers` (e.g. see
 // `ServerIdentityFromSPIFFE()`) can be used to verify other parts of the XFCC
 // header such as the identity of the current server.

@@ -82,7 +82,7 @@ func ExtractAndVerifyClientIdentity(req *http.Request, cip IdentityProvider, ver
 	return cip(xfcc)
 }
 
-// ClientIdentityFromSPIFFE produces a function satisfying `IdentityProvider`.
+// SPIFFEClientIdentityProvider produces a function satisfying `IdentityProvider`.
 //
 // This function assumes the client identity is in the `URI` field and that field
 // is a SPIFFE URI.
@@ -97,7 +97,7 @@ func ExtractAndVerifyClientIdentity(req *http.Request, cip IdentityProvider, ver
 //   `IdentityProcessor.KubernetesIdentityFormatter`.
 // - Provide an allow list for the client identity string.
 // - Provide a deny list for the client identity string.
-func ClientIdentityFromSPIFFE(opts ...IdentityProcessorOption) IdentityProvider {
+func SPIFFEClientIdentityProvider(opts ...IdentityProcessorOption) IdentityProvider {
 	processor := IdentityProcessor{}
 	for _, opt := range opts {
 		opt(&processor)

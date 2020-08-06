@@ -35,7 +35,7 @@ func TestClientIdentityRequired(t *testing.T) {
 
 	app := web.MustNew()
 	var capturedContext *web.Ctx
-	cip := envoyutil.ClientIdentityFromSPIFFE(
+	cip := envoyutil.SPIFFEClientIdentityProvider(
 		envoyutil.OptDeniedIdentities("gw.blend"),
 	)
 	verifier := envoyutil.ServerIdentityFromSPIFFE(
@@ -158,7 +158,7 @@ func TestClientIdentityAware(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	app := web.MustNew()
-	cip := envoyutil.ClientIdentityFromSPIFFE(
+	cip := envoyutil.SPIFFEClientIdentityProvider(
 		envoyutil.OptDeniedIdentities("gw.blend"),
 	)
 	verifier := envoyutil.ServerIdentityFromSPIFFE(
