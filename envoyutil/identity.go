@@ -107,7 +107,7 @@ func SPIFFEClientIdentityProvider(opts ...IdentityProcessorOption) IdentityProvi
 	return processor.IdentityProvider
 }
 
-// ServerIdentityFromSPIFFE produces a verifier function satisfying `VerifyXFCC`.
+// SPIFFEServerIdentityProvider produces a verifier function satisfying `VerifyXFCC`.
 //
 // This function assumes the server identity is in the `By` field and that field
 // is a SPIFFE URI.
@@ -122,7 +122,7 @@ func SPIFFEClientIdentityProvider(opts ...IdentityProcessorOption) IdentityProvi
 //   `IdentityProcessor.KubernetesIdentityFormatter`.
 // - Provide an allow list for the server identity string.
 // - Provide a deny list for the server identity string.
-func ServerIdentityFromSPIFFE(opts ...IdentityProcessorOption) VerifyXFCC {
+func SPIFFEServerIdentityProvider(opts ...IdentityProcessorOption) VerifyXFCC {
 	processor := IdentityProcessor{}
 	for _, opt := range opts {
 		opt(&processor)

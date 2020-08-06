@@ -28,7 +28,7 @@ func GetClientIdentity(ctx *web.Ctx) string {
 // This parses the `X-Forwarded-Client-Cert` (XFCC) from a request and uses
 // a client identity provider (`cip`, e.g. see `SPIFFEClientIdentityProvider()`) to
 // determine the client identity. Additionally, optional `verifiers` (e.g. see
-// `ServerIdentityFromSPIFFE()`) can be used to verify other parts of the XFCC
+// `SPIFFEServerIdentityProvider()`) can be used to verify other parts of the XFCC
 // header such as the identity of the current server.
 //
 // In cases of error, the client identity will not be set on the current

@@ -38,7 +38,7 @@ func TestClientIdentityRequired(t *testing.T) {
 	cip := envoyutil.SPIFFEClientIdentityProvider(
 		envoyutil.OptDeniedIdentities("gw.blend"),
 	)
-	verifier := envoyutil.ServerIdentityFromSPIFFE(
+	verifier := envoyutil.SPIFFEServerIdentityProvider(
 		envoyutil.OptAllowedIdentities("idea.blend"),
 	)
 	app.GET(
@@ -161,7 +161,7 @@ func TestClientIdentityAware(t *testing.T) {
 	cip := envoyutil.SPIFFEClientIdentityProvider(
 		envoyutil.OptDeniedIdentities("gw.blend"),
 	)
-	verifier := envoyutil.ServerIdentityFromSPIFFE(
+	verifier := envoyutil.SPIFFEServerIdentityProvider(
 		envoyutil.OptAllowedIdentities("quasar.blend"),
 	)
 	app.GET("/",
