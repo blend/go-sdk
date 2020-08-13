@@ -1,25 +1,38 @@
 package envoyutil
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/blend/go-sdk/web"
 )
 
-const (
-	// StateKeyClientIdentity is the key into a `web.Ctx` state holding the
-	// client identity of the client calling through Envoy.
-	StateKeyClientIdentity = "envoy-client-identity"
-)
+// clientIdentityKey is an unexported sentinel type used to set and get the
+// client identity string on a `context`.
+type clientIdentityKey struct{}
+
+// WithClientIdentity adds the client identity to a context.
+//
+// For example if `rc` is a `*web.Ctx`
+// ```
+// rc.WithContext(envoyutil.WithClientIdentity(rc.Context(), clientIdentity))
+// ```
+func WithClientIdentity(ctx context.Context, clientIdentity string) context.Context {
+	return context.WithValue(ctx, clientIdentityKey{}, clientIdentity)
+}
 
 // GetClientIdentity returns the client identity of the calling service or
 // `""` if the client identity is unset.
-func GetClientIdentity(ctx *web.Ctx) string {
-	typed, ok := ctx.StateValue(StateKeyClientIdentity).(string)
-	if !ok {
-		return ""
-	}
-	return typed
+//
+// For example if `rc` is a `*web.Ctx`
+// ```
+// envoyutil.GetClientIdentity(rc.Context())
+// ```
+func GetClientIdentity(ctx context.Context) string {
+	value := ctx.Value(clientIdentityKey{})
+	asStr, _ := value.(string)
+	// If the type assertion fails, we still want to return the zero value for string.
+	return asStr
 }
 
 // ClientIdentityRequired produces a middleware function that determines the
@@ -42,7 +55,7 @@ func GetClientIdentity(ctx *web.Ctx) string {
 // - The XFCC header (after parsing) contains zero elements or multiple elements
 //   (this code expects exactly one XFCC element, under the assumption that the
 //   Envoy `ForwardClientCertDetails` setting is configured to `SANITIZE_SET`)
-// - The values from XFCC header fails custom validation provieded by `cip` or
+// - The values from the XFCC header fail custom validation provided by `cip` or
 //   `verifiers`. For example, if the client identity is contained in a deny
 //   list, this would be considered a validation error.
 //
@@ -74,7 +87,7 @@ func ClientIdentityRequired(cip IdentityProvider, verifiers ...VerifyXFCC) web.M
 				return ctx.DefaultProvider.InternalError(nil)
 			}
 
-			ctx.WithStateValue(StateKeyClientIdentity, clientIdentity)
+			ctx.WithContext(WithClientIdentity(ctx.Context(), clientIdentity))
 			return action(ctx)
 		}
 	}
@@ -99,7 +112,8 @@ func ClientIdentityAware(cip IdentityProvider, verifiers ...VerifyXFCC) web.Midd
 				return ctx.DefaultProvider.InternalError(nil)
 			}
 
-			ctx.WithStateValue(StateKeyClientIdentity, clientIdentity)
+			currentCtx := ctx.Context()
+			ctx.WithContext(WithClientIdentity(currentCtx, clientIdentity))
 			return action(ctx)
 		}
 	}

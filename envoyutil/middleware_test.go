@@ -1,6 +1,7 @@
 package envoyutil_test
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"testing"
@@ -12,22 +13,13 @@ import (
 	"github.com/blend/go-sdk/envoyutil"
 )
 
-func TestGetClientIdentity(t *testing.T) {
+func TestWithClientIdentity(t *testing.T) {
 	assert := sdkAssert.New(t)
 
-	ctx := web.MockCtx("GET", "/")
+	ctx := context.Background()
+	newCtx := envoyutil.WithClientIdentity(ctx, "web.site")
 	assert.Empty(envoyutil.GetClientIdentity(ctx))
-
-	ctx.WithStateValue(envoyutil.StateKeyClientIdentity, nil)
-	assert.Empty(envoyutil.GetClientIdentity(ctx))
-
-	ctx.WithStateValue(envoyutil.StateKeyClientIdentity, 42)
-	assert.Empty(envoyutil.GetClientIdentity(ctx))
-
-	wi := "hello.world"
-	ctx.WithStateValue(envoyutil.StateKeyClientIdentity, wi)
-	assert.NotNil(envoyutil.GetClientIdentity(ctx))
-	assert.Equal(wi, envoyutil.GetClientIdentity(ctx))
+	assert.Equal("web.site", envoyutil.GetClientIdentity(newCtx))
 }
 
 func TestClientIdentityRequired(t *testing.T) {
@@ -109,7 +101,7 @@ func TestClientIdentityRequired(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode, "Success on valid header")
 	assert.NotNil(capturedContext)
-	assert.Equal("twtr.blend", envoyutil.GetClientIdentity(capturedContext))
+	assert.Equal("twtr.blend", envoyutil.GetClientIdentity(capturedContext.Context()))
 	capturedContext = nil
 
 	xfcc = `By=mailto:John.Doe@example.com;URI=spiffe://cluster.local/ns/blend/sa/peas`

@@ -317,6 +317,7 @@ func TestParseXFCC(t *testing.T) {
 		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
+	assert.Equal(envoyutil.XFCC{}, ele)
 
 	ele, err = envoyutil.ParseXFCC(xfccElementCertTest)
 	assert.Nil(err)
@@ -337,6 +338,7 @@ func TestParseXFCC(t *testing.T) {
 		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
+	assert.Equal(envoyutil.XFCC{}, ele)
 
 	ele, err = envoyutil.ParseXFCC(xfccElementChainTest)
 	assert.Nil(err)
@@ -357,6 +359,7 @@ func TestParseXFCC(t *testing.T) {
 		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
+	assert.Equal(envoyutil.XFCC{}, ele)
 
 	ele, err = envoyutil.ParseXFCC(xfccElementSubjectTest)
 	assert.Nil(err)
@@ -377,6 +380,7 @@ func TestParseXFCC(t *testing.T) {
 		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
+	assert.Equal(envoyutil.XFCC{}, ele)
 
 	ele, err = envoyutil.ParseXFCC(xfccElementURITest)
 	assert.Nil(err)
@@ -600,6 +604,7 @@ func TestParseXFCC(t *testing.T) {
 
 	// KV separator is the last character
 	xfcc, err = envoyutil.ParseXFCC("by=cliffhanger;")
+	assert.Equal(envoyutil.XFCC{}, xfcc)
 	except, ok = err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
@@ -613,6 +618,7 @@ func TestParseXFCC(t *testing.T) {
 
 	// Element separator is the last character
 	xfcc, err = envoyutil.ParseXFCC("uri=cliffhanger,")
+	assert.Equal(envoyutil.XFCC{}, xfcc)
 	except, ok = err.(*ex.Ex)
 	assert.True(ok)
 	assert.NotNil(except)
@@ -626,6 +632,7 @@ func TestParseXFCC(t *testing.T) {
 
 	// Empty header
 	xfcc, err = envoyutil.ParseXFCC("")
+	assert.Equal(envoyutil.XFCC{}, xfcc)
 	assert.Nil(err)
 	assert.Equal(envoyutil.XFCC{}, ele)
 }
