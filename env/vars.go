@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/blend/go-sdk/fileutil"
 	"github.com/blend/go-sdk/reflectutil"
 	"github.com/blend/go-sdk/stringutil"
 )
@@ -24,6 +23,15 @@ func New(opts ...Option) Vars {
 
 // Vars is a set of environment variables.
 type Vars map[string]string
+
+// Get gets a variable as a string.
+// It mirrors os.Getenv.
+func (ev Vars) Get(envVar string) string {
+	if value, ok := ev[envVar]; ok {
+		return value
+	}
+	return ""
+}
 
 // Set sets a value for a key.
 func (ev Vars) Set(envVar, value string) {
@@ -45,8 +53,10 @@ func (ev Vars) String(envVar string, defaults ...string) string {
 	if value, hasValue := ev[envVar]; hasValue {
 		return value
 	}
-	if len(defaults) > 0 {
-		return defaults[0]
+	for _, defaultValue := range defaults {
+		if defaultValue != "" {
+			return defaultValue
+		}
 	}
 	return ""
 }
@@ -57,21 +67,6 @@ func (ev Vars) CSV(envVar string, defaults ...string) []string {
 		return strings.Split(value, ",")
 	}
 	return defaults
-}
-
-// ReadFile reads a file from the env.
-func (ev Vars) ReadFile(path string) error {
-	return fileutil.ReadLines(path, func(line string) error {
-		if len(line) == 0 {
-			return nil
-		}
-		parts := strings.SplitN(line, "=", 2)
-		if len(parts) < 2 {
-			return nil
-		}
-		ev[parts[0]] = parts[1]
-		return nil
-	})
 }
 
 // Bool returns a boolean value for a key, defaulting to false.
@@ -95,8 +90,10 @@ func (ev Vars) Int(envVar string, defaults ...int) (int, error) {
 	if value, hasValue := ev[envVar]; hasValue {
 		return strconv.Atoi(value)
 	}
-	if len(defaults) > 0 {
-		return defaults[0], nil
+	for _, defaultValue := range defaults {
+		if defaultValue > 0 {
+			return defaultValue, nil
+		}
 	}
 	return 0, nil
 }
@@ -116,8 +113,10 @@ func (ev Vars) Int32(envVar string, defaults ...int32) (int32, error) {
 		parsedValue, err := strconv.Atoi(value)
 		return int32(parsedValue), err
 	}
-	if len(defaults) > 0 {
-		return defaults[0], nil
+	for _, defaultValue := range defaults {
+		if defaultValue > 0 {
+			return defaultValue, nil
+		}
 	}
 	return 0, nil
 }
@@ -136,8 +135,10 @@ func (ev Vars) Int64(envVar string, defaults ...int64) (int64, error) {
 	if value, hasValue := ev[envVar]; hasValue {
 		return strconv.ParseInt(value, 10, 64)
 	}
-	if len(defaults) > 0 {
-		return defaults[0], nil
+	for _, defaultValue := range defaults {
+		if defaultValue > 0 {
+			return defaultValue, nil
+		}
 	}
 	return 0, nil
 }
@@ -157,8 +158,10 @@ func (ev Vars) Uint32(envVar string, defaults ...uint32) (uint32, error) {
 		parsedValue, err := strconv.ParseUint(value, 10, 32)
 		return uint32(parsedValue), err
 	}
-	if len(defaults) > 0 {
-		return defaults[0], nil
+	for _, defaultValue := range defaults {
+		if defaultValue > 0 {
+			return defaultValue, nil
+		}
 	}
 	return 0, nil
 }
@@ -177,8 +180,10 @@ func (ev Vars) Uint64(envVar string, defaults ...uint64) (uint64, error) {
 	if value, hasValue := ev[envVar]; hasValue {
 		return strconv.ParseUint(value, 10, 64)
 	}
-	if len(defaults) > 0 {
-		return defaults[0], nil
+	for _, defaultValue := range defaults {
+		if defaultValue > 0 {
+			return defaultValue, nil
+		}
 	}
 	return 0, nil
 }
@@ -197,8 +202,10 @@ func (ev Vars) Float64(envVar string, defaults ...float64) (float64, error) {
 	if value, hasValue := ev[envVar]; hasValue {
 		return strconv.ParseFloat(value, 64)
 	}
-	if len(defaults) > 0 {
-		return defaults[0], nil
+	for _, defaultValue := range defaults {
+		if defaultValue > 0 {
+			return defaultValue, nil
+		}
 	}
 	return 0, nil
 }
@@ -217,8 +224,10 @@ func (ev Vars) Duration(envVar string, defaults ...time.Duration) (time.Duration
 	if value, hasValue := ev[envVar]; hasValue {
 		return time.ParseDuration(value)
 	}
-	if len(defaults) > 0 {
-		return defaults[0], nil
+	for _, defaultValue := range defaults {
+		if defaultValue > 0 {
+			return defaultValue, nil
+		}
 	}
 	return 0, nil
 }
@@ -237,8 +246,10 @@ func (ev Vars) Bytes(envVar string, defaults ...[]byte) []byte {
 	if value, hasValue := ev[envVar]; hasValue && len(value) > 0 {
 		return []byte(value)
 	}
-	if len(defaults) > 0 {
-		return defaults[0]
+	for _, defaultValue := range defaults {
+		if len(defaultValue) > 0 {
+			return defaultValue
+		}
 	}
 	return nil
 }
@@ -248,8 +259,10 @@ func (ev Vars) Base64(envVar string, defaults ...[]byte) ([]byte, error) {
 	if value, hasValue := ev[envVar]; hasValue && len(value) > 0 {
 		return base64.StdEncoding.DecodeString(value)
 	}
-	if len(defaults) > 0 {
-		return defaults[0], nil
+	for _, defaultValue := range defaults {
+		if len(defaultValue) > 0 {
+			return defaultValue, nil
+		}
 	}
 	return nil, nil
 }
@@ -344,6 +357,19 @@ func (ev Vars) Raw() []string {
 	return raw
 }
 
+// ReadInto sets an object based on the fields in the env vars set.
+func (ev Vars) ReadInto(obj interface{}) error {
+	if typed, isTyped := obj.(Unmarshaler); isTyped {
+		return typed.UnmarshalEnv(ev)
+	}
+	return reflectutil.PatchStrings(ReflectTagName, ev, obj)
+}
+
+// Expand calls os.Expand with the variable set as the environment value resolver.
+func (ev Vars) Expand(value string) string {
+	return os.Expand(value, ev.Get)
+}
+
 // --------------------------------------------------------------------------------
 // Service Specific helpers
 // --------------------------------------------------------------------------------
@@ -364,15 +390,17 @@ func (ev Vars) IsProdlike() bool {
 	return IsProdlike(ev.ServiceEnv())
 }
 
+// IsDev returns if the ServiceEnv is the local development environment.
+func (ev Vars) IsDev() bool {
+	return IsDev(ev.ServiceEnv())
+}
+
+// IsDevlike returns if the ServiceEnv is strictly the inverse of `IsProdlike`.
+func (ev Vars) IsDevlike() bool {
+	return !IsProdlike(ev.ServiceEnv())
+}
+
 // ServiceName is a common environment variable for the service's name.
 func (ev Vars) ServiceName(defaults ...string) string {
 	return ev.String(VarServiceName, defaults...)
-}
-
-// ReadInto sets an object based on the fields in the env vars set.
-func (ev Vars) ReadInto(obj interface{}) error {
-	if typed, isTyped := obj.(Unmarshaler); isTyped {
-		return typed.UnmarshalEnv(ev)
-	}
-	return reflectutil.PatchStrings(TagName, ev, obj)
 }

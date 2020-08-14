@@ -1,12 +1,11 @@
 package env
 
 import (
+	"os"
 	"testing"
-
-	"github.com/blend/go-sdk/assert"
 )
 
 // TestMain is the testing entrypoint.
 func TestMain(m *testing.M) {
-	assert.Main(m)
+	os.Exit(m.Run())
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/blend/go-sdk/uuid"
 )
 
-func TestIsProdlike(t *testing.T) {
+func TestIsDevlike(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := []struct {
@@ -28,29 +28,29 @@ func TestIsProdlike(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		assert.Equal(testCase.Expected, env.IsProdlike(testCase.Input), fmt.Sprintf("failed for: %s", testCase.Input))
+		assert.Equal(!testCase.Expected, env.IsDevlike(testCase.Input), fmt.Sprintf("failed for: %s", testCase.Input))
 	}
 }
 
-func TestIsProduction(t *testing.T) {
+func TestIsDev(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := []struct {
 		Input    string
 		Expected bool
 	}{
-		{Input: env.ServiceEnvDev, Expected: false},
+		{Input: env.ServiceEnvDev, Expected: true},
 		{Input: env.ServiceEnvCI, Expected: false},
 		{Input: env.ServiceEnvTest, Expected: false},
 		{Input: env.ServiceEnvSandbox, Expected: false},
-		{Input: env.ServiceEnvPreprod, Expected: true},
+		{Input: env.ServiceEnvPreprod, Expected: false},
 		{Input: env.ServiceEnvBeta, Expected: false},
-		{Input: env.ServiceEnvProd, Expected: true},
+		{Input: env.ServiceEnvProd, Expected: false},
 		{Input: uuid.V4().String(), Expected: false},
 		{Expected: false},
 	}
 
 	for _, testCase := range testCases {
-		assert.Equal(testCase.Expected, env.IsProduction(testCase.Input), fmt.Sprintf("failed for: %s", testCase.Input))
+		assert.Equal(testCase.Expected, env.IsDev(testCase.Input), fmt.Sprintf("failed for: %s", testCase.Input))
 	}
 }
