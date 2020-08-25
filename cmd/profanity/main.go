@@ -40,7 +40,7 @@ type config struct {
 
 // Resolve resolves the config.
 func (c *config) Resolve(ctx context.Context) error {
-	return configutil.ReturnFirst(
+	return configutil.Resolve(ctx,
 		configutil.SetBool(&c.Verbose, configutil.Bool(flagVerbose), configutil.Bool(c.Verbose), configutil.Bool(ref.Bool(false))),
 		configutil.SetBool(&c.FailFast, configutil.Bool(flagDebug), configutil.Bool(c.Debug), configutil.Bool(ref.Bool(false))),
 		configutil.SetBool(&c.FailFast, configutil.Bool(flagFailFast), configutil.Bool(c.FailFast), configutil.Bool(ref.Bool(false))),

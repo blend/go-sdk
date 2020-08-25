@@ -23,6 +23,9 @@ const (
 	// DefaultSchema is the default schema to connect to
 	DefaultSchema = "public"
 
+	// DefaultConnectTimeout is the default connect timeout.
+	DefaultConnectTimeout = 5
+
 	// SSLModeDisable is an ssl mode.
 	// Postgres Docs: "I don't care about security, and I don't want to pay the overhead of encryption."
 	SSLModeDisable = "disable"

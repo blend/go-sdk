@@ -37,9 +37,9 @@ type config struct {
 }
 
 func (c *config) Resolve(ctx context.Context) error {
-	return configutil.ReturnFirst(
-		configutil.SetString(&c.BindAddr, configutil.Env(ctx, "BIND_ADDR"), configutil.String(c.BindAddr), configutil.String(":9000")),
-		configutil.SetBool(&c.UseProxyProtocol, configutil.Env(ctx, "PROXY_PROTOCOL"), configutil.Bool(c.UseProxyProtocol), configutil.Bool(ref.Bool(false))),
+	return configutil.Resolve(ctx,
+		configutil.SetString(&c.BindAddr, configutil.Env("BIND_ADDR"), configutil.String(c.BindAddr), configutil.String(":9000")),
+		configutil.SetBool(&c.UseProxyProtocol, configutil.Env("PROXY_PROTOCOL"), configutil.Bool(c.UseProxyProtocol), configutil.Bool(ref.Bool(false))),
 	)
 }
 

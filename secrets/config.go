@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/blend/go-sdk/configutil"
+	"github.com/blend/go-sdk/env"
 )
 
 // EnvVars
@@ -36,7 +36,7 @@ func (c Config) IsZero() bool {
 
 // Resolve reads the environment into the config on configutil.Read(...)
 func (c *Config) Resolve(ctx context.Context) error {
-	return configutil.GetEnvVars(ctx).ReadInto(c)
+	return env.GetVars(ctx).ReadInto(c)
 }
 
 // AddrOrDefault returns the client addr.

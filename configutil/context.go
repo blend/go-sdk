@@ -2,26 +2,7 @@ package configutil
 
 import (
 	"context"
-
-	"github.com/blend/go-sdk/env"
 )
-
-type envVarsKey struct{}
-
-// WithEnvVars adds environment variables to a context.
-func WithEnvVars(ctx context.Context, vars env.Vars) context.Context {
-	return context.WithValue(ctx, envVarsKey{}, vars)
-}
-
-// GetEnvVars gets environment variables from a context.
-func GetEnvVars(ctx context.Context) env.Vars {
-	if raw := ctx.Value(envVarsKey{}); raw != nil {
-		if typed, ok := raw.(env.Vars); ok {
-			return typed
-		}
-	}
-	return env.Env()
-}
 
 type configFilePathsKey struct{}
 

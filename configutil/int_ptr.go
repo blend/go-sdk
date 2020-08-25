@@ -1,5 +1,7 @@
 package configutil
 
+import "context"
+
 // IntPtr returns an IntSource for a given int pointer.
 func IntPtr(value *int) IntSource {
 	return IntPtrSource{Value: value}
@@ -15,6 +17,6 @@ type IntPtrSource struct {
 }
 
 // Int implements IntSource.
-func (ips IntPtrSource) Int() (*int, error) {
+func (ips IntPtrSource) Int(_ context.Context) (*int, error) {
 	return ips.Value, nil
 }

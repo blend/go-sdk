@@ -32,7 +32,7 @@ func TestConfigResolve(t *testing.T) {
 	assert.Empty(cfg.DistOrDefault())
 	assert.Empty(cfg.ReleaseOrDefault())
 
-	assert.Nil(cfg.Resolve(configutil.WithEnvVars(context.Background(), env.Env())))
+	assert.Nil(cfg.Resolve(context.Background()))
 	assert.False(cfg.IsZero())
 	assert.Equal("http://foo@example.com/1", cfg.DSN)
 	assert.Equal("go-sdk-web-server", cfg.ServerName)

@@ -8,6 +8,7 @@ import (
 	"net/smtp"
 
 	"github.com/blend/go-sdk/configutil"
+	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/ex"
 )
 
@@ -25,9 +26,9 @@ type SMTPSender struct {
 
 // Resolve implements configutil.ConfigResolver.
 func (s *SMTPSender) Resolve(ctx context.Context) error {
-	return configutil.ReturnFirst(
-		configutil.GetEnvVars(ctx).ReadInto(s),
-		s.PlainAuth.Resolve(ctx),
+	return configutil.Resolve(ctx,
+		func(ictx context.Context) error { return env.GetVars(ictx).ReadInto(s) },
+		s.PlainAuth.Resolve,
 	)
 }
 
@@ -170,7 +171,7 @@ type SMTPPlainAuth struct {
 
 // Resolve implements configutil.ConfigResolver.
 func (spa SMTPPlainAuth) Resolve(ctx context.Context) error {
-	return configutil.GetEnvVars(ctx).ReadInto(&spa)
+	return env.GetVars(ctx).ReadInto(&spa) //note(wc); i'm not sure this will always work
 }
 
 // IsZero returns if the plain auth is unset.

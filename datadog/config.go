@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/blend/go-sdk/configutil"
+	"github.com/blend/go-sdk/env"
 )
 
 const (
@@ -50,7 +50,7 @@ type Config struct {
 
 // Resolve implements configutil.ConfigResolver.
 func (c *Config) Resolve(ctx context.Context) error {
-	return configutil.GetEnvVars(ctx).ReadInto(c)
+	return env.GetVars(ctx).ReadInto(c)
 }
 
 // IsZero returns if the config is unset.

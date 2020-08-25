@@ -1,6 +1,7 @@
 package configutil
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -17,6 +18,6 @@ func TestDurationPtr(t *testing.T) {
 	hasValue2 := DurationPtr(&value2)
 
 	var setValue time.Duration
-	assert.Nil(SetDuration(&setValue, isNil, hasValue, hasValue2))
+	assert.Nil(SetDuration(&setValue, isNil, hasValue, hasValue2)(context.TODO()))
 	assert.Equal(time.Second, setValue)
 }

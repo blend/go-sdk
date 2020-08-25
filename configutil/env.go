@@ -16,29 +16,21 @@ var (
 )
 
 // Env returns a new environment value provider.
-func Env(ctx context.Context, key string) EnvVars {
+func Env(key string) EnvVars {
 	return EnvVars{
-		Key:  key,
-		Vars: GetEnvVars(ctx),
+		Key: key,
 	}
 }
 
 // EnvVars is a value provider where the string represents the environment variable name.
 // It can be used with *any* config.Set___ type.
 type EnvVars struct {
-	Key  string
-	Vars env.Vars
+	Key string
 }
 
 // String returns a given environment variable as a string.
-func (e EnvVars) String() (*string, error) {
-	var vars env.Vars
-	if e.Vars != nil {
-		vars = e.Vars
-	} else {
-		vars = env.Env()
-	}
-
+func (e EnvVars) String(ctx context.Context) (*string, error) {
+	vars := e.vars(ctx)
 	if vars.Has(e.Key) {
 		value := vars.String(e.Key)
 		return &value, nil
@@ -47,13 +39,8 @@ func (e EnvVars) String() (*string, error) {
 }
 
 // Strings returns a given environment variable as strings.
-func (e EnvVars) Strings() ([]string, error) {
-	var vars env.Vars
-	if e.Vars != nil {
-		vars = e.Vars
-	} else {
-		vars = env.Env()
-	}
+func (e EnvVars) Strings(ctx context.Context) ([]string, error) {
+	vars := e.vars(ctx)
 
 	if vars.Has(e.Key) {
 		return vars.CSV(e.Key), nil
@@ -62,13 +49,8 @@ func (e EnvVars) Strings() ([]string, error) {
 }
 
 // Bool returns a given environment variable as a bool.
-func (e EnvVars) Bool() (*bool, error) {
-	var vars env.Vars
-	if e.Vars != nil {
-		vars = e.Vars
-	} else {
-		vars = env.Env()
-	}
+func (e EnvVars) Bool(ctx context.Context) (*bool, error) {
+	vars := e.vars(ctx)
 
 	if vars.Has(e.Key) {
 		value := vars.Bool(e.Key)
@@ -78,13 +60,8 @@ func (e EnvVars) Bool() (*bool, error) {
 }
 
 // Int returns a given environment variable as an int.
-func (e EnvVars) Int() (*int, error) {
-	var vars env.Vars
-	if e.Vars != nil {
-		vars = e.Vars
-	} else {
-		vars = env.Env()
-	}
+func (e EnvVars) Int(ctx context.Context) (*int, error) {
+	vars := e.vars(ctx)
 
 	if vars.Has(e.Key) {
 		value, err := vars.Int(e.Key)
@@ -97,13 +74,8 @@ func (e EnvVars) Int() (*int, error) {
 }
 
 // Float64 returns a given environment variable as a float64.
-func (e EnvVars) Float64() (*float64, error) {
-	var vars env.Vars
-	if e.Vars != nil {
-		vars = e.Vars
-	} else {
-		vars = env.Env()
-	}
+func (e EnvVars) Float64(ctx context.Context) (*float64, error) {
+	vars := e.vars(ctx)
 
 	if vars.Has(e.Key) {
 		value, err := vars.Float64(e.Key)
@@ -116,13 +88,8 @@ func (e EnvVars) Float64() (*float64, error) {
 }
 
 // Duration returns a given environment variable as a time.Duration.
-func (e EnvVars) Duration() (*time.Duration, error) {
-	var vars env.Vars
-	if e.Vars != nil {
-		vars = e.Vars
-	} else {
-		vars = env.Env()
-	}
+func (e EnvVars) Duration(ctx context.Context) (*time.Duration, error) {
+	vars := e.vars(ctx)
 
 	if vars.Has(e.Key) {
 		value, err := vars.Duration(e.Key)
@@ -132,4 +99,12 @@ func (e EnvVars) Duration() (*time.Duration, error) {
 		return &value, nil
 	}
 	return nil, nil
+}
+
+// vars resolves the env vars
+func (e EnvVars) vars(ctx context.Context) env.Vars {
+	if vars := env.GetVars(ctx); vars != nil {
+		return vars
+	}
+	return env.Env()
 }

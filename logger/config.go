@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/blend/go-sdk/configutil"
+	"github.com/blend/go-sdk/env"
 )
 
 // Config is the logger config.
@@ -17,9 +17,7 @@ type Config struct {
 
 // Resolve resolves the config.
 func (c *Config) Resolve(ctx context.Context) error {
-	return configutil.ReturnFirst(
-		configutil.GetEnvVars(ctx).ReadInto(c),
-	)
+	return env.GetVars(ctx).ReadInto(c)
 }
 
 // FlagsOrDefault returns the enabled logger events.

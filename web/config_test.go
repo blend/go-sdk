@@ -168,10 +168,10 @@ func TestConfigResolve(t *testing.T) {
 	env.SetEnv(env.New())
 
 	defer env.Restore()
-	assert.Nil(c.Resolve(configutil.WithEnvVars(context.Background(), env.Env())))
+	assert.Nil(c.Resolve(context.Background()))
 	assert.Empty(c.BindAddr)
 
 	env.Env().Set("BIND_ADDR", "hello")
-	assert.Nil(c.Resolve(configutil.WithEnvVars(context.Background(), env.Env())))
+	assert.Nil(c.Resolve(context.Background()))
 	assert.Equal("hello", c.BindAddr)
 }

@@ -19,11 +19,11 @@ func TestViewCacheConfigResolve(t *testing.T) {
 
 	defer env.Restore()
 	env.SetEnv(env.New())
-	assert.Nil(vcc.Resolve(configutil.WithEnvVars(context.Background(), env.Env())))
+	assert.Nil(vcc.Resolve(context.Background()))
 	assert.False(vcc.LiveReload)
 
 	env.Env().Set("LIVE_RELOAD", "true")
-	assert.Nil(vcc.Resolve(configutil.WithEnvVars(context.Background(), env.Env())))
+	assert.Nil(vcc.Resolve(context.Background()))
 	assert.True(vcc.LiveReload)
 }
 

@@ -70,7 +70,7 @@ func NewConfigFromDSN(dsn string) (*Config, error) {
 //	-	DB_PASSWORD 	= Password
 //	-	DB_SSLMODE 		= SSLMode
 func NewConfigFromEnv() (config Config, err error) {
-	if err = (&config).Resolve(configutil.WithEnvVars(context.Background(), env.Env())); err != nil {
+	if err = (&config).Resolve(env.WithVars(context.Background(), env.Env())); err != nil {
 		return
 	}
 	return
@@ -154,7 +154,22 @@ func (c Config) IsZero() bool {
 
 // Resolve applies any external data sources to the config.
 func (c *Config) Resolve(ctx context.Context) error {
-	return configutil.GetEnvVars(ctx).ReadInto(c)
+	return configutil.Resolve(ctx,
+		configutil.SetString(&c.Engine, configutil.Env("DB_ENGINE"), configutil.String(c.Engine), configutil.String(DefaultEngine)),
+		configutil.SetString(&c.DSN, configutil.Env("DATABASE_URL"), configutil.String(c.DSN)),
+		configutil.SetString(&c.Host, configutil.Env("DB_HOST"), configutil.String(c.Host), configutil.String(DefaultHost)),
+		configutil.SetString(&c.Port, configutil.Env("DB_PORT"), configutil.String(c.Port), configutil.String(DefaultPort)),
+		configutil.SetString(&c.Database, configutil.Env("DB_NAME"), configutil.String(c.Database), configutil.String(DefaultDatabase)),
+		configutil.SetString(&c.Schema, configutil.Env("DB_SCHEMA"), configutil.String(c.Schema)),
+		configutil.SetString(&c.Username, configutil.Env("DB_USER"), configutil.String(c.Username), configutil.Env("USER")),
+		configutil.SetString(&c.Password, configutil.Env("DB_PASSWORD"), configutil.String(c.Password)),
+		configutil.SetInt(&c.ConnectTimeout, configutil.Env("DB_CONNECT_TIMEOUT"), configutil.Int(c.ConnectTimeout), configutil.Int(DefaultConnectTimeout)),
+		configutil.SetString(&c.SSLMode, configutil.Env("DB_SSLMODE"), configutil.String(c.SSLMode)),
+		configutil.SetInt(&c.IdleConnections, configutil.Env("DB_IDLE_CONNECTIONS"), configutil.Int(c.IdleConnections), configutil.Int(DefaultIdleConnections)),
+		configutil.SetInt(&c.MaxConnections, configutil.Env("DB_MAX_CONNECTIONS"), configutil.Int(c.MaxConnections), configutil.Int(DefaultMaxConnections)),
+		configutil.SetDuration(&c.MaxLifetime, configutil.Env("DB_MAX_LIFETIME"), configutil.Duration(c.MaxConnections), configutil.Duration(DefaultMaxLifetime)),
+		configutil.SetInt(&c.BufferPoolSize, configutil.Env("DB_BUFFER_POOL_SIZE"), configutil.Int(c.BufferPoolSize), configutil.Int(DefaultBufferPoolSize)),
+	)
 }
 
 // Reparse creates a DSN and reparses it, in case some values need to be coalesced.

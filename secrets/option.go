@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/blend/go-sdk/configutil"
 	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/logger"
 )
@@ -28,7 +27,7 @@ func OptLog(log logger.Log) Option {
 func OptConfigFromEnv() Option {
 	return func(vc *VaultClient) error {
 		var cfg Config
-		if err := (&cfg).Resolve(configutil.WithEnvVars(context.Background(), env.Env())); err != nil {
+		if err := (&cfg).Resolve(env.WithVars(context.Background(), env.Env())); err != nil {
 			return nil
 		}
 		if err := OptConfig(cfg)(vc); err != nil {

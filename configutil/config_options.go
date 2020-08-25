@@ -27,6 +27,6 @@ func (co ConfigOptions) Background() context.Context {
 	}
 
 	background = WithConfigFilePaths(background, co.FilePaths)
-	background = WithEnvVars(background, co.Env)
+	background = env.WithVars(background, co.Env)
 	return background
 }

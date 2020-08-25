@@ -1,6 +1,7 @@
 package configutil
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -15,7 +16,7 @@ func TestSetString(t *testing.T) {
 	hasValue2 := String("has another value")
 
 	var value string
-	assert.Nil(SetString(&value, empty, hasValue, hasValue2))
+	assert.Nil(SetString(&value, empty, hasValue, hasValue2)(context.TODO()))
 	assert.Equal("has value", value)
 }
 
@@ -27,7 +28,7 @@ func TestSetStringPtr(t *testing.T) {
 	hasValue2 := String("has another value")
 
 	var value *string
-	assert.Nil(SetStringPtr(&value, empty, hasValue, hasValue2))
+	assert.Nil(SetStringPtr(&value, empty, hasValue, hasValue2)(context.TODO()))
 	assert.Equal("has value", *value)
 }
 
@@ -39,7 +40,7 @@ func TestSetStrings(t *testing.T) {
 	hasValue2 := Strings([]string{"has another value"})
 
 	var value []string
-	assert.Nil(SetStrings(&value, empty, hasValue, hasValue2))
+	assert.Nil(SetStrings(&value, empty, hasValue, hasValue2)(context.TODO()))
 	assert.Equal([]string{"has value"}, value)
 }
 
@@ -53,7 +54,7 @@ func TestSetBool(t *testing.T) {
 	hasValue2 := Bool(&fv)
 
 	var value *bool
-	assert.Nil(SetBool(&value, empty, hasValue, hasValue2))
+	assert.Nil(SetBool(&value, empty, hasValue, hasValue2)(context.TODO()))
 	assert.Equal(true, *value)
 }
 
@@ -65,7 +66,7 @@ func TestSetInt(t *testing.T) {
 	hasValue2 := Int(2)
 
 	var value int
-	assert.Nil(SetInt(&value, empty, hasValue, hasValue2))
+	assert.Nil(SetInt(&value, empty, hasValue, hasValue2)(context.TODO()))
 	assert.Equal(1, value)
 
 	errors := Parse(String("bad"))
@@ -80,7 +81,7 @@ func TestSetIntPtr(t *testing.T) {
 	hasValue2 := Int(2)
 
 	var value *int
-	assert.Nil(SetIntPtr(&value, empty, hasValue, hasValue2))
+	assert.Nil(SetIntPtr(&value, empty, hasValue, hasValue2)(context.TODO()))
 	assert.Equal(1, *value)
 
 	errors := Parse(String("bad"))
@@ -95,7 +96,7 @@ func TestSetFloat64(t *testing.T) {
 	hasValue2 := Float64(2)
 
 	var value float64
-	assert.Nil(SetFloat64(&value, empty, hasValue, hasValue2))
+	assert.Nil(SetFloat64(&value, empty, hasValue, hasValue2)(context.TODO()))
 	assert.Equal(1, value)
 
 	errors := Parse(String("bad"))
@@ -110,7 +111,7 @@ func TestSetFloat64Ptr(t *testing.T) {
 	hasValue2 := Float64(2)
 
 	var value *float64
-	assert.Nil(SetFloat64Ptr(&value, empty, hasValue, hasValue2))
+	assert.Nil(SetFloat64Ptr(&value, empty, hasValue, hasValue2)(context.TODO()))
 	assert.Equal(1, *value)
 
 	errors := Parse(String("bad"))
@@ -125,7 +126,7 @@ func TestSetDuration(t *testing.T) {
 	hasValue2 := Duration(2 * time.Second)
 
 	var value time.Duration
-	assert.Nil(SetDuration(&value, empty, hasValue, hasValue2))
+	assert.Nil(SetDuration(&value, empty, hasValue, hasValue2)(context.TODO()))
 	assert.Equal(time.Second, value)
 
 	errors := Parse(String("bad"))
@@ -140,7 +141,7 @@ func TestSetDurationPtr(t *testing.T) {
 	hasValue2 := Duration(2 * time.Second)
 
 	var value *time.Duration
-	assert.Nil(SetDurationPtr(&value, empty, hasValue, hasValue2))
+	assert.Nil(SetDurationPtr(&value, empty, hasValue, hasValue2)(context.TODO()))
 	assert.Equal(time.Second, *value)
 
 	errors := Parse(String("bad"))

@@ -1,6 +1,7 @@
 package configutil
 
 import (
+	"context"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
@@ -16,6 +17,6 @@ func TestIntPtr(t *testing.T) {
 	hasValue2 := IntPtr(&value2)
 
 	var setValue int
-	assert.Nil(SetInt(&setValue, isNil, hasValue, hasValue2))
+	assert.Nil(SetInt(&setValue, isNil, hasValue, hasValue2)(context.TODO()))
 	assert.Equal(1, setValue)
 }
