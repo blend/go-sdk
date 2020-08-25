@@ -15,6 +15,10 @@ const (
 	ErrUsernameUnset ex.Class = "db: username is unset in prodlike environment"
 	// ErrPasswordUnset is an error indicating there is no password set in a prodlike environment.
 	ErrPasswordUnset ex.Class = "db: password is unset in prodlike environment"
+	// ErrDurationConversion is the error returned when a duration cannot be
+	// converted to multiple of some base (e.g. milliseconds or seconds)
+	// without round off.
+	ErrDurationConversion ex.Class = "db: cannot convert duration"
 	// ErrConnectionAlreadyOpen is an error indicating the db connection was already opened.
 	ErrConnectionAlreadyOpen ex.Class = "db: the connection is already opened"
 	// ErrConnectionClosed is an error indicating the db connection hasn't been opened.
@@ -53,6 +57,11 @@ func IsUsernameUnset(err error) bool {
 // IsPasswordUnset returns if an error is an `ErrPasswordUnset`.
 func IsPasswordUnset(err error) bool {
 	return ex.Is(err, ErrPasswordUnset)
+}
+
+// IsDurationConversion returns if an error is an `ErrDurationConversion`.
+func IsDurationConversion(err error) bool {
+	return ex.Is(err, ErrDurationConversion)
 }
 
 // IsConnectionClosed returns if the error is an `ErrConnectionClosed`.

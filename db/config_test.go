@@ -186,6 +186,9 @@ func TestConfigValidateProduction(t *testing.T) {
 	assert.True(IsUnsafeSSLMode(Config{Username: "foo", Password: "bar", SSLMode: SSLModeAllow}.ValidateProduction()))
 	assert.True(IsUnsafeSSLMode(Config{Username: "foo", Password: "bar", SSLMode: SSLModePrefer}.ValidateProduction()))
 	assert.True(IsUnsafeSSLMode(Config{Username: "foo", Password: "bar", SSLMode: "NOT A REAL MODE"}.ValidateProduction()))
+	assert.Nil(Config{Username: "foo", Password: "bar", SSLMode: SSLModeVerifyFull}.ValidateProduction())
+	assert.True(IsDurationConversion(Config{Username: "foo", Password: "bar", SSLMode: SSLModeVerifyFull, LockTimeout: time.Nanosecond}.ValidateProduction()))
+	assert.True(IsDurationConversion(Config{Username: "foo", Password: "bar", SSLMode: SSLModeVerifyFull, StatementTimeout: time.Nanosecond}.ValidateProduction()))
 }
 
 func TestConfigReparse(t *testing.T) {

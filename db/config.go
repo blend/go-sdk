@@ -287,6 +287,19 @@ func (c Config) CreateDSN() string {
 	return dsn.String()
 }
 
+// Validate validates that user-provided values are valid, e.g. that timeouts
+// can be exactly rounded into a multiple of a given base value.
+func (c Config) Validate() error {
+	if c.LockTimeout%time.Millisecond != 0 {
+		return ex.New(ErrDurationConversion, ex.OptMessagef("lock_timeout=%s", c.LockTimeout))
+	}
+	if c.StatementTimeout%time.Millisecond != 0 {
+		return ex.New(ErrDurationConversion, ex.OptMessagef("statement_timeout=%s", c.StatementTimeout))
+	}
+
+	return nil
+}
+
 // ValidateProduction validates production configuration for the config.
 func (c Config) ValidateProduction() error {
 	if !(len(c.SSLMode) == 0 ||
@@ -301,7 +314,7 @@ func (c Config) ValidateProduction() error {
 	if len(c.Password) == 0 {
 		return ex.New(ErrPasswordUnset)
 	}
-	return nil
+	return c.Validate()
 }
 
 // setTimeoutMilliseconds sets a timeout value in connection string query parameters.
