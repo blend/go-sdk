@@ -290,10 +290,10 @@ func (c Config) CreateDSN() string {
 // Validate validates that user-provided values are valid, e.g. that timeouts
 // can be exactly rounded into a multiple of a given base value.
 func (c Config) Validate() error {
-	if c.LockTimeout%time.Millisecond != 0 {
+	if c.LockTimeout.Round(time.Millisecond) != c.LockTimeout {
 		return ex.New(ErrDurationConversion, ex.OptMessagef("lock_timeout=%s", c.LockTimeout))
 	}
-	if c.StatementTimeout%time.Millisecond != 0 {
+	if c.StatementTimeout.Round(time.Millisecond) != c.StatementTimeout {
 		return ex.New(ErrDurationConversion, ex.OptMessagef("statement_timeout=%s", c.StatementTimeout))
 	}
 
@@ -348,6 +348,6 @@ func (c Config) ValidateProduction() error {
 // - https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT
 // - https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-STATEMENT-TIMEOUT
 func setTimeoutMilliseconds(q url.Values, name string, d time.Duration) {
-	ms := int64(d / time.Millisecond)
+	ms := d.Round(time.Millisecond) / time.Millisecond
 	q.Add(name, fmt.Sprintf("%dms", ms))
 }
