@@ -19,10 +19,17 @@ func TestIntervalWorker(t *testing.T) {
 	assert := assert.New(t)
 
 	var didWork bool
+	var didWorkLock sync.Mutex
 	done := sync.WaitGroup{}
 	done.Add(1)
 	wait := make(chan struct{})
 	w := NewInterval(func(_ context.Context) error {
+		didWorkLock.Lock()
+		defer didWorkLock.Unlock()
+		if didWork {
+			return nil
+		}
+
 		defer done.Done()
 		<-wait
 		didWork = true
