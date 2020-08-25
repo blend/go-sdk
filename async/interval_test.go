@@ -2,7 +2,6 @@ package async
 
 import (
 	"context"
-	"sync"
 	"testing"
 	"time"
 
@@ -19,20 +18,10 @@ func TestIntervalWorker(t *testing.T) {
 	assert := assert.New(t)
 
 	var didWork bool
-	var didWorkLock sync.Mutex
-	done := sync.WaitGroup{}
-	done.Add(1)
-	wait := make(chan struct{})
+	unbuffered := make(chan bool)
 	w := NewInterval(func(_ context.Context) error {
-		didWorkLock.Lock()
-		defer didWorkLock.Unlock()
-		if didWork {
-			return nil
-		}
-
-		defer done.Done()
-		<-wait
 		didWork = true
+		<-unbuffered
 		return nil
 	}, time.Millisecond)
 
@@ -42,8 +31,8 @@ func TestIntervalWorker(t *testing.T) {
 	<-w.NotifyStarted()
 
 	assert.True(w.IsStarted())
-	close(wait)
-	done.Wait()
+	unbuffered <- true
+	close(unbuffered)
 	w.Stop()
 	assert.True(w.IsStopped())
 	assert.True(didWork)
