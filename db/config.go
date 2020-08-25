@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -109,10 +110,14 @@ type Config struct {
 	// See: https://www.postgresql.org/docs/10/libpq-connect.html#LIBPQ-CONNECT-CONNECT-TIMEOUT
 	ConnectTimeout int `json:"connectTimeout" yaml:"connectTimeout" env:"DB_CONNECT_TIMEOUT"`
 	// LockTimeout is the timeout to use when attempting to acquire a lock.
+	// PostgreSQL will only accept millisecond precision so this value will be
+	// rounded to the nearest millisecond before being set on a connection string.
 	//
 	// See: https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT
 	LockTimeout time.Duration `json:"lockTimeout" yaml:"lockTimeout" env:"DB_LOCK_TIMEOUT"`
 	// StatementTimeout is the timeout to use when invoking a SQL statement.
+	// PostgreSQL will only accept millisecond precision so this value will be
+	// rounded to the nearest millisecond before being set on a connection string.
 	//
 	// See: https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-STATEMENT-TIMEOUT
 	StatementTimeout time.Duration `json:"statementTimeout" yaml:"statementTimeout" env:"DB_STATEMENT_TIMEOUT"`
@@ -258,6 +263,12 @@ func (c Config) CreateDSN() string {
 	if c.ConnectTimeout > 0 {
 		queryArgs.Add("connect_timeout", strconv.Itoa(c.ConnectTimeout))
 	}
+	if c.LockTimeout > 0 {
+		setTimeoutMilliseconds(queryArgs, "lock_timeout", c.LockTimeout)
+	}
+	if c.StatementTimeout > 0 {
+		setTimeoutMilliseconds(queryArgs, "statement_timeout", c.StatementTimeout)
+	}
 	if c.Schema != "" {
 		queryArgs.Add("search_path", c.Schema)
 	}
@@ -281,4 +292,39 @@ func (c Config) ValidateProduction() error {
 		return ex.New(ErrPasswordUnset)
 	}
 	return nil
+}
+
+// setTimeoutMilliseconds sets a timeout value in connection string query parameters.
+//
+// Valid units for this parameter in PostgresSQL are "ms", "s", "min", "h"
+// and "d" and the value should be between 0 and 2147483647ms. We explicitly
+// cast to milliseconds but leave validation on the value to PostgreSQL.
+//
+//   blend=> BEGIN;
+//   BEGIN
+//   blend=> SET LOCAL lock_timeout TO '4000ms';
+//   SET
+//   blend=> SHOW lock_timeout;
+//    lock_timeout
+//   --------------
+//    4s
+//   (1 row)
+//   --
+//   blend=> SET LOCAL lock_timeout TO '4500ms';
+//   SET
+//   blend=> SHOW lock_timeout;
+//    lock_timeout
+//   --------------
+//    4500ms
+//   (1 row)
+//   --
+//   blend=> COMMIT;
+//   COMMIT
+//
+// See:
+// - https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT
+// - https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-STATEMENT-TIMEOUT
+func setTimeoutMilliseconds(q url.Values, name string, d time.Duration) {
+	ms := int64(d / time.Millisecond)
+	q.Add(name, fmt.Sprintf("%dms", ms))
 }
