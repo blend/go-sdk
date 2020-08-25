@@ -43,6 +43,16 @@ func NewConfigFromDSN(dsn string) (*Config, error) {
 			if err != nil {
 				return nil, ex.New(err, ex.OptMessage("field: connect_timeout"))
 			}
+		} else if strings.HasPrefix(piece, "lock_timeout=") {
+			config.LockTimeout, err = time.ParseDuration(strings.TrimPrefix(piece, "lock_timeout="))
+			if err != nil {
+				return nil, ex.New(err, ex.OptMessage("field: lock_timeout"))
+			}
+		} else if strings.HasPrefix(piece, "statement_timeout=") {
+			config.StatementTimeout, err = time.ParseDuration(strings.TrimPrefix(piece, "statement_timeout="))
+			if err != nil {
+				return nil, ex.New(err, ex.OptMessage("field: statement_timeout"))
+			}
 		}
 	}
 
