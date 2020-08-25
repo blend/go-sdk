@@ -1,7 +1,9 @@
 package db
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/configutil"
@@ -15,17 +17,19 @@ func TestConfigCreateDSN(t *testing.T) {
 	assert := assert.New(t)
 
 	cfg := &Config{
-		Host:           "bar",
-		Port:           "1234",
-		Username:       "bailey",
-		Password:       "dog",
-		Database:       "blend",
-		Schema:         "mortgages",
-		SSLMode:        SSLModeVerifyCA,
-		ConnectTimeout: 5,
+		Host:             "bar",
+		Port:             "1234",
+		Username:         "bailey",
+		Password:         "dog",
+		Database:         "blend",
+		Schema:           "mortgages",
+		SSLMode:          SSLModeVerifyCA,
+		LockTimeout:      1704 * time.Millisecond,
+		StatementTimeout: 2704 * time.Millisecond,
+		ConnectTimeout:   5,
 	}
 
-	assert.Equal("postgres://bailey:dog@bar:1234/blend?connect_timeout=5&search_path=mortgages&sslmode=verify-ca", cfg.CreateDSN())
+	assert.Equal("postgres://bailey:dog@bar:1234/blend?connect_timeout=5&lock_timeout=1704ms&search_path=mortgages&sslmode=verify-ca&statement_timeout=2704ms", cfg.CreateDSN())
 
 	cfg = &Config{
 		DSN:      "foo",
@@ -109,19 +113,40 @@ func TestConfigCreateDSN(t *testing.T) {
 func TestNewConfigFromDSN(t *testing.T) {
 	assert := assert.New(t)
 
-	dsn := "postgres://bailey:dog@bar:1234/blend?connect_timeout=5&sslmode=verify-ca"
-
+	// Fails to parse URL
+	dsn := "a://b"
 	parsed, err := NewConfigFromDSN(dsn)
-	assert.Nil(err)
+	assert.Nil(parsed)
+	assert.Equal("invalid connection protocol: a", fmt.Sprintf("%v", err))
 
-	assert.Equal("bailey", parsed.Username)
-	assert.Equal("dog", parsed.Password)
-	assert.Equal("bar", parsed.Host)
-	assert.Equal("1234", parsed.Port)
-	assert.Equal("blend", parsed.Database)
-	assert.Equal("verify-ca", parsed.SSLMode)
-	assert.Equal(DefaultSchema, parsed.SchemaOrDefault())
-	assert.Equal(5, parsed.ConnectTimeout)
+	// Success, coverage for lots of fields
+	dsn = "postgres://bailey:dog@bar:1234/blend?connect_timeout=5&lock_timeout=4500ms&statement_timeout=5500ms&sslmode=verify-ca"
+	parsed, err = NewConfigFromDSN(dsn)
+	assert.Nil(err)
+	expected := &Config{
+		Host:             "bar",
+		Port:             "1234",
+		Database:         "blend",
+		Username:         "bailey",
+		Password:         "dog",
+		ConnectTimeout:   5,
+		LockTimeout:      4500 * time.Millisecond,
+		StatementTimeout: 5500 * time.Millisecond,
+		SSLMode:          SSLModeVerifyCA,
+	}
+	assert.Equal(expected, parsed)
+
+	// Failure to parse lock timeout
+	dsn = "postgres://bar:1234/blend?lock_timeout=1000"
+	parsed, err = NewConfigFromDSN(dsn)
+	assert.Nil(parsed)
+	assert.Equal("time: missing unit in duration 1000; field: lock_timeout", fmt.Sprintf("%v", err))
+
+	// Failure to parse statement timeout
+	dsn = "postgres://bar:1234/blend?statement_timeout=2000"
+	parsed, err = NewConfigFromDSN(dsn)
+	assert.Nil(parsed)
+	assert.Equal("time: missing unit in duration 2000; field: statement_timeout", fmt.Sprintf("%v", err))
 }
 
 func TestNewConfigFromDSNWithSchema(t *testing.T) {
