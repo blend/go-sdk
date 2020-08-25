@@ -122,12 +122,16 @@ type Config struct {
 	// LockTimeout is the timeout to use when attempting to acquire a lock.
 	// PostgreSQL will only accept millisecond precision so this value will be
 	// rounded to the nearest millisecond before being set on a connection string.
+	// Use `Validate()` to confirm that `LockTimeout` is exact to millisecond
+	// precision.
 	//
 	// See: https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT
 	LockTimeout time.Duration `json:"lockTimeout" yaml:"lockTimeout" env:"DB_LOCK_TIMEOUT"`
 	// StatementTimeout is the timeout to use when invoking a SQL statement.
 	// PostgreSQL will only accept millisecond precision so this value will be
 	// rounded to the nearest millisecond before being set on a connection string.
+	// Use `Validate()` to confirm that `StatementTimeout` is exact to millisecond
+	// precision.
 	//
 	// See: https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-STATEMENT-TIMEOUT
 	StatementTimeout time.Duration `json:"statementTimeout" yaml:"statementTimeout" env:"DB_STATEMENT_TIMEOUT"`
