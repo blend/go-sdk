@@ -102,8 +102,20 @@ type Config struct {
 	Username string `json:"username,omitempty" yaml:"username,omitempty" env:"DB_USER"`
 	// Password is the password for the connection via password auth.
 	Password string `json:"password,omitempty" yaml:"password,omitempty" env:"DB_PASSWORD"`
-	// ConnectTimeout is the connection timeout in seconds.
+	// ConnectTimeout determines the maximum wait for connection. The minimum
+	// allowed timeout is 2 seconds, so anything below is treated the same
+	// as unset.
+	//
+	// See: https://www.postgresql.org/docs/10/libpq-connect.html#LIBPQ-CONNECT-CONNECT-TIMEOUT
 	ConnectTimeout int `json:"connectTimeout" yaml:"connectTimeout" env:"DB_CONNECT_TIMEOUT"`
+	// LockTimeout is the timeout to use when attempting to acquire a lock.
+	//
+	// See: https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT
+	LockTimeout time.Duration `json:"lockTimeout" yaml:"lockTimeout" env:"DB_LOCK_TIMEOUT"`
+	// StatementTimeout is the timeout to use when invoking a SQL statement.
+	//
+	// See: https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-STATEMENT-TIMEOUT
+	StatementTimeout time.Duration `json:"statementTimeout" yaml:"statementTimeout" env:"DB_STATEMENT_TIMEOUT"`
 	// SSLMode is the sslmode for the connection.
 	SSLMode string `json:"sslMode,omitempty" yaml:"sslMode,omitempty" env:"DB_SSLMODE"`
 	// IdleConnections is the number of idle connections.
