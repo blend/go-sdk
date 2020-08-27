@@ -79,6 +79,8 @@ $ VIA_GO_CONTEXT=true go run .
 
 ## `psql` Does **NOT** Support `statement_timeout` in DSN
 
+See `libpq` [Parameter Key Words][2]
+
 ```
 $ psql "postgres://superuser:testpassword_superuser@localhost:30071/superuser_db?sslmode=disable&statement_timeout=10ms"
 psql: error: could not connect to server: invalid URI query parameter: "statement_timeout"
@@ -105,3 +107,4 @@ docker rm --force dev-postgres-statement-timeout
 ```
 
 [1]: https://www.postgresql.org/docs/10/errcodes-appendix.html
+[2]: https://www.postgresql.org/docs/10/libpq-connect.html#LIBPQ-PARAMKEYWORDS

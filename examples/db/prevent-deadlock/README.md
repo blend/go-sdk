@@ -150,6 +150,8 @@ Class 57 - Operator Intervention
 
 ## `psql` Does **NOT** Support `lock_timeout` in DSN
 
+See `libpq` [Parameter Key Words][2]
+
 ```
 $ psql "postgres://superuser:testpassword_superuser@localhost:28007/superuser_db?lock_timeout=10ms&sslmode=disable"
 psql: error: could not connect to server: invalid URI query parameter: "lock_timeout"
@@ -176,3 +178,4 @@ docker rm --force dev-postgres-prevent-deadlock
 ```
 
 [1]: https://www.postgresql.org/docs/10/errcodes-appendix.html
+[2]: https://www.postgresql.org/docs/10/libpq-connect.html#LIBPQ-PARAMKEYWORDS
