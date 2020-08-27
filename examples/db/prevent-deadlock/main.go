@@ -63,6 +63,7 @@ func intentionalContention(ctx context.Context, pool *db.Connection, cfg *config
 		err = txFinalize(tx2, err)
 	}()
 
+	log.Println("Starting transactions")
 	tx1, err = pool.BeginContext(ctx)
 	if err != nil {
 		return
@@ -71,6 +72,7 @@ func intentionalContention(ctx context.Context, pool *db.Connection, cfg *config
 	if err != nil {
 		return
 	}
+	log.Println("Transactions opened")
 
 	// Kick off two goroutines that contend with each other.
 	wg := sync.WaitGroup{}
@@ -138,13 +140,14 @@ func main() {
 	}
 
 	// 6. Create two goroutines that intentionally contend with transactions.
+	log.Println(separator)
 	err = intentionalContention(ctx, pool, cfg)
 	if err == nil {
 		log.Fatal(ex.New("Expected lock contention to occur"))
 	}
 
 	// 7. Display the error / errors in as verbose a way as possible.
-	log.Println(separator)
+	log.Println("***")
 	err = displayError(err)
 	if err != nil {
 		log.Fatal(err)

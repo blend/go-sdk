@@ -33,18 +33,20 @@ docker run \
 
 ```
 $ go run .
-0.000053 ==================================================
-0.000087 Configured statement timeout: 10ms
-0.000091 Configured pg_sleep:          200ms
-0.000110 Configured context timeout:   400ms
-0.000141 ==================================================
-0.014139 DSN="postgres://superuser:testpassword_superuser@localhost:30071/superuser_db?sslmode=disable&statement_timeout=10ms"
-0.014147 ==================================================
-0.015832 statement_timeout=10ms
-0.038094 ==================================================
-0.038103 Error(s):
-0.038113 - Message: "SELECT id, pg_sleep(0.200000) FROM might_sleep WHERE id = 1337;"
-0.038139 - &pq.Error{Severity:"ERROR", Code:"57014", Message:"canceling statement due to statement timeout", Detail:"", Hint:"", Position:"", InternalPosition:"", InternalQuery:"", Where:"", Schema:"", Table:"", Column:"", DataTypeName:"", Constraint:"", File:"postgres.c", Line:"2996", Routine:"ProcessInterrupts"}
+0.000055 ==================================================
+0.000090 Configured statement timeout: 10ms
+0.000095 Configured pg_sleep:          200ms
+0.000098 Configured context timeout:   400ms
+0.000124 ==================================================
+0.015619 DSN="postgres://superuser:testpassword_superuser@localhost:30071/superuser_db?sslmode=disable&statement_timeout=10ms"
+0.015629 ==================================================
+0.016960 statement_timeout=10ms
+0.024797 ==================================================
+0.024812 Starting query
+0.036470 ***
+0.036478 Error(s):
+0.036488 - Message: "SELECT id, pg_sleep(0.200000) FROM might_sleep WHERE id = 1337;"
+0.036529 - &pq.Error{Severity:"ERROR", Code:"57014", Message:"canceling statement due to statement timeout", Detail:"", Hint:"", Position:"", InternalPosition:"", InternalQuery:"", Where:"", Schema:"", Table:"", Column:"", DataTypeName:"", Constraint:"", File:"postgres.c", Line:"2996", Routine:"ProcessInterrupts"}
 ```
 
 From [Appendix A. PostgreSQL Error Codes][1]:
@@ -59,18 +61,20 @@ Class 57 - Operator Intervention
 
 ```
 $ VIA_GO_CONTEXT=true go run .
-0.000072 ==================================================
-0.000105 Configured statement timeout: 10s
-0.000117 Configured pg_sleep:          200ms
-0.000120 Configured context timeout:   100ms
-0.000146 ==================================================
-0.013925 DSN="postgres://superuser:testpassword_superuser@localhost:30071/superuser_db?sslmode=disable&statement_timeout=10000ms"
-0.013934 ==================================================
-0.015556 statement_timeout=10s
-0.108807 ==================================================
-0.108817 Error(s):
-0.108831 - Message: "SELECT id, pg_sleep(0.200000) FROM might_sleep WHERE id = 1337;"
-0.108863 - &pq.Error{Severity:"ERROR", Code:"57014", Message:"canceling statement due to user request", Detail:"", Hint:"", Position:"", InternalPosition:"", InternalQuery:"", Where:"", Schema:"", Table:"", Column:"", DataTypeName:"", Constraint:"", File:"postgres.c", Line:"3026", Routine:"ProcessInterrupts"}
+0.000081 ==================================================
+0.000116 Configured statement timeout: 10s
+0.000120 Configured pg_sleep:          200ms
+0.000133 Configured context timeout:   100ms
+0.000163 ==================================================
+0.014563 DSN="postgres://superuser:testpassword_superuser@localhost:30071/superuser_db?sslmode=disable&statement_timeout=10000ms"
+0.014575 ==================================================
+0.016120 statement_timeout=10s
+0.023707 ==================================================
+0.023729 Starting query
+0.106258 ***
+0.106272 Error(s):
+0.106309 - Message: "SELECT id, pg_sleep(0.200000) FROM might_sleep WHERE id = 1337;"
+0.106341 - &pq.Error{Severity:"ERROR", Code:"57014", Message:"canceling statement due to user request", Detail:"", Hint:"", Position:"", InternalPosition:"", InternalQuery:"", Where:"", Schema:"", Table:"", Column:"", DataTypeName:"", Constraint:"", File:"postgres.c", Line:"3026", Routine:"ProcessInterrupts"}
 ```
 
 ## `psql` Does **NOT** Support `statement_timeout` in DSN

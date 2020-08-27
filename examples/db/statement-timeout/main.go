@@ -47,6 +47,7 @@ func intentionallyLongQuery(ctx context.Context, pool *db.Connection, cfg *confi
 	q := pool.QueryContext(ctx, statement)
 
 	r := resultRow{}
+	log.Println("Starting query")
 	found, err := q.Out(&r)
 	if err != nil {
 		return err
@@ -100,13 +101,14 @@ func main() {
 	}
 
 	// 6. Run query that intentionally runs for a long time.
+	log.Println(separator)
 	err = intentionallyLongQuery(ctx, pool, cfg)
 	if err == nil {
 		log.Fatal(ex.New("Expected statement contention to occur"))
 	}
 
 	// 7. Display the error / errors in as verbose a way as possible.
-	log.Println(separator)
+	log.Println("***")
 	err = displayError(err)
 	if err != nil {
 		log.Fatal(err)
