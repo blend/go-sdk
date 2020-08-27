@@ -231,7 +231,8 @@ From the [Start-up][7] section of the documentation for
 > settings for run-time parameters.)
 
 This is why using `PGOPTIONS="-c {key}={value}"` is required for [setting][8]
-named run-time parameters.
+named run-time parameters. It's also worth noting that `github.com/lib/pq`
+is [`PGOPTIONS`-aware][9].
 
 ## Clean Up
 
@@ -247,3 +248,4 @@ docker rm --force dev-postgres-prevent-deadlock
 [6]: https://www.citusdata.com/blog/2018/02/22/seven-tips-for-dealing-with-postgres-locks/
 [7]: https://www.postgresql.org/docs/10/protocol-flow.html#id-1.10.5.7.3
 [8]: https://www.postgresql.org/docs/10/app-postgres.html#id-1.9.5.13.6.3
+[9]: https://github.com/lib/pq/blob/v1.8.0/conn.go#L1945-L1946
