@@ -29,6 +29,16 @@ docker run \
   postgres:10.6-alpine
 ```
 
+## Intentional Timeout
+
+In order to simulate a long-running query we run
+
+```sql
+SELECT id, pg_sleep(...) FROM might_sleep WHERE id = 1337;
+```
+
+where `...` is the configured `pg_sleep`.
+
 ## Let `postgres` Cancel Via `statement_timeout`
 
 ```
@@ -84,18 +94,26 @@ See `libpq` [Parameter Key Words][2]
 ```
 $ psql "postgres://superuser:testpassword_superuser@localhost:30071/superuser_db?sslmode=disable&statement_timeout=10ms"
 psql: error: could not connect to server: invalid URI query parameter: "statement_timeout"
+$
+$
 $ psql "postgres://superuser:testpassword_superuser@localhost:30071/superuser_db?sslmode=disable"
-psql (12.4, server 10.6)
-Type "help" for help.
+...
+superuser_db=# SHOW statement_timeout;
+ statement_timeout
+-------------------
+ 0
+(1 row)
 
 superuser_db=# \q
 $
 $
-$ psql "user=superuser password=testpassword_superuser host=localhost port=30071 dbname=superuser_db sslmode=disable statement_timeout=10ms"
-psql: error: could not connect to server: invalid connection option "statement_timeout"
-$ psql "user=superuser password=testpassword_superuser host=localhost port=30071 dbname=superuser_db sslmode=disable"
-psql (12.4, server 10.6)
-Type "help" for help.
+$ PGOPTIONS="-c statement_timeout=5500ms" psql "postgres://superuser:testpassword_superuser@localhost:30071/superuser_db?sslmode=disable"
+...
+superuser_db=# SHOW statement_timeout;
+ statement_timeout
+-------------------
+ 5500ms
+(1 row)
 
 superuser_db=# \q
 ```

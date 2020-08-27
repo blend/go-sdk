@@ -29,6 +29,31 @@ docker run \
   postgres:10.6-alpine
 ```
 
+## Intentional Contention
+
+In order to introduce a deadlock, we borrow an example from
+[When Postgres blocks: 7 tips for dealing with locks][6].
+
+In the first transaction we update "hello" rows following by "world" rows
+
+```sql
+BEGIN;
+UPDATE might_deadlock SET counter = counter + 1 WHERE key = 'hello';
+-- Sleep for configured transaction sleep
+UPDATE might_deadlock SET counter = counter + 1 WHERE key = 'world';
+COMMIT;
+```
+
+and in the second transaction we update the rows in the opposite order
+
+```sql
+BEGIN;
+UPDATE might_deadlock SET counter = counter + 1 WHERE key = 'world';
+-- Sleep for configured transaction sleep
+UPDATE might_deadlock SET counter = counter + 1 WHERE key = 'hello';
+COMMIT;
+```
+
 ## Let `postgres` Cancel Via `lock_timeout`
 
 ```
@@ -155,21 +180,58 @@ See `libpq` [Parameter Key Words][2]
 ```
 $ psql "postgres://superuser:testpassword_superuser@localhost:28007/superuser_db?lock_timeout=10ms&sslmode=disable"
 psql: error: could not connect to server: invalid URI query parameter: "lock_timeout"
+$
+$
 $ psql "postgres://superuser:testpassword_superuser@localhost:28007/superuser_db?sslmode=disable"
-psql (12.4, server 10.6)
-Type "help" for help.
+...
+superuser_db=# SHOW lock_timeout;
+ lock_timeout
+--------------
+ 0
+(1 row)
 
 superuser_db=# \q
 $
 $
-$ psql "user=superuser password=testpassword_superuser host=localhost port=28007 dbname=superuser_db sslmode=disable lock_timeout=10ms"
-psql: error: could not connect to server: invalid connection option "lock_timeout"
-$ psql "user=superuser password=testpassword_superuser host=localhost port=28007 dbname=superuser_db sslmode=disable"
-psql (12.4, server 10.6)
-Type "help" for help.
+$ PGOPTIONS="-c lock_timeout=4500ms" psql "postgres://superuser:testpassword_superuser@localhost:28007/superuser_db?sslmode=disable"
+...
+superuser_db=# SHOW lock_timeout;
+ lock_timeout
+--------------
+ 4500ms
+(1 row)
 
 superuser_db=# \q
 ```
+
+Instead `github.com/lib/pq` parses all query parameters when [reading a DSN][3]
+(data source name) and then passes all non-driver setting through as key-value
+pairs when [forming a startup packet][4]. The designated driver settings
+[are][5]:
+
+- `host`
+- `port`
+- `password`
+- `sslmode`
+- `sslcert`
+- `sslkey`
+- `sslrootcert`
+- `fallback_application_name`
+- `connect_timeout`
+- `disable_prepared_binary_result`
+- `binary_parameters`
+- `krbsrvname`
+- `krbspn`
+
+From the [Start-up][7] section of the documentation for
+"Frontend/Backend Protocol > Message Flow", we see
+
+> To begin a session, a frontend opens a connection to the server and sends a
+> startup message ... (Optionally, the startup message can include additional
+> settings for run-time parameters.)
+
+This is why using `PGOPTIONS="-c {key}={value}"` is required for [setting][8]
+named run-time parameters.
 
 ## Clean Up
 
@@ -179,3 +241,9 @@ docker rm --force dev-postgres-prevent-deadlock
 
 [1]: https://www.postgresql.org/docs/10/errcodes-appendix.html
 [2]: https://www.postgresql.org/docs/10/libpq-connect.html#LIBPQ-PARAMKEYWORDS
+[3]: https://github.com/lib/pq/blob/v1.8.0/connector.go#L67-L69
+[4]: https://github.com/lib/pq/blob/v1.8.0/conn.go#L1093-L1105
+[5]: https://github.com/lib/pq/blob/v1.8.0/conn.go#L1058-L1084
+[6]: https://www.citusdata.com/blog/2018/02/22/seven-tips-for-dealing-with-postgres-locks/
+[7]: https://www.postgresql.org/docs/10/protocol-flow.html#id-1.10.5.7.3
+[8]: https://www.postgresql.org/docs/10/app-postgres.html#id-1.9.5.13.6.3
