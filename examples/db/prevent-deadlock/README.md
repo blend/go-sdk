@@ -158,6 +158,15 @@ psql (12.4, server 10.6)
 Type "help" for help.
 
 superuser_db=# \q
+$
+$
+$ psql "user=superuser password=testpassword_superuser host=localhost port=28007 dbname=superuser_db sslmode=disable lock_timeout=10ms"
+psql: error: could not connect to server: invalid connection option "lock_timeout"
+$ psql "user=superuser password=testpassword_superuser host=localhost port=28007 dbname=superuser_db sslmode=disable"
+psql (12.4, server 10.6)
+Type "help" for help.
+
+superuser_db=# \q
 ```
 
 ## Clean Up
