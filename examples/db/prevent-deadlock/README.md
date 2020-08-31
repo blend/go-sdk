@@ -63,7 +63,7 @@ $ go run .
 0.000089 Configured context timeout:   600ms
 0.000091 Configured transaction sleep: 200ms
 0.000114 ==================================================
-0.014372 DSN="postgres://superuser:testpassword_superuser@localhost:28007/superuser_db?lock_timeout=10ms&sslmode=disable"
+0.014372 DSN="postgres://superuser:testpassword_superuser@localhost:28007/superuser_db?connect_timeout=5&lock_timeout=10ms&sslmode=disable"
 0.014381 ==================================================
 0.015569 lock_timeout=10ms
 0.026958 ==================================================
@@ -97,7 +97,7 @@ $ FORCE_DEADLOCK=true go run .
 0.000071 Configured context timeout:   10s
 0.000073 Configured transaction sleep: 200ms
 0.000089 ==================================================
-0.011839 DSN="postgres://superuser:testpassword_superuser@localhost:28007/superuser_db?lock_timeout=10000ms&sslmode=disable"
+0.011839 DSN="postgres://superuser:testpassword_superuser@localhost:28007/superuser_db?connect_timeout=5&lock_timeout=10000ms&sslmode=disable"
 0.011850 ==================================================
 0.013332 lock_timeout=10s
 0.022643 ==================================================
@@ -126,7 +126,7 @@ $ BETWEEN_QUERIES=true go run .
 0.000086 Configured context timeout:   100ms
 0.000089 Configured transaction sleep: 200ms
 0.000110 ==================================================
-0.013163 DSN="postgres://superuser:testpassword_superuser@localhost:28007/superuser_db?lock_timeout=10000ms&sslmode=disable"
+0.013163 DSN="postgres://superuser:testpassword_superuser@localhost:28007/superuser_db?connect_timeout=5&lock_timeout=10000ms&sslmode=disable"
 0.013176 ==================================================
 0.014402 lock_timeout=10s
 0.025375 ==================================================
@@ -151,7 +151,7 @@ $ DISABLE_LOCK_TIMEOUT=true go run .
 0.000088 Configured context timeout:   600ms
 0.000091 Configured transaction sleep: 200ms
 0.000113 ==================================================
-0.014431 DSN="postgres://superuser:testpassword_superuser@localhost:28007/superuser_db?lock_timeout=10000ms&sslmode=disable"
+0.014431 DSN="postgres://superuser:testpassword_superuser@localhost:28007/superuser_db?connect_timeout=5&lock_timeout=10000ms&sslmode=disable"
 0.014442 ==================================================
 0.016239 lock_timeout=10s
 0.026890 ==================================================
@@ -178,11 +178,11 @@ Class 57 - Operator Intervention
 See `libpq` [Parameter Key Words][2]
 
 ```
-$ psql "postgres://superuser:testpassword_superuser@localhost:28007/superuser_db?lock_timeout=10ms&sslmode=disable"
+$ psql "postgres://superuser:testpassword_superuser@localhost:28007/superuser_db?connect_timeout=5&lock_timeout=10ms&sslmode=disable"
 psql: error: could not connect to server: invalid URI query parameter: "lock_timeout"
 $
 $
-$ psql "postgres://superuser:testpassword_superuser@localhost:28007/superuser_db?sslmode=disable"
+$ psql "postgres://superuser:testpassword_superuser@localhost:28007/superuser_db?connect_timeout=5&sslmode=disable"
 ...
 superuser_db=# SHOW lock_timeout;
  lock_timeout
@@ -193,7 +193,7 @@ superuser_db=# SHOW lock_timeout;
 superuser_db=# \q
 $
 $
-$ PGOPTIONS="-c lock_timeout=4500ms" psql "postgres://superuser:testpassword_superuser@localhost:28007/superuser_db?sslmode=disable"
+$ PGOPTIONS="-c lock_timeout=4500ms" psql "postgres://superuser:testpassword_superuser@localhost:28007/superuser_db?connect_timeout=5&sslmode=disable"
 ...
 superuser_db=# SHOW lock_timeout;
  lock_timeout

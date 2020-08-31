@@ -61,14 +61,22 @@ func NewConfigFromDSN(dsn string) (*Config, error) {
 
 // NewConfigFromEnv returns a new config from the environment.
 // The environment variable mappings are as follows:
-//	-	DATABSE_URL 	= DSN 	//note that this has precedence over other vars (!!)
-// 	-	DB_HOST 		= Host
-//	-	DB_PORT 		= Port
-//	- 	DB_NAME 		= Database
-//	-	DB_SCHEMA		= Schema
-//	-	DB_USER 		= Username
-//	-	DB_PASSWORD 	= Password
-//	-	DB_SSLMODE 		= SSLMode
+// 	-	DB_ENGINE            = Engine
+//	-	DATABASE_URL         = DSN     //note that this has precedence over other vars (!!)
+// 	-	DB_HOST              = Host
+//	-	DB_PORT              = Port
+//	- 	DB_NAME              = Database
+//	-	DB_SCHEMA            = Schema
+//	-	DB_USER              = Username
+//	-	DB_PASSWORD          = Password
+//	-	DB_CONNECT_TIMEOUT   = ConnectTimeout
+//	-	DB_LOCK_TIMEOUT      = LockTimeout
+//	-	DB_STATEMENT_TIMEOUT = StatementTimeout
+//	-	DB_SSLMODE           = SSLMode
+//	-	DB_IDLE_CONNECTIONS  = IdleConnections
+//	-	DB_MAX_CONNECTIONS   = MaxConnections
+//	-	DB_MAX_LIFETIME      = MaxLifetime
+//	-	DB_BUFFER_POOL_SIZE  = BufferPoolSize
 func NewConfigFromEnv() (config Config, err error) {
 	if err = (&config).Resolve(env.WithVars(context.Background(), env.Env())); err != nil {
 		return
@@ -164,6 +172,8 @@ func (c *Config) Resolve(ctx context.Context) error {
 		configutil.SetString(&c.Username, configutil.Env("DB_USER"), configutil.String(c.Username), configutil.Env("USER")),
 		configutil.SetString(&c.Password, configutil.Env("DB_PASSWORD"), configutil.String(c.Password)),
 		configutil.SetInt(&c.ConnectTimeout, configutil.Env("DB_CONNECT_TIMEOUT"), configutil.Int(c.ConnectTimeout), configutil.Int(DefaultConnectTimeout)),
+		configutil.SetDuration(&c.LockTimeout, configutil.Env("DB_LOCK_TIMEOUT"), configutil.Duration(c.LockTimeout)),
+		configutil.SetDuration(&c.StatementTimeout, configutil.Env("DB_STATEMENT_TIMEOUT"), configutil.Duration(c.StatementTimeout)),
 		configutil.SetString(&c.SSLMode, configutil.Env("DB_SSLMODE"), configutil.String(c.SSLMode)),
 		configutil.SetInt(&c.IdleConnections, configutil.Env("DB_IDLE_CONNECTIONS"), configutil.Int(c.IdleConnections), configutil.Int(DefaultIdleConnections)),
 		configutil.SetInt(&c.MaxConnections, configutil.Env("DB_MAX_CONNECTIONS"), configutil.Int(c.MaxConnections), configutil.Int(DefaultMaxConnections)),

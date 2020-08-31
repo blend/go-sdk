@@ -48,7 +48,7 @@ $ go run .
 0.000095 Configured pg_sleep:          200ms
 0.000098 Configured context timeout:   400ms
 0.000124 ==================================================
-0.015619 DSN="postgres://superuser:testpassword_superuser@localhost:30071/superuser_db?sslmode=disable&statement_timeout=10ms"
+0.015619 DSN="postgres://superuser:testpassword_superuser@localhost:30071/superuser_db?connect_timeout=5&sslmode=disable&statement_timeout=10ms"
 0.015629 ==================================================
 0.016960 statement_timeout=10ms
 0.024797 ==================================================
@@ -76,7 +76,7 @@ $ VIA_GO_CONTEXT=true go run .
 0.000120 Configured pg_sleep:          200ms
 0.000133 Configured context timeout:   100ms
 0.000163 ==================================================
-0.014563 DSN="postgres://superuser:testpassword_superuser@localhost:30071/superuser_db?sslmode=disable&statement_timeout=10000ms"
+0.014563 DSN="postgres://superuser:testpassword_superuser@localhost:30071/superuser_db?connect_timeout=5&sslmode=disable&statement_timeout=10000ms"
 0.014575 ==================================================
 0.016120 statement_timeout=10s
 0.023707 ==================================================
@@ -92,11 +92,11 @@ $ VIA_GO_CONTEXT=true go run .
 See `libpq` [Parameter Key Words][2]
 
 ```
-$ psql "postgres://superuser:testpassword_superuser@localhost:30071/superuser_db?sslmode=disable&statement_timeout=10ms"
+$ psql "postgres://superuser:testpassword_superuser@localhost:30071/superuser_db?connect_timeout=5&sslmode=disable&statement_timeout=10ms"
 psql: error: could not connect to server: invalid URI query parameter: "statement_timeout"
 $
 $
-$ psql "postgres://superuser:testpassword_superuser@localhost:30071/superuser_db?sslmode=disable"
+$ psql "postgres://superuser:testpassword_superuser@localhost:30071/superuser_db?connect_timeout=5&sslmode=disable"
 ...
 superuser_db=# SHOW statement_timeout;
  statement_timeout
@@ -107,7 +107,7 @@ superuser_db=# SHOW statement_timeout;
 superuser_db=# \q
 $
 $
-$ PGOPTIONS="-c statement_timeout=5500ms" psql "postgres://superuser:testpassword_superuser@localhost:30071/superuser_db?sslmode=disable"
+$ PGOPTIONS="-c statement_timeout=5500ms" psql "postgres://superuser:testpassword_superuser@localhost:30071/superuser_db?connect_timeout=5&sslmode=disable"
 ...
 superuser_db=# SHOW statement_timeout;
  statement_timeout
