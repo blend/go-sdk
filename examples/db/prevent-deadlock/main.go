@@ -92,6 +92,10 @@ func intentionalContention(ctx context.Context, pool *db.Connection, cfg *config
 	}()
 	wg.Wait()
 
+	if err != nil {
+		return
+	}
+
 	// Make sure to commit both transactions before moving on.
 	err = nest(err, tx1.Commit())
 	err = nest(err, tx2.Commit())

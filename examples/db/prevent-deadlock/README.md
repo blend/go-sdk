@@ -73,8 +73,6 @@ $ go run .
 0.261803 Error(s):
 0.261852 - &pq.Error{Severity:"ERROR", Code:"55P03", Message:"canceling statement due to lock timeout", Detail:"", Hint:"", Position:"", InternalPosition:"", InternalQuery:"", Where:"while updating tuple (0,2) in relation \"might_deadlock\"", Schema:"", Table:"", Column:"", DataTypeName:"", Constraint:"", File:"postgres.c", Line:"2989", Routine:"ProcessInterrupts"}
 0.261862 - &pq.Error{Severity:"ERROR", Code:"55P03", Message:"canceling statement due to lock timeout", Detail:"", Hint:"", Position:"", InternalPosition:"", InternalQuery:"", Where:"while updating tuple (0,1) in relation \"might_deadlock\"", Schema:"", Table:"", Column:"", DataTypeName:"", Constraint:"", File:"postgres.c", Line:"2989", Routine:"ProcessInterrupts"}
-0.261870 - &errors.errorString{s:"pq: Could not complete operation in a failed transaction"}
-0.261874 - &errors.errorString{s:"pq: Could not complete operation in a failed transaction"}
 ```
 
 From [Appendix A. PostgreSQL Error Codes][1]:
@@ -106,7 +104,6 @@ $ FORCE_DEADLOCK=true go run .
 1.245005 ***
 1.245016 Error(s):
 1.245053 - &pq.Error{Severity:"ERROR", Code:"40P01", Message:"deadlock detected", Detail:"Process 347 waits for ShareLock on transaction 845; blocked by process 346.\nProcess 346 waits for ShareLock on transaction 846; blocked by process 347.", Hint:"See server log for query details.", Position:"", InternalPosition:"", InternalQuery:"", Where:"while updating tuple (0,1) in relation \"might_deadlock\"", Schema:"", Table:"", Column:"", DataTypeName:"", Constraint:"", File:"deadlock.c", Line:"1140", Routine:"DeadLockReport"}
-1.245063 - &errors.errorString{s:"pq: Could not complete operation in a failed transaction"}
 ```
 
 From [Appendix A. PostgreSQL Error Codes][1]:
@@ -138,8 +135,6 @@ $ BETWEEN_QUERIES=true go run .
 0.236587 - Context cancel in between queries
 0.236591 - context.deadlineExceededError{}
 0.236615 - Context cancel in between queries
-0.236636 - &errors.errorString{s:"sql: transaction has already been committed or rolled back"}
-0.236643 - &errors.errorString{s:"sql: transaction has already been committed or rolled back"}
 ```
 
 ## Cancel "Stuck" Deadlock via Go `context` Cancelation
@@ -161,8 +156,6 @@ $ DISABLE_LOCK_TIMEOUT=true go run .
 0.612474 Error(s):
 0.612539 - &pq.Error{Severity:"ERROR", Code:"57014", Message:"canceling statement due to user request", Detail:"", Hint:"", Position:"", InternalPosition:"", InternalQuery:"", Where:"while updating tuple (0,2) in relation \"might_deadlock\"", Schema:"", Table:"", Column:"", DataTypeName:"", Constraint:"", File:"postgres.c", Line:"3026", Routine:"ProcessInterrupts"}
 0.612556 - &pq.Error{Severity:"ERROR", Code:"57014", Message:"canceling statement due to user request", Detail:"", Hint:"", Position:"", InternalPosition:"", InternalQuery:"", Where:"while updating tuple (0,1) in relation \"might_deadlock\"", Schema:"", Table:"", Column:"", DataTypeName:"", Constraint:"", File:"postgres.c", Line:"3026", Routine:"ProcessInterrupts"}
-0.612569 - &errors.errorString{s:"sql: transaction has already been committed or rolled back"}
-0.612578 - &errors.errorString{s:"sql: transaction has already been committed or rolled back"}
 ```
 
 From [Appendix A. PostgreSQL Error Codes][1]:
