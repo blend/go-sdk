@@ -177,7 +177,7 @@ func (c *Config) Resolve(ctx context.Context) error {
 		configutil.SetString(&c.SSLMode, configutil.Env("DB_SSLMODE"), configutil.String(c.SSLMode)),
 		configutil.SetInt(&c.IdleConnections, configutil.Env("DB_IDLE_CONNECTIONS"), configutil.Int(c.IdleConnections), configutil.Int(DefaultIdleConnections)),
 		configutil.SetInt(&c.MaxConnections, configutil.Env("DB_MAX_CONNECTIONS"), configutil.Int(c.MaxConnections), configutil.Int(DefaultMaxConnections)),
-		configutil.SetDuration(&c.MaxLifetime, configutil.Env("DB_MAX_LIFETIME"), configutil.Duration(c.MaxConnections), configutil.Duration(DefaultMaxLifetime)),
+		configutil.SetDuration(&c.MaxLifetime, configutil.Env("DB_MAX_LIFETIME"), configutil.Duration(c.MaxLifetime), configutil.Duration(DefaultMaxLifetime)),
 		configutil.SetInt(&c.BufferPoolSize, configutil.Env("DB_BUFFER_POOL_SIZE"), configutil.Int(c.BufferPoolSize), configutil.Int(DefaultBufferPoolSize)),
 	)
 }
