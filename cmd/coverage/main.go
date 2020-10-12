@@ -41,7 +41,7 @@ var covermode = flag.String("covermode", "atomic", "the go test covermode.")
 var coverprofile = flag.String("coverprofile", "coverage.cov", "the intermediate cover profile.")
 var keepCoverageOut = flag.Bool("keep-coverage-out", false, "if we should keep coverage.out")
 var v = flag.Bool("v", false, "show verbose output")
-var exitOnFirstCoverageFailure = flag.Bool("exit-first", true, "enable to produce coverage reports when coverage fails")
+var exitOnFirstCoverageFailure = flag.Bool("exit-first", true, "disable flag to produce coverage reports when coverage fails")
 
 var (
 	includes Paths
