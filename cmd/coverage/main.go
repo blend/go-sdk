@@ -139,7 +139,7 @@ func walkPath(walkedPath string, fullCoverageData *os.File) []error {
 				return err
 			}
 			coverageErrors = append(coverageErrors, err)
-		}1
+		}
 
 		if len(packageCoverReport) == 0 {
 			return nil
