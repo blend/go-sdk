@@ -42,6 +42,8 @@ const (
 	ServiceEnvBeta = "beta"
 	// ServiceEnvProd is a service environment.
 	ServiceEnvProd = "prod"
+	// ServiceEnvTools is a service environment.
+	ServiceEnvTools = "tools"
 
 	// DefaultServiceEnv is the default service env to use for configs.
 	DefaultServiceEnv = ServiceEnvDev
