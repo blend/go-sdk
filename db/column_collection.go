@@ -55,7 +55,7 @@ type ColumnCollection struct {
 	notPrimaryKeys *ColumnCollection
 	uniqueKeys     *ColumnCollection
 	notUniqueKeys  *ColumnCollection
-	writeColumns   *ColumnCollection
+	insertColumns  *ColumnCollection
 	updateColumns  *ColumnCollection
 }
 
@@ -101,23 +101,23 @@ func (cc ColumnCollection) CopyWithColumnPrefix(prefix string) *ColumnCollection
 	return newColumnCollectionWithPrefixFromColumns(prefix, cc.columns)
 }
 
-// WriteColumns are non-auto, non-primary key, non-readonly columns.
-func (cc *ColumnCollection) WriteColumns() *ColumnCollection {
-	if cc.writeColumns != nil {
-		return cc.writeColumns
+// InsertColumns are non-auto, non-readonly columns.
+func (cc *ColumnCollection) InsertColumns() *ColumnCollection {
+	if cc.insertColumns != nil {
+		return cc.insertColumns
 	}
 
-	cc.writeColumns = cc.NotReadOnly().NotAutos()
-	return cc.writeColumns
+	cc.insertColumns = cc.NotReadOnly().NotAutos()
+	return cc.insertColumns
 }
 
-// UpdateColumns are non-readonly, non-serial columns.
+// UpdateColumns are non-primary key, non-readonly columns.
 func (cc *ColumnCollection) UpdateColumns() *ColumnCollection {
 	if cc.updateColumns != nil {
 		return cc.updateColumns
 	}
 
-	cc.updateColumns = cc.NotReadOnly()
+	cc.updateColumns = cc.NotReadOnly().NotPrimaryKeys()
 	return cc.updateColumns
 }
 

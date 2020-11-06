@@ -83,15 +83,15 @@ func (i *Invocation) All(collection interface{}) (err error) {
 // Create writes an object to the database within a transaction.
 func (i *Invocation) Create(object DatabaseMapped) (err error) {
 	var queryBody string
-	var writeCols, autos *ColumnCollection
+	var insertCols, autos *ColumnCollection
 	var res sql.Result
 	defer func() { err = i.Finish(queryBody, recover(), res, err) }()
 
-	i.Label, queryBody, writeCols, autos = i.generateCreate(object)
+	i.Label, queryBody, insertCols, autos = i.generateCreate(object)
 
 	queryBody = i.Start(queryBody)
 	if autos.Len() == 0 {
-		if res, err = i.DB.ExecContext(i.Context, queryBody, writeCols.ColumnValues(object)...); err != nil {
+		if res, err = i.DB.ExecContext(i.Context, queryBody, insertCols.ColumnValues(object)...); err != nil {
 			err = Error(err)
 			return
 		}
@@ -99,7 +99,7 @@ func (i *Invocation) Create(object DatabaseMapped) (err error) {
 	}
 
 	autoValues := i.AutoValues(autos)
-	if err = i.DB.QueryRowContext(i.Context, queryBody, writeCols.ColumnValues(object)...).Scan(autoValues...); err != nil {
+	if err = i.DB.QueryRowContext(i.Context, queryBody, insertCols.ColumnValues(object)...).Scan(autoValues...); err != nil {
 		err = Error(err)
 		return
 	}
@@ -116,14 +116,14 @@ func (i *Invocation) Create(object DatabaseMapped) (err error) {
 // a row with a given primary key set.
 func (i *Invocation) CreateIfNotExists(object DatabaseMapped) (err error) {
 	var queryBody string
-	var writeCols *ColumnCollection
+	var insertCols *ColumnCollection
 	var res sql.Result
 	defer func() { err = i.Finish(queryBody, recover(), res, err) }()
 
-	i.Label, queryBody, writeCols = i.generateCreateIfNotExists(object)
+	i.Label, queryBody, insertCols = i.generateCreateIfNotExists(object)
 
 	queryBody = i.Start(queryBody)
-	if res, err = i.DB.ExecContext(i.Context, queryBody, writeCols.ColumnValues(object)...); err != nil {
+	if res, err = i.DB.ExecContext(i.Context, queryBody, insertCols.ColumnValues(object)...); err != nil {
 		err = Error(err)
 	}
 	return
@@ -132,12 +132,12 @@ func (i *Invocation) CreateIfNotExists(object DatabaseMapped) (err error) {
 // CreateMany writes many objects to the database in a single insert.
 func (i *Invocation) CreateMany(objects interface{}) (err error) {
 	var queryBody string
-	var writeCols *ColumnCollection
+	var insertCols *ColumnCollection
 	var sliceValue reflect.Value
 	var res sql.Result
 	defer func() { err = i.Finish(queryBody, recover(), res, err) }()
 
-	queryBody, writeCols, sliceValue = i.generateCreateMany(objects)
+	queryBody, insertCols, sliceValue = i.generateCreateMany(objects)
 	if sliceValue.Len() == 0 {
 		// If there is nothing to create, then we're done here
 		return
@@ -146,7 +146,7 @@ func (i *Invocation) CreateMany(objects interface{}) (err error) {
 	queryBody = i.Start(queryBody)
 	var colValues []interface{}
 	for row := 0; row < sliceValue.Len(); row++ {
-		colValues = append(colValues, writeCols.ColumnValues(sliceValue.Index(row).Interface())...)
+		colValues = append(colValues, insertCols.ColumnValues(sliceValue.Index(row).Interface())...)
 	}
 
 	res, err = i.DB.ExecContext(i.Context, queryBody, colValues...)
@@ -163,17 +163,17 @@ func (i *Invocation) CreateMany(objects interface{}) (err error) {
 // transaction and roll back on this error
 func (i *Invocation) Update(object DatabaseMapped) (updated bool, err error) {
 	var queryBody string
-	var pks, writeCols *ColumnCollection
+	var pks, updateCols *ColumnCollection
 	var res sql.Result
 	defer func() { err = i.Finish(queryBody, recover(), res, err) }()
 
-	i.Label, queryBody, pks, writeCols = i.generateUpdate(object)
+	i.Label, queryBody, pks, updateCols = i.generateUpdate(object)
 
 	queryBody = i.Start(queryBody)
 	res, err = i.DB.ExecContext(
 		i.Context,
 		queryBody,
-		append(writeCols.ColumnValues(object), pks.ColumnValues(object)...)...,
+		append(updateCols.ColumnValues(object), pks.ColumnValues(object)...)...,
 	)
 	if err != nil {
 		err = Error(err)
@@ -195,21 +195,21 @@ func (i *Invocation) Update(object DatabaseMapped) (updated bool, err error) {
 // Upsert inserts the object if it doesn't exist already (as defined by its primary keys) or updates it wrapped in a transaction.
 func (i *Invocation) Upsert(object DatabaseMapped) (err error) {
 	var queryBody string
-	var autos, writeCols *ColumnCollection
+	var autos, upsertCols *ColumnCollection
 	defer func() { err = i.Finish(queryBody, recover(), nil, err) }()
 
-	i.Label, queryBody, autos, writeCols = i.generateUpsert(object)
+	i.Label, queryBody, autos, upsertCols = i.generateUpsert(object)
 
 	queryBody = i.Start(queryBody)
 	if autos.Len() == 0 {
-		if _, err = i.Exec(queryBody, writeCols.ColumnValues(object)...); err != nil {
+		if _, err = i.Exec(queryBody, upsertCols.ColumnValues(object)...); err != nil {
 			return
 		}
 		return
 	}
 
 	autoValues := i.AutoValues(autos)
-	if err = i.DB.QueryRowContext(i.Context, queryBody, writeCols.ColumnValues(object)...).Scan(autoValues...); err != nil {
+	if err = i.DB.QueryRowContext(i.Context, queryBody, upsertCols.ColumnValues(object)...).Scan(autoValues...); err != nil {
 		err = Error(err)
 		return
 	}
@@ -341,11 +341,11 @@ func (i *Invocation) generateGetAll(collection interface{}) (statementLabel, que
 	return
 }
 
-func (i *Invocation) generateCreate(object DatabaseMapped) (statementLabel, queryBody string, writeCols, autos *ColumnCollection) {
+func (i *Invocation) generateCreate(object DatabaseMapped) (statementLabel, queryBody string, insertCols, autos *ColumnCollection) {
 	tableName := TableName(object)
 
 	cols := CachedColumnCollectionFromInstance(object)
-	writeCols = cols.WriteColumns()
+	insertCols = cols.InsertColumns()
 	autos = cols.Autos()
 
 	queryBodyBuffer := i.BufferPool.Get()
@@ -354,16 +354,16 @@ func (i *Invocation) generateCreate(object DatabaseMapped) (statementLabel, quer
 	queryBodyBuffer.WriteString("INSERT INTO ")
 	queryBodyBuffer.WriteString(tableName)
 	queryBodyBuffer.WriteString(" (")
-	for i, name := range writeCols.ColumnNames() {
+	for i, name := range insertCols.ColumnNames() {
 		queryBodyBuffer.WriteString(name)
-		if i < (writeCols.Len() - 1) {
+		if i < (insertCols.Len() - 1) {
 			queryBodyBuffer.WriteRune(',')
 		}
 	}
 	queryBodyBuffer.WriteString(") VALUES (")
-	for x := 0; x < writeCols.Len(); x++ {
+	for x := 0; x < insertCols.Len(); x++ {
 		queryBodyBuffer.WriteString("$" + strconv.Itoa(x+1))
-		if x < (writeCols.Len() - 1) {
+		if x < (insertCols.Len() - 1) {
 			queryBodyBuffer.WriteRune(',')
 		}
 	}
@@ -379,10 +379,10 @@ func (i *Invocation) generateCreate(object DatabaseMapped) (statementLabel, quer
 	return
 }
 
-func (i *Invocation) generateCreateIfNotExists(object DatabaseMapped) (statementLabel, queryBody string, writeCols *ColumnCollection) {
+func (i *Invocation) generateCreateIfNotExists(object DatabaseMapped) (statementLabel, queryBody string, insertCols *ColumnCollection) {
 	cols := CachedColumnCollectionFromInstance(object)
 
-	writeCols = cols.WriteColumns()
+	insertCols = cols.InsertColumns()
 
 	pks := cols.PrimaryKeys()
 	tableName := TableName(object)
@@ -393,16 +393,16 @@ func (i *Invocation) generateCreateIfNotExists(object DatabaseMapped) (statement
 	queryBodyBuffer.WriteString("INSERT INTO ")
 	queryBodyBuffer.WriteString(tableName)
 	queryBodyBuffer.WriteString(" (")
-	for i, name := range writeCols.ColumnNames() {
+	for i, name := range insertCols.ColumnNames() {
 		queryBodyBuffer.WriteString(name)
-		if i < (writeCols.Len() - 1) {
+		if i < (insertCols.Len() - 1) {
 			queryBodyBuffer.WriteRune(',')
 		}
 	}
 	queryBodyBuffer.WriteString(") VALUES (")
-	for x := 0; x < writeCols.Len(); x++ {
+	for x := 0; x < insertCols.Len(); x++ {
 		queryBodyBuffer.WriteString("$" + strconv.Itoa(x+1))
-		if x < (writeCols.Len() - 1) {
+		if x < (insertCols.Len() - 1) {
 			queryBodyBuffer.WriteRune(',')
 		}
 	}
@@ -425,13 +425,13 @@ func (i *Invocation) generateCreateIfNotExists(object DatabaseMapped) (statement
 	return
 }
 
-func (i *Invocation) generateCreateMany(objects interface{}) (queryBody string, writeCols *ColumnCollection, sliceValue reflect.Value) {
+func (i *Invocation) generateCreateMany(objects interface{}) (queryBody string, insertCols *ColumnCollection, sliceValue reflect.Value) {
 	sliceValue = ReflectValue(objects)
 	sliceType := ReflectSliceType(objects)
 	tableName := TableNameByType(sliceType)
 
 	cols := CachedColumnCollectionFromType(tableName, sliceType)
-	writeCols = cols.WriteColumns()
+	insertCols = cols.InsertColumns()
 
 	queryBodyBuffer := i.BufferPool.Get()
 	defer i.BufferPool.Put(queryBodyBuffer)
@@ -439,9 +439,9 @@ func (i *Invocation) generateCreateMany(objects interface{}) (queryBody string, 
 	queryBodyBuffer.WriteString("INSERT INTO ")
 	queryBodyBuffer.WriteString(tableName)
 	queryBodyBuffer.WriteString(" (")
-	for i, name := range writeCols.ColumnNames() {
+	for i, name := range insertCols.ColumnNames() {
 		queryBodyBuffer.WriteString(name)
-		if i < (writeCols.Len() - 1) {
+		if i < (insertCols.Len() - 1) {
 			queryBodyBuffer.WriteRune(',')
 		}
 	}
@@ -451,10 +451,10 @@ func (i *Invocation) generateCreateMany(objects interface{}) (queryBody string, 
 	metaIndex := 1
 	for x := 0; x < sliceValue.Len(); x++ {
 		queryBodyBuffer.WriteString("(")
-		for y := 0; y < writeCols.Len(); y++ {
+		for y := 0; y < insertCols.Len(); y++ {
 			queryBodyBuffer.WriteString(fmt.Sprintf("$%d", metaIndex))
 			metaIndex = metaIndex + 1
-			if y < writeCols.Len()-1 {
+			if y < insertCols.Len()-1 {
 				queryBodyBuffer.WriteRune(',')
 			}
 		}
@@ -468,13 +468,13 @@ func (i *Invocation) generateCreateMany(objects interface{}) (queryBody string, 
 	return
 }
 
-func (i *Invocation) generateUpdate(object DatabaseMapped) (statementLabel, queryBody string, pks, writeCols *ColumnCollection) {
+func (i *Invocation) generateUpdate(object DatabaseMapped) (statementLabel, queryBody string, pks, updateCols *ColumnCollection) {
 	tableName := TableName(object)
 
 	cols := CachedColumnCollectionFromInstance(object)
 
 	pks = cols.PrimaryKeys()
-	writeCols = cols.WriteColumns()
+	updateCols = cols.UpdateColumns()
 
 	queryBodyBuffer := i.BufferPool.Get()
 	defer i.BufferPool.Put(queryBodyBuffer)
@@ -483,13 +483,13 @@ func (i *Invocation) generateUpdate(object DatabaseMapped) (statementLabel, quer
 	queryBodyBuffer.WriteString(tableName)
 	queryBodyBuffer.WriteString(" SET ")
 
-	var writeColIndex int
+	var updateColIndex int
 	var col Column
-	for ; writeColIndex < writeCols.Len(); writeColIndex++ {
-		col = writeCols.Columns()[writeColIndex]
+	for ; updateColIndex < updateCols.Len(); updateColIndex++ {
+		col = updateCols.Columns()[updateColIndex]
 		queryBodyBuffer.WriteString(col.ColumnName)
-		queryBodyBuffer.WriteString(" = $" + strconv.Itoa(writeColIndex+1))
-		if writeColIndex != (writeCols.Len() - 1) {
+		queryBodyBuffer.WriteString(" = $" + strconv.Itoa(updateColIndex+1))
+		if updateColIndex != (updateCols.Len() - 1) {
 			queryBodyBuffer.WriteRune(',')
 		}
 	}
@@ -498,7 +498,7 @@ func (i *Invocation) generateUpdate(object DatabaseMapped) (statementLabel, quer
 	for i, pk := range pks.Columns() {
 		queryBodyBuffer.WriteString(pk.ColumnName)
 		queryBodyBuffer.WriteString(" = ")
-		queryBodyBuffer.WriteString("$" + strconv.Itoa(i+(writeColIndex+1)))
+		queryBodyBuffer.WriteString("$" + strconv.Itoa(i+(updateColIndex+1)))
 
 		if i < (pks.Len() - 1) {
 			queryBodyBuffer.WriteString(" AND ")
@@ -510,16 +510,16 @@ func (i *Invocation) generateUpdate(object DatabaseMapped) (statementLabel, quer
 	return
 }
 
-func (i *Invocation) generateUpsert(object DatabaseMapped) (statementLabel, queryBody string, autos, writeCols *ColumnCollection) {
+func (i *Invocation) generateUpsert(object DatabaseMapped) (statementLabel, queryBody string, autos, insertCols *ColumnCollection) {
 	tableName := TableName(object)
 	cols := CachedColumnCollectionFromInstance(object)
-	updates := cols.NotReadOnly().NotAutos().NotPrimaryKeys().NotUniqueKeys()
+	updates := cols.UpdateColumns()
 	updateCols := updates.Columns()
 
-	writeCols = cols.NotReadOnly().NotAutos()
-	writeColNames := writeCols.ColumnNames()
+	insertCols = cols.InsertColumns()
+	insertColNames := insertCols.ColumnNames()
 
-	autos = cols.Autos()
+	autos = cols.Autos() // autos are read out on insert
 	pks := cols.PrimaryKeys()
 	pkNames := pks.ColumnNames()
 
@@ -529,17 +529,17 @@ func (i *Invocation) generateUpsert(object DatabaseMapped) (statementLabel, quer
 	queryBodyBuffer.WriteString("INSERT INTO ")
 	queryBodyBuffer.WriteString(tableName)
 	queryBodyBuffer.WriteString(" (")
-	for i, name := range writeColNames {
+	for i, name := range insertColNames {
 		queryBodyBuffer.WriteString(name)
-		if i < len(writeColNames)-1 {
+		if i < len(insertColNames)-1 {
 			queryBodyBuffer.WriteRune(',')
 		}
 	}
 	queryBodyBuffer.WriteString(") VALUES (")
 
-	for x := 0; x < writeCols.Len(); x++ {
+	for x := 0; x < insertCols.Len(); x++ {
 		queryBodyBuffer.WriteString("$" + strconv.Itoa(x+1))
-		if x < (writeCols.Len() - 1) {
+		if x < (insertCols.Len() - 1) {
 			queryBodyBuffer.WriteRune(',')
 		}
 	}
@@ -548,7 +548,7 @@ func (i *Invocation) generateUpsert(object DatabaseMapped) (statementLabel, quer
 
 	if pks.Len() > 0 {
 		tokenMap := map[string]string{}
-		for i, col := range writeCols.Columns() {
+		for i, col := range insertCols.Columns() {
 			tokenMap[col.ColumnName] = "$" + strconv.Itoa(i+1)
 		}
 

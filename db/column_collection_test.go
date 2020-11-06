@@ -130,12 +130,12 @@ func TestColumnCollectionWithColumnPrefix(t *testing.T) {
 	assert.NotEqual(meta.columnPrefix, newMeta.columnPrefix)
 }
 
-func TestColumnCollectionWriteColumns(t *testing.T) {
+func TestColumnCollectionInsertColumns(t *testing.T) {
 	assert := assert.New(t)
 
 	obj := myStruct{}
 	meta := CachedColumnCollectionFromInstance(obj)
-	writeCols := meta.WriteColumns()
+	writeCols := meta.InsertColumns()
 	assert.NotZero(writeCols.Len())
 }
 
