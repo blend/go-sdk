@@ -63,23 +63,23 @@ func NewConfigFromDSN(dsn string) (*Config, error) {
 
 // NewConfigFromEnv returns a new config from the environment.
 // The environment variable mappings are as follows:
-// 	-	DB_ENGINE            = Engine
-//	-	DATABASE_URL         = DSN     //note that this has precedence over other vars (!!)
-// 	-	DB_HOST              = Host
-//	-	DB_PORT              = Port
-//	- 	DB_NAME              = Database
-//	-	DB_SCHEMA            = Schema
-//	-	DB_APPLICATION_NAME  = ApplicationName
-//	-	DB_USER              = Username
-//	-	DB_PASSWORD          = Password
-//	-	DB_CONNECT_TIMEOUT   = ConnectTimeout
-//	-	DB_LOCK_TIMEOUT      = LockTimeout
-//	-	DB_STATEMENT_TIMEOUT = StatementTimeout
-//	-	DB_SSLMODE           = SSLMode
-//	-	DB_IDLE_CONNECTIONS  = IdleConnections
-//	-	DB_MAX_CONNECTIONS   = MaxConnections
-//	-	DB_MAX_LIFETIME      = MaxLifetime
-//	-	DB_BUFFER_POOL_SIZE  = BufferPoolSize
+//  -  DB_ENGINE            = Engine
+//  -  DATABASE_URL         = DSN     //note that this has precedence over other vars (!!)
+//  -  DB_HOST              = Host
+//  -  DB_PORT              = Port
+//  -  DB_NAME              = Database
+//  -  DB_SCHEMA            = Schema
+//  -  DB_APPLICATION_NAME  = ApplicationName
+//  -  DB_USER              = Username
+//  -  DB_PASSWORD          = Password
+//  -  DB_CONNECT_TIMEOUT   = ConnectTimeout
+//  -  DB_LOCK_TIMEOUT      = LockTimeout
+//  -  DB_STATEMENT_TIMEOUT = StatementTimeout
+//  -  DB_SSLMODE           = SSLMode
+//  -  DB_IDLE_CONNECTIONS  = IdleConnections
+//  -  DB_MAX_CONNECTIONS   = MaxConnections
+//  -  DB_MAX_LIFETIME      = MaxLifetime
+//  -  DB_BUFFER_POOL_SIZE  = BufferPoolSize
 func NewConfigFromEnv() (config Config, err error) {
 	if err = (&config).Resolve(env.WithVars(context.Background(), env.Env())); err != nil {
 		return
