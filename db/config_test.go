@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 	"time"
 
@@ -144,13 +145,17 @@ func TestNewConfigFromDSN(t *testing.T) {
 	dsn = "postgres://bar:1234/blend?lock_timeout=1000"
 	parsed, err = NewConfigFromDSN(dsn)
 	assert.Nil(parsed)
-	assert.Equal("time: missing unit in duration 1000; field: lock_timeout", fmt.Sprintf("%v", err))
+	expectedPattern := `^time: missing unit in duration (")?1000(")?; field: lock_timeout$`
+	re := regexp.MustCompile(expectedPattern)
+	assert.True(re.MatchString(fmt.Sprintf("%v", err)))
 
 	// Failure to parse statement timeout
 	dsn = "postgres://bar:1234/blend?statement_timeout=2000"
 	parsed, err = NewConfigFromDSN(dsn)
 	assert.Nil(parsed)
-	assert.Equal("time: missing unit in duration 2000; field: statement_timeout", fmt.Sprintf("%v", err))
+	expectedPattern = `^time: missing unit in duration (")?2000(")?; field: statement_timeout$`
+	re = regexp.MustCompile(expectedPattern)
+	assert.True(re.MatchString(fmt.Sprintf("%v", err)))
 }
 
 func TestNewConfigFromDSNWithSchema(t *testing.T) {
