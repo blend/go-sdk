@@ -38,6 +38,8 @@ func NewConfigFromDSN(dsn string) (*Config, error) {
 			config.SSLMode = strings.TrimPrefix(piece, "sslmode=")
 		} else if strings.HasPrefix(piece, "search_path=") {
 			config.Schema = strings.TrimPrefix(piece, "search_path=")
+		} else if strings.HasPrefix(piece, "application_name=") {
+			config.ApplicationName = strings.TrimPrefix(piece, "application_name=")
 		} else if strings.HasPrefix(piece, "connect_timeout=") {
 			config.ConnectTimeout, err = strconv.Atoi(strings.TrimPrefix(piece, "connect_timeout="))
 			if err != nil {
@@ -67,6 +69,7 @@ func NewConfigFromDSN(dsn string) (*Config, error) {
 //	-	DB_PORT              = Port
 //	- 	DB_NAME              = Database
 //	-	DB_SCHEMA            = Schema
+//	-	DB_APPLICATION_NAME  = ApplicationName
 //	-	DB_USER              = Username
 //	-	DB_PASSWORD          = Password
 //	-	DB_CONNECT_TIMEOUT   = ConnectTimeout
@@ -117,6 +120,13 @@ type Config struct {
 	// opened connection such as "SET search_path = 'schema_one,schema_two';" Again, we recommend against this practice
 	// and encourage you to specify schema names beyond the first in your queries.
 	Schema string `json:"schema,omitempty" yaml:"schema,omitempty" env:"DB_SCHEMA"`
+	// ApplicationName is the name set by an application connection to a database
+	// server, intended to be transmitted in the connection string. It can be
+	// used to uniquely identify an application and will be included in the
+	// `pg_stat_activity` view.
+	//
+	// See: https://www.postgresql.org/docs/12/runtime-config-logging.html#GUC-APPLICATION-NAME
+	ApplicationName string `json:"applicationName,omitempty" yaml:"applicationName,omitempty" env:"DB_APPLICATION_NAME"`
 	// Username is the username for the connection via password auth.
 	Username string `json:"username,omitempty" yaml:"username,omitempty" env:"DB_USER"`
 	// Password is the password for the connection via password auth.
@@ -169,6 +179,7 @@ func (c *Config) Resolve(ctx context.Context) error {
 		configutil.SetString(&c.Port, configutil.Env("DB_PORT"), configutil.String(c.Port), configutil.String(DefaultPort)),
 		configutil.SetString(&c.Database, configutil.Env("DB_NAME"), configutil.String(c.Database), configutil.String(DefaultDatabase)),
 		configutil.SetString(&c.Schema, configutil.Env("DB_SCHEMA"), configutil.String(c.Schema)),
+		configutil.SetString(&c.ApplicationName, configutil.Env(EnvVarDBApplicationName), configutil.String(c.ApplicationName)),
 		configutil.SetString(&c.Username, configutil.Env("DB_USER"), configutil.String(c.Username), configutil.Env("USER")),
 		configutil.SetString(&c.Password, configutil.Env("DB_PASSWORD"), configutil.String(c.Password)),
 		configutil.SetInt(&c.ConnectTimeout, configutil.Env("DB_CONNECT_TIMEOUT"), configutil.Int(c.ConnectTimeout), configutil.Int(DefaultConnectTimeout)),
@@ -310,6 +321,9 @@ func (c Config) CreateDSN() string {
 	}
 	if c.Schema != "" {
 		queryArgs.Add("search_path", c.Schema)
+	}
+	if c.ApplicationName != "" {
+		queryArgs.Add("application_name", c.ApplicationName)
 	}
 
 	dsn.RawQuery = queryArgs.Encode()

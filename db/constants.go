@@ -10,6 +10,12 @@ const (
 
 	// EnvVarDatabaseURL is an environment variable.
 	EnvVarDatabaseURL = "DATABASE_URL"
+	// EnvVarDBApplicationName is the environment variable used to set the
+	// `application_name` configuration parameter in a `lib/pq` connection
+	// string.
+	//
+	// See: https://www.postgresql.org/docs/12/runtime-config-logging.html#GUC-APPLICATION-NAME
+	EnvVarDBApplicationName = "DB_APPLICATION_NAME"
 
 	// DefaultHost is the default database hostname, typically used
 	// when developing locally.
