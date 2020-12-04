@@ -36,10 +36,3 @@ LOGGER_UUID:
   - "*_test.go"
   importsContain:
   - "github.com/blend/go-sdk/uuid"
-
-LOGGER_YAML:
-  description: "you shouldn't need to add yaml to logger"
-  excludeFiles:
-  - "*_test.go"
-  importsContain:
-  - "github.com/blend/go-sdk/yaml"

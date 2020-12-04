@@ -37,7 +37,7 @@ func (q *LinkedList) Enqueue(value interface{}) {
 		q.tail = node
 	}
 
-	q.length = q.length + 1
+	q.length++
 }
 
 // Dequeue removes an item from the front of the queue and returns it.
@@ -58,7 +58,7 @@ func (q *LinkedList) Dequeue() interface{} {
 		}
 	}
 
-	q.length = q.length - 1
+	q.length--
 	return headValue
 }
 

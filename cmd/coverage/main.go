@@ -17,15 +17,6 @@ import (
 	"golang.org/x/tools/cover"
 )
 
-// linker metadata block
-// this block must be present
-// it is used by goreleaser
-var (
-	version = "dev"
-	commit  = "none"
-	date    = "unknown"
-)
-
 const (
 	star             = "*"
 	defaultFileFlags = 0644
@@ -534,10 +525,6 @@ func (acc ansiColor) Apply(text string) string {
 }
 
 const (
-	// ColorWhite is the posix escape code fragment for white.
-	colorWhite ansiColor = "97m"
-	// ColorBlack is the posix escape code fragment for black.
-	colorBlack ansiColor = "30m"
 	// ColorGray is the posix escape code fragment for black.
 	colorGray ansiColor = "90m"
 	// ColorRed is the posix escape code fragment for red.

@@ -92,6 +92,7 @@ func (c *Constraint) Check(v *Version) bool {
 	return c.f(v, c.check)
 }
 
+// String returns the original string.
 func (c *Constraint) String() string {
 	return c.original
 }
@@ -99,7 +100,7 @@ func (c *Constraint) String() string {
 func parseSingle(v string) (*Constraint, error) {
 	matches := constraintRegexp.FindStringSubmatch(v)
 	if matches == nil {
-		return nil, fmt.Errorf("Malformed constraint: %s", v)
+		return nil, fmt.Errorf("malformed constraint: %s", v)
 	}
 
 	check, err := NewVersion(matches[2])
@@ -195,10 +196,5 @@ func constraintPessimistic(v, c *Version) bool {
 	// Check the last part of the segment in the constraint. If the version segment at
 	// this index is less than the constraints segment at this index, then it cannot
 	// be valid against the constraint
-	if c.segments[cs-1] > v.segments[cs-1] {
-		return false
-	}
-
-	// If nothing has rejected the version by now, it's valid
-	return true
+	return c.segments[cs-1] <= v.segments[cs-1]
 }

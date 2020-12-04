@@ -5,9 +5,10 @@ import (
 	"io"
 	"testing"
 
+	"google.golang.org/grpc/metadata"
+
 	"github.com/blend/go-sdk/assert"
 	v1 "github.com/blend/go-sdk/grpcutil/calculator/v1"
-	"google.golang.org/grpc/metadata"
 )
 
 func numberStream(values ...float64) *numberStreamServer {

@@ -20,23 +20,6 @@ GOLANG_DEPRECATED:
   importsContain:
   - "github.com/blendlabs/*"
 
-GOLANG_YAML:
-  description: "please use `github.com/blend/go-sdk/yaml`"
-  importsContain:
-  - "gopkg.in/yaml.v2"
-
-GOLANG_GOPKG_IN:
-  description: "please get specific approval for `gopkg.in` dependencies"
-  importsContain:
-  - "gopkg.in/*"
-
-GOLANG_PRINTLN:
-  description: "please remove debugging `println` statements"
-  excludeFiles:
-  - "examples/*"
-  contains:
-  - "println"
-
 GOLANG_CMD_IMPORTS:
   description: "please don't reference cmd packages"
   importsContain:

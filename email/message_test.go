@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"testing"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/ex"
-	"github.com/blend/go-sdk/yaml"
 )
 
 func TestMessageValidate(t *testing.T) {

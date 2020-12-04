@@ -8,8 +8,9 @@ import (
 	"os"
 	"strings"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/blend/go-sdk/sh"
-	"github.com/blend/go-sdk/yaml"
 )
 
 // linker metadata block

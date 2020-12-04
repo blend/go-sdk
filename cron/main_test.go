@@ -3,16 +3,8 @@ package cron
 import (
 	"context"
 	"sync"
-	"testing"
 	"time"
-
-	"github.com/blend/go-sdk/assert"
 )
-
-// TestMain is the testing entrypoint.
-func TestMain(m *testing.M) {
-	assert.Main(m)
-}
 
 func noop(_ context.Context) error { return nil }
 

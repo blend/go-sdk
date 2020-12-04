@@ -276,6 +276,6 @@ func TestPercentileEmpty(t *testing.T) {
 func TestInEpsilon(t *testing.T) {
 	assert := assert.New(t)
 
-	assert.True(InEpsilon(0.0, 1-1))
-	assert.False(InEpsilon(0.001, 1-1))
+	assert.True(InEpsilon(0.0, 0))
+	assert.False(InEpsilon(0.001, 0))
 }

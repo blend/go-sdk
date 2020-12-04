@@ -27,7 +27,7 @@ func TestStackStrings(t *testing.T) {
 	assert.Equal("\nfoo\nbar\nbaz", fmt.Sprintf("%+v", stackStrings))
 	assert.Equal("[]string{\"foo\", \"bar\", \"baz\"}", fmt.Sprintf("%#v", stackStrings))
 	assert.Equal("\nfoo\nbar\nbaz", fmt.Sprintf("%v", stackStrings))
-	assert.Equal("\nfoo\nbar\nbaz", fmt.Sprintf("%s", stackStrings))
+	assert.Equal([]string{"foo", "bar", "baz"}, stackStrings)
 }
 
 func TestExceptionWithStackStrings(t *testing.T) {

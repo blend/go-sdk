@@ -29,7 +29,7 @@ func OptStackTrace(stack StackTrace) Option {
 // OptInner sets an inner or wrapped ex.
 func OptInner(inner error) Option {
 	return func(ex *Ex) {
-		ex.Inner = NewWithStackDepth(inner, DefaultNewStartDepth)
+		ex.Inner = NewWithStackDepth(inner, DefaultNewStartDepth+2)
 	}
 }
 
