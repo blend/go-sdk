@@ -7,12 +7,10 @@ import (
 	v1 "github.com/blend/go-sdk/grpcutil/calculator/v1"
 )
 
-var (
-	_ v1.CalculatorServer = (*Server)(nil)
-)
-
 // Server is the server for the calculator.
-type Server struct{}
+type Server struct {
+	v1.CalculatorServer
+}
 
 // Add adds a fixed set of numbers.
 func (Server) Add(_ context.Context, values *v1.Numbers) (*v1.Number, error) {
@@ -146,7 +144,7 @@ func (Server) Divide(_ context.Context, values *v1.Numbers) (*v1.Number, error) 
 	}
 	output := values.Values[0]
 	for _, value := range values.Values[1:] {
-		output = output / value
+		output /= value
 	}
 	return &v1.Number{
 		Value: output,
@@ -178,7 +176,7 @@ func (Server) DivideStream(stream v1.Calculator_DivideStreamServer) error {
 			output = number.Value
 			outputSet = true
 		} else {
-			output = output / number.Value
+			output /= number.Value
 		}
 	}
 }
