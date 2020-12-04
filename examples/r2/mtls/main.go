@@ -64,7 +64,7 @@ func main() {
 		web.OptLog(log),
 		web.OptBindAddr("127.0.0.1:5000"),
 		web.OptTLSConfig(serverCertManager.TLSConfig),
-		web.OptHTTPServerOptions(
+		web.OptServerOptions(
 			webutil.OptHTTPServerErrorLog(
 				logger.StdlibShim(log, logger.OptShimWriterEventProvider(
 					logger.ShimWriterMessageEventProvider("http.error"),

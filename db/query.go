@@ -128,7 +128,7 @@ func (q *Query) Each(consumer RowsConsumer) (err error) {
 
 // First executes the consumer for the first result of a query.
 // It returns `ErrTooManyRows` if more than one result is returned.
-func (q *Query) First(consumer RowsConsumer) (err error) {
+func (q *Query) First(consumer RowsConsumer) (found bool, err error) {
 	var rows *sql.Rows
 	defer func() {
 		err = q.finish(recover(), err)
@@ -138,7 +138,7 @@ func (q *Query) First(consumer RowsConsumer) (err error) {
 	if err != nil {
 		return
 	}
-	err = First(rows, consumer)
+	found, err = First(rows, consumer)
 	return
 }
 
@@ -247,8 +247,8 @@ func Each(rows *sql.Rows, consumer RowsConsumer) (err error) {
 
 // First returns the first result of a result set to a consumer.
 // If there are more than one row in the result, they are ignored.
-func First(rows *sql.Rows, consumer RowsConsumer) (err error) {
-	if rows.Next() {
+func First(rows *sql.Rows, consumer RowsConsumer) (found bool, err error) {
+	if found = rows.Next(); found {
 		if err = consumer(rows); err != nil {
 			return
 		}

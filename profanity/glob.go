@@ -5,7 +5,7 @@ import "strings"
 // GlobAnyMatch tests if a file matches a (potentially) csv of glob filters.
 func GlobAnyMatch(filters []string, file string) bool {
 	for _, part := range filters {
-		if matches := Glob(strings.TrimSpace(part), file); matches {
+		if matches := Glob(file, strings.TrimSpace(part)); matches {
 			return true
 		}
 	}
@@ -13,7 +13,7 @@ func GlobAnyMatch(filters []string, file string) bool {
 }
 
 // Glob returns if a given pattern matches a given subject.
-func Glob(pattern, subj string) bool {
+func Glob(subj, pattern string) bool {
 	// Empty pattern can only match empty subject
 	if pattern == "" {
 		return subj == pattern

@@ -98,10 +98,10 @@ func (p *Parser) ParseUnverified(tokenString string, claims Claims) (token *Toke
 	// parse Claims
 	var claimBytes []byte
 	token.Claims = claims
-
 	if claimBytes, err = DecodeSegment(parts[1]); err != nil {
 		return token, parts, ex.New(ErrValidation, ex.OptInner(err))
 	}
+
 	dec := json.NewDecoder(bytes.NewBuffer(claimBytes))
 	if p.UseJSONNumber {
 		dec.UseNumber()

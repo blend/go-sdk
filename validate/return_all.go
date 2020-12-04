@@ -2,7 +2,7 @@ package validate
 
 // ReturnAll returns all the failing validations as an
 // array of validation errors.
-func ReturnAll(validators ...Validator) []error {
+func ReturnAll(validators ...Validator) error {
 	var output []error
 	var err error
 	for _, validator := range validators {
@@ -10,5 +10,8 @@ func ReturnAll(validators ...Validator) []error {
 			output = append(output, err)
 		}
 	}
-	return output
+	if len(output) > 0 {
+		return ValidationErrors(output)
+	}
+	return nil
 }

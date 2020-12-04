@@ -13,6 +13,8 @@ const (
 	ErrFloat64Positive ex.Class = "float64 should be positive"
 	ErrFloat64Negative ex.Class = "float64 should be negative"
 	ErrFloat64Epsilon  ex.Class = "float64 should be within an epsilon of a value"
+	ErrFloat64Zero     ex.Class = "float64 should be zero"
+	ErrFloat64NotZero  ex.Class = "float64 should not be zero"
 )
 
 // Float64 returns validators for float64s.
@@ -115,6 +117,34 @@ func (f Float64Validators) Epsilon(value, epsilon float64) Validator {
 		}
 		if math.Abs(*f.Value-value) > epsilon {
 			return Errorf(ErrFloat64Epsilon, *f.Value, "value: %v epsilon: %v", value, epsilon)
+		}
+		return nil
+	}
+}
+
+// Zero returns a validator that a float64 is zero.
+func (f Float64Validators) Zero() Validator {
+	return func() error {
+		if f.Value == nil {
+			// an unset value cannot be zero
+			return Error(ErrFloat64Zero, nil)
+		}
+		if *f.Value != 0 {
+			return Error(ErrFloat64Zero, *f.Value)
+		}
+		return nil
+	}
+}
+
+// NotZero returns a validator that a float64 is not zero.
+func (f Float64Validators) NotZero() Validator {
+	return func() error {
+		if f.Value == nil {
+			// an unset value cannot be not zero
+			return Error(ErrFloat64NotZero, nil)
+		}
+		if *f.Value == 0 {
+			return Error(ErrFloat64NotZero, *f.Value)
 		}
 		return nil
 	}

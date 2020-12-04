@@ -46,8 +46,8 @@ func TestInvocationJSONNulls(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
-	defer dropJSONTextTable(tx)
+	defer func() { _ = tx.Rollback() }()
+	defer func() { _ = dropJSONTextTable(tx) }()
 
 	assert.Nil(createJSONTestTable(tx))
 
@@ -116,7 +116,7 @@ func TestInvocationCreateRepeatInTx(t *testing.T) {
 
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	assert.Nil(IgnoreExecResult(defaultDB().Invoke(OptTx(tx)).Exec("CREATE TABLE IF NOT EXISTS unique_obj (id int not null primary key, name varchar)")))
 	assert.Nil(defaultDB().Invoke(OptTx(tx)).Create(&uniqueObj{ID: 1, Name: "one"}))
@@ -141,7 +141,7 @@ func TestInvocationUUIDs(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	assert.Nil(IgnoreExecResult(defaultDB().Invoke(OptTx(tx)).Exec("CREATE TABLE IF NOT EXISTS uuid_test (id uuid not null, name varchar(255) not null)")))
 
@@ -172,7 +172,7 @@ func TestInlineMeta(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	test := &embeddedTest{EmbeddedTestMeta: EmbeddedTestMeta{ID: uuid.V4(), TimestampUTC: time.Now().UTC()}, Name: "foo"}
 	cols := Columns(test)
@@ -218,7 +218,7 @@ func TestInvocationStatementInterceptor(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	invocation := defaultDB().Invoke(OptInvocationStatementInterceptor(func(statementID, statement string) string {
 		return statement + "; -- foo"
@@ -233,13 +233,13 @@ func TestConnectionCreate(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	err = createTable(tx)
 	assert.Nil(err)
 
 	obj := &benchObj{
-		Name:      fmt.Sprintf("test_object_0"),
+		Name:      "test_object_0",
 		UUID:      uuid.V4().String(),
 		Timestamp: time.Now().UTC(),
 		Amount:    1000.0 + (5.0 * float32(0)),
@@ -255,7 +255,7 @@ func TestConnectionCreateParallel(t *testing.T) {
 
 	err := createTable(nil)
 	assert.Nil(err)
-	defer dropTableIfExists(nil)
+	defer func() { _ = dropTableIfExists(nil) }()
 
 	wg := sync.WaitGroup{}
 	wg.Add(5)
@@ -263,7 +263,7 @@ func TestConnectionCreateParallel(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			obj := &benchObj{
-				Name:      fmt.Sprintf("test_object_0"),
+				Name:      "test_object_0",
 				UUID:      uuid.V4().String(),
 				Timestamp: time.Now().UTC(),
 				Amount:    1000.0 + (5.0 * float32(0)),
@@ -281,7 +281,7 @@ func TestConnectionGetMiss(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	err = createUpserObjectTable(tx)
 	assert.Nil(err)
@@ -303,7 +303,7 @@ func TestConnectionDelete(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	err = createUpserObjectTable(tx)
 	assert.Nil(err)
@@ -330,7 +330,7 @@ func TestConnectionDeleteMiss(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	err = createUpserObjectTable(tx)
 	assert.Nil(err)
@@ -349,7 +349,7 @@ func TestConnectionUpdate(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	err = createUpserObjectTable(tx)
 	assert.Nil(err)
@@ -382,7 +382,7 @@ func TestConnectionUpdateMiss(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	err = createUpserObjectTable(tx)
 	assert.Nil(err)
@@ -401,7 +401,7 @@ func TestConnectionUpsert(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	err = createUpserObjectTable(tx)
 	assert.Nil(err)
@@ -433,7 +433,7 @@ func TestConnectionUpsertWithSerial(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	err = createTable(tx)
 	assert.Nil(err)
@@ -470,7 +470,7 @@ func TestConnectionCreateMany(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	err = createTable(tx)
 	assert.Nil(err)
@@ -500,7 +500,7 @@ func TestConnectionCreateIfNotExists(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	err = createUpserObjectTable(tx)
 	assert.Nil(err)

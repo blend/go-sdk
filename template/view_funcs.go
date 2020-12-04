@@ -23,12 +23,13 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/blend/go-sdk/mathutil"
 	"github.com/blend/go-sdk/semver"
 	"github.com/blend/go-sdk/stringutil"
 	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/webutil"
-	"github.com/blend/go-sdk/yaml"
 )
 
 // DefaultViewFuncs is a singleton for viewfuncs.
@@ -52,9 +53,9 @@ func (vf ViewFuncs) FuncMap() map[string]interface{} {
 		/* parsing */
 		/* these are like to_ but can error */
 		"parse_bool":    vf.ParseBool,
-		"parse_int":     vf.ToInt,
-		"parse_int64":   vf.ToInt64,
-		"parse_float64": vf.ToFloat64,
+		"parse_int":     vf.ParseInt,
+		"parse_int64":   vf.ParseInt64,
+		"parse_float64": vf.ParseFloat64,
 		"parse_time":    vf.ParseTime,
 		"parse_unix":    vf.ParseUnix,
 		"parse_semver":  vf.ParseSemver,
@@ -171,6 +172,15 @@ func (vf ViewFuncs) FuncMap() map[string]interface{} {
 		/* indentation */
 		"indent_tabs":   vf.IndentTabs,
 		"indent_spaces": vf.IndentSpaces,
+		/* sequences */
+		"seq_int": vf.SequenceInts,
+		/* arithmatic */
+		"add":        vf.Add,
+		"mul":        vf.Multiply,
+		"div":        vf.Divide,
+		"sub":        vf.Subtract,
+		"to_float64": vf.ToFloat64,
+		"to_int":     vf.ToInt,
 	}
 }
 
@@ -213,18 +223,18 @@ func (vf ViewFuncs) ToBytes(v interface{}) []byte {
 	return []byte(fmt.Sprintf("%v", v))
 }
 
-// ToInt parses a value as an integer.
-func (vf ViewFuncs) ToInt(v interface{}) (int, error) {
+// ParseInt parses a value as an integer.
+func (vf ViewFuncs) ParseInt(v interface{}) (int, error) {
 	return strconv.Atoi(fmt.Sprintf("%v", v))
 }
 
-// ToInt64 parses a value as an int64.
-func (vf ViewFuncs) ToInt64(v interface{}) (int64, error) {
+// ParseInt64 parses a value as an int64.
+func (vf ViewFuncs) ParseInt64(v interface{}) (int64, error) {
 	return strconv.ParseInt(fmt.Sprintf("%v", v), 10, 64)
 }
 
-// ToFloat64 parses a value as a float64.
-func (vf ViewFuncs) ToFloat64(v string) (float64, error) {
+// ParseFloat64 parses a value as a float64.
+func (vf ViewFuncs) ParseFloat64(v string) (float64, error) {
 	return strconv.ParseFloat(v, 64)
 }
 
@@ -756,28 +766,28 @@ func (vf ViewFuncs) WithURLQuery(key, value string, v *url.URL) *url.URL {
 // MD5 returns the md5 sum of a string.
 func (vf ViewFuncs) MD5(v string) string {
 	h := md5.New()
-	io.WriteString(h, v)
+	fmt.Fprint(h, v)
 	return hex.EncodeToString(h.Sum(nil))
 }
 
 // SHA1 returns the sha1 sum of a string.
 func (vf ViewFuncs) SHA1(v string) string {
 	h := sha1.New()
-	io.WriteString(h, v)
+	fmt.Fprint(h, v)
 	return hex.EncodeToString(h.Sum(nil))
 }
 
 // SHA256 returns the sha256 sum of a string.
 func (vf ViewFuncs) SHA256(v string) string {
 	h := sha256.New()
-	io.WriteString(h, v)
+	fmt.Fprint(h, v)
 	return hex.EncodeToString(h.Sum(nil))
 }
 
 // SHA512 returns the sha512 sum of a string.
 func (vf ViewFuncs) SHA512(v string) string {
 	h := sha512.New()
-	io.WriteString(h, v)
+	fmt.Fprint(h, v)
 	return hex.EncodeToString(h.Sum(nil))
 }
 
@@ -788,7 +798,7 @@ func (vf ViewFuncs) HMAC512(key, v string) (string, error) {
 		return "", err
 	}
 	h := hmac.New(sha512.New, keyBytes)
-	io.WriteString(h, v)
+	fmt.Fprint(h, v)
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
@@ -879,7 +889,7 @@ func (vf ViewFuncs) GenerateOrdinalNames(format string, replicas int) []string {
 // GenerateKey generates a key of a given size base 64 encoded.
 func (vf ViewFuncs) GenerateKey(keySize int) string {
 	key := make([]byte, keySize)
-	io.ReadFull(rand.Reader, key)
+	_, _ = io.ReadFull(rand.Reader, key)
 	return base64.StdEncoding.EncodeToString(key)
 }
 
@@ -919,4 +929,163 @@ func (vf ViewFuncs) ParseJSON(v string) (interface{}, error) {
 	var data interface{}
 	err := json.Unmarshal([]byte(v), &data)
 	return data, err
+}
+
+// SequenceInts returns an array of ints from min to max, not including max.
+// Given (0,5) as inputs, it would return [0,1,2,3,4]
+func (vf ViewFuncs) SequenceInts(start, end int) []int {
+	if start == end {
+		return []int{}
+	}
+	if start > end {
+		output := make([]int, start-end)
+		for x := start; x > end; x-- {
+			output[start-x] = x
+		}
+		return output
+	}
+
+	output := make([]int, end-start)
+	for x := start; x < end; x++ {
+		output[x] = x
+	}
+	return output
+}
+
+// ToFloat64 returns a given value as a float64.
+func (vf ViewFuncs) ToFloat64(val interface{}) (typedVal float64, err error) {
+	switch tv := val.(type) {
+	case uint8:
+		typedVal = float64(tv)
+	case int8:
+		typedVal = float64(tv)
+	case uint16:
+		typedVal = float64(tv)
+	case int16:
+		typedVal = float64(tv)
+	case uint32:
+		typedVal = float64(tv)
+	case int32:
+		typedVal = float64(tv)
+	case uint64:
+		typedVal = float64(tv)
+	case int64:
+		typedVal = float64(tv)
+	case int:
+		typedVal = float64(tv)
+	case float32:
+		typedVal = float64(tv)
+	case float64:
+		typedVal = tv
+	default:
+		err = fmt.Errorf("invalid addition value %v", val)
+	}
+	return
+}
+
+// ToInt returns a given value as a int64.
+func (vf ViewFuncs) ToInt(val interface{}) (typedVal int, err error) {
+	switch tv := val.(type) {
+	case uint8:
+		typedVal = int(tv)
+	case int8:
+		typedVal = int(tv)
+	case uint16:
+		typedVal = int(tv)
+	case int16:
+		typedVal = int(tv)
+	case uint32:
+		typedVal = int(tv)
+	case int32:
+		typedVal = int(tv)
+	case uint64:
+		typedVal = int(tv)
+	case int64:
+		typedVal = int(tv)
+	case int:
+		typedVal = int(tv)
+	case float32:
+		typedVal = int(tv)
+	case float64:
+		typedVal = int(tv)
+	default:
+		err = fmt.Errorf("invalid addition value %v", val)
+	}
+	return
+}
+
+// Add adds numbers together.
+func (vf ViewFuncs) Add(values ...interface{}) (float64, error) {
+	var output float64
+	var typedVal float64
+	var err error
+	for index, val := range values {
+		typedVal, err = vf.ToFloat64(val)
+		if err != nil {
+			return 0, err
+		}
+		if index == 0 {
+			output = typedVal
+		} else {
+			output += typedVal
+		}
+	}
+	return output, nil
+}
+
+// Multiply multiplies numbers together.
+func (vf ViewFuncs) Multiply(values ...interface{}) (float64, error) {
+	var output float64
+	var typedVal float64
+	var err error
+	for index, val := range values {
+		typedVal, err = vf.ToFloat64(val)
+		if err != nil {
+			return 0, err
+		}
+		if index == 0 {
+			output = typedVal
+		} else {
+			output *= typedVal
+		}
+	}
+	return output, nil
+}
+
+// Subtract divides numbers together.
+func (vf ViewFuncs) Subtract(values ...interface{}) (float64, error) {
+	var output float64
+	var typedVal float64
+	var err error
+	for index, val := range values {
+		typedVal, err = vf.ToFloat64(val)
+		if err != nil {
+			return 0, err
+		}
+		if index == 0 {
+			output = typedVal
+		} else {
+			output -= typedVal
+		}
+	}
+	return output, nil
+}
+
+// Divide divides numbers together.
+func (vf ViewFuncs) Divide(values ...interface{}) (float64, error) {
+	var output float64
+	var typedVal float64
+	var err error
+	for index, val := range values {
+		typedVal, err = vf.ToFloat64(val)
+		if err != nil {
+			return 0, err
+		}
+		if index == 0 {
+			output = typedVal
+		} else {
+			output /= typedVal
+		}
+	}
+	return output, nil
 }

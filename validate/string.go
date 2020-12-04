@@ -15,6 +15,7 @@ import (
 // String errors
 const (
 	ErrStringRequired  ex.Class = "string should be set"
+	ErrStringForbidden ex.Class = "string should not be set"
 	ErrStringLength    ex.Class = "string should be a given length"
 	ErrStringLengthMin ex.Class = "string should be a minimum length"
 	ErrStringLengthMax ex.Class = "string should be a maximum length"
@@ -48,6 +49,16 @@ func (s StringValidators) Required() Validator {
 		}
 		if len(*s.Value) == 0 {
 			return Error(ErrStringRequired, nil)
+		}
+		return nil
+	}
+}
+
+// Forbidden returns a validator that a string is not set.
+func (s StringValidators) Forbidden() Validator {
+	return func() error {
+		if err := s.Required()(); err == nil {
+			return Error(ErrStringForbidden, nil)
 		}
 		return nil
 	}
@@ -137,8 +148,7 @@ func (s StringValidators) IsUpper() Validator {
 		if s.Value == nil {
 			return Error(ErrStringIsUpper, nil)
 		}
-		runes := []rune(string(*s.Value))
-		for _, r := range runes {
+		for _, r := range *s.Value {
 			if !unicode.IsUpper(r) {
 				return Error(ErrStringIsUpper, *s.Value)
 			}
@@ -154,8 +164,7 @@ func (s StringValidators) IsLower() Validator {
 		if s.Value == nil {
 			return Error(ErrStringIsLower, nil)
 		}
-		runes := []rune(string(*s.Value))
-		for _, r := range runes {
+		for _, r := range *s.Value {
 			if !unicode.IsLower(r) {
 				return Error(ErrStringIsLower, *s.Value)
 			}

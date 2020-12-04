@@ -1,12 +1,17 @@
 package migration
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
-	"strings"
 
 	"github.com/blend/go-sdk/db"
 )
+
+// Always always runs a step.
+func Always() GuardFunc {
+	return Guard("always run", func(_ context.Context, _ *db.Connection, _ *sql.Tx) (bool, error) { return true, nil })
+}
 
 // TableExists returns a guard that ensures a table exists
 func TableExists(tableName string) GuardFunc {
@@ -115,20 +120,29 @@ func RoleNotExists(roleName string) GuardFunc {
 // SchemaExists is a guard function for asserting that a schema exists
 func SchemaExists(schemaName string) GuardFunc {
 	return Guard(fmt.Sprintf("drop schema `%s`", schemaName),
-		func(c *db.Connection, tx *sql.Tx) (bool, error) {
-			return predicateSchemaExists(c, tx, schemaName)
+		func(ctx context.Context, c *db.Connection, tx *sql.Tx) (bool, error) {
+			return PredicateSchemaExists(ctx, c, tx, schemaName)
 		})
 }
 
 // SchemaNotExists is a guard function for asserting that a schema does not exist
 func SchemaNotExists(schemaName string) GuardFunc {
 	return Guard(fmt.Sprintf("create schema `%s`", schemaName),
-		func(c *db.Connection, tx *sql.Tx) (bool, error) {
-			return Not(predicateSchemaExists(c, tx, schemaName))
+		func(ctx context.Context, c *db.Connection, tx *sql.Tx) (bool, error) {
+			return Not(PredicateSchemaExists(ctx, c, tx, schemaName))
 		})
 }
 
-func predicateSchemaExists(c *db.Connection, tx *sql.Tx, schemaName string) (bool, error) {
-	return c.Invoke(db.OptTx(tx)).Query(`SELECT 1 FROM information_schema.schemata WHERE schema_name = $1`,
-		strings.ToLower(schemaName)).Any()
+// IfExists only runs the statement if the given item exists.
+func IfExists(statement string, args ...interface{}) GuardFunc {
+	return Guard("if exists run", func(ctx context.Context, c *db.Connection, tx *sql.Tx) (bool, error) {
+		return PredicateAny(ctx, c, tx, statement, args...)
+	})
+}
+
+// IfNotExists only runs the statement if the given item doesn't exist.
+func IfNotExists(statement string, args ...interface{}) GuardFunc {
+	return Guard("if not exists run", func(ctx context.Context, c *db.Connection, tx *sql.Tx) (bool, error) {
+		return PredicateNone(ctx, c, tx, statement, args...)
+	})
 }

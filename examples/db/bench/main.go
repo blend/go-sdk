@@ -15,11 +15,6 @@ import (
 	"github.com/blend/go-sdk/stringutil"
 )
 
-type benchObject struct {
-	ID   int    `db:"id,pk,auto"`
-	Name string `db:"name"`
-}
-
 func createTable(tableName string, log logger.Log, conn *db.Connection) error {
 	log.Infof("creating %s", tableName)
 	action := migration.NewStep(
@@ -56,12 +51,9 @@ func maybeFatal(err error) {
 
 func reportStats(log logger.Log, conn *db.Connection) {
 	ticker := time.Tick(500 * time.Millisecond)
-	for {
-		select {
-		case <-ticker:
-			log.Infof("[%d] connections currently open", conn.Connection.Stats().OpenConnections)
-			log.Infof("[%v] wait duration", conn.Connection.Stats().WaitDuration)
-		}
+	for range ticker {
+		log.Infof("[%d] connections currently open", conn.Connection.Stats().OpenConnections)
+		log.Infof("[%v] wait duration", conn.Connection.Stats().WaitDuration)
 	}
 }
 
@@ -108,6 +100,6 @@ func main() {
 	}
 	wg.Wait()
 
-	maybeFatal(log.DrainContext(context.TODO()))
+	log.DrainContext(context.TODO())
 	log.Infof("OK")
 }

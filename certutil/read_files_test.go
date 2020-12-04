@@ -7,6 +7,8 @@ import (
 )
 
 func TestReadFiles(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	files, err := ReadFiles("testdata/client.cert.pem", "testdata/client.key.pem")

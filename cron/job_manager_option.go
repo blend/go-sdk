@@ -1,6 +1,10 @@
 package cron
 
-import "github.com/blend/go-sdk/logger"
+import (
+	"context"
+
+	"github.com/blend/go-sdk/logger"
+)
 
 // JobManagerOption is a job manager option.
 type JobManagerOption func(*JobManager)
@@ -13,4 +17,9 @@ func OptLog(log logger.Log) JobManagerOption {
 // OptTracer sets the job manager tracer.
 func OptTracer(tracer Tracer) JobManagerOption {
 	return func(jm *JobManager) { jm.Tracer = tracer }
+}
+
+// OptBaseContext sets the job manager base context.
+func OptBaseContext(ctx context.Context) JobManagerOption {
+	return func(jm *JobManager) { jm.BaseContext = ctx }
 }

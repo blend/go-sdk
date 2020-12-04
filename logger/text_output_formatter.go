@@ -108,9 +108,11 @@ func (tf TextOutputFormatter) FormatPath(path ...string) string {
 		return fmt.Sprintf("[%s]", tf.Colorize(path[0], ansi.ColorBlue))
 	}
 	if !tf.NoColor {
-		for index := 0; index < len(path); index++ {
-			path[index] = tf.Colorize(path[index], ansi.ColorBlue)
+		var colorized []string
+		for _, subPath := range path {
+			colorized = append(colorized, tf.Colorize(subPath, ansi.ColorBlue))
 		}
+		path = colorized
 	}
 	return fmt.Sprintf("[%s]", strings.Join(path, " > "))
 }

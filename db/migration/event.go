@@ -52,21 +52,21 @@ func (e Event) WriteText(tf logger.TextFormatter, wr io.Writer) {
 	}
 
 	if len(e.Result) > 0 {
-		io.WriteString(wr, tf.Colorize("--", ansi.ColorLightBlack))
-		io.WriteString(wr, logger.Space)
-		io.WriteString(wr, tf.Colorize(e.Result, resultColor))
+		fmt.Fprint(wr, tf.Colorize("--", ansi.ColorLightBlack))
+		fmt.Fprint(wr, logger.Space)
+		fmt.Fprint(wr, tf.Colorize(e.Result, resultColor))
 	}
 
 	if len(e.Labels) > 0 {
-		io.WriteString(wr, logger.Space)
-		io.WriteString(wr, strings.Join(e.Labels, " > "))
+		fmt.Fprint(wr, logger.Space)
+		fmt.Fprint(wr, strings.Join(e.Labels, " > "))
 	}
 
 	if len(e.Body) > 0 {
-		io.WriteString(wr, logger.Space)
-		io.WriteString(wr, tf.Colorize("--", ansi.ColorLightBlack))
-		io.WriteString(wr, logger.Space)
-		io.WriteString(wr, e.Body)
+		fmt.Fprint(wr, logger.Space)
+		fmt.Fprint(wr, tf.Colorize("--", ansi.ColorLightBlack))
+		fmt.Fprint(wr, logger.Space)
+		fmt.Fprint(wr, e.Body)
 	}
 }
 
@@ -108,12 +108,12 @@ func (se StatsEvent) GetFlag() string { return FlagStats }
 
 // WriteText writes the event to a text writer.
 func (se StatsEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
-	io.WriteString(wr, fmt.Sprintf("%s applied %s skipped %s failed %s total",
+	fmt.Fprintf(wr, "%s applied %s skipped %s failed %s total",
 		tf.Colorize(fmt.Sprintf("%d", se.applied), ansi.ColorGreen),
 		tf.Colorize(fmt.Sprintf("%d", se.skipped), ansi.ColorLightGreen),
 		tf.Colorize(fmt.Sprintf("%d", se.failed), ansi.ColorRed),
 		tf.Colorize(fmt.Sprintf("%d", se.total), ansi.ColorLightWhite),
-	))
+	)
 }
 
 // Decompose implements logger.JSONWritable.

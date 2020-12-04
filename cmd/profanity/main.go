@@ -13,21 +13,13 @@ import (
 	"github.com/blend/go-sdk/ref"
 )
 
-// linker metadata block
-// this block must be present
-// it is used by goreleaser
 var (
-	version = "dev"
-	commit  = "none"
-	date    = "unknown"
-)
-
-var (
-	flagRulesFile            *string
-	flagInclude, flagExclude *[]string
-	flagVerbose              *bool
-	flagDebug                *bool
-	flagFailFast             *bool
+	flagRulesFile                      *string
+	flagFilesInclude, flagFilesExclude *[]string
+	flagDirsInclude, flagDirsExclude   *[]string
+	flagVerbose                        *bool
+	flagDebug                          *bool
+	flagFailFast                       *bool
 )
 
 var (
@@ -45,8 +37,10 @@ func (c *config) Resolve(ctx context.Context) error {
 		configutil.SetBool(&c.FailFast, configutil.Bool(flagDebug), configutil.Bool(c.Debug), configutil.Bool(ref.Bool(false))),
 		configutil.SetBool(&c.FailFast, configutil.Bool(flagFailFast), configutil.Bool(c.FailFast), configutil.Bool(ref.Bool(false))),
 		configutil.SetString(&c.RulesFile, configutil.String(*flagRulesFile), configutil.String(c.RulesFile), configutil.String(profanity.DefaultRulesFile)),
-		configutil.SetStrings(&c.Include, configutil.Strings(*flagInclude), configutil.Strings(c.Include)),
-		configutil.SetStrings(&c.Exclude, configutil.Strings(*flagExclude), configutil.Strings(c.Exclude)),
+		configutil.SetStrings(&c.Files.Include, configutil.Strings(*flagFilesInclude), configutil.Strings(c.Files.Include)),
+		configutil.SetStrings(&c.Files.Exclude, configutil.Strings(*flagFilesExclude), configutil.Strings(c.Files.Exclude)),
+		configutil.SetStrings(&c.Dirs.Include, configutil.Strings(*flagDirsInclude), configutil.Strings(c.Dirs.Include)),
+		configutil.SetStrings(&c.Dirs.Exclude, configutil.Strings(*flagDirsExclude), configutil.Strings(c.Dirs.Exclude)),
 	)
 }
 
@@ -85,13 +79,15 @@ profanity --rules=PROFANITY_RULES --include="*.go" --exclude="*_test.go"
 %s
 """
 
-For more example rule files, see https://github.com/blend/go-sdk/tree/master/PROFANITY_RULES.yml
+For an example rule file (with many more rules), see https://golang.blend.com/PROFANITY_RULES.yml
 `, configExample),
 	}
 
 	flagRulesFile = root.Flags().StringP("rules", "r", profanity.DefaultRulesFile, "The rules file to search for in each valid directory")
-	flagInclude = root.Flags().StringArrayP("include", "i", nil, "Files to include in glob matching format; can be a csv.")
-	flagExclude = root.Flags().StringArrayP("exclude", "e", nil, "Files to exclude in glob matching format; can be a csv.")
+	flagFilesInclude = root.Flags().StringArray("files-include", nil, "Files to include in glob matching format; can be a csv.")
+	flagFilesExclude = root.Flags().StringArray("files-exclude", nil, "Files to exclude in glob matching format; can be a csv.")
+	flagDirsInclude = root.Flags().StringArray("dirs-include", nil, "Directories to include in glob matching format; can be a csv.")
+	flagDirsExclude = root.Flags().StringArray("dirs-exclude", nil, "Directories to exclude in glob matching format; can be a csv.")
 	flagVerbose = root.Flags().BoolP("verbose", "v", false, "If we should show verbose output.")
 	flagDebug = root.Flags().BoolP("debug", "d", false, "If we should show debug output.")
 	flagFailFast = root.Flags().Bool("fail-fast", false, "If we should fail the run after the first error.")

@@ -13,19 +13,12 @@ func NewMessage(options ...MessageOption) *Message {
 type Message struct {
 	Username        string              `json:"username,omitempty"`
 	Channel         string              `json:"channel,omitempty"`
-	AsUser          bool                `json:"as_user"`
 	Parse           string              `json:"parse,omitempty"`
 	ResponseType    string              `json:"response_type,omitempty"`
 	Text            string              `json:"text"`
-	UnfurlLinks     bool                `json:"unfurl_links"`
-	UnfurlMedia     bool                `json:"unfurl_media"`
 	IconEmoji       string              `json:"icon_emoji,omitempty"`
 	IconURL         string              `json:"icon_url,omitempty"`
-	Markdown        bool                `json:"mrkdwn,omitempty"`
-	EscapeText      bool                `json:"escape_text"`
 	ThreadTimestamp string              `json:"thread_ts,omitempty"`
-	ReplyBroadcast  bool                `json:"reply_broadcast"`
-	LinkNames       int                 `json:"link_names"`
 	Attachments     []MessageAttachment `json:"attachments"`
 
 	// Response-specific fields

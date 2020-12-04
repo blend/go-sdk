@@ -3,9 +3,8 @@ package logger
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
-
-	"github.com/blend/go-sdk/ex"
 )
 
 // these are compile time assertions
@@ -36,6 +35,16 @@ func NewErrorEventListener(listener func(context.Context, ErrorEvent)) Listener 
 	}
 }
 
+// NewErrorEventFilter returns a new error event filter.
+func NewErrorEventFilter(filter func(context.Context, ErrorEvent) (ErrorEvent, bool)) Filter {
+	return func(ctx context.Context, e Event) (Event, bool) {
+		if typed, isTyped := e.(ErrorEvent); isTyped {
+			return filter(ctx, typed)
+		}
+		return e, false
+	}
+}
+
 // ErrorEventOption is an option for error events.
 type ErrorEventOption = func(*ErrorEvent)
 
@@ -59,11 +68,7 @@ func (ee ErrorEvent) GetFlag() string { return ee.Flag }
 // WriteText writes the text version of an error.
 func (ee ErrorEvent) WriteText(formatter TextFormatter, output io.Writer) {
 	if ee.Err != nil {
-		if typed, ok := ee.Err.(*ex.Ex); ok {
-			io.WriteString(output, typed.String())
-		} else {
-			io.WriteString(output, ee.Err.Error())
-		}
+		fmt.Fprintf(output, "%+v", ee.Err)
 	}
 }
 

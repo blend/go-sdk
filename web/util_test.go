@@ -9,49 +9,6 @@ import (
 	"github.com/blend/go-sdk/webutil"
 )
 
-func TestNestMiddleware(t *testing.T) {
-	assert := assert.New(t)
-
-	var callIndex int
-
-	assert.NotNil(NestMiddleware(func(_ *Ctx) Result { return nil }))
-
-	var mw1Called int
-	mw1 := func(action Action) Action {
-		return func(ctx *Ctx) Result {
-			mw1Called = callIndex
-			callIndex = callIndex + 1
-			return action(ctx)
-		}
-	}
-
-	var mw2Called int
-	mw2 := func(action Action) Action {
-		return func(ctx *Ctx) Result {
-			mw2Called = callIndex
-			callIndex = callIndex + 1
-			return action(ctx)
-		}
-	}
-
-	var mw3Called int
-	mw3 := func(action Action) Action {
-		return func(ctx *Ctx) Result {
-			mw3Called = callIndex
-			callIndex = callIndex + 1
-			return action(ctx)
-		}
-	}
-
-	nested := NestMiddleware(func(ctx *Ctx) Result { return nil }, mw2, mw3, mw1)
-
-	nested(nil)
-
-	assert.Equal(2, mw2Called)
-	assert.Equal(1, mw3Called)
-	assert.Equal(0, mw1Called)
-}
-
 func TestPathRedirectHandler(t *testing.T) {
 	assert := assert.New(t)
 
@@ -205,4 +162,45 @@ func TestNewCookie(t *testing.T) {
 	assert.NotNil(c)
 	assert.Equal("hello", c.Name)
 	assert.Equal("world", c.Value)
+}
+
+func TestMergeHeaders(t *testing.T) {
+	assert := assert.New(t)
+
+	a := map[string][]string{
+		"Foo": {"foo1a", "foo2a"},
+		"Bar": {"bar1a", "bar2a"},
+	}
+
+	b := map[string][]string{
+		"Foo":    {"foo1b", "foo2b", "foo3b"},
+		"Bailey": {"dog"},
+	}
+
+	c := map[string][]string{
+		"Bar":  {"bar1c", "bar2c"},
+		"Buzz": {"fuzz"},
+	}
+
+	merged := MergeHeaders(a, b, c)
+
+	assert.Equal(
+		[]string{"foo1a", "foo2a", "foo1b", "foo2b", "foo3b"},
+		merged["Foo"],
+	)
+
+	assert.Equal(
+		[]string{"bar1a", "bar2a", "bar1c", "bar2c"},
+		merged["Bar"],
+	)
+
+	assert.Equal(
+		[]string{"dog"},
+		merged["Bailey"],
+	)
+
+	assert.Equal(
+		[]string{"fuzz"},
+		merged["Buzz"],
+	)
 }

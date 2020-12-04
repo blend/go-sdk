@@ -1,11 +1,15 @@
 package web
 
 import (
+	"bytes"
+	"io/ioutil"
 	"net/http"
+	"net/url"
 	"testing"
 	"time"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -201,4 +205,34 @@ func TestCtxCookieDomain(t *testing.T) {
 	ctx = MockCtx("GET", "/", OptCtxApp(app))
 	domain = ctx.CookieDomain()
 	assert.Equal("localhost", domain)
+}
+
+type PostFormTest struct {
+	ID       string  `postForm:"id"`
+	Name     string  `postForm:"Name"`
+	Cost     float64 `postForm:"notCost"`
+	Excluded string
+}
+
+func TestCtxPostBodyAsForm(t *testing.T) {
+	assert := assert.New(t)
+
+	formValues := url.Values{
+		"id":       []string{uuid.V4().String()},
+		"Name":     []string{"foobar"},
+		"notCost":  []string{"3.14", "6.28"},
+		"Excluded": []string{"bad"},
+	}
+	postBody := []byte(formValues.Encode())
+
+	ctx := MockCtx("POST", "/")
+	ctx.Request.Header.Set(webutil.HeaderContentType, webutil.ContentTypeApplicationFormEncoded)
+	ctx.Request.Body = ioutil.NopCloser(bytes.NewReader(postBody))
+
+	var p PostFormTest
+	assert.Nil(ctx.PostBodyAsForm(&p))
+	assert.Equal(formValues["id"][0], p.ID)
+	assert.Equal(formValues["Name"][0], p.Name)
+	assert.Equal(3.14, p.Cost)
+	assert.Empty(p.Excluded)
 }

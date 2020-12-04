@@ -3,8 +3,6 @@ package stats
 import (
 	"sort"
 	"time"
-
-	"github.com/blend/go-sdk/ex"
 )
 
 var (
@@ -18,6 +16,13 @@ type MultiCollector []Collector
 func (collectors MultiCollector) AddDefaultTag(name, value string) {
 	for _, collector := range collectors {
 		collector.AddDefaultTag(name, value)
+	}
+}
+
+// AddDefaultTags implements Taggable.
+func (collectors MultiCollector) AddDefaultTags(tags ...string) {
+	for _, collector := range collectors {
+		collector.AddDefaultTags(tags...)
 	}
 }
 
@@ -37,71 +42,78 @@ func (collectors MultiCollector) DefaultTags() (output []string) {
 }
 
 // Count increments a counter by a value and writes to the different hosts
-func (collectors MultiCollector) Count(name string, value int64, tags ...string) error {
+func (collectors MultiCollector) Count(name string, value int64, tags ...string) (err error) {
 	for _, collector := range collectors {
-		if err := collector.Count(name, value, tags...); err != nil {
-			return ex.New(err)
+		err = collector.Count(name, value, tags...)
+		if err != nil {
+			return
 		}
 	}
-	return nil
+	return
 }
 
 // Increment increments a counter by 1 and writes to the different hosts
-func (collectors MultiCollector) Increment(name string, tags ...string) error {
+func (collectors MultiCollector) Increment(name string, tags ...string) (err error) {
 	for _, collector := range collectors {
-		if err := collector.Increment(name, tags...); err != nil {
-			return ex.New(err)
+		err = collector.Increment(name, tags...)
+		if err != nil {
+			return
 		}
 	}
-	return nil
+	return
 }
 
 // Gauge sets a gauge value and writes to the different hosts
-func (collectors MultiCollector) Gauge(name string, value float64, tags ...string) error {
+func (collectors MultiCollector) Gauge(name string, value float64, tags ...string) (err error) {
 	for _, collector := range collectors {
-		if err := collector.Gauge(name, value, tags...); err != nil {
-			return ex.New(err)
+		err = collector.Gauge(name, value, tags...)
+		if err != nil {
+			return
 		}
 	}
-	return nil
+	return
 }
 
-// Histogram sets a guage value and writes to the different hosts
-func (collectors MultiCollector) Histogram(name string, value float64, tags ...string) error {
+// Histogram sets a histogram value and writes to the different hosts
+func (collectors MultiCollector) Histogram(name string, value float64, tags ...string) (err error) {
 	for _, collector := range collectors {
-		if err := collector.Histogram(name, value, tags...); err != nil {
-			return ex.New(err)
+		err = collector.Histogram(name, value, tags...)
+		if err != nil {
+			return
 		}
 	}
-	return nil
+	return
 }
 
 // TimeInMilliseconds sets a timing value and writes to the different hosts
-func (collectors MultiCollector) TimeInMilliseconds(name string, value time.Duration, tags ...string) error {
+func (collectors MultiCollector) TimeInMilliseconds(name string, value time.Duration, tags ...string) (err error) {
 	for _, collector := range collectors {
-		if err := collector.TimeInMilliseconds(name, value, tags...); err != nil {
-			return ex.New(err)
+		err = collector.TimeInMilliseconds(name, value, tags...)
+		if err != nil {
+			return
 		}
 	}
-	return nil
+	return
 }
 
 // Flush forces a flush on all collectors.
-func (collectors MultiCollector) Flush() error {
+func (collectors MultiCollector) Flush() (err error) {
 	for _, collector := range collectors {
-		if err := collector.Flush(); err != nil {
-			return ex.New(err)
+		err = collector.Flush()
+		if err != nil {
+			return
 		}
 	}
-	return nil
+	return
 }
 
 // Close closes all collectors.
-func (collectors MultiCollector) Close() error {
+func (collectors MultiCollector) Close() (err error) {
 	for _, collector := range collectors {
-		if err := collector.Close(); err != nil {
-			return ex.New(err)
+		err = collector.Close()
+		if err != nil {
+			return
 		}
 	}
-	return nil
+	return
 }

@@ -9,6 +9,8 @@ import (
 )
 
 func TestCertFileWatcher(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	tempKey, err := ioutil.TempFile("", "")

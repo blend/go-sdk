@@ -24,6 +24,7 @@ const (
 // Default flags
 var (
 	DefaultFlags         = []string{Info, Error, Fatal}
+	DefaultFlagsWritable = []string{FlagAll}
 	DefaultListenerName  = "default"
 	DefaultRecoverPanics = true
 )

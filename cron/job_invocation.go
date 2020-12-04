@@ -59,6 +59,9 @@ func (ji *JobInvocation) Elapsed() time.Duration {
 	if !ji.Complete.IsZero() {
 		return ji.Complete.Sub(ji.Started)
 	}
+	if !ji.Started.IsZero() {
+		return Now().Sub(ji.Started)
+	}
 	return 0
 }
 

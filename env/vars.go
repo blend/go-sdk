@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/reflectutil"
 	"github.com/blend/go-sdk/stringutil"
 )
@@ -88,7 +89,11 @@ func (ev Vars) Bool(envVar string, defaults ...bool) bool {
 // Int returns an integer value for a given key.
 func (ev Vars) Int(envVar string, defaults ...int) (int, error) {
 	if value, hasValue := ev[envVar]; hasValue {
-		return strconv.Atoi(value)
+		parsedValue, err := strconv.Atoi(value)
+		if err != nil {
+			return 0, ex.New(err, ex.OptMessagef("var: %q", envVar))
+		}
+		return parsedValue, nil
 	}
 	for _, defaultValue := range defaults {
 		if defaultValue > 0 {
@@ -110,8 +115,11 @@ func (ev Vars) MustInt(envVar string, defaults ...int) int {
 // Int32 returns an integer value for a given key.
 func (ev Vars) Int32(envVar string, defaults ...int32) (int32, error) {
 	if value, hasValue := ev[envVar]; hasValue {
-		parsedValue, err := strconv.Atoi(value)
-		return int32(parsedValue), err
+		parsedValue, err := strconv.ParseInt(value, 10, 32)
+		if err != nil {
+			return 0, ex.New(err, ex.OptMessagef("var: %q", envVar))
+		}
+		return int32(parsedValue), nil
 	}
 	for _, defaultValue := range defaults {
 		if defaultValue > 0 {
@@ -133,7 +141,11 @@ func (ev Vars) MustInt32(envVar string, defaults ...int32) int32 {
 // Int64 returns an int64 value for a given key.
 func (ev Vars) Int64(envVar string, defaults ...int64) (int64, error) {
 	if value, hasValue := ev[envVar]; hasValue {
-		return strconv.ParseInt(value, 10, 64)
+		parsedValue, err := strconv.ParseInt(value, 10, 64)
+		if err != nil {
+			return 0, ex.New(err, ex.OptMessagef("var: %q", envVar))
+		}
+		return parsedValue, nil
 	}
 	for _, defaultValue := range defaults {
 		if defaultValue > 0 {
@@ -156,7 +168,10 @@ func (ev Vars) MustInt64(envVar string, defaults ...int64) int64 {
 func (ev Vars) Uint32(envVar string, defaults ...uint32) (uint32, error) {
 	if value, hasValue := ev[envVar]; hasValue {
 		parsedValue, err := strconv.ParseUint(value, 10, 32)
-		return uint32(parsedValue), err
+		if err != nil {
+			return 0, ex.New(err, ex.OptMessagef("var: %q", envVar))
+		}
+		return uint32(parsedValue), nil
 	}
 	for _, defaultValue := range defaults {
 		if defaultValue > 0 {
@@ -178,7 +193,11 @@ func (ev Vars) MustUint32(envVar string, defaults ...uint32) uint32 {
 // Uint64 returns an uint64 value for a given key.
 func (ev Vars) Uint64(envVar string, defaults ...uint64) (uint64, error) {
 	if value, hasValue := ev[envVar]; hasValue {
-		return strconv.ParseUint(value, 10, 64)
+		parsedValue, err := strconv.ParseUint(value, 10, 64)
+		if err != nil {
+			return 0, ex.New(err, ex.OptMessagef("var: %q", envVar))
+		}
+		return parsedValue, nil
 	}
 	for _, defaultValue := range defaults {
 		if defaultValue > 0 {
@@ -197,10 +216,40 @@ func (ev Vars) MustUint64(envVar string, defaults ...uint64) uint64 {
 	return value
 }
 
+// Float32 returns an float32 value for a given key.
+func (ev Vars) Float32(envVar string, defaults ...float32) (float32, error) {
+	if value, hasValue := ev[envVar]; hasValue {
+		parsedValue, err := strconv.ParseFloat(value, 32)
+		if err != nil {
+			return 0, ex.New(err, ex.OptMessagef("var: %q", envVar))
+		}
+		return float32(parsedValue), nil
+	}
+	for _, defaultValue := range defaults {
+		if defaultValue > 0 {
+			return defaultValue, nil
+		}
+	}
+	return 0, nil
+}
+
+// MustFloat32 returns an float64 value for a given key and panics if it is malformed.
+func (ev Vars) MustFloat32(envVar string, defaults ...float32) float32 {
+	value, err := ev.Float32(envVar, defaults...)
+	if err != nil {
+		panic(err)
+	}
+	return value
+}
+
 // Float64 returns an float64 value for a given key.
 func (ev Vars) Float64(envVar string, defaults ...float64) (float64, error) {
 	if value, hasValue := ev[envVar]; hasValue {
-		return strconv.ParseFloat(value, 64)
+		parsedValue, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			return 0, ex.New(err, ex.OptMessagef("var: %q", envVar))
+		}
+		return parsedValue, nil
 	}
 	for _, defaultValue := range defaults {
 		if defaultValue > 0 {

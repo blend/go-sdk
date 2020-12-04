@@ -9,6 +9,6 @@ import (
 func TestOptTracer(t *testing.T) {
 	assert := assert.New(t)
 
-	r := New("http://foo.com", OptTracer(MockTracer{}))
+	r := New(TestURL, OptTracer(MockTracer{}))
 	assert.NotNil(r.Tracer)
 }

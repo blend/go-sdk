@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 )
 
@@ -22,27 +23,27 @@ func main() {
 	var lineText string
 	var line int
 
-	fmt.Println("[][]string{")
+	fmt.Fprintln(os.Stdout, "[][]string{")
 
 	for scanner.Scan() {
 		lineText = scanner.Text()
 
 		if line == 0 {
-			fmt.Println("\t{")
+			fmt.Fprintln(os.Stdout, "\t{")
 		}
 		if line < letterHeight {
 			lineText = strings.TrimSuffix(strings.TrimSuffix(lineText, "@"), "@")
 			lineText = strings.ReplaceAll(lineText, "\"", "\\\"") // escape quotes
 			lineText = strings.ReplaceAll(lineText, "\\", "\\\\") // escape slashes
-			fmt.Printf("\t\t\"%s\",\n", lineText)
+			fmt.Fprintf(os.Stdout, "\t\t\"%s\",\n", lineText)
 			line++
 		}
 
 		if line == letterHeight || strings.HasSuffix(lineText, "@@") {
-			fmt.Println("\t},")
+			fmt.Fprintln(os.Stdout, "\t},")
 			line = 0
 		}
 	}
 
-	fmt.Println("}")
+	fmt.Fprintln(os.Stdout, "}")
 }

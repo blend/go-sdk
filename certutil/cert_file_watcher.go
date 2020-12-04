@@ -112,12 +112,14 @@ func (cw *CertFileWatcher) Start() error {
 		return err
 	}
 
-	ticker := time.Tick(cw.PollIntervalOrDefault())
+	ticker := time.NewTicker(cw.PollIntervalOrDefault())
+	defer ticker.Stop()
+
 	cw.Started()
 	var certMod, keyMod time.Time
 	for {
 		select {
-		case <-ticker:
+		case <-ticker.C:
 			certMod, keyMod, err = cw.keyPairLastModified()
 			if err != nil {
 				return err

@@ -16,15 +16,15 @@ func TestCount(t *testing.T) {
 		assert.Equal("k1:v1", actualTags[0])
 	}
 
-	c1 := NewMockCollector()
-	c2 := NewMockCollector()
+	c1 := NewMockCollector(32)
+	c2 := NewMockCollector(32)
 
 	mc := MultiCollector{c1, c2}
 
 	err := mc.Count("event", 1, "k1:v1")
 	assert.Nil(err)
-	metric1 := <-c1.Events
-	metric2 := <-c2.Events
+	metric1 := <-c1.Metrics
+	metric2 := <-c2.Metrics
 	assert.Equal("event", metric1.Name)
 	assert.Equal(1, metric1.Count)
 	assertTags(metric1.Tags)
@@ -38,7 +38,7 @@ func TestCount(t *testing.T) {
 	err = mc.Count("event", 1, "k1:v1")
 	assert.NotNil(err)
 	assert.Equal("error", err.Error())
-	metric1 = <-c1.Events
+	metric1 = <-c1.Metrics
 	assert.Zero(metric1.Gauge)
 	assert.Zero(metric1.Histogram)
 	assert.Zero(metric1.TimeInMilliseconds)
@@ -47,16 +47,16 @@ func TestCount(t *testing.T) {
 func TestIncrement(t *testing.T) {
 	assert := assert.New(t)
 
-	c1 := NewMockCollector()
-	c2 := NewMockCollector()
+	c1 := NewMockCollector(32)
+	c2 := NewMockCollector(32)
 
 	var err error
 	mc := MultiCollector{c1, c2}
 	err = mc.Increment("event", "k1:v1")
 	assert.Nil(err)
 
-	metric1 := <-c1.Events
-	metric2 := <-c2.Events
+	metric1 := <-c1.Metrics
+	metric2 := <-c2.Metrics
 	assert.Equal("event", metric1.Name)
 	assert.Equal(1, metric1.Count)
 	assert.Zero(metric1.Gauge)
@@ -70,7 +70,7 @@ func TestIncrement(t *testing.T) {
 	err = mc.Increment("event", "k1:v1")
 	assert.NotNil(err)
 	assert.Equal("error", err.Error())
-	metric1 = <-c1.Events
+	metric1 = <-c1.Metrics
 	assert.Zero(metric1.Gauge)
 	assert.Zero(metric1.Histogram)
 	assert.Zero(metric1.TimeInMilliseconds)
@@ -78,16 +78,16 @@ func TestIncrement(t *testing.T) {
 
 func TestGauge(t *testing.T) {
 	assert := assert.New(t)
-	c1 := NewMockCollector()
-	c2 := NewMockCollector()
+	c1 := NewMockCollector(32)
+	c2 := NewMockCollector(32)
 
 	var err error
 	mc := MultiCollector{c1, c2}
 	err = mc.Gauge("event", .01)
 	assert.Nil(err)
 
-	metric1 := <-c1.Events
-	metric2 := <-c2.Events
+	metric1 := <-c1.Metrics
+	metric2 := <-c2.Metrics
 	assert.Equal("event", metric1.Name)
 	assert.Equal(.01, metric1.Gauge)
 	assert.Zero(metric1.Count)
@@ -101,7 +101,7 @@ func TestGauge(t *testing.T) {
 	err = mc.Gauge("event", .01)
 	assert.NotNil(err)
 	assert.Equal("error", err.Error())
-	metric1 = <-c1.Events
+	metric1 = <-c1.Metrics
 	assert.Zero(metric1.Count)
 	assert.Zero(metric1.Histogram)
 	assert.Zero(metric1.TimeInMilliseconds)
@@ -109,16 +109,16 @@ func TestGauge(t *testing.T) {
 
 func TestHistogram(t *testing.T) {
 	assert := assert.New(t)
-	c1 := NewMockCollector()
-	c2 := NewMockCollector()
+	c1 := NewMockCollector(32)
+	c2 := NewMockCollector(32)
 
 	var err error
 	mc := MultiCollector{c1, c2}
 	err = mc.Histogram("event", .01)
 	assert.Nil(err)
 
-	metric1 := <-c1.Events
-	metric2 := <-c2.Events
+	metric1 := <-c1.Metrics
+	metric2 := <-c2.Metrics
 	assert.Equal("event", metric1.Name)
 	assert.Equal(.01, metric1.Histogram)
 	assert.Zero(metric1.Count)
@@ -132,7 +132,7 @@ func TestHistogram(t *testing.T) {
 	err = mc.Histogram("event", .01)
 	assert.NotNil(err)
 	assert.Equal("error", err.Error())
-	metric1 = <-c1.Events
+	metric1 = <-c1.Metrics
 	assert.Zero(metric1.Count)
 	assert.Zero(metric1.Gauge)
 	assert.Zero(metric1.TimeInMilliseconds)
@@ -146,15 +146,15 @@ func TestTimeInMilliseconds(t *testing.T) {
 		assert.Equal("k1:v1", actualTags[0])
 	}
 
-	c1 := NewMockCollector()
-	c2 := NewMockCollector()
+	c1 := NewMockCollector(32)
+	c2 := NewMockCollector(32)
 
 	var err error
 	mc := MultiCollector{c1, c2}
 	err = mc.TimeInMilliseconds("event", time.Second, "k1:v1")
 	assert.Nil(err)
-	metric1 := <-c1.Events
-	metric2 := <-c2.Events
+	metric1 := <-c1.Metrics
+	metric2 := <-c2.Metrics
 	assert.Equal("event", metric1.Name)
 	assert.Equal(1000, metric1.TimeInMilliseconds)
 	assertTags(metric1.Tags)
@@ -165,7 +165,7 @@ func TestTimeInMilliseconds(t *testing.T) {
 	err = mc.TimeInMilliseconds("event", time.Second, "k1:v1")
 	assert.NotNil(err)
 	assert.Equal("error", err.Error())
-	metric1 = <-c1.Events
+	metric1 = <-c1.Metrics
 	assert.Zero(metric1.Gauge)
 	assert.Zero(metric1.Histogram)
 	assert.Zero(metric1.Count)
@@ -174,8 +174,8 @@ func TestTimeInMilliseconds(t *testing.T) {
 func TestFlush(t *testing.T) {
 	assert := assert.New(t)
 
-	c1 := NewMockCollector()
-	c2 := NewMockCollector()
+	c1 := NewMockCollector(32)
+	c2 := NewMockCollector(32)
 
 	var err error
 	mc := MultiCollector{c1, c2}
@@ -192,8 +192,8 @@ func TestFlush(t *testing.T) {
 func TestClose(t *testing.T) {
 	assert := assert.New(t)
 
-	c1 := NewMockCollector()
-	c2 := NewMockCollector()
+	c1 := NewMockCollector(32)
+	c2 := NewMockCollector(32)
 
 	var err error
 	mc := MultiCollector{c1, c2}

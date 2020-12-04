@@ -7,9 +7,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/ex"
-	"github.com/blend/go-sdk/yaml"
 )
 
 // Read reads a config from optional path(s).
@@ -77,13 +78,13 @@ func Read(ref Any, options ...Option) (path string, err error) {
 func createConfigOptions(options ...Option) (configOptions ConfigOptions, err error) {
 	configOptions.Env = env.Env()
 	configOptions.FilePaths = DefaultPaths
+	if configOptions.Env.Has(EnvVarConfigPath) {
+		configOptions.FilePaths = append(configOptions.Env.CSV(EnvVarConfigPath), configOptions.FilePaths...)
+	}
 	for _, option := range options {
 		if err = option(&configOptions); err != nil {
 			return
 		}
-	}
-	if configOptions.Env.Has(EnvVarConfigPath) {
-		configOptions.FilePaths = append(configOptions.Env.CSV(EnvVarConfigPath), configOptions.FilePaths...)
 	}
 	return
 }

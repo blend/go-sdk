@@ -3,27 +3,7 @@ package jwt
 import (
 	"encoding/json"
 	"strings"
-	"time"
 )
-
-// TimeFunc provides the current time when parsing token to validate "exp" claim (expiration time).
-// You can override it to use another time value.  This is useful for testing or if your
-// server uses a different time zone than your tokens.
-var TimeFunc = time.Now
-
-// Keyfunc should return the key used in verification based on the raw token passed to it.
-type Keyfunc func(*Token) (interface{}, error)
-
-// Token is a JWT token.
-// Different fields will be used depending on whether you're creating or parsing/verifying a token.
-type Token struct {
-	Raw       string                 // The raw token.  Populated when you Parse a token
-	Method    SigningMethod          // The signing method used or to be used
-	Header    map[string]interface{} // The first segment of the token
-	Claims    Claims                 // The second segment of the token
-	Signature string                 // The third segment of the token.  Populated when you Parse a token
-	Valid     bool                   // Is the token valid?  Populated when you Parse/Verify a token
-}
 
 // New creates a new Token with a given signing method.
 func New(method SigningMethod) *Token {
@@ -40,6 +20,17 @@ func NewWithClaims(method SigningMethod, claims Claims) *Token {
 		Claims: claims,
 		Method: method,
 	}
+}
+
+// Token is a JWT token.
+// Different fields will be used depending on whether you're creating or parsing/verifying a token.
+type Token struct {
+	Raw       string                 // The raw token.  Populated when you Parse a token
+	Method    SigningMethod          // The signing method used or to be used
+	Header    map[string]interface{} // The first segment of the token
+	Claims    Claims                 // The second segment of the token
+	Signature string                 // The third segment of the token.  Populated when you Parse a token
+	Valid     bool                   // Is the token valid?  Populated when you Parse/Verify a token
 }
 
 // SignedString returns the complete, signed token.

@@ -8,9 +8,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/blend/go-sdk/ansi"
 	"github.com/blend/go-sdk/ex"
-	"github.com/blend/go-sdk/yaml"
 )
 
 // New creates a new profanity engine with a given set of config options.
@@ -32,6 +33,168 @@ type Profanity struct {
 	Stderr io.Writer
 }
 
+// Process processes the profanity rules.
+func (p *Profanity) Process() error {
+	p.Verbosef("using rules file: %q", p.Config.RulesFileOrDefault())
+	if fileFilter := p.Config.Files.String(); fileFilter != "" {
+		p.Verbosef("using file filter: %s", fileFilter)
+	}
+	if dirFilter := p.Config.Dirs.String(); dirFilter != "" {
+		p.Verbosef("using dir filter: %s", dirFilter)
+	}
+	err := p.Walk(p.Config.PathOrDefault())
+	if err != nil {
+		if err != ErrFailure {
+			return err
+		}
+		p.Verbosef("profanity %s!", ansi.Red("failed"))
+		return nil
+	}
+	p.Verbosef("profanity %s!", ansi.Green("ok"))
+	return nil
+}
+
+// Walk walks a given path, inheriting a set of rules.
+func (p *Profanity) Walk(path string, rules ...RuleSpec) error {
+	dirs, files, err := ListDir(path)
+	if err != nil {
+		return ex.New("profanity; invalid walk path", ex.OptMessagef("path: %q", path), ex.OptInner(err))
+	}
+
+	var didFail bool
+	var fullFilePath string
+	for _, file := range files {
+		if file.Name() == p.Config.RulesFileOrDefault() {
+			fullFilePath = filepath.Join(path, file.Name())
+			p.Debugf("reading rules file: %q", filepath.Join(path, fullFilePath))
+			foundRules, err := p.ReadRuleSpecsFile(fullFilePath)
+			if err != nil {
+				return err
+			}
+			rules = append(rules, foundRules...)
+		}
+	}
+
+	for _, file := range files {
+		if file.Name() == p.Config.RulesFileOrDefault() {
+			continue
+		}
+
+		fullFilePath = filepath.Join(path, file.Name())
+		if p.Config.Files.Allow(fullFilePath) {
+			contents, err := ioutil.ReadFile(fullFilePath)
+			if err != nil {
+				return err
+			}
+			for _, rule := range rules {
+				if rule.Files.Allow(fullFilePath) {
+					res := rule.Check(fullFilePath, contents)
+					if res.Err != nil {
+						return res.Err
+					}
+					if !res.OK {
+						didFail = true
+						p.Errorf("%v\n", p.FormatRuleResultFailure(rule, res))
+						if p.Config.FailFastOrDefault() {
+							return ErrFailure
+						}
+					}
+				}
+			}
+		}
+	}
+
+	var fullDirPath string
+	for _, dir := range dirs {
+		if dir.Name() == ".git" {
+			continue
+		}
+		if strings.HasPrefix(dir.Name(), "_") {
+			continue
+		}
+		fullDirPath = filepath.Join(path, dir.Name())
+		if p.Config.Dirs.Allow(fullDirPath) {
+			if err := p.Walk(fullDirPath, rules...); err != nil {
+				if err != ErrFailure || p.Config.FailFastOrDefault() {
+					return err
+				}
+				didFail = true
+			}
+		}
+	}
+
+	if didFail {
+		return ErrFailure
+	}
+	return nil
+}
+
+// ReadRuleSpecsFile reads rules from a file path.
+//
+// It is expected to be passed the fully qualified path for the rules file.
+func (p *Profanity) ReadRuleSpecsFile(filename string) (rules []RuleSpec, err error) {
+	contents, readErr := os.Open(filename)
+	if readErr != nil {
+		err = ex.New(readErr, ex.OptMessagef("file: %s", filename))
+		return
+	}
+	defer contents.Close()
+	rules, err = p.ReadRuleSpecsFromReader(filename, contents)
+	return
+}
+
+// ReadRuleSpecsFromReader reads rules from a reader.
+func (p *Profanity) ReadRuleSpecsFromReader(filename string, reader io.Reader) (rules []RuleSpec, err error) {
+	fileRules := make(RuleSpecFile)
+	decoder := yaml.NewDecoder(reader)
+	decoder.KnownFields(true)
+	yamlErr := decoder.Decode(&fileRules)
+	if yamlErr != nil {
+		err = ex.New("cannot unmarshal rules file", ex.OptMessagef("file: %s", filename), ex.OptInnerClass(yamlErr))
+		return
+	}
+	for _, rule := range fileRules.Rules() {
+		rule.SourceFile = filename
+		if validationErr := rule.Validate(); validationErr != nil {
+			p.Debugf("rule file %q fails validation", filename)
+			err = validationErr
+			return
+		}
+		rules = append(rules, rule)
+	}
+	return
+}
+
+// FormatRuleResultFailure formats a rule result with the rule that produced it.
+func (p Profanity) FormatRuleResultFailure(r RuleSpec, rr RuleResult) error {
+	if rr.OK {
+		return nil
+	}
+	var lines []string
+	lines = append(lines, fmt.Sprintf("%s:%d", ansi.Bold(ansi.ColorWhite, rr.File), rr.Line))
+	lines = append(lines, fmt.Sprintf("\t%s: %s", ansi.LightBlack("id"), r.ID))
+	if r.Description != "" {
+		lines = append(lines, fmt.Sprintf("\t%s: %s", ansi.LightBlack("description"), r.Description))
+	}
+	lines = append(lines, fmt.Sprintf("\t%s: %s", ansi.LightBlack("status"), ansi.Red("failed")))
+	lines = append(lines, fmt.Sprintf("\t%s: %s", ansi.LightBlack("rule"), rr.Message))
+	return fmt.Errorf(strings.Join(lines, "\n"))
+}
+
+// Verbosef prints a verbose message.
+func (p *Profanity) Verbosef(format string, args ...interface{}) {
+	if p.Config.VerboseOrDefault() {
+		p.Printf("[VERBOSE] "+format+"\n", args...)
+	}
+}
+
+// Debugf prints a debug message.
+func (p *Profanity) Debugf(format string, args ...interface{}) {
+	if p.Config.DebugOrDefault() {
+		p.Printf("[DEBUG] "+format+"\n", args...)
+	}
+}
+
 // Printf writes to the output stream.
 func (p *Profanity) Printf(format string, args ...interface{}) {
 	if p.Stdout != nil {
@@ -41,239 +204,7 @@ func (p *Profanity) Printf(format string, args ...interface{}) {
 
 // Errorf writes to the error output stream.
 func (p *Profanity) Errorf(format string, args ...interface{}) {
-	if p.Stdout != nil {
+	if p.Stderr != nil {
 		fmt.Fprintf(p.Stderr, format, args...)
 	}
-}
-
-// Process processes the profanity rules.
-func (p *Profanity) Process() error {
-	if p.Config.VerboseOrDefault() {
-		p.Printf("using rules file: %s\n", p.Config.RulesFileOrDefault())
-	}
-
-	if p.Config.VerboseOrDefault() {
-		if len(p.Config.Include) > 0 {
-			p.Printf("using include filter: %s\n", p.Config.Include)
-		}
-		if len(p.Config.Exclude) > 0 {
-			p.Printf("using exclude filter: %s\n", p.Config.Exclude)
-		}
-	}
-
-	var didError bool
-
-	// rule cache is shared between files and directories during the full walk.
-	ruleCache := make(map[string]Rules)
-	// make sure the root rules are initialized if they exist.
-	if _, err := os.Stat("./" + p.Config.RulesFileOrDefault()); err == nil {
-		_, err = p.RulesForPathOrCached(ruleCache, ".")
-		if err != nil {
-			return err
-		}
-	}
-
-	var fileBase string
-	if err := filepath.Walk(".", func(file string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if info.IsDir() && strings.HasSuffix(file, ".git") { // don't ever process git directories
-			if p.Config.VerboseOrDefault() {
-				p.Printf("%s ... skipping (is .git dir)\n", ansi.LightWhite(file))
-			}
-			return filepath.SkipDir
-		}
-		if info.IsDir() {
-			if p.Config.VerboseOrDefault() {
-				p.Printf("%s ... skipping (is dir)\n", ansi.LightWhite(file))
-			}
-			return nil
-		}
-
-		fileBase = filepath.Base(file)
-
-		if len(p.Config.Include) > 0 {
-			if matches := GlobAnyMatch(p.Config.Include, file); !matches {
-				if p.Config.VerboseOrDefault() {
-					p.Printf("%s ... skipping (does not match include filter)\n", ansi.LightWhite(file))
-				}
-				return nil
-			}
-		}
-
-		if len(p.Config.Exclude) > 0 {
-			if matches := GlobAnyMatch(p.Config.Exclude, file); matches {
-				if p.Config.VerboseOrDefault() {
-					p.Printf("%s ... skipping (matches exclude filter)\n", ansi.LightWhite(file))
-				}
-				return nil
-			}
-		}
-
-		if matches, err := filepath.Match(p.Config.RulesFileOrDefault(), fileBase); err != nil {
-			return ex.New(err)
-		} else if matches {
-			if p.Config.VerboseOrDefault() {
-				p.Printf("%s ... skipping (is rules `%s` file)\n", ansi.LightWhite(file), p.Config.RulesFileOrDefault())
-			}
-			return nil
-		}
-
-		fullPath := filepath.Dir(file)
-		rules, err := p.RulesForPathOrCached(ruleCache, fullPath)
-		if err != nil {
-			return err
-		}
-
-		contents, err := ioutil.ReadFile(file)
-		if err != nil {
-			return err
-		}
-
-		for _, rule := range rules {
-			if matches := rule.ShouldInclude(file); !matches {
-				if p.Config.VerboseOrDefault() {
-					p.Printf("%s ... skipping rule %s (fails include)\n", ansi.LightWhite(file), rule.ID)
-				}
-				continue
-			}
-
-			if matches := rule.ShouldExclude(file); matches {
-				if p.Config.VerboseOrDefault() {
-					p.Printf("%s ... skipping rule %s (fails exclude)\n", ansi.LightWhite(file), rule.ID)
-				}
-				continue
-			}
-
-			if p.Config.VerboseOrDefault() {
-				p.Printf("%s ... checking rule %s\n", ansi.LightWhite(file), rule.ID)
-			}
-			if res := rule.Apply(file, contents); !res.OK {
-				didError = true
-
-				// check if there was an error with the rule ...
-				if res.Err != nil {
-					return res.Err
-				}
-
-				// handle the failure
-				failure := res.Failure(rule)
-				p.Errorf("%v\n", failure)
-				if p.Config.FailFastOrDefault() {
-					return failure
-				}
-			}
-		}
-
-		if p.Config.VerboseOrDefault() {
-			p.Printf("%s ... %s!\n", ansi.LightWhite(file), ansi.Green("ok"))
-		}
-
-		return nil
-	}); err != nil {
-		return err
-	}
-	if didError {
-		p.Printf("profanity %s!\n", ansi.Red("failed"))
-		return ErrFailure
-	}
-	p.Printf("profanity %s!\n", ansi.Green("ok"))
-	return nil
-}
-
-// RulesForPathOrCached returns rules cached or rules from disk.
-// It prevents re-reading the full rules set for each file in a path.
-func (p *Profanity) RulesForPathOrCached(packageRules map[string]Rules, path string) (Rules, error) {
-	if rules, ok := packageRules[path]; ok {
-		return rules, nil
-	}
-
-	rules, err := p.RulesForPath(packageRules, path)
-	if err != nil {
-		return nil, err
-	}
-
-	packageRules[path] = rules
-	return rules, nil
-}
-
-// RulesForPath adds rules in a given path and child paths to an existing rule set.
-// `workingSet` are the current working rules keyed on the path they
-// came from, including '.' for the root rules.
-func (p *Profanity) RulesForPath(workingSet map[string]Rules, path string) (Rules, error) {
-	pathRules, err := p.ReadRules(path)
-	if err != nil {
-		return nil, err
-	}
-
-	for key, workingRules := range workingSet {
-		if strings.HasPrefix(path, key) && key != path {
-			if p.Config.VerboseOrDefault() {
-				p.Printf("%s including inherited rules from %s", ansi.LightWhite(path), ansi.LightWhite(key))
-			}
-			pathRules = MergeRules(workingRules, pathRules)
-		}
-	}
-
-	// always include rules from "." if they were set
-	if rootRules, hasRootRules := workingSet[Root]; hasRootRules && path != Root {
-		pathRules = MergeRules(rootRules, pathRules)
-	}
-
-	return pathRules, nil
-}
-
-// ReadRules reads rules at a given directory path.
-// Path is meant to be the slash terminated dir, which will have the configured rule path appended to it.
-func (p *Profanity) ReadRules(path string) (Rules, error) {
-	if p.Config.DebugOrDefault() {
-		p.Printf("checking for profanity file: %s/%s", ansi.LightWhite(path), p.Config.RulesFileOrDefault())
-	}
-	profanityPath := filepath.Join(path, p.Config.RulesFileOrDefault())
-	if _, err := os.Stat(profanityPath); err != nil {
-		if p.Config.VerboseOrDefault() {
-			p.Printf("%s/ local rules file not found %s\n", ansi.LightWhite(path), p.Config.RulesFileOrDefault())
-		}
-		return nil, nil
-	}
-	rules, err := p.RulesFromPath(profanityPath)
-	if err != nil {
-		if p.Config.DebugOrDefault() {
-			p.Errorf("error reading profanity file: %s/%s %v", ansi.LightWhite(path), p.Config.RulesFileOrDefault(), err)
-		}
-		return nil, err
-	}
-	return rules, nil
-}
-
-// RulesFromPath reads rules from a path
-func (p *Profanity) RulesFromPath(path string) (rules Rules, err error) {
-	contents, readErr := os.Open(path)
-	if readErr != nil {
-		err = ex.New(readErr, ex.OptMessagef("file: %s", path))
-		return
-	}
-	defer contents.Close()
-	rules, err = p.RulesFromReader(path, contents)
-	return
-}
-
-// RulesFromReader reads rules from a reader.
-func (p *Profanity) RulesFromReader(path string, reader io.Reader) (rules Rules, err error) {
-	var fileRules Rules
-	yamlErr := yaml.NewDecoder(reader).Decode(&fileRules)
-	if yamlErr != nil {
-		err = ex.New("cannot unmarshal rules file", ex.OptMessagef("file: %s", path), ex.OptInnerClass(yamlErr))
-		return
-	}
-	rules = make(Rules)
-	for id, fileRule := range fileRules {
-		rule := fileRule
-		rule.ID = id
-		rule.File = path
-		rules[id] = rule
-	}
-	return
 }

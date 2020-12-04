@@ -77,12 +77,18 @@ func (ht *HTTPTrace) Trace() *httptrace.ClientTrace {
 		},
 		WroteRequest: func(_ httptrace.WroteRequestInfo) {
 			ht.WroteRequest = now()
+
 			if !ht.ConnectDone.IsZero() {
 				ht.RequestElapsed = ht.WroteRequest.Sub(ht.ConnectDone)
-			} else if !ht.GetConn.IsZero() {
+				return
+			}
+			if !ht.GetConn.IsZero() {
 				ht.RequestElapsed = ht.WroteRequest.Sub(ht.GetConn)
-			} else if !ht.GotConn.IsZero() {
+				return
+			}
+			if !ht.GotConn.IsZero() {
 				ht.RequestElapsed = ht.WroteRequest.Sub(ht.GotConn)
+				return
 			}
 		},
 	}

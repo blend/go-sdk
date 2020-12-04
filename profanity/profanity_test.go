@@ -6,26 +6,12 @@ import (
 	"github.com/blend/go-sdk/assert"
 )
 
-func TestProfanityRulesFromPath(t *testing.T) {
+func Test_Profanity_ReadRuleSpecsFile(t *testing.T) {
 	assert := assert.New(t)
 
 	profanity := &Profanity{}
 
-	rules, err := profanity.RulesFromPath("../" + DefaultRulesFile)
-	assert.Nil(err)
-	assert.NotEmpty(rules)
-}
-
-func TestProfanityReadRules(t *testing.T) {
-	assert := assert.New(t)
-
-	profanity := &Profanity{
-		Config: Config{
-			RulesFile: DefaultRulesFile,
-		},
-	}
-
-	rules, err := profanity.ReadRules("../")
+	rules, err := profanity.ReadRuleSpecsFile("testdata/rules.yml")
 	assert.Nil(err)
 	assert.NotEmpty(rules)
 }

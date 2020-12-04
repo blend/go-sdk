@@ -8,6 +8,8 @@ import (
 )
 
 func TestNewCertBundleFromLiterals(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	bundle, err := NewCertBundle(KeyPair{
@@ -23,6 +25,8 @@ func TestNewCertBundleFromLiterals(t *testing.T) {
 }
 
 func TestNewCertBundleFromFiles(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	bundle, err := NewCertBundle(KeyPair{
@@ -37,6 +41,8 @@ func TestNewCertBundleFromFiles(t *testing.T) {
 }
 
 func TestCertBundleWriteCertPem(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	bundle, err := NewCertBundle(KeyPair{
@@ -51,6 +57,8 @@ func TestCertBundleWriteCertPem(t *testing.T) {
 }
 
 func TestCertBundleWriteKeyPem(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	bundle, err := NewCertBundle(KeyPair{
@@ -65,6 +73,8 @@ func TestCertBundleWriteKeyPem(t *testing.T) {
 }
 
 func TestCertBundleCommonNames(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	bundle, err := NewCertBundle(KeyPair{

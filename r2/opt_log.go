@@ -16,3 +16,17 @@ func OptLog(log logger.Log) Option {
 		return nil
 	}
 }
+
+// OptLogWithBody adds OnRequest and OnResponse listeners to log that a call was made.
+// It will also display the body of the response.
+func OptLogWithBody(log logger.Log) Option {
+	return func(r *Request) error {
+		if err := OptLogRequest(log)(r); err != nil {
+			return err
+		}
+		if err := OptLogResponseWithBody(log)(r); err != nil {
+			return err
+		}
+		return nil
+	}
+}

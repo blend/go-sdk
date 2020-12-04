@@ -15,8 +15,8 @@ func TestOptHeader(t *testing.T) {
 	req := New("https://foo.bar.local")
 	assert.Nil(opt(req))
 
-	assert.NotNil(req.Header)
-	assert.Equal("bar", req.Header.Get("foo"))
+	assert.NotNil(req.Request.Header)
+	assert.Equal("bar", req.Request.Header.Get("foo"))
 }
 
 func TestOptHeaderValue(t *testing.T) {
@@ -27,6 +27,6 @@ func TestOptHeaderValue(t *testing.T) {
 	req := New("https://foo.bar.local")
 	assert.Nil(opt(req))
 
-	assert.NotNil(req.Header)
-	assert.Equal("bar", req.Header.Get("foo"))
+	assert.NotNil(req.Request.Header)
+	assert.Equal("bar", req.Request.Header.Get("foo"))
 }

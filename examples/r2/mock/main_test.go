@@ -34,7 +34,6 @@ func TestMockedRequest(t *testing.T) {
 		didCallHandler = true
 		rw.WriteHeader(200)
 		fmt.Fprint(rw, "OK!\n")
-		return
 	}))
 	defer mockServer.Close()
 

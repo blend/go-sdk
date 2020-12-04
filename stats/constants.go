@@ -23,10 +23,6 @@ const (
 
 // Specialized / default values
 const (
-	ListenerNameStats string = "stats"
+	FilterNameSanitization        = "sanitization"
+	ListenerNameStats      string = "stats"
 )
-
-// Tag creates a new tag.
-func Tag(key, value string) string {
-	return key + ":" + value
-}

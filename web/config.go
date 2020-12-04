@@ -7,7 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/blend/go-sdk/env"
+	"github.com/blend/go-sdk/configutil"
+
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -21,7 +22,7 @@ type Config struct {
 	HandleMethodNotAllowed    bool          `json:"handleMethodNotAllowed,omitempty" yaml:"handleMethodNotAllowed,omitempty"`
 	DisablePanicRecovery      bool          `json:"disablePanicRecovery,omitempty" yaml:"disablePanicRecovery,omitempty"`
 	SessionTimeout            time.Duration `json:"sessionTimeout,omitempty" yaml:"sessionTimeout,omitempty" env:"SESSION_TIMEOUT"`
-	SessionTimeoutIsRelative  bool          `json:"sessionTimeoutIsRelative,omitempty" yaml:"sessionTimeoutIsRelative,omitempty" env:"SESSION_TIMEOUT_RELATIVE"`
+	SessionTimeoutIsRelative  bool          `json:"sessionTimeoutIsRelative,omitempty" yaml:"sessionTimeoutIsRelative,omitempty"`
 
 	CookieSecure   *bool  `json:"cookieSecure,omitempty" yaml:"cookieSecure,omitempty" env:"COOKIE_SECURE"`
 	CookieHTTPOnly *bool  `json:"cookieHTTPOnly,omitempty" yaml:"cookieHTTPOnly,omitempty" env:"COOKIE_HTTP_ONLY"`
@@ -32,18 +33,42 @@ type Config struct {
 
 	DefaultHeaders      map[string]string `json:"defaultHeaders,omitempty" yaml:"defaultHeaders,omitempty"`
 	MaxHeaderBytes      int               `json:"maxHeaderBytes,omitempty" yaml:"maxHeaderBytes,omitempty" env:"MAX_HEADER_BYTES"`
-	ReadTimeout         time.Duration     `json:"readTimeout,omitempty" yaml:"readTimeout,omitempty" env:"READ_HEADER_TIMEOUT"`
+	ReadTimeout         time.Duration     `json:"readTimeout,omitempty" yaml:"readTimeout,omitempty" env:"READ_TIMEOUT"`
 	ReadHeaderTimeout   time.Duration     `json:"readHeaderTimeout,omitempty" yaml:"readHeaderTimeout,omitempty" env:"READ_HEADER_TIMEOUT"`
 	WriteTimeout        time.Duration     `json:"writeTimeout,omitempty" yaml:"writeTimeout,omitempty" env:"WRITE_TIMEOUT"`
 	IdleTimeout         time.Duration     `json:"idleTimeout,omitempty" yaml:"idleTimeout,omitempty" env:"IDLE_TIMEOUT"`
 	ShutdownGracePeriod time.Duration     `json:"shutdownGracePeriod" yaml:"shutdownGracePeriod" env:"SHUTDOWN_GRACE_PERIOD"`
+
+	KeepAlive        *bool         `json:"keepAlive" yaml:"keepAlive" env:"KEEP_ALIVE"`
+	KeepAlivePeriod  time.Duration `json:"keepAlivePeriod,omitempty" yaml:"keepAlivePeriod,omitempty" env:"KEEP_ALIVE_PERIOD"`
+	UseProxyProtocol bool          `json:"useProxyProtocol" yaml:"useProxyProtocol"`
 
 	Views ViewCacheConfig `json:"views,omitempty" yaml:"views,omitempty"`
 }
 
 // Resolve resolves the config from other sources.
 func (c *Config) Resolve(ctx context.Context) error {
-	return env.GetVars(ctx).ReadInto(c)
+	return configutil.Resolve(ctx,
+		(&c.Views).Resolve,
+		configutil.SetInt32(&c.Port, configutil.Int32(c.Port), configutil.Env("PORT")),
+		configutil.SetString(&c.BindAddr, configutil.String(c.BindAddr), configutil.Env("BIND_ADDR")),
+		configutil.SetString(&c.BaseURL, configutil.String(c.BaseURL), configutil.Env("BASE_URL")),
+		configutil.SetDuration(&c.SessionTimeout, configutil.Duration(c.SessionTimeout), configutil.Env("SESSION_TIMEOUT")),
+		configutil.SetBool(&c.CookieSecure, configutil.Bool(c.CookieSecure), configutil.Env("COOKIE_SECURE")),
+		configutil.SetBool(&c.CookieHTTPOnly, configutil.Bool(c.CookieHTTPOnly), configutil.Env("COOKIE_HTTP_ONLY")),
+		configutil.SetString(&c.CookieSameSite, configutil.String(c.CookieSameSite), configutil.Env("COOKIE_SAME_SITE")),
+		configutil.SetString(&c.CookieName, configutil.String(c.CookieName), configutil.Env("COOKIE_NAME")),
+		configutil.SetString(&c.CookiePath, configutil.String(c.CookiePath), configutil.Env("COOKIE_PATH")),
+		configutil.SetString(&c.CookieDomain, configutil.String(c.CookieDomain), configutil.Env("COOKIE_DOMAIN")),
+		configutil.SetInt(&c.MaxHeaderBytes, configutil.Int(c.MaxHeaderBytes), configutil.Env("MAX_HEADER_BYTES")),
+		configutil.SetDuration(&c.ReadTimeout, configutil.Duration(c.ReadTimeout), configutil.Env("READ_TIMEOUT")),
+		configutil.SetDuration(&c.ReadHeaderTimeout, configutil.Duration(c.ReadHeaderTimeout), configutil.Env("READ_HEADER_TIMEOUT")),
+		configutil.SetDuration(&c.WriteTimeout, configutil.Duration(c.WriteTimeout), configutil.Env("WRITE_TIMEOUT")),
+		configutil.SetDuration(&c.IdleTimeout, configutil.Duration(c.IdleTimeout), configutil.Env("IDLE_TIMEOUT")),
+		configutil.SetDuration(&c.ShutdownGracePeriod, configutil.Duration(c.ShutdownGracePeriod), configutil.Env("SHUTDOWN_GRACE_PERIOD")),
+		configutil.SetBool(&c.KeepAlive, configutil.Bool(c.KeepAlive), configutil.Env("KEEP_ALIVE")),
+		configutil.SetDuration(&c.KeepAlivePeriod, configutil.Duration(c.KeepAlivePeriod), configutil.Env("KEEP_ALIVE_PERIOD")),
+	)
 }
 
 // BindAddrOrDefault returns the bind address or a default.
@@ -84,7 +109,7 @@ func (c Config) BaseURLIsSecureScheme() bool {
 	if c.BaseURL == "" {
 		return false
 	}
-	return strings.HasPrefix(strings.ToLower(c.BaseURL), SchemeHTTPS) || strings.HasPrefix(strings.ToLower(c.BaseURL), SchemeSPDY)
+	return strings.HasPrefix(strings.ToLower(c.BaseURL), webutil.SchemeHTTPS) || strings.HasPrefix(strings.ToLower(c.BaseURL), webutil.SchemeSPDY)
 }
 
 // SessionTimeoutOrDefault returns a property or a default.
@@ -125,7 +150,7 @@ func (c Config) CookieSecureOrDefault() bool {
 		return *c.CookieSecure
 	}
 	if baseURL := c.BaseURLOrDefault(); baseURL != "" {
-		return strings.HasPrefix(baseURL, SchemeHTTPS) || strings.HasPrefix(baseURL, SchemeSPDY)
+		return strings.HasPrefix(baseURL, webutil.SchemeHTTPS) || strings.HasPrefix(baseURL, webutil.SchemeSPDY)
 	}
 	return DefaultCookieSecure
 }
@@ -192,4 +217,20 @@ func (c Config) ShutdownGracePeriodOrDefault() time.Duration {
 		return c.ShutdownGracePeriod
 	}
 	return DefaultShutdownGracePeriod
+}
+
+// KeepAliveOrDefault returns if we should keep TCP connections open.
+func (c Config) KeepAliveOrDefault() bool {
+	if c.KeepAlive != nil {
+		return *c.KeepAlive
+	}
+	return DefaultKeepAlive
+}
+
+// KeepAlivePeriodOrDefault returns the TCP keep alive period or a default.
+func (c Config) KeepAlivePeriodOrDefault() time.Duration {
+	if c.KeepAlivePeriod > 0 {
+		return c.KeepAlivePeriod
+	}
+	return DefaultKeepAlivePeriod
 }

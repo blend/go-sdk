@@ -14,12 +14,15 @@ func TestOptConfig(t *testing.T) {
 
 	log := None()
 	assert.Nil(OptConfig(Config{
-		Flags:  []string{"foo", "bar"},
-		Format: FormatJSON,
+		Flags:    []string{"foo", "bar"},
+		Writable: []string{"foo"},
+		Format:   FormatJSON,
 	})(log))
 
 	assert.Any(log.Flags.Flags(), func(v interface{}) bool { return v.(string) == "foo" })
 	assert.Any(log.Flags.Flags(), func(v interface{}) bool { return v.(string) == "bar" })
+	assert.Any(log.Writable.Flags(), func(v interface{}) bool { return v.(string) == "foo" })
+	assert.None(log.Writable.Flags(), func(v interface{}) bool { return v.(string) == "bar" })
 }
 
 func TestOptConfigFromEnv(t *testing.T) {
@@ -27,6 +30,7 @@ func TestOptConfigFromEnv(t *testing.T) {
 
 	defer env.Restore()
 	env.Env().Set("LOG_FLAGS", "foo,bar")
+	env.Env().Set("LOG_FLAGS_WRITABLE", "foo")
 	env.Env().Set("LOG_HIDE_TIMESTAMP", "true")
 	env.Env().Set("LOG_HIDE_FIELDS", "true")
 	env.Env().Set("LOG_TIME_FORMAT", time.Kitchen)
@@ -37,6 +41,8 @@ func TestOptConfigFromEnv(t *testing.T) {
 
 	assert.Any(log.Flags.Flags(), func(v interface{}) bool { return v.(string) == "foo" })
 	assert.Any(log.Flags.Flags(), func(v interface{}) bool { return v.(string) == "bar" })
+	assert.Any(log.Writable.Flags(), func(v interface{}) bool { return v.(string) == "foo" })
+	assert.None(log.Writable.Flags(), func(v interface{}) bool { return v.(string) == "bar" })
 	assert.True(log.Formatter.(*TextOutputFormatter).HideTimestamp)
 	assert.True(log.Formatter.(*TextOutputFormatter).HideFields)
 	assert.True(log.Formatter.(*TextOutputFormatter).NoColor)

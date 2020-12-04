@@ -11,6 +11,6 @@ import (
 func TestOptTLSCLientConfig(t *testing.T) {
 	assert := assert.New(t)
 
-	r := New("http://foo.com", OptTLSClientConfig(&tls.Config{}))
+	r := New(TestURL, OptTLSClientConfig(&tls.Config{}))
 	assert.NotNil(r.Client.Transport.(*http.Transport).TLSClientConfig)
 }

@@ -2,13 +2,21 @@ package profanity
 
 // Config is the profanity rules parsing config.
 type Config struct {
-	Verbose   *bool    `yaml:"verbose"`
-	Debug     *bool    `yaml:"debug"`
-	FailFast  *bool    `yaml:"failFast"`
-	Root      string   `yaml:"root"`
-	RulesFile string   `yaml:"rulesFile"`
-	Include   []string `yaml:"include,omitempty"`
-	Exclude   []string `yaml:"exclude,omitempty"`
+	Verbose   *bool      `yaml:"verbose"`
+	Debug     *bool      `yaml:"debug"`
+	FailFast  *bool      `yaml:"failFast"`
+	Path      string     `yaml:"path"`
+	RulesFile string     `yaml:"rulesFile"`
+	Files     GlobFilter `yaml:"files"`
+	Dirs      GlobFilter `yaml:"dirs"`
+}
+
+// PathOrDefault returns the starting path or a default.
+func (c Config) PathOrDefault() string {
+	if c.Path != "" {
+		return c.Path
+	}
+	return DefaultPath
 }
 
 // VerboseOrDefault returns an option or a default.

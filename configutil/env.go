@@ -73,6 +73,34 @@ func (e EnvVars) Int(ctx context.Context) (*int, error) {
 	return nil, nil
 }
 
+// Int32 returns a given environment variable as an int32.
+func (e EnvVars) Int32(ctx context.Context) (*int32, error) {
+	vars := e.vars(ctx)
+
+	if vars.Has(e.Key) {
+		value, err := vars.Int32(e.Key)
+		if err != nil {
+			return nil, err
+		}
+		return &value, nil
+	}
+	return nil, nil
+}
+
+// Int64 returns a given environment variable as an int64.
+func (e EnvVars) Int64(ctx context.Context) (*int64, error) {
+	vars := e.vars(ctx)
+
+	if vars.Has(e.Key) {
+		value, err := vars.Int64(e.Key)
+		if err != nil {
+			return nil, err
+		}
+		return &value, nil
+	}
+	return nil, nil
+}
+
 // Float64 returns a given environment variable as a float64.
 func (e EnvVars) Float64(ctx context.Context) (*float64, error) {
 	vars := e.vars(ctx)

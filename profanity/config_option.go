@@ -26,10 +26,10 @@ func OptFailFast(failFast bool) ConfigOption {
 	}
 }
 
-// OptRoot sets the root directory to start the profanity check.
-func OptRoot(root string) ConfigOption {
+// OptPath sets the root directory to start the profanity check.
+func OptPath(path string) ConfigOption {
 	return func(c *Config) {
-		c.Root = root
+		c.Path = path
 	}
 }
 
@@ -40,17 +40,31 @@ func OptRulesFile(rulesFile string) ConfigOption {
 	}
 }
 
-// OptInclude sets the include filter.
-func OptInclude(includes ...string) ConfigOption {
+// OptFilesInclude sets the include glob filter for files.
+func OptFilesInclude(includeGlobs ...string) ConfigOption {
 	return func(c *Config) {
-		c.Include = includes
+		c.Files.Filter.Include = includeGlobs
 	}
 }
 
-// OptExclude sets the exclude filter.
-func OptExclude(excludes ...string) ConfigOption {
+// OptFilesExclude sets the exclude glob filter for files.
+func OptFilesExclude(excludeGlobs ...string) ConfigOption {
 	return func(c *Config) {
-		c.Exclude = excludes
+		c.Files.Filter.Exclude = excludeGlobs
+	}
+}
+
+// OptDirsInclude sets the include glob filter for files.
+func OptDirsInclude(includeGlobs ...string) ConfigOption {
+	return func(c *Config) {
+		c.Dirs.Filter.Include = includeGlobs
+	}
+}
+
+// OptDirsExclude sets the exclude glob filter for directories.
+func OptDirsExclude(excludeGlobs ...string) ConfigOption {
+	return func(c *Config) {
+		c.Dirs.Filter.Exclude = excludeGlobs
 	}
 }
 

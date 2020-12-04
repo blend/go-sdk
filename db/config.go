@@ -14,14 +14,15 @@ import (
 	"github.com/blend/go-sdk/stringutil"
 )
 
-// NewConfigFromDSN creates a new config from a dsn.
-func NewConfigFromDSN(dsn string) (*Config, error) {
-	parsed, err := ParseURL(dsn)
-	if err != nil {
-		return nil, ex.New(err)
+// NewConfigFromDSN creates a new config from a DSN.
+// Errors can be produced by parsing the DSN.
+func NewConfigFromDSN(dsn string) (config Config, err error) {
+	parsed, parseErr := ParseURL(dsn)
+	if parseErr != nil {
+		err = ex.New(parseErr)
+		return
 	}
 
-	var config Config
 	pieces := stringutil.SplitSpace(parsed)
 	for _, piece := range pieces {
 		if strings.HasPrefix(piece, "host=") {
@@ -41,24 +42,28 @@ func NewConfigFromDSN(dsn string) (*Config, error) {
 		} else if strings.HasPrefix(piece, "application_name=") {
 			config.ApplicationName = strings.TrimPrefix(piece, "application_name=")
 		} else if strings.HasPrefix(piece, "connect_timeout=") {
-			config.ConnectTimeout, err = strconv.Atoi(strings.TrimPrefix(piece, "connect_timeout="))
-			if err != nil {
-				return nil, ex.New(err, ex.OptMessage("field: connect_timeout"))
+			timeout, parseErr := strconv.Atoi(strings.TrimPrefix(piece, "connect_timeout="))
+			if parseErr != nil {
+				err = ex.New(parseErr, ex.OptMessage("field: connect_timeout"))
+				return
 			}
+			config.ConnectTimeout = time.Second * time.Duration(timeout)
 		} else if strings.HasPrefix(piece, "lock_timeout=") {
-			config.LockTimeout, err = time.ParseDuration(strings.TrimPrefix(piece, "lock_timeout="))
-			if err != nil {
-				return nil, ex.New(err, ex.OptMessage("field: lock_timeout"))
+			config.LockTimeout, parseErr = time.ParseDuration(strings.TrimPrefix(piece, "lock_timeout="))
+			if parseErr != nil {
+				err = ex.New(parseErr, ex.OptMessage("field: lock_timeout"))
+				return
 			}
 		} else if strings.HasPrefix(piece, "statement_timeout=") {
-			config.StatementTimeout, err = time.ParseDuration(strings.TrimPrefix(piece, "statement_timeout="))
-			if err != nil {
-				return nil, ex.New(err, ex.OptMessage("field: statement_timeout"))
+			config.StatementTimeout, parseErr = time.ParseDuration(strings.TrimPrefix(piece, "statement_timeout="))
+			if parseErr != nil {
+				err = ex.New(parseErr, ex.OptMessage("field: statement_timeout"))
+				return
 			}
 		}
 	}
 
-	return &config, nil
+	return
 }
 
 // NewConfigFromEnv returns a new config from the environment.
@@ -133,10 +138,13 @@ type Config struct {
 	Password string `json:"password,omitempty" yaml:"password,omitempty" env:"DB_PASSWORD"`
 	// ConnectTimeout determines the maximum wait for connection. The minimum
 	// allowed timeout is 2 seconds, so anything below is treated the same
-	// as unset.
+	// as unset. PostgreSQL will only accept second precision so this value will be
+	// rounded to the nearest second before being set on a connection string.
+	// Use `Validate()` to confirm that `ConnectTimeout` is exact to second
+	// precision.
 	//
 	// See: https://www.postgresql.org/docs/10/libpq-connect.html#LIBPQ-CONNECT-CONNECT-TIMEOUT
-	ConnectTimeout int `json:"connectTimeout" yaml:"connectTimeout" env:"DB_CONNECT_TIMEOUT"`
+	ConnectTimeout time.Duration `json:"connectTimeout" yaml:"connectTimeout" env:"DB_CONNECT_TIMEOUT"`
 	// LockTimeout is the timeout to use when attempting to acquire a lock.
 	// PostgreSQL will only accept millisecond precision so this value will be
 	// rounded to the nearest millisecond before being set on a connection string.
@@ -182,7 +190,7 @@ func (c *Config) Resolve(ctx context.Context) error {
 		configutil.SetString(&c.ApplicationName, configutil.Env(EnvVarDBApplicationName), configutil.String(c.ApplicationName)),
 		configutil.SetString(&c.Username, configutil.Env("DB_USER"), configutil.String(c.Username), configutil.Env("USER")),
 		configutil.SetString(&c.Password, configutil.Env("DB_PASSWORD"), configutil.String(c.Password)),
-		configutil.SetInt(&c.ConnectTimeout, configutil.Env("DB_CONNECT_TIMEOUT"), configutil.Int(c.ConnectTimeout), configutil.Int(DefaultConnectTimeout)),
+		configutil.SetDuration(&c.ConnectTimeout, configutil.Env("DB_CONNECT_TIMEOUT"), configutil.Duration(c.ConnectTimeout), configutil.Duration(DefaultConnectTimeout)),
 		configutil.SetDuration(&c.LockTimeout, configutil.Env("DB_LOCK_TIMEOUT"), configutil.Duration(c.LockTimeout)),
 		configutil.SetDuration(&c.StatementTimeout, configutil.Env("DB_STATEMENT_TIMEOUT"), configutil.Duration(c.StatementTimeout)),
 		configutil.SetString(&c.SSLMode, configutil.Env("DB_SSLMODE"), configutil.String(c.SSLMode)),
@@ -194,13 +202,13 @@ func (c *Config) Resolve(ctx context.Context) error {
 }
 
 // Reparse creates a DSN and reparses it, in case some values need to be coalesced.
-func (c Config) Reparse() (*Config, error) {
+func (c Config) Reparse() (Config, error) {
 	return NewConfigFromDSN(c.CreateDSN())
 }
 
 // MustReparse creates a DSN and reparses it, in case some values need to be coalesced,
 // and panics if there is an error.
-func (c Config) MustReparse() *Config {
+func (c Config) MustReparse() Config {
 	cfg, err := NewConfigFromDSN(c.CreateDSN())
 	if err != nil {
 		panic(err)
@@ -233,7 +241,7 @@ func (c Config) PortOrDefault() string {
 }
 
 // DatabaseOrDefault returns the connection database or a default.
-func (c Config) DatabaseOrDefault(inherited ...string) string {
+func (c Config) DatabaseOrDefault() string {
 	if c.Database != "" {
 		return c.Database
 	}
@@ -242,7 +250,7 @@ func (c Config) DatabaseOrDefault(inherited ...string) string {
 
 // SchemaOrDefault returns the schema on the search_path or the default ("public"). It's considered bad practice to
 // use the public schema in production
-func (c Config) SchemaOrDefault(inherited ...string) string {
+func (c Config) SchemaOrDefault() string {
 	if c.Schema != "" {
 		return c.Schema
 	}
@@ -250,7 +258,7 @@ func (c Config) SchemaOrDefault(inherited ...string) string {
 }
 
 // IdleConnectionsOrDefault returns the number of idle connections or a default.
-func (c Config) IdleConnectionsOrDefault(inherited ...int) int {
+func (c Config) IdleConnectionsOrDefault() int {
 	if c.IdleConnections > 0 {
 		return c.IdleConnections
 	}
@@ -258,7 +266,7 @@ func (c Config) IdleConnectionsOrDefault(inherited ...int) int {
 }
 
 // MaxConnectionsOrDefault returns the maximum number of connections or a default.
-func (c Config) MaxConnectionsOrDefault(inherited ...int) int {
+func (c Config) MaxConnectionsOrDefault() int {
 	if c.MaxConnections > 0 {
 		return c.MaxConnections
 	}
@@ -311,7 +319,7 @@ func (c Config) CreateDSN() string {
 		queryArgs.Add("sslmode", c.SSLMode)
 	}
 	if c.ConnectTimeout > 0 {
-		queryArgs.Add("connect_timeout", strconv.Itoa(c.ConnectTimeout))
+		setTimeoutSeconds(queryArgs, "connect_timeout", c.ConnectTimeout)
 	}
 	if c.LockTimeout > 0 {
 		setTimeoutMilliseconds(queryArgs, "lock_timeout", c.LockTimeout)
@@ -330,9 +338,51 @@ func (c Config) CreateDSN() string {
 	return dsn.String()
 }
 
+// CreateLoggingDSN creates a postgres connection string from the config suitable for logging.
+// It will not include the password.
+func (c Config) CreateLoggingDSN() string {
+	host := c.HostOrDefault()
+	if c.PortOrDefault() != "" {
+		host = host + ":" + c.PortOrDefault()
+	}
+
+	dsn := &url.URL{
+		Scheme: "postgres",
+		Host:   host,
+		Path:   c.DatabaseOrDefault(),
+	}
+
+	if len(c.Username) > 0 {
+		dsn.User = url.User(c.Username)
+	}
+
+	queryArgs := url.Values{}
+	if len(c.SSLMode) > 0 {
+		queryArgs.Add("sslmode", c.SSLMode)
+	}
+	if c.ConnectTimeout > 0 {
+		setTimeoutSeconds(queryArgs, "connect_timeout", c.ConnectTimeout)
+	}
+	if c.LockTimeout > 0 {
+		setTimeoutMilliseconds(queryArgs, "lock_timeout", c.LockTimeout)
+	}
+	if c.StatementTimeout > 0 {
+		setTimeoutMilliseconds(queryArgs, "statement_timeout", c.StatementTimeout)
+	}
+	if c.Schema != "" {
+		queryArgs.Add("search_path", c.Schema)
+	}
+
+	dsn.RawQuery = queryArgs.Encode()
+	return dsn.String()
+}
+
 // Validate validates that user-provided values are valid, e.g. that timeouts
 // can be exactly rounded into a multiple of a given base value.
 func (c Config) Validate() error {
+	if c.ConnectTimeout.Round(time.Second) != c.ConnectTimeout {
+		return ex.New(ErrDurationConversion, ex.OptMessagef("connect_timeout=%s", c.ConnectTimeout))
+	}
 	if c.LockTimeout.Round(time.Millisecond) != c.LockTimeout {
 		return ex.New(ErrDurationConversion, ex.OptMessagef("lock_timeout=%s", c.LockTimeout))
 	}
@@ -384,6 +434,14 @@ func (c Config) ValidateProduction() error {
 //    4500ms
 //   (1 row)
 //   --
+//   blend=> SET LOCAL lock_timeout = 'go';
+//   ERROR:  invalid value for parameter "lock_timeout": "go"
+//   blend=> SET LOCAL lock_timeout = '1ns';
+//   ERROR:  invalid value for parameter "lock_timeout": "1ns"
+//   HINT:  Valid units for this parameter are "ms", "s", "min", "h", and "d".
+//   blend=> SET LOCAL lock_timeout = '-1ms';
+//   ERROR:  -1 is outside the valid range for parameter "lock_timeout" (0 .. 2147483647)
+//   --
 //   blend=> COMMIT;
 //   COMMIT
 //
@@ -393,4 +451,17 @@ func (c Config) ValidateProduction() error {
 func setTimeoutMilliseconds(q url.Values, name string, d time.Duration) {
 	ms := d.Round(time.Millisecond) / time.Millisecond
 	q.Add(name, fmt.Sprintf("%dms", ms))
+}
+
+// setTimeoutSeconds sets a timeout value in connection string query parameters.
+//
+// This timeout is expected to be an exact number of seconds (as an integer)
+// so we convert `d` to an integer first and set the value as a query parameter
+// without units.
+//
+// See:
+// - https://www.postgresql.org/docs/10/libpq-connect.html#LIBPQ-CONNECT-CONNECT-TIMEOUT
+func setTimeoutSeconds(q url.Values, name string, d time.Duration) {
+	s := d.Round(time.Second) / time.Second
+	q.Add(name, fmt.Sprintf("%d", s))
 }

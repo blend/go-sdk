@@ -18,10 +18,10 @@ func TestParallelQueue(t *testing.T) {
 		return nil
 	})
 
-	go q.Start()
-	<-q.NotifyStarted()
+	go func() { _ = q.Start() }()
+	<-q.Latch.NotifyStarted()
 
-	assert.True(q.IsStarted())
+	assert.True(q.Latch.IsStarted())
 
 	for x := 0; x < 8; x++ {
 		q.Enqueue("hello")
@@ -29,5 +29,5 @@ func TestParallelQueue(t *testing.T) {
 
 	wg.Wait()
 	q.Close()
-	assert.False(q.IsStarted())
+	assert.False(q.Latch.IsStarted())
 }

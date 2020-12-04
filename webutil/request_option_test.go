@@ -3,6 +3,7 @@ package webutil
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -140,7 +141,7 @@ func TestOptBodyBytes(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(body, bodyBytes)
 	assert.Equal(r.ContentLength, 6)
-	validateGetBody(assert, r, body)
+	validateRequestGetBody(assert, r, body)
 }
 
 func TestOptPostedFiles(t *testing.T) {
@@ -174,7 +175,7 @@ func TestOptPostedFiles(t *testing.T) {
 	)
 	assert.Equal([]byte(expected), bodyBytes)
 	assert.Equal(r.ContentLength, len(expected))
-	validateGetBody(assert, r, []byte(expected))
+	validateRequestGetBody(assert, r, []byte(expected))
 }
 
 func TestOptJSONBody(t *testing.T) {
@@ -186,6 +187,9 @@ func TestOptJSONBody(t *testing.T) {
 	err := opt(r)
 	assert.Nil(err)
 
+	assert.NotNil(r.Body)
+	assert.NotNil(r.GetBody)
+
 	assert.Equal(r.Header, http.Header{HeaderContentType: []string{ContentTypeApplicationJSON}})
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -193,7 +197,13 @@ func TestOptJSONBody(t *testing.T) {
 	expected := []byte(`{"x":1.25,"y":-5.75}`)
 	assert.Equal(expected, bodyBytes)
 	assert.Equal(r.ContentLength, 20)
-	validateGetBody(assert, r, expected)
+
+	validateRequestGetBody(assert, r, expected)
+
+	verifyContents, _ := json.Marshal(payload)
+	verify, err := http.NewRequest("POST", "https://example.com/test", bytes.NewReader(verifyContents))
+	assert.Nil(err)
+	assert.Equal(verify.ContentLength, r.ContentLength)
 }
 
 func TestOptXMLBody(t *testing.T) {
@@ -211,7 +221,7 @@ func TestOptXMLBody(t *testing.T) {
 	expected := []byte("<xmlBody><x>hello</x><y>goodbye</y></xmlBody>")
 	assert.Equal(expected, bodyBytes)
 	assert.Equal(r.ContentLength, 45)
-	validateGetBody(assert, r, expected)
+	validateRequestGetBody(assert, r, expected)
 }
 
 func getBoundary(assert *assert.Assertions, h http.Header) string {
@@ -221,7 +231,7 @@ func getBoundary(assert *assert.Assertions, h http.Header) string {
 	return strings.TrimPrefix(ct, boundaryPrefix)
 }
 
-func validateGetBody(assert *assert.Assertions, r *http.Request, expected []byte) {
+func validateRequestGetBody(assert *assert.Assertions, r *http.Request, expected []byte) {
 	assert.NotNil(r.GetBody)
 	bodyRC, err := r.GetBody()
 	assert.Nil(err)

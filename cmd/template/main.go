@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"runtime"
-	"strconv"
 	"strings"
 
 	"github.com/blend/go-sdk/template"
@@ -19,8 +18,6 @@ import (
 // it is used by goreleaser
 var (
 	version = "dev"
-	commit  = "none"
-	date    = "unknown"
 )
 
 // Includes are a collection of template files to include as sub templates.
@@ -57,37 +54,6 @@ func (v *Variables) Values() (values map[string]string) {
 		pieces := strings.SplitN(val, "=", 2)
 		if len(pieces) > 1 {
 			values[pieces[0]] = pieces[1]
-		}
-	}
-	return
-}
-
-// Numbers represent float typed variables.
-type Numbers []string
-
-// Set sets a variable.
-func (n *Numbers) Set(value string) error {
-	*n = append(*n, value)
-	return nil
-}
-
-func (n *Numbers) String() string {
-	return "Number variable values to set in the template"
-}
-
-// Values returns the map of values.
-func (n *Numbers) Values() (values map[string]interface{}, err error) {
-	values = map[string]interface{}{}
-
-	var value float64
-	for _, val := range *n {
-		pieces := strings.SplitN(val, "=", 2)
-		if len(pieces) > 1 {
-			value, err = strconv.ParseFloat(pieces[1], 64)
-			if err != nil {
-				return
-			}
-			values[pieces[0]] = value
 		}
 	}
 	return
@@ -220,6 +186,6 @@ func main() {
 			log.Fatal(err)
 		}
 	} else {
-		buffer.WriteTo(os.Stdout)
+		_, _ = buffer.WriteTo(os.Stdout)
 	}
 }

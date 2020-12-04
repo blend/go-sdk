@@ -1,6 +1,7 @@
 package db
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
@@ -80,10 +81,33 @@ func TestTableName(t *testing.T) {
 	assert := assert.New(t)
 
 	assert.Equal("simpletype", TableName(SimpleType{}))
-	assert.Equal("simpletype", TableName(&SimpleType{}))
+	assert.Equal("simpletype", TableName(new(SimpleType)))
+
 	assert.Equal("not_simple_type_with_name", TableName(SimpleTypeWithName{}))
-	assert.Equal("not_simple_type_with_name", TableName(&SimpleTypeWithName{}))
+	assert.Equal("not_simple_type_with_name", TableName(new(SimpleTypeWithName)))
 
 	assert.Equal("embedded_simple_type", TableName(EmbeddedSimpleType{}))
-	assert.Equal("embedded_simple_type", TableName(&EmbeddedSimpleType{}))
+	assert.Equal("embedded_simple_type", TableName(new(EmbeddedSimpleType)))
+}
+
+func TestTableNameForType(t *testing.T) {
+	assert := assert.New(t)
+
+	tt := reflect.TypeOf(SimpleType{})
+	assert.Equal("simpletype", TableNameByType(tt))
+
+	tt = reflect.TypeOf(new(SimpleType))
+	assert.Equal("simpletype", TableNameByType(tt))
+
+	tt = reflect.TypeOf(SimpleTypeWithName{})
+	assert.Equal("not_simple_type_with_name", TableNameByType(tt))
+
+	tt = reflect.TypeOf(new(SimpleTypeWithName))
+	assert.Equal("not_simple_type_with_name", TableNameByType(tt))
+
+	tt = reflect.TypeOf(EmbeddedSimpleType{})
+	assert.Equal("embedded_simple_type", TableNameByType(tt))
+
+	tt = reflect.TypeOf(new(EmbeddedSimpleType))
+	assert.Equal("embedded_simple_type", TableNameByType(tt))
 }

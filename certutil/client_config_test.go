@@ -9,9 +9,15 @@ import (
 )
 
 func TestNewClientConfig(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
-	ca, err := CreateCertificateAuthority()
+	caKeyPair := KeyPair{
+		Cert: string(caCertLiteral),
+		Key:  string(caKeyLiteral),
+	}
+	ca, err := NewCertBundle(caKeyPair)
 	assert.Nil(err)
 
 	uid := uuid.V4().String()

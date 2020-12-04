@@ -23,18 +23,18 @@ func TestConfigOptions(t *testing.T) {
 	OptFailFast(true)(cfg)
 	assert.True(cfg.FailFastOrDefault())
 
-	assert.Empty(cfg.Root)
-	OptRoot("../foo")(cfg)
-	assert.Equal("../foo", cfg.Root)
+	assert.Empty(cfg.Path)
+	OptPath("../foo")(cfg)
+	assert.Equal("../foo", cfg.Path)
 
 	assert.Equal(DefaultRulesFile, cfg.RulesFileOrDefault())
 	OptRulesFile("my_rules.yml")(cfg)
 
-	assert.Empty(cfg.Include)
-	OptInclude("foo", "bar", "baz")(cfg)
-	assert.Equal([]string{"foo", "bar", "baz"}, cfg.Include)
+	assert.Empty(cfg.Files.Include)
+	OptFilesInclude("foo", "bar", "baz")(cfg)
+	assert.Equal([]string{"foo", "bar", "baz"}, cfg.Files.Include)
 
-	assert.Empty(cfg.Exclude)
-	OptExclude("foo", "bar", "baz")(cfg)
-	assert.Equal([]string{"foo", "bar", "baz"}, cfg.Exclude)
+	assert.Empty(cfg.Files.Exclude)
+	OptFilesExclude("foo", "bar", "baz")(cfg)
+	assert.Equal([]string{"foo", "bar", "baz"}, cfg.Files.Exclude)
 }

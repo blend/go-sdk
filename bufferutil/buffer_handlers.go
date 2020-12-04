@@ -28,7 +28,7 @@ func (bl *BufferHandlers) Add(uid string, handler BufferChunkHandler) {
 	})
 	w.Work = make(chan interface{}, 128)
 
-	go w.Start()
+	go func() { _ = w.Start() }()
 
 	bl.Handlers[uid] = w
 }
@@ -43,7 +43,7 @@ func (bl *BufferHandlers) Remove(uid string) {
 	}
 	if w, ok := bl.Handlers[uid]; ok {
 		stopped := w.NotifyStopped()
-		w.Stop()
+		_ = w.Stop()
 		<-stopped
 	}
 	delete(bl.Handlers, uid)
@@ -66,7 +66,7 @@ func (bl *BufferHandlers) Close() {
 
 	for _, queue := range bl.Handlers {
 		stopped := queue.NotifyStopped()
-		queue.Stop()
+		_ = queue.Stop()
 		<-stopped
 	}
 }

@@ -8,6 +8,8 @@ import (
 )
 
 func TestCreateSelfServerCert(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	notAfter := time.Date(2016, 02, 03, 12, 0, 0, 0, time.UTC)

@@ -22,6 +22,12 @@ func (ms MockWebhookSender) Send(ctx context.Context, m Message) error {
 	return nil
 }
 
+// SendAndReadResponse sends a mocked message.
+func (ms MockWebhookSender) SendAndReadResponse(ctx context.Context, m Message) (*PostMessageResponse, error) {
+	ms <- m
+	return nil, nil
+}
+
 // PostMessage sends a mocked message.
 func (ms MockWebhookSender) PostMessage(channel, text string, options ...MessageOption) error {
 	m := Message{

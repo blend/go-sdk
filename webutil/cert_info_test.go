@@ -24,7 +24,7 @@ func TestParseCertInfo(t *testing.T) {
 	valid := &http.Response{
 		TLS: &tls.ConnectionState{
 			PeerCertificates: []*x509.Certificate{
-				&x509.Certificate{
+				{
 					Issuer: pkix.Name{
 						CommonName: "bailey dog",
 					},

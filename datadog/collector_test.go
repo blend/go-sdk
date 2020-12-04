@@ -7,6 +7,7 @@ import (
 	"github.com/blend/go-sdk/ref"
 
 	"github.com/DataDog/datadog-go/statsd"
+
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/stats"
 	"github.com/blend/go-sdk/uuid"

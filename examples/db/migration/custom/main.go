@@ -13,35 +13,29 @@ import (
 
 // UserNotExists creates a index on the given connection if it does not exist.
 func UserNotExists(username string) migration.GuardFunc {
-	return migration.Guard(fmt.Sprintf("create user `%s`", username), func(c *db.Connection, tx *sql.Tx) (bool, error) {
-		return c.Invoke(db.OptTx(tx)).Query(`SELECT 1 FROM users WHERE username = $1`, strings.ToLower(username)).None()
+	return migration.Guard(fmt.Sprintf("create user `%s`", username), func(ctx context.Context, c *db.Connection, tx *sql.Tx) (bool, error) {
+		return c.Invoke(db.OptContext(ctx), db.OptTx(tx)).Query(`SELECT 1 FROM users WHERE username = $1`, strings.ToLower(username)).None()
 	})
 }
 
 func main() {
-	suite := migration.NewWithGroups(
-		migration.NewGroupWithActions(
-			migration.NewStep(
+	suite := migration.New(
+		migration.OptGroups(
+			migration.NewGroupWithAction(
 				migration.TableNotExists("users"),
 				migration.Statements(
 					"CREATE TABLE users (username varchar(255) primary key);",
 				),
 			),
-		),
-		migration.NewGroupWithActions(
-			migration.NewStep(
+			migration.NewGroupWithAction(
 				UserNotExists("bailey"),
 				migration.Exec("INSERT INTO users (username) VALUES ($1)", "bailey"),
 			),
-		),
-		migration.NewGroupWithActions(
-			migration.NewStep(
+			migration.NewGroupWithAction(
 				UserNotExists("bailey"),
 				migration.Exec("INSERT INTO users (username) VALUES ($1)", "bailey"),
 			),
-		),
-		migration.NewGroupWithActions(
-			migration.NewStep(
+			migration.NewGroupWithAction(
 				migration.TableExists("users"),
 				migration.Statements(
 					"DROP TABLE users;",

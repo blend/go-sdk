@@ -5,4 +5,4 @@ It contains defaults for common config locations, and reads the files as yaml or
 
 It also has helpers to realize config from various sources like the environment or cli flags.
 */
-package configutil
+package configutil // import "github.com/blend/go-sdk/configutil"

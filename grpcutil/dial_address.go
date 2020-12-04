@@ -1,9 +1,9 @@
 package grpcutil
 
 import (
+	"context"
 	"net"
 	"strings"
-	"time"
 
 	"google.golang.org/grpc"
 
@@ -15,8 +15,8 @@ import (
 func DialAddress(addr string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
 	if strings.HasPrefix("unix://", addr) {
 		opts = append(opts,
-			grpc.WithDialer(func(addr string, timeout time.Duration) (net.Conn, error) {
-				return net.DialTimeout("unix", addr, timeout)
+			grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
+				return new(net.Dialer).DialContext(ctx, "unix", addr)
 			}))
 		addr = strings.TrimPrefix(addr, "unix://")
 	}

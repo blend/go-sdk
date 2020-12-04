@@ -27,12 +27,12 @@ func TestConfigResolve(t *testing.T) {
 
 	cfg := &Config{}
 	assert.True(cfg.IsZero())
-	assert.Equal("go-sdk-server", cfg.ServerNameOrDefault())
+	assert.Equal("go-sdk-server", cfg.ServiceNameOrDefault())
 	assert.Equal("dev", cfg.EnvironmentOrDefault())
 	assert.Empty(cfg.DistOrDefault())
 	assert.Empty(cfg.ReleaseOrDefault())
 
-	assert.Nil(cfg.Resolve(context.Background()))
+	assert.Nil(cfg.Resolve(env.WithVars(context.Background(), env.Env())))
 	assert.False(cfg.IsZero())
 	assert.Equal("http://foo@example.com/1", cfg.DSN)
 	assert.Equal("go-sdk-web-server", cfg.ServerName)

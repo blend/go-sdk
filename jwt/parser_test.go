@@ -10,21 +10,20 @@ import (
 
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/jwt"
-	"github.com/blend/go-sdk/jwt/test"
 )
 
-var keyFuncError error = fmt.Errorf("error loading key")
+var errKeyFunc error = fmt.Errorf("error loading key")
 
 var (
 	jwtTestDefaultKey *rsa.PublicKey
 	defaultKeyFunc    jwt.Keyfunc = func(t *jwt.Token) (interface{}, error) { return jwtTestDefaultKey, nil }
 	emptyKeyFunc      jwt.Keyfunc = func(t *jwt.Token) (interface{}, error) { return nil, nil }
-	errorKeyFunc      jwt.Keyfunc = func(t *jwt.Token) (interface{}, error) { return nil, keyFuncError }
+	errorKeyFunc      jwt.Keyfunc = func(t *jwt.Token) (interface{}, error) { return nil, errKeyFunc }
 	nilKeyFunc        jwt.Keyfunc = nil
 )
 
 func init() {
-	jwtTestDefaultKey = test.MustLoadRSAPublicKey(test.SampleKeyPublic)
+	jwtTestDefaultKey = MustLoadRSAPublicKey(SampleKeyPublic)
 }
 
 var jwtTestData = []struct {
@@ -113,7 +112,7 @@ var jwtTestData = []struct {
 		errorKeyFunc,
 		jwt.MapClaims{"foo": "bar"},
 		false,
-		keyFuncError,
+		errKeyFunc,
 		nil,
 		nil,
 	},
@@ -202,13 +201,13 @@ var jwtTestData = []struct {
 }
 
 func TestParser_Parse(t *testing.T) {
-	privateKey := test.MustLoadRSAPrivateKey(test.SampleKey)
+	privateKey := MustLoadRSAPrivateKey(SampleKey)
 
 	// Iterate over test data set and run tests
 	for _, data := range jwtTestData {
 		// If the token string is blank, use helper function to generate string
 		if data.tokenString == "" {
-			data.tokenString = test.MakeSampleToken(data.claims, privateKey)
+			data.tokenString = MakeSampleToken(data.claims, privateKey)
 		}
 
 		// Parse the token
@@ -268,13 +267,13 @@ func TestParser_Parse(t *testing.T) {
 }
 
 func TestParser_ParseUnverified(t *testing.T) {
-	privateKey := test.MustLoadRSAPrivateKey(test.SampleKey)
+	privateKey := MustLoadRSAPrivateKey(SampleKey)
 
 	// Iterate over test data set and run tests
 	for _, data := range jwtTestData {
 		// If the token string is blank, use helper function to generate string
 		if data.tokenString == "" {
-			data.tokenString = test.MakeSampleToken(data.claims, privateKey)
+			data.tokenString = MakeSampleToken(data.claims, privateKey)
 		}
 
 		// Parse the token

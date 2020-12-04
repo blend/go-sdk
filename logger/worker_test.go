@@ -24,9 +24,9 @@ func TestWorker(t *testing.T) {
 		assert.Equal("test", typed.Text)
 	})
 
-	go w.Start()
+	go func() { _ = w.Start() }()
 	<-w.NotifyStarted()
-	defer w.Stop()
+	defer func() { _ = w.Stop() }()
 
 	w.Work <- EventWithContext{context.Background(), NewMessageEvent(Info, "test")}
 	wg.Wait()
@@ -45,7 +45,7 @@ func TestWorkerStop(t *testing.T) {
 		didFire = true
 	})
 
-	go w.Start()
+	go func() { _ = w.Start() }()
 	<-w.NotifyStarted()
 
 	w.Work <- EventWithContext{Event: NewMessageEvent(Info, "test1")}
@@ -56,7 +56,7 @@ func TestWorkerStop(t *testing.T) {
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
 		defer cancel()
-		w.StopContext(ctx)
+		_ = w.StopContext(ctx)
 	}()
 	wg.Wait()
 

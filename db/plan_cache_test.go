@@ -18,12 +18,13 @@ func TestPlanCache(t *testing.T) {
 	assert.NotNil(stmt)
 	assert.True(sc.Has(query))
 
-	// shoul result in cache hit
+	// should result in cache hit
 	stmt, err = sc.PrepareContext(context.Background(), query, query)
+	assert.Nil(err)
 	assert.NotNil(stmt)
 	assert.True(sc.Has(query))
 
-	sc.Invalidate(query)
+	assert.Nil(sc.Invalidate(query))
 	assert.False(sc.Has(query))
 	assert.Nil(sc.Close())
 }

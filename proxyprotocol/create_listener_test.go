@@ -18,7 +18,7 @@ func TestCreateListener(t *testing.T) {
 		OptUseProxyProtocol(true),
 		OptKeepAlivePeriod(30*time.Second),
 	)
-	defer listener.Close()
+	defer func() { _ = listener.Close() }()
 
 	assert.Nil(err)
 	assert.NotNil(listener)
@@ -44,14 +44,17 @@ func TestCreateTLSListener(t *testing.T) {
 		OptKeepAlivePeriod(30*time.Second),
 		OptTLSConfig(tlsConfig),
 	)
-	defer listener.Close()
+	defer func() { _ = listener.Close() }()
 
 	assert.Nil(err)
 	assert.NotNil(listener)
 
+	dialErrors := make(chan error, 1)
 	go func() {
-		_, err := net.Dial("tcp", listener.Addr().String())
-		assert.Nil(err)
+		_, err = net.Dial("tcp", listener.Addr().String())
+		if err != nil {
+			dialErrors <- err
+		}
 	}()
 
 	conn, err := listener.Accept()
@@ -60,4 +63,6 @@ func TestCreateTLSListener(t *testing.T) {
 	typed, ok := conn.(*tls.Conn)
 	assert.True(ok)
 	assert.NotNil(typed)
+
+	assert.Empty(dialErrors)
 }

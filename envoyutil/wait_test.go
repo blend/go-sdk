@@ -64,7 +64,7 @@ func TestMaybeWaitForAdmin(t *testing.T) {
 		"[debug] Envoy is ready",
 		"",
 	}, "\n")
-	it.Equal(expected, string(logBuffer.Bytes()))
+	it.Equal(expected, logBuffer.String())
 	logBuffer.Reset()
 }
 

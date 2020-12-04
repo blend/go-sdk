@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/stats"
 )
 
 type noOpWriteCloser struct {
@@ -83,7 +84,7 @@ func Test_Client_AddDefaultTag(t *testing.T) {
 
 	c := new(Client)
 	assert.Empty(c.defaultTags)
-	c.AddDefaultTag("foo", "bar")
+	c.AddDefaultTags(stats.Tag("foo", "bar"))
 	assert.Equal([]string{"foo:bar"}, c.defaultTags)
 }
 
@@ -148,8 +149,8 @@ func Test_ClientCount_Unbuffered(t *testing.T) {
 			}
 		},
 	}
-	go mock.Start()
-	defer mock.Stop()
+	go func() { _ = mock.Start() }()
+	defer func() { _ = mock.Stop() }()
 
 	client, err := New(
 		OptAddr(mock.Listener.LocalAddr().String()),
@@ -196,8 +197,8 @@ func Test_ClientGauge_Unbuffered(t *testing.T) {
 			}
 		},
 	}
-	go mock.Start()
-	defer mock.Stop()
+	go func() { _ = mock.Start() }()
+	defer func() { _ = mock.Stop() }()
 
 	client, err := New(
 		OptAddr(mock.Listener.LocalAddr().String()),
@@ -244,8 +245,8 @@ func Test_ClientCount_Buffered(t *testing.T) {
 			}
 		},
 	}
-	go mock.Start()
-	defer mock.Stop()
+	go func() { _ = mock.Start() }()
+	defer func() { _ = mock.Stop() }()
 
 	client, err := New(
 		OptAddr(mock.Listener.LocalAddr().String()),
@@ -280,8 +281,8 @@ func Test_ClientGauge_Buffered(t *testing.T) {
 			}
 		},
 	}
-	go mock.Start()
-	defer mock.Stop()
+	go func() { _ = mock.Start() }()
+	defer func() { _ = mock.Stop() }()
 
 	client, err := New(
 		OptAddr(mock.Listener.LocalAddr().String()),
@@ -316,8 +317,8 @@ func Test_ClientTimeInMilliseconds_Buffered(t *testing.T) {
 			}
 		},
 	}
-	go mock.Start()
-	defer mock.Stop()
+	go func() { _ = mock.Start() }()
+	defer func() { _ = mock.Stop() }()
 
 	client, err := New(
 		OptAddr(mock.Listener.LocalAddr().String()),
@@ -352,8 +353,8 @@ func Test_ClientIncrement_Buffered(t *testing.T) {
 			}
 		},
 	}
-	go mock.Start()
-	defer mock.Stop()
+	go func() { _ = mock.Start() }()
+	defer func() { _ = mock.Stop() }()
 
 	client, err := New(
 		OptAddr(mock.Listener.LocalAddr().String()),
@@ -395,8 +396,8 @@ func Test_ClientHistogram_Buffered(t *testing.T) {
 			}
 		},
 	}
-	go mock.Start()
-	defer mock.Stop()
+	go func() { _ = mock.Start() }()
+	defer func() { _ = mock.Stop() }()
 
 	client, err := New(
 		OptAddr(mock.Listener.LocalAddr().String()),

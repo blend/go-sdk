@@ -1,7 +1,7 @@
 package webutil
 
 import (
-	"io"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -17,7 +17,7 @@ func TestMiddelware(t *testing.T) {
 	inner := func(rw http.ResponseWriter, req *http.Request) {
 		close(innerDone)
 		rw.WriteHeader(http.StatusOK)
-		io.WriteString(rw, "OK!\n")
+		fmt.Fprint(rw, "OK!\n")
 	}
 
 	oneDone := make(chan struct{})
@@ -25,7 +25,7 @@ func TestMiddelware(t *testing.T) {
 		return func(rw http.ResponseWriter, req *http.Request) {
 			close(oneDone)
 			action(rw, req)
-			io.WriteString(rw, "One\n")
+			fmt.Fprint(rw, "One\n")
 		}
 	}
 
@@ -34,7 +34,7 @@ func TestMiddelware(t *testing.T) {
 		return func(rw http.ResponseWriter, req *http.Request) {
 			close(twoDone)
 			action(rw, req)
-			io.WriteString(rw, "Two\n")
+			fmt.Fprint(rw, "Two\n")
 		}
 	}
 

@@ -23,8 +23,9 @@ func OptConfig(cfg Config) Option {
 			return err
 		}
 		a.Config = cfg
-		a.Views = NewViewCache(OptViewCacheConfig(&cfg.Views))
-		return nil
+		a.BaseHeaders = MergeHeaders(BaseHeaders(), CopySingleHeaders(cfg.DefaultHeaders))
+		a.Views, err = NewViewCache(OptViewCacheConfig(&cfg.Views))
+		return err
 	}
 }
 
@@ -35,14 +36,7 @@ func OptConfigFromEnv() Option {
 		if err := env.Env().ReadInto(&cfg); err != nil {
 			return err
 		}
-		var err error
-		a.Auth, err = NewAuthManager(OptAuthManagerFromConfig(cfg))
-		if err != nil {
-			return err
-		}
-		a.Config = cfg
-		a.Views = NewViewCache(OptViewCacheConfig(&cfg.Views))
-		return nil
+		return OptConfig(cfg)(a)
 	}
 }
 
@@ -117,26 +111,46 @@ func OptTLSConfig(cfg *tls.Config) Option {
 // OptDefaultHeader sets a default header.
 func OptDefaultHeader(key, value string) Option {
 	return func(a *App) error {
-		if a.DefaultHeaders == nil {
-			a.DefaultHeaders = make(http.Header)
+		if a.BaseHeaders == nil {
+			a.BaseHeaders = make(http.Header)
 		}
-		a.DefaultHeaders.Set(key, value)
+		a.BaseHeaders.Set(key, value)
 		return nil
 	}
 }
 
-// OptDefaultHeaders sets default headers.
+// OptDefaultHeaders sets base headers.
+//
+// DEPRECATION(1.2021*): this method will be removed.
 func OptDefaultHeaders(headers http.Header) Option {
 	return func(a *App) error {
-		a.DefaultHeaders = headers
+		a.BaseHeaders = headers
 		return nil
 	}
 }
 
-// OptDefaultMiddleware sets default middleware.
+// OptBaseHeaders sets base headers.
+func OptBaseHeaders(headers http.Header) Option {
+	return func(a *App) error {
+		a.BaseHeaders = headers
+		return nil
+	}
+}
+
+// OptDefaultMiddleware sets base middleware.
+//
+// DEPRECATION(1.2021*): this method will be removed.
 func OptDefaultMiddleware(middleware ...Middleware) Option {
 	return func(a *App) error {
-		a.DefaultMiddleware = middleware
+		a.BaseMiddleware = middleware
+		return nil
+	}
+}
+
+// OptBaseMiddleware sets default middleware.
+func OptBaseMiddleware(middleware ...Middleware) Option {
+	return func(a *App) error {
+		a.BaseMiddleware = middleware
 		return nil
 	}
 }
@@ -144,7 +158,15 @@ func OptDefaultMiddleware(middleware ...Middleware) Option {
 // OptUse adds to the default middleware.
 func OptUse(m Middleware) Option {
 	return func(a *App) error {
-		a.DefaultMiddleware = append(a.DefaultMiddleware, m)
+		a.BaseMiddleware = append(a.BaseMiddleware, m)
+		return nil
+	}
+}
+
+// OptBaseStateValue sets a base state value.
+func OptBaseStateValue(key string, value interface{}) Option {
+	return func(a *App) error {
+		a.BaseState.Set(key, value)
 		return nil
 	}
 }
@@ -173,10 +195,14 @@ func OptShutdownGracePeriod(d time.Duration) Option {
 	}
 }
 
-// OptHTTPServerOptions adds options to the underlying http server.
-func OptHTTPServerOptions(opts ...webutil.HTTPServerOption) Option {
+// OptServerOptions applies options to the underlying http server.
+func OptServerOptions(opts ...webutil.HTTPServerOption) Option {
 	return func(a *App) error {
-		a.ServerOptions = append(a.ServerOptions, opts...)
+		for _, opt := range opts {
+			if err := opt(a.Server); err != nil {
+				return err
+			}
+		}
 		return nil
 	}
 }

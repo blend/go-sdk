@@ -26,17 +26,17 @@ func TestConnectionUseBeforeOpen(t *testing.T) {
 func TestConnectionSanityCheck(t *testing.T) {
 	assert := assert.New(t)
 
-	conn, err := New(OptConfigFromEnv())
+	conn, err := OpenTestConnection()
 	assert.Nil(err)
 	str := conn.Config.CreateDSN()
-	_, err = sql.Open("postgres", str)
+	_, err = sql.Open("pgx", str)
 	assert.Nil(err)
 }
 
 func TestPrepareContext(t *testing.T) {
 	a := assert.New(t)
 
-	conn, err := Open(New(OptConfigFromEnv()))
+	conn, err := OpenTestConnection()
 	a.Nil(err)
 
 	var calledPrepare, calledFinish bool
@@ -61,7 +61,7 @@ func TestQuery(t *testing.T) {
 	a := assert.New(t)
 	tx, err := defaultDB().Begin()
 	a.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	a.Equal(DefaultSchema, defaultDB().Config.SchemaOrDefault())
 	err = seedObjects(100, tx)
@@ -89,7 +89,7 @@ func TestExec(t *testing.T) {
 	a := assert.New(t)
 	tx, err := defaultDB().Begin()
 	a.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	err = IgnoreExecResult(defaultDB().Invoke(OptTx(tx)).Exec("select 'ok!'"))
 	a.Nil(err)

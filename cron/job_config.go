@@ -16,10 +16,8 @@ type JobConfig struct {
 	Timeout time.Duration `json:"timeout" yaml:"timeout"`
 	// ShutdownGracePeriod represents the time a job is given to clean itself up.
 	ShutdownGracePeriod time.Duration `json:"shutdownGracePeriod" yaml:"shutdownGracePeriod"`
-	// ShouldSkipLoggerListeners skips triggering logger events if it is set to true.
-	ShouldSkipLoggerListeners *bool `json:"shouldSkipLoggerListeners" yaml:"shouldSkipLoggerListeners"`
-	// ShouldSkipLoggerOutput skips writing logger output if it is set to true.
-	ShouldSkipLoggerOutput *bool `json:"shouldSkipLoggerOutput" yaml:"shouldSkipLoggerOutput"`
+	// SkipLoggerTrigger skips triggering logger events if it is set to true.
+	SkipLoggerTrigger bool `json:"skipLoggerTrigger" yaml:"skipLoggerTrigger"`
 }
 
 // DisabledOrDefault returns a value or a default.
@@ -44,20 +42,4 @@ func (jc JobConfig) ShutdownGracePeriodOrDefault() time.Duration {
 		return jc.ShutdownGracePeriod
 	}
 	return DefaultShutdownGracePeriod
-}
-
-// ShouldSkipLoggerListenersOrDefault returns a value or a default.
-func (jc JobConfig) ShouldSkipLoggerListenersOrDefault() bool {
-	if jc.ShouldSkipLoggerListeners != nil {
-		return *jc.ShouldSkipLoggerListeners
-	}
-	return DefaultShouldSkipLoggerListeners
-}
-
-// ShouldSkipLoggerOutputOrDefault returns a value or a default.
-func (jc JobConfig) ShouldSkipLoggerOutputOrDefault() bool {
-	if jc.ShouldSkipLoggerOutput != nil {
-		return *jc.ShouldSkipLoggerOutput
-	}
-	return DefaultShouldSkipLoggerOutput
 }

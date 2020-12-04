@@ -1,8 +1,0 @@
-GOLANG_JWT_GO:
-  description: should not reference original library
-  contains:
-  - dgrijalva/jwt-go
-GOLANG_JWT_SINGING:
-  description: should always use "signing" not "singing"
-  contains:
-  - singing

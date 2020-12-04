@@ -27,7 +27,6 @@ func (me *multiError) Error() string {
 }
 
 func nest(err1, err2 error) error {
-	// We know below here that both errors are non-nil.
 	asMulti1, ok1 := err1.(*multiError)
 	asMulti2, ok2 := err2.(*multiError)
 
@@ -48,6 +47,7 @@ func nest(err1, err2 error) error {
 		return &multiError{Errors: []error{err1}}
 	}
 
+	// We know below here that both errors are non-nil.
 	if ok1 {
 		if ok2 {
 			return &multiError{Errors: append(asMulti1.Errors, asMulti2.Errors...)}

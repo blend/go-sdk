@@ -13,6 +13,6 @@ func TestOptContext(t *testing.T) {
 	opt := OptContext(context.TODO())
 
 	req := New("https://foo.bar.local")
-	opt(req)
-	assert.NotNil(req.Context())
+	assert.Nil(opt(req))
+	assert.NotNil(req.Request.Context())
 }

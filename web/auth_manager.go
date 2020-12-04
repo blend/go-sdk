@@ -1,5 +1,7 @@
 package web
 
+//github:codeowner @blend/infosec
+
 import (
 	"context"
 	"net/http"
@@ -25,6 +27,7 @@ func NewAuthManager(options ...AuthManagerOption) (manager AuthManager, err erro
 	manager.CookieDefaults.Path = DefaultCookiePath
 	manager.CookieDefaults.Secure = DefaultCookieSecure
 	manager.CookieDefaults.HttpOnly = DefaultCookieHTTPOnly
+	manager.CookieDefaults.SameSite = http.SameSiteLaxMode
 
 	for _, opt := range options {
 		if err = opt(&manager); err != nil {
@@ -301,10 +304,19 @@ func (am AuthManager) Logout(ctx *Ctx) error {
 	return nil
 }
 
-// VerifySession checks a sessionID to see if it's valid.
+// VerifySession reads a session value from a request and checks if it's valid.
 // It also handles updating a rolling expiry.
-func (am AuthManager) VerifySession(ctx *Ctx) (session *Session, err error) {
-	// pull the sessionID off the request
+//
+// It is a pass-through to `VerifyOrExpireSession`
+//
+// DEPRECATED(1.2021*): this method is deprecated and will be removed.
+func (am AuthManager) VerifySession(ctx *Ctx) (*Session, error) {
+	return am.VerifyOrExpireSession(ctx)
+}
+
+// VerifyOrExpireSession reads a session value from a request and checks if it's valid.
+// It also handles updating a rolling expiry.
+func (am AuthManager) VerifyOrExpireSession(ctx *Ctx) (session *Session, err error) {
 	sessionValue := am.readSessionValue(ctx)
 	// validate the sessionValue isn't unset
 	if len(sessionValue) == 0 {
@@ -317,7 +329,7 @@ func (am AuthManager) VerifySession(ctx *Ctx) (session *Session, err error) {
 		session, err = am.ParseSessionValueHandler(ctx.Context(), sessionValue)
 		if err != nil {
 			if IsErrSessionInvalid(err) {
-				am.expire(ctx, sessionValue)
+				_ = am.expire(ctx, sessionValue)
 			}
 			return
 		}
@@ -353,6 +365,47 @@ func (am AuthManager) VerifySession(ctx *Ctx) (session *Session, err error) {
 			}
 		}
 		am.injectCookie(ctx, sessionValue, session.ExpiresUTC)
+	}
+	return
+}
+
+// VerifySessionValue checks a given session value to see if it's valid.
+// It also handles updating a rolling expiry.
+func (am AuthManager) VerifySessionValue(ctx *Ctx, sessionValue string) (session *Session, err error) {
+	// validate the sessionValue isn't unset
+	if len(sessionValue) == 0 {
+		return
+	}
+	// if we have a separate step to parse the sesion value
+	// (i.e. jwt mode) do that now.
+	if am.ParseSessionValueHandler != nil {
+		session, err = am.ParseSessionValueHandler(ctx.Context(), sessionValue)
+		if err != nil {
+			if IsErrSessionInvalid(err) {
+				_ = am.expire(ctx, sessionValue)
+			}
+			return
+		}
+	} else if am.FetchHandler != nil { // if we're in server tracked mode, pull it from whatever backing store we use.
+		session, err = am.FetchHandler(ctx.Context(), sessionValue)
+		if err != nil {
+			return
+		}
+	}
+
+	// if the session is invalid, expire the cookie(s)
+	if session == nil || session.IsZero() || session.IsExpired() {
+		// return nil whenever the session is invalid
+		session = nil
+		return
+	}
+
+	// call a custom validate handler if one's been provided.
+	if am.ValidateHandler != nil {
+		err = am.ValidateHandler(ctx.Context(), session)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return
 }
@@ -397,10 +450,6 @@ func (am AuthManager) expire(ctx *Ctx, sessionValue string) error {
 		}
 	}
 	return nil
-}
-
-func (am AuthManager) shouldUpdateSessionExpiry() bool {
-	return am.SessionTimeoutProvider != nil
 }
 
 // InjectCookie injects a session cookie into the context.

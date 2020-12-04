@@ -9,9 +9,10 @@ import (
 // NewWorker creates a new worker.
 func NewWorker(action WorkAction) *Worker {
 	return &Worker{
-		Latch:  NewLatch(),
-		Action: action,
-		Work:   make(chan interface{}),
+		Context: context.Background(),
+		Latch:   NewLatch(),
+		Action:  action,
+		Work:    make(chan interface{}),
 	}
 }
 
@@ -19,12 +20,14 @@ func NewWorker(action WorkAction) *Worker {
 // It is used by other work distribution types (i.e. queue and batch)
 // but can also be used independently.
 type Worker struct {
-	Latch     *Latch
+	Latch *Latch
+
 	Context   context.Context
 	Action    WorkAction
 	Finalizer WorkerFinalizer
-	Errors    chan error
-	Work      chan interface{}
+
+	Errors chan error
+	Work   chan interface{}
 }
 
 // Background returns the queue worker background context.
@@ -67,10 +70,26 @@ func (w *Worker) Dispatch() {
 	var stopping <-chan struct{}
 	for {
 		stopping = w.Latch.NotifyStopping()
+		// we should always check stopped
+		// before also blocking on work or stopping
+		select {
+		case <-stopping:
+			w.Latch.Stopped()
+			return
+		case <-w.Background().Done():
+			w.Latch.Stopped()
+			return
+		default:
+		}
+
+		// block on work or stopping
 		select {
 		case workItem = <-w.Work:
 			w.Execute(w.Background(), workItem)
 		case <-stopping:
+			w.Latch.Stopped()
+			return
+		case <-w.Background().Done():
 			w.Latch.Stopped()
 			return
 		}
@@ -103,22 +122,22 @@ func (w *Worker) Stop() error {
 	return nil
 }
 
-// Drain stops the worker and synchronously drains the the remaining work
-// with a given context.
+// Drain stops the worker and synchronously waits
+// for in progress items to finish.
 func (w *Worker) Drain(ctx context.Context) {
-	w.Latch.Stopping()
-	<-w.Latch.NotifyStopped()
-
-	// create a signal that we've completed draining.
-	stopped := make(chan struct{})
-	remaining := len(w.Work)
+	drainComplete := make(chan struct{})
 	go func() {
-		defer close(stopped)
-		for x := 0; x < remaining; x++ {
-			w.Execute(w.Background(), <-w.Work)
-		}
+		defer close(drainComplete)
+		w.Latch.Stopping()
+		<-w.Latch.NotifyStopped()
 	}()
-	<-stopped
+
+	select {
+	case <-drainComplete:
+		return
+	case <-ctx.Done():
+		return
+	}
 }
 
 // HandleError sends a non-nil err to the error

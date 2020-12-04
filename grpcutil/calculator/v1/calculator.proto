@@ -1,6 +1,8 @@
 syntax = "proto3";
 package v1;
 
+option go_package = "golang.blend.com/sdk/grpcutil/calculator/v1";
+
 service Calculator {
 	rpc Add(Numbers) returns (Number) {}
 	rpc AddStream(stream Number) returns (Number) {}

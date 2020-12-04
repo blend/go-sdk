@@ -62,7 +62,7 @@ func TestWebhookSenderDefaults(t *testing.T) {
 		Text: "this is only a test",
 	}
 
-	defaults := sender.Defaults()
+	defaults := sender.MessageDefaults()
 
 	for _, option := range defaults {
 		option(&message)
@@ -85,7 +85,7 @@ func TestWebhookSendAndReadResponse(t *testing.T) {
 			Username: "ecto1",
 			BotID:    "B19LU7CSY",
 			Attachments: []MessageAttachment{
-				MessageAttachment{
+				{
 					Text: "This is an attachment",
 				},
 			},
@@ -95,7 +95,7 @@ func TestWebhookSendAndReadResponse(t *testing.T) {
 		},
 	}
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(mockResponse)
+		_ = json.NewEncoder(w).Encode(mockResponse)
 	}))
 	defer ts.Close()
 
@@ -121,7 +121,7 @@ func TestWebhookSendAndReadResponseStatusCode(t *testing.T) {
 	}
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(mockResponse)
+		_ = json.NewEncoder(w).Encode(mockResponse)
 	}))
 	defer ts.Close()
 
@@ -150,7 +150,7 @@ func TestPostMessageAndReadResponse(t *testing.T) {
 			Username: "ecto1",
 			BotID:    "B19LU7CSY",
 			Attachments: []MessageAttachment{
-				MessageAttachment{
+				{
 					Text: "This is an attachment",
 				},
 			},
@@ -168,7 +168,7 @@ func TestPostMessageAndReadResponse(t *testing.T) {
 			mockResponse.Channel = received.Channel
 			mockResponse.Message.Text = received.Text
 		}
-		json.NewEncoder(w).Encode(mockResponse)
+		_ = json.NewEncoder(w).Encode(mockResponse)
 	}))
 	defer ts.Close()
 

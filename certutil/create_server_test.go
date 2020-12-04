@@ -7,9 +7,15 @@ import (
 )
 
 func TestCreateServer(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
-	authority, err := CreateCertificateAuthority()
+	caKeyPair := KeyPair{
+		Cert: string(caCertLiteral),
+		Key:  string(caKeyLiteral),
+	}
+	authority, err := NewCertBundle(caKeyPair)
 	assert.Nil(err)
 
 	assert.Len(authority.CertificateDERs, 1)

@@ -1,7 +1,6 @@
 package db
 
 import (
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
@@ -328,12 +327,7 @@ func (cc *ColumnCollection) ColumnValues(instance interface{}) []interface{} {
 		c := cc.columns[x]
 		valueField := value.FieldByName(c.FieldName)
 		if c.IsJSON {
-			jsonBytes, _ := json.Marshal(valueField.Interface())
-			if result := string(jsonBytes); result != "null" { // explicitly bad.
-				values[x] = result
-			} else {
-				values[x] = nil
-			}
+			values[x] = JSON(valueField.Interface())
 		} else {
 			values[x] = valueField.Interface()
 		}

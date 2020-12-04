@@ -18,15 +18,10 @@ func New(options ...SuiteOption) *Suite {
 	return &s
 }
 
-// NewWithGroups is a helper for "New(OptGroups(groups ...*Group))"
-func NewWithGroups(groups ...*Group) *Suite {
-	return New(OptGroups(groups...))
-}
-
 // NewWithActions returns a new suite, with a new group, made up of given actions.
 func NewWithActions(actions ...Actionable) *Suite {
-	return NewWithGroups(
-		NewGroupWithActions(actions...),
+	return New(
+		OptGroups(NewGroup(OptGroupActions(actions...))),
 	)
 }
 
@@ -60,40 +55,40 @@ func (s *Suite) Apply(ctx context.Context, c *db.Connection) (err error) {
 
 // Applyf writes an applied step message.
 func (s *Suite) Applyf(ctx context.Context, format string, args ...interface{}) {
-	s.Applied = s.Applied + 1
-	s.Total = s.Total + 1
+	s.Applied++
+	s.Total++
 	s.Write(ctx, StatApplied, fmt.Sprintf(format, args...))
 }
 
 // Skipf skips a given step.
 func (s *Suite) Skipf(ctx context.Context, format string, args ...interface{}) {
-	s.Skipped = s.Skipped + 1
-	s.Total = s.Total + 1
+	s.Skipped++
+	s.Total++
 	s.Write(ctx, StatSkipped, fmt.Sprintf(format, args...))
 }
 
 // Errorf writes an error for a given step.
 func (s *Suite) Errorf(ctx context.Context, format string, args ...interface{}) {
-	s.Failed = s.Failed + 1
-	s.Total = s.Total + 1
+	s.Failed++
+	s.Total++
 	s.Write(ctx, StatFailed, fmt.Sprintf(format, args...))
 }
 
 // Error
 func (s *Suite) Error(ctx context.Context, err error) error {
-	s.Failed = s.Failed + 1
-	s.Total = s.Total + 1
+	s.Failed++
+	s.Total++
 	s.Write(ctx, StatFailed, fmt.Sprintf("%v", err))
 	return err
 }
 
 func (s *Suite) Write(ctx context.Context, result, body string) {
-	logger.MaybeTrigger(ctx, s.Log, NewEvent(result, body, GetContextLabels(ctx)...))
+	logger.MaybeTriggerContext(ctx, s.Log, NewEvent(result, body, GetContextLabels(ctx)...))
 }
 
 // WriteStats writes the stats if a logger is configured.
 func (s *Suite) WriteStats(ctx context.Context) {
-	logger.MaybeTrigger(ctx, s.Log, NewStatsEvent(s.Applied, s.Skipped, s.Failed, s.Total))
+	logger.MaybeTriggerContext(ctx, s.Log, NewStatsEvent(s.Applied, s.Skipped, s.Failed, s.Total))
 }
 
 // Results provides a window into the results of this migration

@@ -2,11 +2,13 @@ package r2
 
 import (
 	"bytes"
+	"context"
 	"encoding/xml"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
@@ -20,13 +22,24 @@ func TestRequestNew(t *testing.T) {
 	r := New("https://foo.com/bar?buzz=fuzz")
 	assert.NotNil(r)
 	assert.Nil(r.Err)
-	assert.Equal(MethodGet, r.Method)
-	assert.NotNil(r.URL)
-	assert.Equal("https://foo.com/bar?buzz=fuzz", r.URL.String())
+	assert.Equal(MethodGet, r.Request.Method)
+	assert.NotNil(r.Request.URL)
+	assert.Equal("https://foo.com/bar?buzz=fuzz", r.Request.URL.String())
 
 	rErr := New("\n")
 	assert.NotNil(rErr)
 	assert.NotNil(rErr.Err)
+}
+
+func TestRequestWithContext(t *testing.T) {
+	assert := assert.New(t)
+
+	r := New("https://foo.com/bar?buzz=fuzz")
+	type valueKey struct{}
+	const value = "hello!"
+	r = r.WithContext(context.WithValue(context.Background(), valueKey{}, value))
+	assert.NotNil(r.Request.Context())
+	assert.Equal(value, r.Request.Context().Value(valueKey{}))
 }
 
 func TestRequestDo(t *testing.T) {
@@ -110,7 +123,7 @@ func TestRequestDoPostForm(t *testing.T) {
 		}
 		if value := r.PostForm.Get("foo"); value != "bar" {
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "bad value for foo: %#v\n", r.PostForm)
+			fmt.Fprintf(w, "bad value for foo: %#v\n", r.PostForm.Get("foo"))
 			return
 		}
 		w.WriteHeader(http.StatusOK)
@@ -192,7 +205,7 @@ func TestRequestXML(t *testing.T) {
 	assert := assert.New(t)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		xml.NewEncoder(w).Encode(xmlTestCase{
+		_ = xml.NewEncoder(w).Encode(xmlTestCase{
 			Status: "ok!",
 		})
 	}))
@@ -270,4 +283,25 @@ func TestRequestListeners(t *testing.T) {
 	assert.True(didCallRequest2)
 	assert.True(didCallResponse1)
 	assert.True(didCallResponse2)
+}
+
+func TestRequestEmptyURL(t *testing.T) {
+	assert := assert.New(t)
+
+	server := mockServerOK()
+	defer server.Close()
+
+	serverURL, _ := url.Parse(server.URL)
+
+	r := New(
+		"",
+		OptScheme("http"),
+		OptHost(serverURL.Host),
+		OptPath("v1/resource"),
+		OptTimeout(time.Second),
+	)
+
+	res, err := r.Discard()
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, res.StatusCode)
 }

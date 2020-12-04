@@ -1,7 +1,6 @@
 package stats
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/blend/go-sdk/timeutil"
@@ -13,39 +12,67 @@ var (
 )
 
 // NewMockCollector returns a new mock collector.
-func NewMockCollector() *MockCollector {
+func NewMockCollector(capacity int) *MockCollector {
 	return &MockCollector{
-		Events:      make(chan MockMetric, 32),
-		Errors:      make(chan error, 32),
-		FlushErrors: make(chan error, 32),
-		CloseErrors: make(chan error, 32),
+		Metrics:     make(chan MockMetric, capacity),
+		Errors:      make(chan error, capacity),
+		FlushErrors: make(chan error, capacity),
+		CloseErrors: make(chan error, capacity),
 	}
 }
 
 // MockCollector is a mocked collector for stats.
 type MockCollector struct {
-	namespace   string
-	defaultTags []string
+	Field struct {
+		Namespace   string
+		DefaultTags []string
+	}
 
-	Events      chan MockMetric
+	Metrics     chan MockMetric
 	Errors      chan error
 	FlushErrors chan error
 	CloseErrors chan error
 }
 
+// GetCount returns the number of events logged for a given metric name.
+func (mc *MockCollector) GetCount(metricName string) (count int) {
+	var metric MockMetric
+	metricCount := len(mc.Metrics)
+	for x := 0; x < metricCount; x++ {
+		metric = <-mc.Metrics
+		if metric.Name == metricName {
+			count++
+		}
+		mc.Metrics <- metric
+	}
+	return
+}
+
+func (mc *MockCollector) makeName(name string) string {
+	if mc.Field.Namespace != "" {
+		return mc.Field.Namespace + name
+	}
+	return name
+}
+
 // AddDefaultTag adds a default tag.
-func (mc *MockCollector) AddDefaultTag(key, value string) {
-	mc.defaultTags = append(mc.defaultTags, fmt.Sprintf("%s:%s", key, value))
+func (mc *MockCollector) AddDefaultTag(name, value string) {
+	mc.Field.DefaultTags = append(mc.Field.DefaultTags, Tag(name, value))
+}
+
+// AddDefaultTags adds default tags.
+func (mc *MockCollector) AddDefaultTags(tags ...string) {
+	mc.Field.DefaultTags = append(mc.Field.DefaultTags, tags...)
 }
 
 // DefaultTags returns the default tags set.
 func (mc MockCollector) DefaultTags() []string {
-	return mc.defaultTags
+	return mc.Field.DefaultTags
 }
 
 // Count adds a mock count event to the event stream.
 func (mc MockCollector) Count(name string, value int64, tags ...string) error {
-	mc.Events <- MockMetric{Name: name, Count: value, Tags: append(mc.defaultTags, tags...)}
+	mc.Metrics <- MockMetric{Name: mc.makeName(name), Count: value, Tags: append(mc.Field.DefaultTags, tags...)}
 	if len(mc.Errors) > 0 {
 		return <-mc.Errors
 	}
@@ -54,7 +81,7 @@ func (mc MockCollector) Count(name string, value int64, tags ...string) error {
 
 // Increment adds a mock count event to the event stream with value (1).
 func (mc MockCollector) Increment(name string, tags ...string) error {
-	mc.Events <- MockMetric{Name: name, Count: 1, Tags: append(mc.defaultTags, tags...)}
+	mc.Metrics <- MockMetric{Name: mc.makeName(name), Count: 1, Tags: append(mc.Field.DefaultTags, tags...)}
 	if len(mc.Errors) > 0 {
 		return <-mc.Errors
 	}
@@ -63,7 +90,7 @@ func (mc MockCollector) Increment(name string, tags ...string) error {
 
 // Gauge adds a mock count event to the event stream with value (1).
 func (mc MockCollector) Gauge(name string, value float64, tags ...string) error {
-	mc.Events <- MockMetric{Name: name, Gauge: value, Tags: append(mc.defaultTags, tags...)}
+	mc.Metrics <- MockMetric{Name: mc.makeName(name), Gauge: value, Tags: append(mc.Field.DefaultTags, tags...)}
 	if len(mc.Errors) > 0 {
 		return <-mc.Errors
 	}
@@ -72,7 +99,7 @@ func (mc MockCollector) Gauge(name string, value float64, tags ...string) error 
 
 // Histogram adds a mock count event to the event stream with value (1).
 func (mc MockCollector) Histogram(name string, value float64, tags ...string) error {
-	mc.Events <- MockMetric{Name: name, Histogram: value, Tags: append(mc.defaultTags, tags...)}
+	mc.Metrics <- MockMetric{Name: mc.makeName(name), Histogram: value, Tags: append(mc.Field.DefaultTags, tags...)}
 	if len(mc.Errors) > 0 {
 		return <-mc.Errors
 	}
@@ -81,7 +108,7 @@ func (mc MockCollector) Histogram(name string, value float64, tags ...string) er
 
 // TimeInMilliseconds adds a mock time in millis event to the event stream with a value.
 func (mc MockCollector) TimeInMilliseconds(name string, value time.Duration, tags ...string) error {
-	mc.Events <- MockMetric{Name: name, TimeInMilliseconds: timeutil.Milliseconds(value), Tags: append(mc.defaultTags, tags...)}
+	mc.Metrics <- MockMetric{Name: mc.makeName(name), TimeInMilliseconds: timeutil.Milliseconds(value), Tags: append(mc.Field.DefaultTags, tags...)}
 	if len(mc.Errors) > 0 {
 		return <-mc.Errors
 	}

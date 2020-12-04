@@ -21,7 +21,7 @@ type altItemKey struct{}
 func TestLocalCache(t *testing.T) {
 	assert := assert.New(t)
 
-	c := NewLocalCache()
+	c := New()
 
 	t1 := time.Date(2019, 06, 14, 12, 10, 9, 8, time.UTC)
 	t2 := time.Date(2019, 06, 14, 00, 01, 02, 03, time.UTC)
@@ -83,7 +83,7 @@ func try(action func()) (err error) {
 func TestLocalCacheKeyPanic(t *testing.T) {
 	assert := assert.New(t)
 
-	c := NewLocalCache()
+	c := New()
 
 	assert.NotNil(try(func() {
 		c.Set(nil, "bar")
@@ -98,7 +98,7 @@ func TestLocalCacheGetOrSet(t *testing.T) {
 
 	valueProvider := func() (interface{}, error) { return "foo", nil }
 
-	lc := NewLocalCache()
+	lc := New()
 	found, ok, err := lc.GetOrSet(itemKey{}, valueProvider)
 	assert.Nil(err)
 	assert.False(ok)
@@ -134,7 +134,7 @@ func TestLocalCacheGetOrSetError(t *testing.T) {
 		return nil, fmt.Errorf("test")
 	}
 
-	lc := NewLocalCache()
+	lc := New()
 
 	found, ok, err := lc.GetOrSet("test", valueProvider)
 	assert.NotNil(err)
@@ -153,7 +153,7 @@ func TestLocalCacheGetOrSetDoubleCheckRace(t *testing.T) {
 		return "foo", nil
 	}
 
-	lc := NewLocalCache()
+	lc := New()
 
 	go func() {
 		lc.Set("test", "bar2")
@@ -169,7 +169,7 @@ func TestLocalCacheGetOrSetDoubleCheckRace(t *testing.T) {
 func TestLocalCacheSetUpdatesLRU(t *testing.T) {
 	assert := assert.New(t)
 
-	c := NewLocalCache()
+	c := New()
 	c.Set("k1", "v1", OptValueTTL(0))
 	c.Set("k2", "v2", OptValueTTL(0))
 	assert.Equal("k1", c.LRU.Peek().Key)
@@ -180,7 +180,7 @@ func TestLocalCacheSetUpdatesLRU(t *testing.T) {
 	c.Set("k1", "v3", OptValueTTL(time.Second))
 	assert.Equal("k2", c.LRU.Peek().Key)
 
-	c.Sweep(context.Background())
+	assert.Nil(c.Sweep(context.Background()))
 	assert.True(c.Has("k1"))
 	assert.False(c.Has("k2"))
 }
@@ -188,7 +188,7 @@ func TestLocalCacheSetUpdatesLRU(t *testing.T) {
 func TestLocalCacheSweep(t *testing.T) {
 	assert := assert.New(t)
 
-	c := NewLocalCache()
+	c := New()
 
 	var didSweep, didRemove bool
 	c.Set(itemKey{}, "foo",
@@ -212,7 +212,7 @@ func TestLocalCacheSweep(t *testing.T) {
 	assert.True(ok)
 	assert.Equal("bar", found)
 
-	c.Sweep(context.Background())
+	assert.Nil(c.Sweep(context.Background()))
 
 	found, ok = c.Get(itemKey{})
 	assert.False(ok)
@@ -228,7 +228,7 @@ func TestLocalCacheSweep(t *testing.T) {
 func TestLocalCacheStartSweeping(t *testing.T) {
 	assert := assert.New(t)
 
-	c := NewLocalCache(OptLocalCacheSweepInterval(time.Millisecond))
+	c := New(OptSweepInterval(time.Millisecond))
 
 	didSweep := make(chan struct{})
 	c.Set(itemKey{}, "a value",
@@ -252,9 +252,9 @@ func TestLocalCacheStartSweeping(t *testing.T) {
 	assert.True(ok)
 	assert.Equal("bar", found)
 
-	go c.Start()
+	go func() { _ = c.Start() }()
 	<-c.NotifyStarted()
-	defer c.Stop()
+	defer func() { _ = c.Stop() }()
 	<-didSweep
 
 	found, ok = c.Get(itemKey{})
@@ -273,7 +273,7 @@ func TestLocalCacheStats(t *testing.T) {
 	t2 := time.Date(2019, 06, 14, 00, 01, 02, 03, time.UTC)
 	t3 := time.Date(2019, 06, 14, 12, 01, 02, 03, time.UTC)
 
-	lc := NewLocalCache()
+	lc := New()
 
 	lc.Set("foo", "bar", OptValueTimestamp(t1))
 	lc.Set("foo2", "bar2", OptValueTimestamp(t2))
@@ -285,6 +285,56 @@ func TestLocalCacheStats(t *testing.T) {
 	assert.NotZero(stats.MaxAge)
 }
 
+func TestLocalCacheResetDefault(t *testing.T) {
+	assert := assert.New(t)
+
+	var keyWasSet, didCallRemoveHandler, removalReasonWasRemoved bool
+	lc := New()
+	lc.Set("foo", "foo-value")
+	lc.Set("bar", "bar-value")
+	lc.Set("remove-handler", "remove-handler-value", OptValueOnRemove(func(key interface{}, reason RemovalReason) {
+		didCallRemoveHandler = true
+		keyWasSet = key.(string) == "remove-handler"
+		removalReasonWasRemoved = reason == Removed
+	}))
+
+	assert.Equal(3, len(lc.Data))
+	lc.Reset()
+	assert.Zero(lc.LRU.Len())
+	assert.True(didCallRemoveHandler, "should have called remove handler for `remove-handler`")
+	assert.True(keyWasSet, "key should have been `remove-handler`")
+	assert.True(removalReasonWasRemoved, "removal reason should have been `Removed`")
+
+	lc.Set("foo", "foo-value")
+	lc.Set("bar", "bar-value")
+	assert.Equal(2, len(lc.Data))
+}
+
+func TestLocalCacheResetHeap(t *testing.T) {
+	assert := assert.New(t)
+
+	var keyWasSet, didCallRemoveHandler, removalReasonWasRemoved bool
+	lc := New(OptLRU(NewLRUHeap()))
+	lc.Set("foo", "foo-value")
+	lc.Set("bar", "bar-value")
+	lc.Set("remove-handler", "remove-handler-value", OptValueOnRemove(func(key interface{}, reason RemovalReason) {
+		didCallRemoveHandler = true
+		keyWasSet = key.(string) == "remove-handler"
+		removalReasonWasRemoved = reason == Removed
+	}))
+
+	assert.Equal(3, len(lc.Data))
+	lc.Reset()
+	assert.Zero(lc.LRU.Len())
+	assert.True(didCallRemoveHandler, "should have called remove handler for `remove-handler`")
+	assert.True(keyWasSet, "key should have been `remove-handler`")
+	assert.True(removalReasonWasRemoved, "removal reason should have been `Removed`")
+
+	lc.Set("foo", "foo-value")
+	lc.Set("bar", "bar-value")
+	assert.Equal(2, len(lc.Data))
+}
+
 func BenchmarkLocalCache(b *testing.B) {
 	for x := 0; x < b.N; x++ {
 		benchLocalCache(1024)
@@ -292,7 +342,7 @@ func BenchmarkLocalCache(b *testing.B) {
 }
 
 func benchLocalCache(items int) {
-	lc := NewLocalCache()
+	lc := New()
 	for x := 0; x < items; x++ {
 		lc.Set(x, strconv.Itoa(x), OptValueTTL(time.Millisecond))
 	}
@@ -310,5 +360,5 @@ func benchLocalCache(items int) {
 			panic("wrong value")
 		}
 	}
-	lc.Sweep(context.Background())
+	_ = lc.Sweep(context.Background())
 }

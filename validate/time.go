@@ -28,7 +28,7 @@ func (t TimeValidators) Before(before time.Time) Validator {
 		if t.Value == nil {
 			return Errorf(ErrTimeBefore, nil, "before: %v", before)
 		}
-		if (*t.Value).After(before) {
+		if t.Value.After(before) {
 			return Errorf(ErrTimeBefore, *t.Value, "before: %v", before)
 		}
 		return nil
@@ -42,7 +42,7 @@ func (t TimeValidators) BeforeNowUTC() Validator {
 		if t.Value == nil {
 			return Errorf(ErrTimeBefore, nil, "before: %v", nowUTC)
 		}
-		if (*t.Value).After(nowUTC) {
+		if t.Value.After(nowUTC) {
 			return Errorf(ErrTimeBefore, *t.Value, "before: %v", nowUTC)
 		}
 		return nil
@@ -55,7 +55,7 @@ func (t TimeValidators) After(after time.Time) Validator {
 		if t.Value == nil {
 			return Errorf(ErrTimeAfter, nil, "after: %v", after)
 		}
-		if (*t.Value).Before(after) {
+		if t.Value.Before(after) {
 			return Errorf(ErrTimeAfter, *t.Value, "after: %v", after)
 		}
 		return nil
@@ -69,7 +69,7 @@ func (t TimeValidators) AfterNowUTC() Validator {
 		if t.Value == nil {
 			return Errorf(ErrTimeAfter, nil, "after: %v", nowUTC)
 		}
-		if (*t.Value).Before(nowUTC) { // if value not after now == value is before now
+		if t.Value.Before(nowUTC) { // if value not after now == value is before now
 			return Errorf(ErrTimeAfter, *t.Value, "after: %v", nowUTC)
 		}
 		return nil
@@ -82,10 +82,10 @@ func (t TimeValidators) Between(start, end time.Time) Validator {
 		if t.Value == nil {
 			return Errorf(ErrTimeAfter, nil, "after: %v", start)
 		}
-		if (*t.Value).Before(start) {
+		if t.Value.Before(start) {
 			return Errorf(ErrTimeAfter, *t.Value, "after: %v", start)
 		}
-		if (*t.Value).After(end) {
+		if t.Value.After(end) {
 			return Errorf(ErrTimeBefore, *t.Value, "before: %v", end)
 		}
 		return nil

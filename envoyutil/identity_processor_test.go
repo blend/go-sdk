@@ -95,7 +95,7 @@ func TestOptFormatIdentity(t *testing.T) {
 	opt := envoyutil.OptFormatIdentity(formatter)
 	opt(ip)
 
-	// Can't compare functions for equality, see https://github.com/blend/go-sdk/issues/167
+	// Can't compare functions for equality, see https://golang.blend.com/sdk/issues/167
 	// so we make sure our function is as expected.
 	s, err := ip.FormatIdentity(envoyutil.XFCCElement{}, nil)
 	assert.Equal(sentinel, s)

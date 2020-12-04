@@ -95,6 +95,22 @@ func TestScopeMethods(t *testing.T) {
 	assert.Equal("[outer > inner] [info] format test\tfoo=bar\n", buf.String())
 }
 
+func TestScopeFromContext(t *testing.T) {
+	assert := assert.New(t)
+
+	sc := NewScope(None())
+	sc.Path = []string{"one", "two"}
+	sc.Labels = Labels{"foo": "bar"}
+
+	ctx := WithLabels(context.Background(), Labels{"moo": "loo"})
+	ctx = WithPath(ctx, "three", "four")
+
+	final := sc.FromContext(ctx)
+	assert.Equal([]string{"one", "two", "three", "four"}, final.Path)
+	assert.Equal("bar", final.Labels["foo"])
+	assert.Equal("loo", final.Labels["moo"])
+}
+
 func TestScopeApply(t *testing.T) {
 	assert := assert.New(t)
 
@@ -105,7 +121,7 @@ func TestScopeApply(t *testing.T) {
 	ctx := WithLabels(context.Background(), Labels{"moo": "loo"})
 	ctx = WithPath(ctx, "three", "four")
 
-	final := sc.Apply(ctx)
+	final := sc.ApplyContext(ctx)
 	assert.Equal([]string{"one", "two", "three", "four"}, GetPath(final))
 	assert.Equal("bar", GetLabels(final)["foo"])
 	assert.Equal("loo", GetLabels(final)["moo"])

@@ -3,11 +3,12 @@ package web
 // SessionAware is an action that injects the session into the context, it acquires a read lock on session.
 func SessionAware(action Action) Action {
 	return func(ctx *Ctx) Result {
-		session, err := ctx.App.Auth.VerifySession(ctx)
+		session, err := ctx.App.Auth.VerifyOrExpireSession(ctx)
 		if err != nil && !IsErrSessionInvalid(err) {
 			return ctx.DefaultProvider.InternalError(err)
 		}
 		ctx.Session = session
+		ctx.WithContext(WithSession(ctx.Context(), session))
 		return action(ctx)
 	}
 }
@@ -16,7 +17,7 @@ func SessionAware(action Action) Action {
 // or identified in some form on the request, and acquires a read lock on session.
 func SessionRequired(action Action) Action {
 	return func(ctx *Ctx) Result {
-		session, err := ctx.App.Auth.VerifySession(ctx)
+		session, err := ctx.App.Auth.VerifyOrExpireSession(ctx)
 		if err != nil && !IsErrSessionInvalid(err) {
 			return ctx.DefaultProvider.InternalError(err)
 		}
@@ -24,6 +25,7 @@ func SessionRequired(action Action) Action {
 			return ctx.App.Auth.LoginRedirect(ctx)
 		}
 		ctx.Session = session
+		ctx.WithContext(WithSession(ctx.Context(), session))
 		return action(ctx)
 	}
 }
@@ -32,7 +34,7 @@ func SessionRequired(action Action) Action {
 func SessionMiddleware(notAuthorized Action) Middleware {
 	return func(action Action) Action {
 		return func(ctx *Ctx) Result {
-			session, err := ctx.App.Auth.VerifySession(ctx)
+			session, err := ctx.App.Auth.VerifyOrExpireSession(ctx)
 			if err != nil && !IsErrSessionInvalid(err) {
 				return ctx.DefaultProvider.InternalError(err)
 			}
@@ -44,6 +46,7 @@ func SessionMiddleware(notAuthorized Action) Middleware {
 				return ctx.App.Auth.LoginRedirect(ctx)
 			}
 			ctx.Session = session
+			ctx.WithContext(WithSession(ctx.Context(), session))
 			return action(ctx)
 		}
 	}

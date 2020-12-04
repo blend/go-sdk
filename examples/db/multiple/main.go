@@ -48,11 +48,15 @@ func createSchema(log logger.Log, conn *db.Connection) error {
 		),
 	)
 
-	suite := migration.NewWithGroups(
-		migration.NewGroupWithActions(
-			books,
-			people,
-			ledger,
+	suite := migration.New(
+		migration.OptGroups(
+			migration.NewGroup(
+				migration.OptGroupActions(
+					books,
+					people,
+					ledger,
+				),
+			),
 		),
 	)
 	suite.Log = log
@@ -118,11 +122,15 @@ func dropSchema(log logger.Log, conn *db.Connection) error {
 		),
 	)
 
-	suite := migration.NewWithGroups(
-		migration.NewGroupWithActions(
-			ledger,
-			people,
-			books,
+	suite := migration.New(
+		migration.OptGroups(
+			migration.NewGroup(
+				migration.OptGroupActions(
+					ledger,
+					people,
+					books,
+				),
+			),
 		),
 	)
 

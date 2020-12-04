@@ -6,11 +6,10 @@ import (
 	"runtime"
 	"time"
 
-	raven "github.com/getsentry/sentry-go"
+	raven "github.com/blend/sentry-go"
 
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
-	"github.com/blend/go-sdk/webutil"
 )
 
 var (
@@ -32,7 +31,7 @@ func New(cfg Config) (*Client, error) {
 		raven.ClientOptions{
 			Dsn:         cfg.DSN,
 			Environment: cfg.EnvironmentOrDefault(),
-			ServerName:  cfg.ServerNameOrDefault(),
+			ServerName:  cfg.ServiceNameOrDefault(),
 			Dist:        cfg.DistOrDefault(),
 			Release:     cfg.ReleaseOrDefault(),
 		},
@@ -110,13 +109,7 @@ func errRequest(ee logger.ErrorEvent) *raven.Request {
 		return &raven.Request{}
 	}
 
-	req := raven.NewRequest(typed)
-
-	// remove cookies from the sentry request if they exist
-	req.Cookies = ""
-	delete(req.Headers, webutil.HeaderCookie)
-
-	return req
+	return raven.NewRequest(typed)
 }
 
 func errStackTrace(err error) *raven.Stacktrace {

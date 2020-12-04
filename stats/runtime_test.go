@@ -36,14 +36,14 @@ func TestRuntimeCollect(t *testing.T) {
 	var previous, current runtime.MemStats
 	runtime.ReadMemStats(&previous)
 
-	collector := NewMockCollector()
+	collector := NewMockCollector(32)
 	for i := 0; i < len(runtimeMetrics); i++ {
 		go func() { collector.Errors <- fmt.Errorf("error") }()
 	}
 	go runtimeCollect(collector, &previous, &current)
 
 	for _, metricName := range runtimeMetrics {
-		metric := <-collector.Events
+		metric := <-collector.Metrics
 		assert.Equal(metricName, metric.Name)
 		assert.Zero(metric.Count)
 		assert.Zero(metric.Histogram)

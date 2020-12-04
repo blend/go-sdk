@@ -14,9 +14,9 @@ func TestOptBody(t *testing.T) {
 	req := New("https://foo.bar.local")
 
 	assert.Nil(OptBody(ioutil.NopCloser(bytes.NewBufferString("this is only a test")))(req))
-	assert.NotNil(req.Body)
+	assert.NotNil(req.Request.Body)
 
-	contents, err := ioutil.ReadAll(req.Body)
+	contents, err := ioutil.ReadAll(req.Request.Body)
 	assert.Nil(err)
 	assert.Equal("this is only a test", string(contents))
 }
