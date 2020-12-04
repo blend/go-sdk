@@ -11,7 +11,6 @@ import (
 	// tests uses postgres
 	_ "github.com/lib/pq"
 
-	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/uuid"
 )
 
@@ -31,7 +30,8 @@ func TestMain(m *testing.M) {
 		fmt.Fprintf(os.Stderr, "%+v", err)
 		os.Exit(1)
 	}
-	assert.Main(m)
+
+	os.Exit(m.Run())
 }
 
 // BenchmarkMain is the benchmarking entrypoint.
