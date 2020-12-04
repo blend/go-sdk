@@ -39,12 +39,13 @@ func TestStringArrayReverse(t *testing.T) {
 			arr = append(arr, strconv.Itoa(x))
 		}
 		rev = arr.Reverse()
-		if arraySize == 0 {
+		switch {
+		case arraySize == 0:
 			a.Empty(rev)
-		} else if arraySize == 1 {
+		case arraySize == 1:
 			a.Len(rev, 1)
 			a.Equal(rev[0], arr[0])
-		} else if arraySize > 1 {
+		case arraySize > 1:
 			for y := 0; y < arraySize-1; y++ {
 				a.Equal(rev[y], arr[arraySize-(y+1)], fmt.Sprintf("array size: %d", arraySize))
 			}
