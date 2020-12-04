@@ -49,11 +49,13 @@ func TestCreateTLSListener(t *testing.T) {
 	assert.Nil(err)
 	assert.NotNil(listener)
 
+	listenerAddress := listener.Addr().String()
+
 	dialErrors := make(chan error, 1)
 	go func() {
-		_, err = net.Dial("tcp", listener.Addr().String())
-		if err != nil {
-			dialErrors <- err
+		_, netErr := net.Dial("tcp", listenerAddress)
+		if netErr != nil {
+			dialErrors <- netErr
 		}
 	}()
 
