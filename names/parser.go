@@ -127,17 +127,18 @@ func uppercaseFirstAll(input string, seperator string) string {
 	parts := strings.Split(input, seperator)
 	for _, thisWord := range parts {
 		toAppend := ""
-		if isCompoundLastName(strings.ToLower(thisWord)) {
+		switch {
+		case isCompoundLastName(strings.ToLower(thisWord)):
 			// preserve first letter case, but to lower the rest for compound last names
 			if unicode.IsUpper([]rune(thisWord)[0]) {
 				toAppend = strings.Title(strings.ToLower(thisWord))
 			} else {
 				toAppend = strings.ToLower(thisWord)
 			}
-		} else if isCamelCase(thisWord) {
+		case isCamelCase(thisWord):
 			// Preserve case for Camel-cased strings
 			toAppend = thisWord
-		} else {
+		default:
 			// For everything else, force to title case
 			toAppend = upperCaseFirst(strings.ToLower(thisWord))
 		}

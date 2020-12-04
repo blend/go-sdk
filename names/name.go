@@ -14,34 +14,34 @@ func (n Name) String() string {
 	fullName := ""
 
 	if n.Salutation != "" {
-		fullName = fullName + n.Salutation
+		fullName += n.Salutation
 	}
 
 	if n.FirstName != "" {
 		if fullName != "" {
-			fullName = fullName + " "
+			fullName += " "
 		}
-		fullName = fullName + n.FirstName
+		fullName += n.FirstName
 	}
 
 	if n.MiddleName != "" {
 		if fullName != "" {
-			fullName = fullName + " "
+			fullName += " "
 		}
-		fullName = fullName + n.MiddleName
+		fullName += n.MiddleName
 	}
 
 	if n.LastName != "" {
 		if fullName != "" {
-			fullName = fullName + " "
+			fullName += " "
 		}
-		fullName = fullName + n.LastName
+		fullName += n.LastName
 	}
 	if n.Suffix != "" {
 		if fullName != "" {
-			fullName = fullName + " "
+			fullName += " "
 		}
-		fullName = fullName + n.Suffix
+		fullName += n.Suffix
 	}
 
 	return fullName
