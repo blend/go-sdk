@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/blend/go-sdk/yaml"
+	"gopkg.in/yaml.v3"
 )
 
 // Vars is a soft alias to map[string]interface{}.

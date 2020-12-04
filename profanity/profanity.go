@@ -8,9 +8,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/blend/go-sdk/ansi"
 	"github.com/blend/go-sdk/ex"
-	"github.com/blend/go-sdk/yaml"
 )
 
 // New creates a new profanity engine with a given set of config options.

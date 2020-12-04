@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"os"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/secrets"
-	"github.com/blend/go-sdk/yaml"
 )
 
 type myConfig struct {
