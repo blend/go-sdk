@@ -1,7 +1,6 @@
 PREFIX			?= $(shell pwd)
 PKGS 			:= $(shell go list ./... | grep -v /vendor/)
-# We don't lint yaml because its forked code and terrible at lint
-LINTPKGS        := $(shell go list ./... | grep -v /vendor/ | grep -v "go-sdk/yaml")
+LINTPKGS        := $(shell go list ./... | grep -v /vendor/)
 SHASUMCMD 		:= $(shell command -v sha1sum || command -v shasum; 2> /dev/null)
 TARCMD 			:= $(shell command -v tar || command -v tar; 2> /dev/null)
 GIT_REF 		:= $(shell git log --pretty=format:'%h' -n 1)
