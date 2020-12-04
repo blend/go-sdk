@@ -1,0 +1,4 @@
+GOLANG_ASSERT_GO_SDK:
+  description: "sdk/assert needs to only depend on itself as it's used by every other package"
+  goImports: 
+    include: [ "github.com/blend/go-sdk/*" ]
