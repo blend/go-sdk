@@ -9,18 +9,9 @@ import (
 	"time"
 )
 
-// linker metadata block
-// this block must be present
-// it is used by goreleaser
-var (
-	version = "dev"
-	commit  = "none"
-	date    = "unknown"
-)
-
 var verbose = flag.Bool("verbose", false, "Print verbose output")
-var delay = flag.Int("delay", 0, "A time in milliseconds to wait before starting the sub process")
-var wait = flag.Int("wait", 0, "A time in milliseconds to wait between restarting the sub process on exit")
+var delay = flag.Duration("delay", 0, "A duration to delay for")
+var wait = flag.Duration("wait", 0, "A duration to wait between restarting the sub process on exit")
 
 func main() {
 	flag.Parse()
@@ -70,9 +61,8 @@ func createSub(pwd, binPath string, args ...string) *exec.Cmd {
 
 func runLoop(quit chan os.Signal, pwd string, subCommand ...string) error {
 	if delay != nil && *delay > 0 {
-		delayMillis := time.Duration(*delay) * time.Millisecond
-		verbosef("delaying %v before starting", delayMillis)
-		alarm := time.After(delayMillis)
+		verbosef("delaying %v before starting", *delay)
+		alarm := time.After(*delay)
 		select {
 		case <-alarm:
 			break
@@ -108,7 +98,7 @@ func runLoop(quit chan os.Signal, pwd string, subCommand ...string) error {
 			case s := <-quit:
 				verbosef("received SIGINT (%s) while sub process is running, killing sub process", s)
 				didQuit = true
-				sub.Process.Kill()
+				_ = sub.Process.Kill()
 				return
 			case <-abort:
 				close(aborted)
@@ -131,9 +121,8 @@ func runLoop(quit chan os.Signal, pwd string, subCommand ...string) error {
 		<-aborted
 
 		if wait != nil && *wait > 0 {
-			waitMillis := time.Duration(*wait) * time.Millisecond
-			verbosef("waiting %v before restart", waitMillis)
-			alarm := time.After(waitMillis)
+			verbosef("waiting %v before restart", *wait)
+			alarm := time.After(*wait)
 			select {
 			case <-alarm:
 				continue
