@@ -53,7 +53,7 @@ func (r RuleSpec) String() string {
 	var tokens []string
 
 	if len(r.ID) > 0 {
-		tokens = append(tokens, fmt.Sprintf("%s", r.ID))
+		tokens = append(tokens, r.ID)
 	}
 	if len(r.Description) > 0 {
 		tokens = append(tokens, "`"+r.Description+"`")
