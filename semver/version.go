@@ -35,7 +35,7 @@ func init() {
 func NewVersion(v string) (*Version, error) {
 	matches := versionRegexp.FindStringSubmatch(v)
 	if matches == nil {
-		return nil, fmt.Errorf("Malformed version: %s", v)
+		return nil, fmt.Errorf("malformed version: %s", v)
 	}
 	segmentsStr := strings.Split(matches[1], ".")
 	segments := make([]int64, len(segmentsStr))
@@ -44,7 +44,7 @@ func NewVersion(v string) (*Version, error) {
 		val, err := strconv.ParseInt(str, 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf(
-				"Error parsing version: %s", err)
+				"error parsing version: %s", err)
 		}
 
 		segments[i] = int64(val)
@@ -310,7 +310,7 @@ func (v *Version) String() string {
 		str := strconv.FormatInt(s, 10)
 		fmtParts[i] = str
 	}
-	fmt.Fprintf(&buf, strings.Join(fmtParts, "."))
+	fmt.Fprint(&buf, strings.Join(fmtParts, "."))
 	if v.pre != "" {
 		fmt.Fprintf(&buf, "-%s", v.pre)
 	}
