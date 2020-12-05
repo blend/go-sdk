@@ -17,4 +17,4 @@ You can also add additional parameters to the retry:
 	}, retry.OptMaxAttempts(10), retry.OptExponentialBackoff(time.Second))
 
 */
-package retry
+package retry //import "github.com/blend/go-sdk/retry"
