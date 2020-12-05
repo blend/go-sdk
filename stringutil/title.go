@@ -5,22 +5,6 @@ import (
 	"unicode"
 )
 
-var nonTitleWords = map[string]bool{
-	"and":     true,
-	"the":     true,
-	"a":       true,
-	"an":      true,
-	"but":     true,
-	"or":      true,
-	"on":      true,
-	"in":      true,
-	"with":    true,
-	"for":     true,
-	"either":  true,
-	"neither": true,
-	"nor":     true,
-}
-
 // Title returns a string in title case.
 func Title(corpus string) string {
 	output := bytes.NewBuffer(nil)
