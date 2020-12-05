@@ -3,19 +3,54 @@ package webutil
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"encoding/xml"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strings"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/ex"
+)
+
+// NOTE: Verify that `maybeBadWriter` satisfies `io.Writer`.
+var (
+	_ io.Writer = (*maybeBadWriter)(nil)
 )
 
 type xmlBody struct {
 	X []string `xml:"x"`
 	Y []string `xml:"y"`
+}
+
+func TestRequestOptionsApply(t *testing.T) {
+	assert := assert.New(t)
+
+	ro := RequestOptions{
+		OptMethod("POST"),
+		OptQuery(url.Values{"foo": []string{"bar", "baz"}}),
+	}
+	req := &http.Request{}
+	assert.Nil(ro.Apply(req))
+
+	assert.Equal("POST", req.Method)
+	assert.NotNil(req.URL)
+	assert.Equal("foo=bar&foo=baz", req.URL.RawQuery)
+
+	// Apply with failure.
+	ro = RequestOptions{
+		OptJSONBody(func() string { return "cannot marshal me" }),
+	}
+	req = &http.Request{}
+	err := ro.Apply(req)
+	assert.NotNil(err)
+	_, ok := err.(*json.UnsupportedTypeError)
+	assert.True(ok)
 }
 
 func TestRequestOptions(t *testing.T) {
@@ -62,6 +97,12 @@ func TestRequestOptions(t *testing.T) {
 	assert.NotNil(req.URL)
 	assert.Equal("foo=bar", req.URL.RawQuery)
 
+	// Also works if `req.URL` is `nil`
+	req.URL = nil
+	assert.Nil(OptQueryValue("foo", "bar")(req))
+	assert.NotNil(req.URL)
+	assert.Equal("foo=bar", req.URL.RawQuery)
+
 	assert.Nil(req.Header)
 	assert.Nil(OptHeader(http.Header{"X-Foo": []string{"bar", "baz"}})(req))
 	assert.Equal("bar", req.Header.Get("X-Foo"))
@@ -70,11 +111,13 @@ func TestRequestOptions(t *testing.T) {
 	assert.Nil(OptHeaderValue("X-Foo", "bar")(req))
 	assert.Equal("bar", req.Header.Get("X-Foo"))
 
+	req.Header = nil
 	assert.Nil(req.PostForm)
 	assert.Nil(OptPostForm(url.Values{"foo": []string{"bar", "baz"}})(req))
 	assert.Equal("bar", req.PostForm.Get("foo"))
 
 	req.PostForm = nil
+	req.Header = nil
 	assert.Nil(OptPostFormValue("buzz", "fuzz")(req))
 	assert.Equal("fuzz", req.PostForm.Get("buzz"))
 
@@ -127,6 +170,18 @@ func TestRequestOptions(t *testing.T) {
 	assert.NotNil(req.Body)
 }
 
+func TestOptBasicAuth(t *testing.T) {
+	assert := assert.New(t)
+
+	opt := OptBasicAuth("un", "pw")
+	r := &http.Request{}
+	err := opt(r)
+	assert.Nil(err)
+
+	expected := http.Header{"Authorization": []string{"Basic dW46cHc="}}
+	assert.Equal(expected, r.Header)
+}
+
 func TestOptBodyBytes(t *testing.T) {
 	assert := assert.New(t)
 	body := []byte("hello\n")
@@ -175,6 +230,17 @@ func TestOptPostedFiles(t *testing.T) {
 	assert.Equal([]byte(expected), bodyBytes)
 	assert.Equal(r.ContentLength, len(expected))
 	validateGetBody(assert, r, []byte(expected))
+
+	// Sad path
+	we := ex.New("write-error at CreateForm")
+	mbw := &maybeBadWriter{WriteError: we, ErrorAfter: 1}
+	setMakeBytesBuffer(func() bytesWriter { return mbw })
+	defer restoreMakeBytesBuffer()
+
+	opt = OptPostedFiles(file1)
+	r = &http.Request{}
+	err = opt(r)
+	assert.Equal(we, err)
 }
 
 func TestOptJSONBody(t *testing.T) {
@@ -194,6 +260,14 @@ func TestOptJSONBody(t *testing.T) {
 	assert.Equal(expected, bodyBytes)
 	assert.Equal(r.ContentLength, 20)
 	validateGetBody(assert, r, expected)
+
+	// Cannot marshal to JSON
+	opt = OptJSONBody(func() string { return "cannot marshal me" })
+	r = &http.Request{}
+	err = opt(r)
+	assert.NotNil(err)
+	_, ok := err.(*json.UnsupportedTypeError)
+	assert.True(ok)
 }
 
 func TestOptXMLBody(t *testing.T) {
@@ -212,6 +286,50 @@ func TestOptXMLBody(t *testing.T) {
 	assert.Equal(expected, bodyBytes)
 	assert.Equal(r.ContentLength, 45)
 	validateGetBody(assert, r, expected)
+
+	// Cannot marshal to XML
+	opt = OptXMLBody(func() string { return "cannot marshal me" })
+	r = &http.Request{}
+	err = opt(r)
+	assert.NotNil(err)
+	_, ok := err.(*xml.UnsupportedTypeError)
+	assert.True(ok)
+}
+
+func Test_populateFormData(t *testing.T) {
+	assert := assert.New(t)
+
+	// Happy path
+	b := new(bytes.Buffer)
+	w := multipart.NewWriter(b)
+	file := PostedFile{Key: "a", FileName: "b.txt", Contents: []byte("hey")}
+	files := []PostedFile{file}
+	err := populateFormData(w, files)
+	assert.Nil(err)
+	// NOTE: This relies on the fact that the randomly generated boundary is
+	//       always length 60.
+	assert.Len(b.Bytes(), 237)
+
+	// `CreateFormFile` fails
+	we := ex.New("write-error at CreateForm")
+	mbw := &maybeBadWriter{WriteError: we, ErrorAfter: 1}
+	w = multipart.NewWriter(mbw)
+	err = populateFormData(w, files)
+	assert.Equal(we, err)
+
+	// `io.Copy` fails
+	we = ex.New("write-error at io.Copy")
+	mbw = &maybeBadWriter{WriteError: we, ErrorAfter: 2}
+	w = multipart.NewWriter(mbw)
+	err = populateFormData(w, files)
+	assert.Equal(we, err)
+
+	// `w.Close` fails
+	we = ex.New("write-error at w.Close")
+	mbw = &maybeBadWriter{WriteError: we, ErrorAfter: 3}
+	w = multipart.NewWriter(mbw)
+	err = populateFormData(w, files)
+	assert.Equal(we, err)
 }
 
 func getBoundary(assert *assert.Assertions, h http.Header) string {
@@ -229,4 +347,22 @@ func validateGetBody(assert *assert.Assertions, r *http.Request, expected []byte
 	bodyBytes, err := ioutil.ReadAll(bodyRC)
 	assert.Nil(err)
 	assert.Equal(expected, bodyBytes)
+}
+
+type maybeBadWriter struct {
+	Count      int
+	ErrorAfter int
+	WriteError error
+}
+
+func (mbw *maybeBadWriter) Write(p []byte) (int, error) {
+	mbw.Count++
+	if mbw.Count == mbw.ErrorAfter {
+		return len(p), mbw.WriteError
+	}
+	return len(p), nil
+}
+
+func (mbw *maybeBadWriter) Bytes() []byte {
+	return nil
 }

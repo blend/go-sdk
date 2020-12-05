@@ -10,6 +10,12 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"sync"
+)
+
+var (
+	makeBytesBuffer     func() bytesWriter = makeBytesBufferDefault
+	makeBytesBufferLock sync.Mutex
 )
 
 // RequestOption is an option for http.Request.
@@ -208,22 +214,12 @@ func OptPostedFiles(files ...PostedFile) RequestOption {
 			r.Header = make(http.Header)
 		}
 
-		b := new(bytes.Buffer)
+		b := makeBytesBuffer()
 		w := multipart.NewWriter(b)
-		for _, file := range files {
-			fw, err := w.CreateFormFile(file.Key, file.FileName)
-			if err != nil {
-				return err
-			}
-			_, err = io.Copy(fw, bytes.NewBuffer(file.Contents))
-			if err != nil {
-				return err
-			}
-		}
-		r.Header.Set("Content-Type", w.FormDataContentType())
-		if err := w.Close(); err != nil {
+		if err := populateFormData(w, files); err != nil {
 			return err
 		}
+		r.Header.Set("Content-Type", w.FormDataContentType())
 
 		bb := b.Bytes()
 		r.Body = ioutil.NopCloser(bytes.NewReader(bb))
@@ -273,4 +269,49 @@ func OptXMLBody(obj interface{}) RequestOption {
 		r.ContentLength = int64(len(contents))
 		return nil
 	}
+}
+
+func populateFormData(w *multipart.Writer, files []PostedFile) error {
+	for _, file := range files {
+		fw, err := w.CreateFormFile(file.Key, file.FileName)
+		if err != nil {
+			return err
+		}
+		_, err = io.Copy(fw, bytes.NewBuffer(file.Contents))
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := w.Close(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// bytesWriter is an interface is meant to stand in for `bytes.Buffer`;
+// intended to support testing.
+type bytesWriter interface {
+	io.Writer
+	Bytes() []byte
+}
+
+// makeBytesBufferDefault creates an empty `bytes.Buffer`.
+func makeBytesBufferDefault() bytesWriter {
+	return new(bytes.Buffer)
+}
+
+// setMakeBytesBuffer sets the `makeBytesBuffer` factory.
+func setMakeBytesBuffer(mbb func() bytesWriter) {
+	makeBytesBufferLock.Lock()
+	defer makeBytesBufferLock.Unlock()
+	makeBytesBuffer = mbb
+}
+
+// restoreMakeBytesBuffer restores the `makeBytesBuffer` factory.
+func restoreMakeBytesBuffer() {
+	makeBytesBufferLock.Lock()
+	defer makeBytesBufferLock.Unlock()
+	makeBytesBuffer = makeBytesBufferDefault
 }

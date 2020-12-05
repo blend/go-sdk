@@ -10,8 +10,35 @@ import (
 	"github.com/blend/go-sdk/assert"
 )
 
+func TestWebhookIsZero(t *testing.T) {
+	assert := assert.New(t)
+
+	wh := Webhook{}
+	assert.True(wh.IsZero())
+
+	wh = Webhook{URL: "http://localhost:12345/foo"}
+	assert.False(wh.IsZero())
+}
+
+func TestWebhookMethodOrDefault(t *testing.T) {
+	assert := assert.New(t)
+
+	wh := Webhook{}
+	assert.Equal("GET", wh.MethodOrDefault())
+
+	wh = Webhook{Method: "POST"}
+	assert.Equal("POST", wh.MethodOrDefault())
+}
+
 func TestWebhookSend(t *testing.T) {
 	assert := assert.New(t)
+
+	// Invalid URL
+	wh := Webhook{URL: "\r"}
+	res, err := wh.Send()
+	assert.Nil(res)
+	assert.NotNil(err)
+	assert.Equal("parse \r: net/url: invalid control character in URL", err.Error())
 
 	var bodyCorrect, methodCorrect, headerCorrect, contentLengthCorrect bool
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +57,7 @@ func TestWebhookSend(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	wh := Webhook{
+	wh = Webhook{
 		URL:    ts.URL,
 		Method: "POST",
 		Headers: map[string]string{
@@ -39,7 +66,7 @@ func TestWebhookSend(t *testing.T) {
 		Body: "this is only a test",
 	}
 
-	res, err := wh.Send()
+	res, err = wh.Send()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, res.StatusCode)
 
@@ -47,4 +74,11 @@ func TestWebhookSend(t *testing.T) {
 	assert.True(methodCorrect)
 	assert.True(headerCorrect)
 	assert.True(contentLengthCorrect)
+
+	// Unreachable URL
+	wh = Webhook{URL: "http://localhost:11001/foo"}
+	res, err = wh.Send()
+	assert.Nil(res)
+	assert.NotNil(err)
+	assert.Equal("Get http://localhost:11001/foo: dial tcp 127.0.0.1:11001: connect: connection refused", err.Error())
 }

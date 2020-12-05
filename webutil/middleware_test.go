@@ -10,7 +10,7 @@ import (
 	"github.com/blend/go-sdk/assert"
 )
 
-func TestMiddelware(t *testing.T) {
+func TestNestMiddleware(t *testing.T) {
 	assert := assert.New(t)
 
 	innerDone := make(chan struct{})
@@ -51,4 +51,8 @@ func TestMiddelware(t *testing.T) {
 	contents, err := ioutil.ReadAll(res.Body)
 	assert.Nil(err)
 	assert.Equal("OK!\nTwo\nOne\n", string(contents))
+
+	// No middleware
+	wrapped := NestMiddleware(nil)
+	assert.Nil(wrapped)
 }

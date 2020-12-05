@@ -30,53 +30,52 @@ type HTTPTrace struct {
 	DialElapsed         time.Duration `json:"dialElapsed"`
 	RequestElapsed      time.Duration `json:"requestElapsed"`
 	ServerElapsed       time.Duration `json:"severElapsed"`
+
+	NowProvider func() time.Time
 }
 
 // Trace returns the trace binder.
 func (ht *HTTPTrace) Trace() *httptrace.ClientTrace {
-	now := func() time.Time {
-		return time.Now().UTC()
-	}
 	return &httptrace.ClientTrace{
 		GetConn: func(_ string) {
-			ht.GetConn = now()
+			ht.GetConn = ht.Now()
 		},
 		GotConn: func(_ httptrace.GotConnInfo) {
-			ht.GotConn = now()
+			ht.GotConn = ht.Now()
 		},
 		PutIdleConn: func(_ error) {
-			ht.PutIdleConn = now()
+			ht.PutIdleConn = ht.Now()
 		},
 		GotFirstResponseByte: func() {
-			ht.GotFirstResponseByte = now()
+			ht.GotFirstResponseByte = ht.Now()
 			ht.ServerElapsed = ht.GotFirstResponseByte.Sub(ht.WroteRequest)
 		},
 		DNSStart: func(_ httptrace.DNSStartInfo) {
-			ht.DNSStart = now()
+			ht.DNSStart = ht.Now()
 		},
 		DNSDone: func(_ httptrace.DNSDoneInfo) {
-			ht.DNSDone = now()
+			ht.DNSDone = ht.Now()
 			ht.DNSElapsed = ht.DNSDone.Sub(ht.DNSStart)
 		},
 		ConnectStart: func(_, _ string) {
-			ht.ConnectStart = now()
+			ht.ConnectStart = ht.Now()
 		},
 		ConnectDone: func(_, _ string, _ error) {
-			ht.ConnectDone = now()
+			ht.ConnectDone = ht.Now()
 			ht.DialElapsed = ht.ConnectDone.Sub(ht.ConnectStart)
 		},
 		TLSHandshakeStart: func() {
-			ht.TLSHandshakeStart = now()
+			ht.TLSHandshakeStart = ht.Now()
 		},
 		TLSHandshakeDone: func(_ tls.ConnectionState, _ error) {
-			ht.TLSHandshakeDone = now()
+			ht.TLSHandshakeDone = ht.Now()
 			ht.TLSHandshakeElapsed = ht.TLSHandshakeDone.Sub(ht.TLSHandshakeStart)
 		},
 		WroteHeaders: func() {
-			ht.WroteHeaders = now()
+			ht.WroteHeaders = ht.Now()
 		},
 		WroteRequest: func(_ httptrace.WroteRequestInfo) {
-			ht.WroteRequest = now()
+			ht.WroteRequest = ht.Now()
 			if !ht.ConnectDone.IsZero() {
 				ht.RequestElapsed = ht.WroteRequest.Sub(ht.ConnectDone)
 			} else if !ht.GetConn.IsZero() {
@@ -86,4 +85,13 @@ func (ht *HTTPTrace) Trace() *httptrace.ClientTrace {
 			}
 		},
 	}
+}
+
+// Now returns the current time (UTC); this can be customized with a
+// `NowProvider`.
+func (ht HTTPTrace) Now() time.Time {
+	if ht.NowProvider != nil {
+		return ht.NowProvider()
+	}
+	return time.Now().UTC()
 }

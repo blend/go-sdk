@@ -1,12 +1,20 @@
 package webutil
 
 import (
+	"bufio"
 	"bytes"
 	"io"
+	"net"
 	"net/http"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/ex"
+)
+
+// NOTE: Ensure `mockResponseWriterWithHijack` satisfies `http.Hijacker`.
+var (
+	_ http.Hijacker = mockResponseWriterWithHijack{}
 )
 
 type mockResponseWriter struct {
@@ -30,6 +38,25 @@ func (mrw mockResponseWriter) Write(contents []byte) (int, error) {
 	return mrw.Output.Write(contents)
 }
 
+type mockResponseWriterWithHijack struct {
+	mockResponseWriter
+	HijackError error
+}
+
+func (mrwwh mockResponseWriterWithHijack) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	return nil, nil, mrwwh.HijackError
+}
+
+func TestNewResponseWriter(t *testing.T) {
+	assert := assert.New(t)
+
+	var ir http.ResponseWriter
+	ir = mockResponseWriter{}
+	rw1 := &ResponseWriter{innerResponse: ir}
+	rw2 := NewResponseWriter(rw1)
+	assert.Equal(rw1, rw2)
+}
+
 func TestResponseWriter(t *testing.T) {
 	assert := assert.New(t)
 
@@ -43,4 +70,43 @@ func TestResponseWriter(t *testing.T) {
 
 	assert.Equal(http.StatusOK, rw.StatusCode())
 	assert.Equal("this is a test", output.String())
+}
+
+func TestResponseWriterHijack(t *testing.T) {
+	assert := assert.New(t)
+
+	// **Does not** support Hijack
+	var ir http.ResponseWriter
+	ir = mockResponseWriter{}
+	rw := ResponseWriter{innerResponse: ir}
+	nc, buf, err := rw.Hijack()
+	assert.Nil(nc)
+	assert.Nil(buf)
+	assert.True(ex.Is(ErrHijackerUnsupported, err))
+
+	// **Does** support Hijack
+	hijackError := ex.New("local failure")
+	ir = mockResponseWriterWithHijack{HijackError: hijackError}
+	rw = ResponseWriter{innerResponse: ir}
+	nc, buf, err = rw.Hijack()
+	assert.Nil(nc)
+	assert.Nil(buf)
+	assert.ReferenceEqual(hijackError, err)
+}
+
+func TestResponseWriterInnerResponse(t *testing.T) {
+	assert := assert.New(t)
+
+	var ir http.ResponseWriter
+	ir = mockResponseWriter{}
+	rw := ResponseWriter{innerResponse: ir}
+	assert.Equal(ir, rw.InnerResponse())
+}
+
+func TestResponseWriterFlush(t *testing.T) {
+	assert := assert.New(t)
+
+	rw := ResponseWriter{}
+	rw.Flush()
+	assert.True(true)
 }

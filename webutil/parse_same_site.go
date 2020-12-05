@@ -6,12 +6,17 @@ import (
 	"github.com/blend/go-sdk/ex"
 )
 
-// MustParseSameSite parses a string value for same site and panics on error.
-func MustParseSameSite(sameSite string) http.SameSite {
-	value, err := ParseSameSite(sameSite)
+// mustNil requires that an error is `nil`.
+func mustNil(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+// MustParseSameSite parses a string value for same site and panics on error.
+func MustParseSameSite(sameSite string) http.SameSite {
+	value, err := ParseSameSite(sameSite)
+	mustNil(err)
 	return value
 }
 

@@ -11,9 +11,9 @@ func PortFromBindAddr(bindAddr string) (port int32) {
 		return 0
 	}
 	parts := strings.SplitN(bindAddr, ":", 2)
-	if len(parts) == 0 {
-		return 0
-	}
+	// NOTE: We don't check that `len(parts) > 0`. An empty (or `nil`) slice
+	//       can **only** be returned if the `n` argument to `SplitN` is equal
+	//       to `0`.
 	if len(parts) < 2 {
 		output, _ := strconv.ParseInt(parts[0], 10, 64)
 		port = int32(output)

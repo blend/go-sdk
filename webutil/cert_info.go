@@ -30,10 +30,11 @@ func ParseCertInfo(res *http.Response) *CertInfo {
 	}
 
 	return &CertInfo{
+		IssuerCommonName: firstCert.Issuer.CommonName,
+		IssuerNames:      issuerNames,
 		DNSNames:         firstCert.DNSNames,
 		NotAfter:         earliestNotAfter,
 		NotBefore:        latestNotBefore,
-		IssuerCommonName: firstCert.Issuer.CommonName,
 	}
 }
 

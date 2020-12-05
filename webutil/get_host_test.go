@@ -11,6 +11,8 @@ import (
 func TestGetHost(t *testing.T) {
 	assert := assert.New(t)
 
+	assert.Equal("", GetHost(nil))
+
 	r := http.Request{
 		Host: "local.test.com",
 	}
