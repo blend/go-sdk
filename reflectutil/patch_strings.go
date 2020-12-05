@@ -27,8 +27,23 @@ type PatchStringer interface {
 	PatchStrings(map[string]string) error
 }
 
-// PatchStrings patches an object with a given map of data matched with tags of a given name.
-func PatchStrings(tagName string, data map[string]string, obj interface{}) (err error) {
+// PatchStringsFuncer is a type that handles unmarshalling a map of strings into itself.
+type PatchStringsFuncer interface {
+	PatchStringsFunc(func(string) (string, bool)) error
+}
+
+// PatchStrings patches an object with a given map of data matched with tags of a given name or the name of the field.
+func PatchStrings(tagName string, data map[string]string, obj interface{}) error {
+	// check if the type implements marshaler.
+	if typed, isTyped := obj.(PatchStringer); isTyped {
+		return typed.PatchStrings(data)
+	}
+
+	return PatchStringsFunc(tagName, func(key string) (string, bool) { value, ok := data[key]; return value, ok }, obj)
+}
+
+// PatchStringsFunc patches an object with a given map of data matched with tags of a given name or the name of the field.
+func PatchStringsFunc(tagName string, getData func(string) (string, bool), obj interface{}) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = ex.New(r)
@@ -36,8 +51,8 @@ func PatchStrings(tagName string, data map[string]string, obj interface{}) (err 
 	}()
 
 	// check if the type implements marshaler.
-	if typed, isTyped := obj.(PatchStringer); isTyped {
-		return typed.PatchStrings(data)
+	if typed, isTyped := obj.(PatchStringsFuncer); isTyped {
+		return typed.PatchStringsFunc(getData)
 	}
 
 	objMeta := reflectType(obj)
@@ -70,7 +85,7 @@ func PatchStrings(tagName string, data map[string]string, obj interface{}) (err 
 
 		// Treat structs as nested values.
 		if field.Type.Kind() == reflect.Struct {
-			if err = PatchStrings(tagName, data, objValue.Field(x).Addr().Interface()); err != nil {
+			if err = PatchStringsFunc(tagName, getData, objValue.Field(x).Addr().Interface()); err != nil {
 				return err
 			}
 			continue
@@ -92,7 +107,7 @@ func PatchStrings(tagName string, data map[string]string, obj interface{}) (err 
 				}
 			}
 
-			dataValue, hasDataValue = data[dataField]
+			dataValue, hasDataValue = getData(dataField)
 			if !hasDataValue {
 				continue
 			}
@@ -107,20 +122,24 @@ func PatchStrings(tagName string, data map[string]string, obj interface{}) (err 
 			} else if isBytes {
 				dataFieldValue = []byte(dataValue)
 			} else {
+				errWithFieldName := func(err error) error {
+					return ex.New(err, ex.OptMessagef("key: %q", dataField))
+				}
+
 				// figure out the rootmost type (i.e. deref ****ptr etc.)
 				fieldType = followType(field.Type)
 				switch fieldType {
 				case typeDuration:
 					dataFieldValue, err = time.ParseDuration(dataValue)
 					if err != nil {
-						err = ex.New(err)
+						err = errWithFieldName(err)
 						return
 					}
 				default:
 					switch fieldType.Kind() {
 					case reflect.Bool:
 						if hasDataValue {
-							dataFieldValue = mustParseBool(dataValue)
+							dataFieldValue = parseBool(dataValue)
 						} else {
 							continue
 						}
@@ -130,7 +149,7 @@ func PatchStrings(tagName string, data map[string]string, obj interface{}) (err 
 						}
 						dataFieldValue, err = strconv.ParseFloat(dataValue, 32)
 						if err != nil {
-							err = ex.New(err)
+							err = errWithFieldName(err)
 							return
 						}
 					case reflect.Float64:
@@ -139,7 +158,7 @@ func PatchStrings(tagName string, data map[string]string, obj interface{}) (err 
 						}
 						dataFieldValue, err = strconv.ParseFloat(dataValue, 64)
 						if err != nil {
-							err = ex.New(err)
+							err = errWithFieldName(err)
 							return
 						}
 					case reflect.Int8:
@@ -148,7 +167,7 @@ func PatchStrings(tagName string, data map[string]string, obj interface{}) (err 
 						}
 						dataFieldValue, err = strconv.ParseInt(dataValue, 10, 8)
 						if err != nil {
-							err = ex.New(err)
+							err = errWithFieldName(err)
 							return
 						}
 					case reflect.Int16:
@@ -157,7 +176,8 @@ func PatchStrings(tagName string, data map[string]string, obj interface{}) (err 
 						}
 						dataFieldValue, err = strconv.ParseInt(dataValue, 10, 16)
 						if err != nil {
-							return ex.New(err)
+							err = errWithFieldName(err)
+							return
 						}
 					case reflect.Int32:
 						if dataValue == "" {
@@ -165,7 +185,7 @@ func PatchStrings(tagName string, data map[string]string, obj interface{}) (err 
 						}
 						dataFieldValue, err = strconv.ParseInt(dataValue, 10, 32)
 						if err != nil {
-							err = ex.New(err)
+							err = errWithFieldName(err)
 							return
 						}
 					case reflect.Int:
@@ -174,7 +194,7 @@ func PatchStrings(tagName string, data map[string]string, obj interface{}) (err 
 						}
 						dataFieldValue, err = strconv.ParseInt(dataValue, 10, 64)
 						if err != nil {
-							err = ex.New(err)
+							err = errWithFieldName(err)
 							return
 						}
 					case reflect.Int64:
@@ -183,7 +203,8 @@ func PatchStrings(tagName string, data map[string]string, obj interface{}) (err 
 						}
 						dataFieldValue, err = strconv.ParseInt(dataValue, 10, 64)
 						if err != nil {
-							return ex.New(err)
+							err = errWithFieldName(err)
+							return
 						}
 					case reflect.Uint8:
 						if dataValue == "" {
@@ -191,7 +212,7 @@ func PatchStrings(tagName string, data map[string]string, obj interface{}) (err 
 						}
 						dataFieldValue, err = strconv.ParseUint(dataValue, 10, 8)
 						if err != nil {
-							err = ex.New(err)
+							err = errWithFieldName(err)
 							return
 						}
 					case reflect.Uint16:
@@ -200,7 +221,7 @@ func PatchStrings(tagName string, data map[string]string, obj interface{}) (err 
 						}
 						dataFieldValue, err = strconv.ParseUint(dataValue, 10, 8)
 						if err != nil {
-							err = ex.New(err)
+							err = errWithFieldName(err)
 							return
 						}
 					case reflect.Uint32:
@@ -209,7 +230,7 @@ func PatchStrings(tagName string, data map[string]string, obj interface{}) (err 
 						}
 						dataFieldValue, err = strconv.ParseUint(dataValue, 10, 32)
 						if err != nil {
-							err = ex.New(err)
+							err = errWithFieldName(err)
 							return
 						}
 					case reflect.Uint64:
@@ -218,7 +239,7 @@ func PatchStrings(tagName string, data map[string]string, obj interface{}) (err 
 						}
 						dataFieldValue, err = strconv.ParseUint(dataValue, 10, 64)
 						if err != nil {
-							err = ex.New(err)
+							err = errWithFieldName(err)
 							return
 						}
 					case reflect.Uint, reflect.Uintptr:
@@ -227,13 +248,13 @@ func PatchStrings(tagName string, data map[string]string, obj interface{}) (err 
 						}
 						dataFieldValue, err = strconv.ParseUint(dataValue, 10, 64)
 						if err != nil {
-							err = ex.New(err)
+							err = errWithFieldName(err)
 							return
 						}
 					case reflect.String:
 						dataFieldValue = dataValue
 					default:
-						err = ex.New("map strings into; unhandled assignment", ex.OptMessagef("type %s", fieldType.String()))
+						err = ex.New("map strings into; unhandled assignment", ex.OptMessagef("type: %q", fieldType.String()))
 						return
 					}
 				}
@@ -282,22 +303,11 @@ func reflectType(obj interface{}) reflect.Type {
 	return t
 }
 
-func mustParseBool(str string) bool {
+func parseBool(str string) bool {
 	strLower := strings.ToLower(str)
 	switch strLower {
 	case "true", "1", "yes":
 		return true
 	}
 	return false
-}
-
-func parseBool(str string) (bool, error) {
-	strLower := strings.ToLower(str)
-	switch strLower {
-	case "true", "1", "yes":
-		return true, nil
-	case "false", "0", "no":
-		return false, nil
-	}
-	return false, ex.New("invalid bool value", ex.OptMessage(str))
 }
