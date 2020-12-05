@@ -6,21 +6,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io"
 	"strings"
 
 	"github.com/blend/go-sdk/ex"
-)
-
-var (
-	byteGroups = []int{8, 4, 4, 4, 12}
-
-	byteGroupSeparatorOffsets = []int{8, 12, 16, 20}
-
-	hextable = [16]byte{
-		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-		'a', 'b', 'c', 'd', 'e', 'f',
-	}
 )
 
 // ErrInvalidScanSource is an error returned by scan.
@@ -28,10 +16,10 @@ const (
 	ErrInvalidScanSource ex.Class = "uuid: invalid scan source"
 )
 
-// Empty returns an empty uuid block.
-func Empty() UUID {
-	return UUID(make([]byte, 16))
-}
+// Zero is the empty UUID.
+var (
+	Zero UUID = makeEmpty()
+)
 
 // UUID represents a unique identifier conforming to the RFC 4122 standard.
 // UUIDs are a fixed 128bit (16 byte) binary blob.
@@ -80,12 +68,12 @@ func (uuid UUID) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':
 		if s.Flag('+') {
-			io.WriteString(s, uuid.ToFullString())
+			fmt.Fprint(s, uuid.ToFullString())
 			return
 		}
-		io.WriteString(s, uuid.String())
+		fmt.Fprint(s, uuid.String())
 	case 's':
-		io.WriteString(s, uuid.String())
+		fmt.Fprint(s, uuid.String())
 	case 'q':
 		fmt.Fprintf(s, "%b", uuid.Version())
 	}
@@ -96,7 +84,7 @@ func (uuid UUID) IsZero() bool {
 	if len(uuid) == 0 {
 		return true
 	}
-	return bytes.Equal([]byte(uuid), []byte(Empty()))
+	return bytes.Equal(uuid, Zero)
 }
 
 // IsV4 returns true iff uuid has version number 4, variant number 2, and length 16 bytes
@@ -132,10 +120,9 @@ func (uuid UUID) MarshalTo(data []byte) (n int, err error) {
 // Unmarshal implements bytes unmarshal.
 func (uuid *UUID) Unmarshal(data []byte) error {
 	if len(data) == 0 {
-		uuid = nil
 		return nil
 	}
-	id := UUID(make([]byte, 16))
+	var id UUID = makeEmpty()
 	copy(id, data)
 	*uuid = id
 	return nil
@@ -154,13 +141,13 @@ func (uuid *UUID) Size() int {
 
 // MarshalJSON marshals a uuid as json.
 func (uuid UUID) MarshalJSON() ([]byte, error) {
-	return json.Marshal(hex.EncodeToString([]byte(uuid)))
+	return json.Marshal(uuid.ToFullString())
 }
 
 // UnmarshalJSON unmarshals a uuid from json.
 func (uuid *UUID) UnmarshalJSON(corpus []byte) error {
 	if len(*uuid) == 0 {
-		(*uuid) = Empty()
+		(*uuid) = makeEmpty()
 	}
 	raw := strings.TrimSpace(string(corpus))
 	raw = strings.TrimPrefix(raw, "\"")
@@ -176,7 +163,7 @@ func (uuid UUID) MarshalYAML() (interface{}, error) {
 // UnmarshalYAML unmarshals a uuid from yaml.
 func (uuid *UUID) UnmarshalYAML(unmarshaler func(interface{}) error) error {
 	if len(*uuid) == 0 {
-		(*uuid) = Empty()
+		(*uuid) = makeEmpty()
 	}
 
 	var corpus string
@@ -193,15 +180,16 @@ func (uuid *UUID) UnmarshalYAML(unmarshaler func(interface{}) error) error {
 // Scan scans a uuid from a db value.
 func (uuid *UUID) Scan(src interface{}) error {
 	if len(*uuid) == 0 {
-		(*uuid) = Empty()
+		(*uuid) = makeEmpty()
 	}
-	switch src.(type) {
+	switch v := src.(type) {
 	case string:
-		return ParseExisting(uuid, src.(string))
+		return ParseExisting(uuid, v)
 	case []byte:
-		return ParseExisting(uuid, string(src.([]byte)))
+		return ParseExisting(uuid, string(v))
+	default:
+		return ex.New(ErrInvalidScanSource, ex.OptMessagef("scan type: %T", src))
 	}
-	return ex.New(ErrInvalidScanSource, ex.OptMessagef("scan type: %T", src))
 }
 
 // Value returns a sql driver value.
@@ -210,4 +198,8 @@ func (uuid UUID) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return uuid.String(), nil
+}
+
+func makeEmpty() []byte {
+	return make([]byte, 16)
 }
