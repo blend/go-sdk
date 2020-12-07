@@ -46,16 +46,16 @@ func (c *config) Resolve(ctx context.Context) error {
 
 var configExample = `CONTAINS_EXAMPLE: # id is meant to be a de-duplicating identifier
   description: "please use 'foo.Bar', not a concrete type reference" # description should include remediation steps
-  contains: [ "foo.BarImpl" ]
+  contents: { contains: { include: [ "foo.BarImpl" ] } }
 
 EXCLUDES_EXAMPLE:
   description: "please dont use HerpDerp except in tests"
-  pattern: [ "HerpDerp$" ]
-  excludeFiles: [ "*_test.go" ]
+  contents: { regex: { include: [ "HerpDerp$" ] } }
+  files: { exclude: [ "*_test.go" ] }
 
 IMPORTS_EXAMPLE: # you can assert a go AST doesnt contains a given import by glob
   description: "dont include command stuff"
-  importsContain: [ "github.com/blend/go-sdk/cmd/*" ]
+  goImports: { include: [ "github.com/blend/go-sdk/cmd/*" ] }
 `
 
 func command() *cobra.Command {
@@ -65,13 +65,13 @@ func command() *cobra.Command {
 		Long:  "Enforce profanity rules in a directory tree with inherited rules for each child directory.",
 		Example: fmt.Sprintf(`
 # Run a basic rules set
-profanity --rules=PROFANITY_RULES
+profanity --rules=.profanity.yml 
 
 # Run a basic rules set with excluded files by glob
-profanity --rules=PROFANITY_RULES --exclude="*_test.go"
+profanity --rules=.profanity.yml  --exclude="*_test.go"
 
 # Run a basic rules set with included and excluded files by glob
-profanity --rules=PROFANITY_RULES --include="*.go" --exclude="*_test.go"
+profanity --rules=.profanity.yml --include="*.go" --exclude="*_test.go"
 
 # An example rule file looks like
 
@@ -79,7 +79,7 @@ profanity --rules=PROFANITY_RULES --include="*.go" --exclude="*_test.go"
 %s
 """
 
-For an example rule file (with many more rules), see https://golang.blend.com/PROFANITY_RULES.yml
+For an example rule file (with many more rules), see .profanity.yml in the root of the repo.
 `, configExample),
 	}
 
