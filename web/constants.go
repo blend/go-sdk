@@ -6,7 +6,7 @@ import (
 
 const (
 	// PackageName is the full name of this package.
-	PackageName = "golang.blend.com/sdk/web"
+	PackageName = "github.com/blend/go-sdk/web"
 	// RouteTokenFilepath is a special route token.
 	RouteTokenFilepath = "filepath"
 	// RegexpAssetCacheFiles is a common regex for parsing css, js, and html file routes.
