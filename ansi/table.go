@@ -168,9 +168,8 @@ func Table(wr io.Writer, columns []string, rows [][]string) (err error) {
 }
 
 func stringWidth(value string) (width int) {
-	runes := []rune(value)
 	var runeWidth int
-	for _, c := range runes {
+	for _, c := range value {
 		runeWidth = utf8.RuneLen(c)
 		if runeWidth > 1 {
 			width += 2
@@ -196,8 +195,4 @@ func padRight(value string, width int) string {
 
 func isNotLast(index int, values []string) bool {
 	return index < (len(values) - 1)
-}
-
-func isLast(index int, values []string) bool {
-	return index == (len(values) - 1)
 }

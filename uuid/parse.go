@@ -5,14 +5,14 @@ import "github.com/blend/go-sdk/ex"
 // Error Classes
 const (
 	ErrParseInvalidUUIDInput = ex.Class("parse uuid: existing uuid is invalid")
-	ErrParseEmpty            = ex.Class("parse uuid: input is empty")
+	// ErrParseEmpty            = ex.Class("parse uuid: input is empty")
 	ErrParseInvalidLength    = ex.Class("parse uuid: input is an invalid length")
 	ErrParseIllegalCharacter = ex.Class("parse uuid: illegal character")
 )
 
 // MustParse parses a uuid and will panic if there is an error.
 func MustParse(corpus string) UUID {
-	uuid := Empty()
+	var uuid UUID = make([]byte, 16)
 	if err := ParseExisting(&uuid, corpus); err != nil {
 		panic(err)
 	}
@@ -25,7 +25,7 @@ func MustParse(corpus string) UUID {
 // - xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 // - xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 func Parse(corpus string) (UUID, error) {
-	uuid := Empty()
+	var uuid UUID = make([]byte, 16)
 	if err := ParseExisting(&uuid, corpus); err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func Parse(corpus string) (UUID, error) {
 // ParseExisting parses into an existing UUID.
 func ParseExisting(uuid *UUID, corpus string) error {
 	if len(corpus) == 0 {
-		return ex.New(ErrParseEmpty)
+		return nil // ex.New(ErrParseEmpty)
 	}
 	if len(corpus)%2 == 1 {
 		return ex.New(ErrParseInvalidLength)

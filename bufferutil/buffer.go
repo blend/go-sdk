@@ -9,7 +9,7 @@ import (
 // NewBuffer creates a new line writer from a given set of bytes.
 func NewBuffer(contents []byte) *Buffer {
 	lw := new(Buffer)
-	lw.Write(contents)
+	_, _ = lw.Write(contents)
 	return lw
 }
 

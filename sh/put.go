@@ -1,10 +1,25 @@
 package sh
 
 import (
+	"context"
 	"io"
 	"os"
 	"os/exec"
 )
+
+// PutContext runs a given command with a given reader as its stdin in a context.
+func PutContext(ctx context.Context, stdin io.Reader, command string, args ...string) error {
+	absoluteCommand, err := exec.LookPath(command)
+	if err != nil {
+		return err
+	}
+	cmd := exec.CommandContext(ctx, absoluteCommand, args...)
+	cmd.Env = os.Environ()
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = stdin
+	return cmd.Run()
+}
 
 // Put runs a given command with a given reader as its stdin.
 func Put(stdin io.Reader, command string, args ...string) error {

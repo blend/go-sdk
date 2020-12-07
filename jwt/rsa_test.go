@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/blend/go-sdk/jwt"
-	"github.com/blend/go-sdk/jwt/test"
 )
 
 var rsaTestData = []struct {
@@ -46,7 +45,7 @@ var rsaTestData = []struct {
 }
 
 func TestRSAVerify(t *testing.T) {
-	key, _ := jwt.ParseRSAPublicKeyFromPEM(test.SampleKeyPublic)
+	key, _ := jwt.ParseRSAPublicKeyFromPEM(SampleKeyPublic)
 
 	for _, data := range rsaTestData {
 		parts := strings.Split(data.tokenString, ".")
@@ -63,7 +62,7 @@ func TestRSAVerify(t *testing.T) {
 }
 
 func TestRSASign(t *testing.T) {
-	keyData := test.SampleKey
+	keyData := SampleKey
 	key, _ := jwt.ParseRSAPrivateKeyFromPEM(keyData)
 
 	for _, data := range rsaTestData {
@@ -82,7 +81,7 @@ func TestRSASign(t *testing.T) {
 }
 
 func TestRSAVerifyWithPreParsedPrivateKey(t *testing.T) {
-	parsedKey, err := jwt.ParseRSAPublicKeyFromPEM(test.SampleKeyPublic)
+	parsedKey, err := jwt.ParseRSAPublicKeyFromPEM(SampleKeyPublic)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,7 +94,7 @@ func TestRSAVerifyWithPreParsedPrivateKey(t *testing.T) {
 }
 
 func TestRSAWithPreParsedPrivateKey(t *testing.T) {
-	key := test.SampleKey
+	key := SampleKey
 	parsedKey, err := jwt.ParseRSAPrivateKeyFromPEM(key)
 	if err != nil {
 		t.Fatal(err)
@@ -112,9 +111,9 @@ func TestRSAWithPreParsedPrivateKey(t *testing.T) {
 }
 
 func TestRSAKeyParsing(t *testing.T) {
-	key := test.SampleKey
-	secureKey := test.PrivateSecure
-	pubKey := test.SampleKeyPublic
+	key := SampleKey
+	secureKey := PrivateSecure
+	pubKey := SampleKeyPublic
 	badKey := []byte("All your base are belong to key")
 
 	// Test parsePrivateKey
@@ -154,7 +153,7 @@ func TestRSAKeyParsing(t *testing.T) {
 }
 
 func BenchmarkRS256Signing(b *testing.B) {
-	key := test.SampleKey
+	key := SampleKey
 	parsedKey, err := jwt.ParseRSAPrivateKeyFromPEM(key)
 	if err != nil {
 		b.Fatal(err)
@@ -164,7 +163,7 @@ func BenchmarkRS256Signing(b *testing.B) {
 }
 
 func BenchmarkRS384Signing(b *testing.B) {
-	key := test.SampleKey
+	key := SampleKey
 	parsedKey, err := jwt.ParseRSAPrivateKeyFromPEM(key)
 	if err != nil {
 		b.Fatal(err)
@@ -174,7 +173,7 @@ func BenchmarkRS384Signing(b *testing.B) {
 }
 
 func BenchmarkRS512Signing(b *testing.B) {
-	key := test.SampleKey
+	key := SampleKey
 	parsedKey, err := jwt.ParseRSAPrivateKeyFromPEM(key)
 	if err != nil {
 		b.Fatal(err)

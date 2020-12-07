@@ -41,7 +41,7 @@ func main() {
 		return web.Text.InternalError(ex.New(r))
 	}
 
-	lc := cache.NewLocalCache(cache.OptLocalCacheSweepInterval(500 * time.Millisecond))
+	lc := cache.New(cache.OptSweepInterval(500 * time.Millisecond))
 	go lc.Start()
 
 	app.GET("/stats", func(r *web.Ctx) web.Result {

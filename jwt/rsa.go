@@ -4,8 +4,6 @@ import (
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/x509"
-	"encoding/pem"
 
 	"github.com/blend/go-sdk/ex"
 )
@@ -45,7 +43,9 @@ func (m *SigningMethodRSA) Verify(signingString, signature string, key interface
 		return ex.New(ErrHashUnavailable)
 	}
 	hasher := m.Hash.New()
-	hasher.Write([]byte(signingString))
+	if _, err := hasher.Write([]byte(signingString)); err != nil {
+		return ex.New(err)
+	}
 
 	// Verify the signature
 	return ex.New(rsa.VerifyPKCS1v15(rsaKey, m.Hash, hasher.Sum(nil), sig))
@@ -68,99 +68,14 @@ func (m *SigningMethodRSA) Sign(signingString string, key interface{}) (string, 
 	}
 
 	hasher := m.Hash.New()
-	hasher.Write([]byte(signingString))
+	if _, err := hasher.Write([]byte(signingString)); err != nil {
+		return "", ex.New(err)
+	}
 
 	// Sign the string and return the encoded bytes
 	sigBytes, err := rsa.SignPKCS1v15(rand.Reader, rsaKey, m.Hash, hasher.Sum(nil))
-	if err == nil {
-		return EncodeSegment(sigBytes), nil
+	if err != nil {
+		return "", ex.New(err)
 	}
-	return "", err
-}
-
-//ParseRSAPrivateKeyFromPEM parses a PEM encoded PKCS1 or PKCS8 private key.
-func ParseRSAPrivateKeyFromPEM(key []byte) (*rsa.PrivateKey, error) {
-	var err error
-
-	// Parse PEM block
-	var block *pem.Block
-	if block, _ = pem.Decode(key); block == nil {
-		return nil, ex.New(ErrKeyMustBePEMEncoded)
-	}
-
-	var parsedKey interface{}
-	if parsedKey, err = x509.ParsePKCS1PrivateKey(block.Bytes); err != nil {
-		if parsedKey, err = x509.ParsePKCS8PrivateKey(block.Bytes); err != nil {
-			return nil, ex.New(err)
-		}
-	}
-
-	var pkey *rsa.PrivateKey
-	var ok bool
-	if pkey, ok = parsedKey.(*rsa.PrivateKey); !ok {
-		return nil, ex.New(ErrNotRSAPrivateKey)
-	}
-
-	return pkey, nil
-}
-
-// ParseRSAPrivateKeyFromPEMWithPassword parses a PEM encoded PKCS1 or PKCS8 private key protected with password.
-func ParseRSAPrivateKeyFromPEMWithPassword(key []byte, password string) (*rsa.PrivateKey, error) {
-	var err error
-
-	// Parse PEM block
-	var block *pem.Block
-	if block, _ = pem.Decode(key); block == nil {
-		return nil, ex.New(ErrKeyMustBePEMEncoded)
-	}
-
-	var parsedKey interface{}
-
-	var blockDecrypted []byte
-	if blockDecrypted, err = x509.DecryptPEMBlock(block, []byte(password)); err != nil {
-		return nil, ex.New(err)
-	}
-
-	if parsedKey, err = x509.ParsePKCS1PrivateKey(blockDecrypted); err != nil {
-		if parsedKey, err = x509.ParsePKCS8PrivateKey(blockDecrypted); err != nil {
-			return nil, ex.New(err)
-		}
-	}
-
-	var pkey *rsa.PrivateKey
-	var ok bool
-	if pkey, ok = parsedKey.(*rsa.PrivateKey); !ok {
-		return nil, ex.New(ErrNotRSAPrivateKey)
-	}
-
-	return pkey, nil
-}
-
-// ParseRSAPublicKeyFromPEM parses a PEM encoded PKCS1 or PKCS8 public key.
-func ParseRSAPublicKeyFromPEM(key []byte) (*rsa.PublicKey, error) {
-	var err error
-
-	// Parse PEM block
-	var block *pem.Block
-	if block, _ = pem.Decode(key); block == nil {
-		return nil, ex.New(ErrKeyMustBePEMEncoded)
-	}
-
-	// Parse the key
-	var parsedKey interface{}
-	if parsedKey, err = x509.ParsePKIXPublicKey(block.Bytes); err != nil {
-		if cert, err := x509.ParseCertificate(block.Bytes); err == nil {
-			parsedKey = cert.PublicKey
-		} else {
-			return nil, ex.New(err)
-		}
-	}
-
-	var pkey *rsa.PublicKey
-	var ok bool
-	if pkey, ok = parsedKey.(*rsa.PublicKey); !ok {
-		return nil, ex.New(ErrNotRSAPublicKey)
-	}
-
-	return pkey, nil
+	return EncodeSegment(sigBytes), nil
 }

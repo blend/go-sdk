@@ -132,16 +132,15 @@ func (b *Breaker) beforeAction(ctx context.Context) (int64, error) {
 	return generation, nil
 }
 
-func (b *Breaker) afterAction(ctx context.Context, generation int64, success bool) {
+func (b *Breaker) afterAction(ctx context.Context, currentGeneration int64, success bool) {
 	b.Lock()
 	defer b.Unlock()
 
 	now := b.now()
 	state, generation := b.evaluateState(ctx, now)
-	if generation != generation {
+	if generation != currentGeneration {
 		return
 	}
-
 	if success {
 		b.success(ctx, state, now)
 		return

@@ -40,7 +40,7 @@ func (v Validated) Validate() error {
 func main() {
 	objects := []Validated{
 		{ID: uuid.V4(), Name: "foo", Count: 55, Created: time.Now().UTC(), Optional: ref.String("https://google.com")},
-		{ID: uuid.Empty(), Name: "foo", Count: 55, Created: time.Now().UTC(), Optional: ref.String("127.0.0.1")},
+		{ID: uuid.Zero, Name: "foo", Count: 55, Created: time.Now().UTC(), Optional: ref.String("127.0.0.1")},
 	}
 
 	for index, obj := range objects {
