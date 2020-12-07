@@ -21,7 +21,7 @@ func TestSessionAware(t *testing.T) {
 	var contextSessionWasSet bool
 
 	app := MustNew(OptAuth(NewLocalAuthManager()))
-	assert.Nil(app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "bailey"}))
+	assert.Nil(app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "example-string"}))
 
 	app.GET("/", func(r *Ctx) Result {
 		didExecuteHandler = true
@@ -53,7 +53,7 @@ func TestSessionRequired(t *testing.T) {
 	var sessionWasSet bool
 	var contextSessionWasSet bool
 	app := MustNew(OptAuth(NewLocalAuthManager()))
-	assert.Nil(app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "bailey"}))
+	assert.Nil(app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "example-string"}))
 
 	app.GET("/", func(r *Ctx) Result {
 		sessionWasSet = r.Session != nil
@@ -82,7 +82,7 @@ func TestSessionRequiredCustomParamName(t *testing.T) {
 	var sessionWasSet bool
 	var contextSessionWasSet bool
 	app := MustNew(OptAuth(NewLocalAuthManager()))
-	assert.Nil(app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "bailey"}))
+	assert.Nil(app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "example-string"}))
 	app.Auth.CookieDefaults.Name = "web_auth"
 
 	app.GET("/", func(r *Ctx) Result {
@@ -115,7 +115,7 @@ func TestSessionMiddleware(t *testing.T) {
 	var sessionWasSet bool
 	var contextSessionWasSet bool
 	app := MustNew(OptAuth(NewLocalAuthManager()), OptBindAddr(DefaultMockBindAddr))
-	assert.Nil(app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "bailey"}))
+	assert.Nil(app.Auth.PersistHandler(context.TODO(), &Session{SessionID: sessionID, UserID: "example-string"}))
 
 	go func() { _ = app.Start() }()
 	<-app.NotifyStarted()

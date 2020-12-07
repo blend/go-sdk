@@ -78,7 +78,7 @@ func seedData(log logger.Log, conn *db.Connection) error {
 	// seed books
 	if err := conn.Invoke().CreateMany([]person{
 		{Name: "Will"},
-		{Name: "Bailey"},
+		{Name: "example-string"},
 		{Name: "Mike"},
 		{Name: "Ayman"},
 		{Name: "Madhu"},

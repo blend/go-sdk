@@ -15,7 +15,7 @@ bar foo baz
 baz bar foo
 `
 	rule := Contents{
-		Contains: ContainsFilter{
+		Contains: &ContainsFilter{
 			Filter: Filter{
 				Include: []string{"fuzzy wuzzy"},
 			},
@@ -35,7 +35,7 @@ bar foo baz
 baz bar foo
 `
 	rule := Contents{
-		Contains: ContainsFilter{
+		Contains: &ContainsFilter{
 			Filter: Filter{
 				Include: []string{"foo baz"},
 			},
@@ -58,7 +58,7 @@ baz bar foo
 buzz foo baz
 `
 	rule := Contents{
-		Contains: ContainsFilter{
+		Contains: &ContainsFilter{
 			Filter: Filter{
 				Include: []string{"foo baz"},
 				Exclude: []string{"buzz"},
@@ -79,9 +79,31 @@ bar foo baz
 baz bar foo
 `
 	rule := Contents{
-		Glob: GlobFilter{
+		Glob: &GlobFilter{
 			Filter: Filter{
 				Include: []string{"bar*"},
+			},
+		},
+	}
+
+	res := rule.Check("test.go", []byte(contents))
+	its.False(res.OK)
+	its.Equal("test.go", res.File)
+	its.Equal(3, res.Line)
+}
+
+func Test_Contents_Regex(t *testing.T) {
+	its := assert.New(t)
+
+	contents := `
+foo bar baz
+bar foo baz
+baz bar foo
+`
+	rule := Contents{
+		Regex: &RegexFilter{
+			Filter: Filter{
+				Include: []string{"^bar"},
 			},
 		},
 	}

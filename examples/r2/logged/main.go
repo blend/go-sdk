@@ -14,7 +14,7 @@ func main() {
 
 	_, err := r2.New("https://google.com/robots.txt",
 		r2.OptHeaderValue("X-Sent-By", "go-sdk/request2"),
-		r2.OptCookieValue("r2-ray-id", "baileydog01"),
+		r2.OptCookieValue("r2-ray-id", "example-stringdog01"),
 		r2.OptLogResponse(log),
 	).Discard()
 

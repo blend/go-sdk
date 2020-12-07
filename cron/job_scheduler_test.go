@@ -96,9 +96,9 @@ func TestJobSchedulerJobParameterValues(t *testing.T) {
 	)
 
 	testParameters := JobParameters{
-		"foo":    "bar",
-		"moo":    "loo",
-		"bailey": "dog",
+		"foo":            "bar",
+		"moo":            "loo",
+		"example-string": "dog",
 	}
 
 	ji, done, err := js.RunAsyncContext(WithJobParameterValues(context.Background(), testParameters))
@@ -114,8 +114,8 @@ func TestJobSchedulerJobParameterValuesDefault(t *testing.T) {
 	var contextParameters JobParameters
 
 	defaultParameters := JobParameters{
-		"bailey":  "woof",
-		"default": "value",
+		"example-string": "woof",
+		"default":        "value",
 	}
 
 	js := NewJobScheduler(
@@ -130,24 +130,24 @@ func TestJobSchedulerJobParameterValuesDefault(t *testing.T) {
 			}),
 		),
 	)
-	assert.Equal("woof", js.Config().ParameterValues["bailey"])
+	assert.Equal("woof", js.Config().ParameterValues["example-string"])
 
 	runParameters := JobParameters{
-		"foo":    "bar",
-		"moo":    "loo",
-		"bailey": "dog",
+		"foo":            "bar",
+		"moo":            "loo",
+		"example-string": "dog",
 	}
 
 	ji, done, err := js.RunAsyncContext(WithJobParameterValues(context.Background(), runParameters))
 	assert.Nil(err)
 	assert.NotNil(done)
-	assert.Equal("dog", ji.Parameters["bailey"])
+	assert.Equal("dog", ji.Parameters["example-string"])
 	assert.Equal("value", ji.Parameters["default"])
 	assert.Equal("bar", ji.Parameters["foo"])
 	assert.Equal("loo", ji.Parameters["moo"])
 	<-done
 	assert.NotEmpty(contextParameters)
-	assert.Equal("dog", contextParameters["bailey"])
+	assert.Equal("dog", contextParameters["example-string"])
 	assert.Equal("value", contextParameters["default"])
 	assert.Equal("bar", contextParameters["foo"])
 	assert.Equal("loo", contextParameters["moo"])

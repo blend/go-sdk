@@ -34,6 +34,11 @@ func TestParseInvalid(t *testing.T) {
 		"x<a",
 		"x>1",
 		"x>1,z<5",
+		"x=",
+		"x= ",
+		"x=,z= ",
+		"x= ,z= ",
+		"foo == bar foo",
 	}
 	var err error
 	for _, str := range testBadStrings {
@@ -49,10 +54,6 @@ func TestParseSemiValid(t *testing.T) {
 		"",
 		"x=a,y=b,z=c",
 		"x!=a,y=b",
-		"x=",
-		"x= ",
-		"x=,z= ",
-		"x= ,z= ",
 		"!x",
 	}
 
@@ -177,9 +178,22 @@ func TestParseGroupComplicated(t *testing.T) {
 
 func TestParseDocsExample(t *testing.T) {
 	assert := assert.New(t)
-	selector, err := Parse("x in (foo,,baz),y,z notin ()")
+	sel, err := Parse("x in (foo,,baz),y,z notin ()")
 	assert.Nil(err)
-	assert.NotNil(selector)
+	assert.NotNil(sel)
+}
+
+func TestParseSubdomainKey(t *testing.T) {
+	assert := assert.New(t)
+	sel, err := Parse("example.com/failure-domain == primary")
+	assert.Nil(err)
+	assert.NotNil(sel)
+	assert.Equal("example.com/failure-domain == primary", sel.String())
+	assert.True(sel.Matches(map[string]string{
+		"bar":                        "foo",
+		"example.com/failure-domain": "primary",
+		"foo":                        "bar",
+	}))
 }
 
 func TestParseEqualsOperators(t *testing.T) {
@@ -272,5 +286,31 @@ func BenchmarkParse(b *testing.B) {
 		if !selector.Matches(valid) {
 			b.Fail()
 		}
+	}
+}
+
+func TestParse_FuzzRegressions(t *testing.T) {
+	assert := assert.New(t)
+
+	var sel Selector
+	var err error
+	testBadStrings := []string{
+		"!0!0",
+		"0!=0,!",
+	}
+	for _, str := range testBadStrings {
+		_, err = Parse(str)
+		assert.NotNil(err, str, err)
+	}
+
+	testGoodStrings := []string{
+		"0,!0",
+		"0 in (0), !0",
+	}
+	for _, str := range testGoodStrings {
+		sel, err = Parse(str)
+		assert.Nil(err)
+		_, err = Parse(sel.String())
+		assert.Nil(err)
 	}
 }

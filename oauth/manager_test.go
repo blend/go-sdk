@@ -65,12 +65,12 @@ func Test_Manager_Finish(t *testing.T) {
 		rw.WriteHeader(200)
 		fmt.Fprintf(rw, `{
 			"id": "12012312390931",
-			"email": "bailey@test.blend.com",
+			"email": "example-string@test.blend.com",
 			"verified_email": true,
-			"name": "Bailey Dog",
-			"given_name": "Bailey",
+			"name": "example-string Dog",
+			"given_name": "example-string",
 			"family_name": "Dog",
-			"picture": "https://example.com/bailey.jpg",
+			"picture": "https://example.com/example-string.jpg",
 			"locale": "en",
 			"hd": "test.blend.com"
 		  }`)
@@ -105,11 +105,11 @@ func Test_Manager_Finish(t *testing.T) {
 
 	res, err := mgr.Finish(finishRequest)
 	it.Nil(err)
-	it.Equal("bailey@test.blend.com", res.Profile.Email)
-	it.Equal("Bailey", res.Profile.GivenName)
+	it.Equal("example-string@test.blend.com", res.Profile.Email)
+	it.Equal("example-string", res.Profile.GivenName)
 	it.Equal("Dog", res.Profile.FamilyName)
 	it.Equal("en", res.Profile.Locale)
-	it.Equal("https://example.com/bailey.jpg", res.Profile.PictureURL)
+	it.Equal("https://example.com/example-string.jpg", res.Profile.PictureURL)
 }
 
 func Test_Manager_Finish_DisallowedDomain(t *testing.T) {
@@ -157,12 +157,12 @@ func Test_Manager_Finish_DisallowedDomain(t *testing.T) {
 		rw.WriteHeader(200)
 		fmt.Fprintf(rw, `{
 			"id": "12012312390931",
-			"email": "bailey@test.blend.com",
+			"email": "example-string@test.blend.com",
 			"verified_email": true,
-			"name": "Bailey Dog",
-			"given_name": "Bailey",
+			"name": "example-string Dog",
+			"given_name": "example-string",
 			"family_name": "Dog",
-			"picture": "https://example.com/bailey.jpg",
+			"picture": "https://example.com/example-string.jpg",
 			"locale": "en",
 			"hd": "test.blend.com"
 		  }`)
@@ -310,12 +310,12 @@ func Test_Manager_Finish_FailsVerification(t *testing.T) {
 		rw.WriteHeader(200)
 		fmt.Fprintf(rw, `{
 			"id": "12012312390931",
-			"email": "bailey@test.blend.com",
+			"email": "example-string@test.blend.com",
 			"verified_email": true,
-			"name": "Bailey Dog",
-			"given_name": "Bailey",
+			"name": "example-string Dog",
+			"given_name": "example-string",
 			"family_name": "Dog",
-			"picture": "https://example.com/bailey.jpg",
+			"picture": "https://example.com/example-string.jpg",
 			"locale": "en",
 			"hd": "test.blend.com"
 		  }`)

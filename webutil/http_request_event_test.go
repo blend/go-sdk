@@ -17,7 +17,7 @@ func TestNewHTTPRequestEvent(t *testing.T) {
 	assert := assert.New(t)
 
 	hre := NewHTTPRequestEvent(nil,
-		OptHTTPRequestRequest(&http.Request{Method: "foo", URL: &url.URL{Scheme: "https", Host: "localhost", Path: "/foo/bailey"}}),
+		OptHTTPRequestRequest(&http.Request{Method: "foo", URL: &url.URL{Scheme: "https", Host: "localhost", Path: "/foo/example-string"}}),
 		OptHTTPRequestContentEncoding("utf-8"),
 		OptHTTPRequestContentLength(1337),
 		OptHTTPRequestContentType("text/html"),
@@ -40,7 +40,7 @@ func TestNewHTTPRequestEvent(t *testing.T) {
 	buf := new(bytes.Buffer)
 	hre.WriteText(noColor, buf)
 	assert.NotContains(buf.String(), "/foo/:bar")
-	assert.Contains(buf.String(), "/foo/bailey")
+	assert.Contains(buf.String(), "/foo/example-string")
 	assert.NotContains(buf.String(), "X-Bad", "response headers should not be written to text output")
 	assert.NotContains(buf.String(), "definitely nope", "response headers should not be written to text output")
 

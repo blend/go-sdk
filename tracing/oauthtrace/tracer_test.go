@@ -33,10 +33,10 @@ func TestFinish(t *testing.T) {
 	oauthTracer := Tracer(mockTracer)
 
 	finisher := oauthTracer.Start(context.Background(), &oauth2.Config{RedirectURL: "/admin"})
-	finisher.Finish(context.Background(), &oauth2.Config{RedirectURL: "/admin"}, &oauth.Result{Profile: oauth.Profile{Email: "bailey@blend.com"}}, nil)
+	finisher.Finish(context.Background(), &oauth2.Config{RedirectURL: "/admin"}, &oauth.Result{Profile: oauth.Profile{Email: "example-string@blend.com"}}, nil)
 
 	span := finisher.(oauthTraceFinisher).span
 	mockSpan := span.(*mocktracer.MockSpan)
-	assert.Equal("bailey@blend.com", mockSpan.Tags()[tracing.TagKeyOAuthUsername])
+	assert.Equal("example-string@blend.com", mockSpan.Tags()[tracing.TagKeyOAuthUsername])
 	assert.False(mockSpan.FinishTime.IsZero())
 }

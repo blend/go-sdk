@@ -41,7 +41,7 @@ func createCodeResponse(aud, keyID string, pk *rsa.PrivateKey) ([]byte, error) {
 			Issuer:    GoogleIssuer,
 		},
 		HD:            "test.blend.com",
-		Email:         "bailey@test.blend.com",
+		Email:         "example-string@test.blend.com",
 		EmailVerified: "true",
 	})
 	jwtToken.Header["kid"] = keyID

@@ -12,7 +12,7 @@ func TestLocalSessionCache(t *testing.T) {
 
 	lsc := NewLocalSessionCache()
 
-	session := &Session{UserID: "bailey", SessionID: NewSessionID()}
+	session := &Session{UserID: "example-string", SessionID: NewSessionID()}
 	assert.Nil(lsc.PersistHandler(context.TODO(), session))
 
 	fetched, err := lsc.FetchHandler(context.TODO(), session.SessionID)

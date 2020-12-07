@@ -23,16 +23,23 @@ const (
 // It failes if any of the expressions match.
 type Contents struct {
 	// Contains is a filter set that uses `strings.Contains` as the predicate.
-	Contains ContainsFilter `yaml:"contains,omitempty"`
+	Contains *ContainsFilter `yaml:"contains,omitempty"`
 	// Glob is a filter set that uses `Glob` as the predicate.
-	Glob GlobFilter `yaml:"glob,omitempty"`
+	Glob *GlobFilter `yaml:"glob,omitempty"`
 	// Regex is a filter set that uses `regexp.MustMatch` as the predicate
-	Regex RegexFilter `yaml:"regex,omitempty"`
+	Regex *RegexFilter `yaml:"regex,omitempty"`
 }
 
 // Validate returns validators.
 func (cm Contents) Validate() error {
-	if len(cm.Contains.Filter.Include) == 0 && len(cm.Glob.Filter.Include) == 0 && len(cm.Regex.Filter.Include) == 0 {
+	if cm.Contains == nil && cm.Glob == nil && cm.Regex == nil {
+		return validate.Error(ErrContentsRequired, nil)
+	}
+	var hasInclude bool
+	hasInclude = hasInclude || (cm.Contains != nil && len(cm.Contains.Include) > 0)
+	hasInclude = hasInclude || (cm.Glob != nil && len(cm.Glob.Include) > 0)
+	hasInclude = hasInclude || (cm.Regex != nil && len(cm.Regex.Include) > 0)
+	if !hasInclude {
 		return validate.Error(ErrContentsRequired, nil)
 	}
 	return nil
@@ -54,7 +61,7 @@ func (cm Contents) Check(filename string, contents []byte) (result RuleResult) {
 		line++
 		lineText = scanner.Text()
 
-		if !cm.Contains.IsZero() {
+		if cm.Contains != nil {
 			containsInclude, containsExclude = cm.Contains.Match(lineText)
 			if cm.Contains.AllowMatch(containsInclude, containsExclude) {
 				if containsInclude != "" {
@@ -66,7 +73,7 @@ func (cm Contents) Check(filename string, contents []byte) (result RuleResult) {
 				notOK = true
 			}
 		}
-		if !cm.Glob.IsZero() {
+		if cm.Glob != nil {
 			globInclude, globExclude = cm.Glob.Match(lineText)
 			if cm.Glob.AllowMatch(globInclude, globExclude) {
 				if globInclude != "" {
@@ -78,7 +85,7 @@ func (cm Contents) Check(filename string, contents []byte) (result RuleResult) {
 				notOK = true
 			}
 		}
-		if !cm.Regex.IsZero() {
+		if cm.Regex != nil {
 			regexInclude, regexExclude = cm.Regex.Match(lineText)
 			if cm.Regex.AllowMatch(regexInclude, regexExclude) {
 				if regexInclude != "" {

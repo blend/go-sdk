@@ -152,13 +152,13 @@ func TestAuthManagerLogin(t *testing.T) {
 	res := webutil.NewMockResponse(new(bytes.Buffer))
 	r := NewCtx(res, webutil.NewMockRequest("GET", "/"))
 
-	session, err := am.Login("bailey@blend.com", r)
+	session, err := am.Login("example-string@blend.com", r)
 	assert.Nil(err)
 	assert.NotNil(session)
 	assert.NotEmpty(session.SessionID)
 	assert.NotEmpty(session.RemoteAddr)
 	assert.NotEmpty(session.UserAgent)
-	assert.Equal("bailey@blend.com", session.UserID)
+	assert.Equal("example-string@blend.com", session.UserID)
 	assert.True(session.ExpiresUTC.IsZero())
 	assert.True(calledPersistHandler)
 	assert.True(calledSerializeHandler)
@@ -191,7 +191,7 @@ func TestAuthManagerLogout(t *testing.T) {
 	res := webutil.NewMockResponse(new(bytes.Buffer))
 	r := NewCtx(res, webutil.NewMockRequest("GET", "/"))
 
-	session, err := am.Login("bailey@blend.com", r)
+	session, err := am.Login("example-string@blend.com", r)
 	assert.Nil(err)
 	assert.NotNil(session)
 
@@ -271,7 +271,7 @@ func TestAuthManagerVerifySessionFetched(t *testing.T) {
 	}
 
 	r := NewCtx(webutil.NewMockResponse(new(bytes.Buffer)), webutil.NewMockRequest("GET", "/"))
-	session, err := am.Login("bailey@blend.com", r)
+	session, err := am.Login("example-string@blend.com", r)
 	assert.Nil(err)
 	assert.NotNil(session)
 	assert.False(calledFetchHandler)

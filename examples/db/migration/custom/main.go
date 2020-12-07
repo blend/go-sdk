@@ -28,12 +28,12 @@ func main() {
 				),
 			),
 			migration.NewGroupWithAction(
-				UserNotExists("bailey"),
-				migration.Exec("INSERT INTO users (username) VALUES ($1)", "bailey"),
+				UserNotExists("example-string"),
+				migration.Exec("INSERT INTO users (username) VALUES ($1)", "example-string"),
 			),
 			migration.NewGroupWithAction(
-				UserNotExists("bailey"),
-				migration.Exec("INSERT INTO users (username) VALUES ($1)", "bailey"),
+				UserNotExists("example-string"),
+				migration.Exec("INSERT INTO users (username) VALUES ($1)", "example-string"),
 			),
 			migration.NewGroupWithAction(
 				migration.TableExists("users"),

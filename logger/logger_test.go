@@ -347,9 +347,9 @@ func TestLoggerDrain(t *testing.T) {
 func TestLoggerProd(t *testing.T) {
 	assert := assert.New(t)
 
-	p := Prod(OptEnabled("bailey"))
+	p := Prod(OptEnabled("example-string"))
 	defer p.Close()
 
-	assert.True(p.Flags.IsEnabled("bailey"))
+	assert.True(p.Flags.IsEnabled("example-string"))
 	assert.True(p.Formatter.(*TextOutputFormatter).NoColor)
 }

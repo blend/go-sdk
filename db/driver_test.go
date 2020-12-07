@@ -70,7 +70,7 @@ func Test_PGX_Timestamp(t *testing.T) {
 
 	// create the test table
 	assert.Nil(createPGXTimestampTestTable(defaultDB(), tx))
-	defer dropPGXTimestampTestTable(defaultDB(), tx)
+	defer func() { _ = dropPGXTimestampTestTable(defaultDB(), tx) }()
 
 	now := time.Now()
 	intValue := 1234
@@ -117,8 +117,4 @@ func Test_PGX_Timestamp(t *testing.T) {
 
 func assertTimeEqual(a *assert.Assertions, expected, actual time.Time) {
 	a.InTimeDelta(expected, actual, time.Second, fmt.Sprintf("actual delta: %v", expected.Sub(actual)))
-}
-
-func assertTimeNotEqual(a *assert.Assertions, expected, actual time.Time) {
-	a.NotInTimeDelta(expected, actual, time.Second, fmt.Sprintf("actual delta: %v", expected.Sub(actual)))
 }

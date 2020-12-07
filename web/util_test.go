@@ -173,8 +173,8 @@ func TestMergeHeaders(t *testing.T) {
 	}
 
 	b := map[string][]string{
-		"Foo":    {"foo1b", "foo2b", "foo3b"},
-		"Bailey": {"dog"},
+		"Foo":            {"foo1b", "foo2b", "foo3b"},
+		"example-string": {"dog"},
 	}
 
 	c := map[string][]string{
@@ -196,7 +196,7 @@ func TestMergeHeaders(t *testing.T) {
 
 	assert.Equal(
 		[]string{"dog"},
-		merged["Bailey"],
+		merged["example-string"],
 	)
 
 	assert.Equal(

@@ -17,14 +17,14 @@ You can specify additional options as a variadic list of `Opt...` functions:
 
 	resp, err := r2.New("http://example.com",
 		r2.OptPost(),
-		r2.OptHeaderValue("X-Foo", "bailey"),
+		r2.OptHeaderValue("X-Foo", "example-string"),
 	).Do()
 
 There are convenience methods on the request type that help with things like decoding types as json:
 
 	meta, err := r2.New("http://example.com",
 		r2.OptPost(),
-		r2.OptHeaderValue("X-Foo", "bailey"),
+		r2.OptHeaderValue("X-Foo", "example-string"),
 	).JSON(&myObj)
 
 Note that in the above, the JSON method also returns a closed version of the response for metadata purposes.
@@ -33,7 +33,7 @@ You can also fire and forget the request with the `.Discard()` method:
 
 	meta, err := r2.New("http://example.com",
 		r2.OptPost(),
-		r2.OptHeaderValue("X-Foo", "bailey"),
+		r2.OptHeaderValue("X-Foo", "example-string"),
 	).Discard()
 
 

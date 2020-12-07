@@ -26,6 +26,6 @@ func TestMessageOptions(t *testing.T) {
 	assert.Equal(":fire:", message.IconEmoji)
 
 	assert.Empty(message.Username)
-	message = ApplyMessageOptions(message, OptMessageUsername("baileydog"))
-	assert.Equal("baileydog", message.Username)
+	message = ApplyMessageOptions(message, OptMessageUsername("example-stringdog"))
+	assert.Equal("example-stringdog", message.Username)
 }

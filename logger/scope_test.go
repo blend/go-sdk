@@ -24,8 +24,8 @@ func TestNewScope(t *testing.T) {
 	assert.Equal([]string{"foo", "bar"}, sc.Path)
 	assert.Equal("loo", sc.Labels["moo"])
 
-	sub := sc.WithPath("bailey").WithLabels(Labels{"what": "where"}).WithAnnotations(Annotations{"zoo": 47})
-	assert.Equal([]string{"foo", "bar", "bailey"}, sub.Path)
+	sub := sc.WithPath("example-string").WithLabels(Labels{"what": "where"}).WithAnnotations(Annotations{"zoo": 47})
+	assert.Equal([]string{"foo", "bar", "example-string"}, sub.Path)
 	assert.Equal("where", sub.Labels["what"])
 	assert.Equal("loo", sub.Labels["moo"])
 	assert.Equal(47, sub.Annotations["zoo"])
