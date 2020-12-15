@@ -11,8 +11,9 @@ const (
 
 // MetricTypes
 const (
-	MetricTypeCount     = "c"
-	MetricTypeGauge     = "g"
-	MetricTypeHistogram = "h"
-	MetricTypeTimer     = "ms"
+	MetricTypeCount        = "c"
+	MetricTypeGauge        = "g"
+	MetricTypeHistogram    = "h"
+	MetricTypeDistribution = "d"
+	MetricTypeTimer        = "ms"
 )

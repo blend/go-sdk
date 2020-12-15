@@ -26,3 +26,8 @@ type Config struct {
 func (c *Config) Resolve(ctx context.Context) error {
 	return env.GetVars(ctx).ReadInto(c)
 }
+
+// IsZero returns if the config is set or not.
+func (c Config) IsZero() bool {
+	return c.Addr == ""
+}
