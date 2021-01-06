@@ -16,14 +16,12 @@ func TestNoFollowRedirects(t *testing.T) {
 
 	second := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, "OK!")
-		return
+		fmt.Fprint(w, "OK!")
 	}))
 	defer second.Close()
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, second.URL, 307)
-		return
+		http.Redirect(w, r, second.URL, http.StatusTemporaryRedirect)
 	}))
 	defer server.Close()
 

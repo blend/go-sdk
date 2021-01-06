@@ -16,21 +16,21 @@ func MustParseURL(rawURL string) *url.URL {
 
 // URLWithScheme returns a copy url with a given scheme.
 func URLWithScheme(u *url.URL, scheme string) *url.URL {
-	copy := &(*u)
+	copy := *u
 	copy.Scheme = scheme
-	return copy
+	return &copy
 }
 
 // URLWithHost returns a copy url with a given host.
 func URLWithHost(u *url.URL, host string) *url.URL {
-	copy := &(*u)
+	copy := *u
 	copy.Host = host
-	return copy
+	return &copy
 }
 
 // URLWithPort returns a copy url with a given pprt attached to the host.
 func URLWithPort(u *url.URL, port string) *url.URL {
-	copy := &(*u)
+	copy := *u
 	host := copy.Host
 	if strings.Contains(host, ":") {
 		parts := strings.SplitN(host, ":", 2)
@@ -38,28 +38,28 @@ func URLWithPort(u *url.URL, port string) *url.URL {
 	} else {
 		copy.Host = host + ":" + port
 	}
-	return copy
+	return &copy
 }
 
 // URLWithPath returns a copy url with a given path.
 func URLWithPath(u *url.URL, path string) *url.URL {
-	copy := &(*u)
+	copy := *u
 	copy.Path = path
-	return copy
+	return &copy
 }
 
 // URLWithRawQuery returns a copy url with a given raw query.
 func URLWithRawQuery(u *url.URL, rawQuery string) *url.URL {
-	copy := &(*u)
+	copy := *u
 	copy.RawQuery = rawQuery
-	return copy
+	return &copy
 }
 
 // URLWithQuery returns a copy url with a given raw query.
 func URLWithQuery(u *url.URL, key, value string) *url.URL {
-	copy := &(*u)
+	copy := *u
 	queryValues := copy.Query()
 	queryValues.Add(key, value)
 	copy.RawQuery = queryValues.Encode()
-	return copy
+	return &copy
 }

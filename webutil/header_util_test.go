@@ -13,7 +13,7 @@ func TestHeaderAny(t *testing.T) {
 	assert.True(HeaderAny(http.Header{"Foo": []string{"bar"}}, "foo", "bar"))
 	assert.True(HeaderAny(http.Header{"fuzz": []string{"buzz"}, "Foo": []string{"bar"}}, "foo", "bar"))
 	assert.False(HeaderAny(http.Header{"fuzz": []string{"buzz"}, "Foo": []string{"bar"}}, "fuzz", "bar"))
-	assert.True(HeaderAny(http.Header{"Foo": []string{"bailey,bar"}}, "foo", "bar"))
-	assert.True(HeaderAny(http.Header{"Foo": []string{"bar,bailey"}}, "foo", "bar"))
-	assert.True(HeaderAny(http.Header{"fuzz": []string{"buzz"}, "Foo": []string{"bar,bailey"}}, "foo", "bar"))
+	assert.True(HeaderAny(http.Header{"Foo": []string{"example-string,bar"}}, "foo", "bar"))
+	assert.True(HeaderAny(http.Header{"Foo": []string{"bar,example-string"}}, "foo", "bar"))
+	assert.True(HeaderAny(http.Header{"fuzz": []string{"buzz"}, "Foo": []string{"bar,example-string"}}, "foo", "bar"))
 }

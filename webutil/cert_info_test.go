@@ -24,9 +24,9 @@ func TestParseCertInfo(t *testing.T) {
 	valid := &http.Response{
 		TLS: &tls.ConnectionState{
 			PeerCertificates: []*x509.Certificate{
-				&x509.Certificate{
+				{
 					Issuer: pkix.Name{
-						CommonName: "bailey dog",
+						CommonName: "example-string dog",
 					},
 					DNSNames:  []string{"foo.local"},
 					NotAfter:  time.Now().UTC().AddDate(0, 1, 0),
@@ -38,7 +38,7 @@ func TestParseCertInfo(t *testing.T) {
 
 	info := ParseCertInfo(valid)
 	assert.NotNil(info)
-	assert.Equal("bailey dog", info.IssuerCommonName)
+	assert.Equal("example-string dog", info.IssuerCommonName)
 	assert.Equal([]string{"foo.local"}, info.DNSNames)
 	assert.False(info.NotAfter.IsZero())
 	assert.False(info.NotBefore.IsZero())

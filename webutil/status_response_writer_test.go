@@ -34,7 +34,7 @@ func TestResponseWriter(t *testing.T) {
 	assert := assert.New(t)
 
 	output := bytes.NewBuffer(nil)
-	rw := NewResponseWriter(mockResponseWriter{Output: output, Headers: http.Header{}})
+	rw := NewStatusResponseWriter(mockResponseWriter{Output: output, Headers: http.Header{}})
 
 	rw.Header().Set("foo", "bar")
 	rw.WriteHeader(http.StatusOK)

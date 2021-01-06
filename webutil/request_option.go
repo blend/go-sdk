@@ -192,7 +192,8 @@ func OptBody(contents io.ReadCloser) RequestOption {
 // OptBodyBytes sets a body on a context from bytes.
 func OptBodyBytes(body []byte) RequestOption {
 	return func(r *http.Request) error {
-		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		r.ContentLength = int64(len(body))
+		r.Body = ioutil.NopCloser(bytes.NewReader(body))
 		r.GetBody = func() (io.ReadCloser, error) {
 			return ioutil.NopCloser(bytes.NewReader(body)), nil
 		}
@@ -220,7 +221,7 @@ func OptPostedFiles(files ...PostedFile) RequestOption {
 				return err
 			}
 		}
-		r.Header.Set("Content-Type", w.FormDataContentType())
+		r.Header.Set(HeaderContentType, w.FormDataContentType())
 		if err := w.Close(); err != nil {
 			return err
 		}
@@ -242,15 +243,16 @@ func OptJSONBody(obj interface{}) RequestOption {
 		if err != nil {
 			return err
 		}
-		if r.Header == nil {
-			r.Header = http.Header{}
-		}
-		r.Header.Set(HeaderContentType, ContentTypeApplicationJSON)
-		r.Body = ioutil.NopCloser(bytes.NewBuffer(contents))
+		r.Body = ioutil.NopCloser(bytes.NewReader(contents))
 		r.GetBody = func() (io.ReadCloser, error) {
-			return ioutil.NopCloser(bytes.NewReader(contents)), nil
+			r := bytes.NewReader(contents)
+			return ioutil.NopCloser(r), nil
 		}
 		r.ContentLength = int64(len(contents))
+		if r.Header == nil {
+			r.Header = make(http.Header)
+		}
+		r.Header.Set(HeaderContentType, ContentTypeApplicationJSON)
 		return nil
 	}
 }
@@ -262,15 +264,24 @@ func OptXMLBody(obj interface{}) RequestOption {
 		if err != nil {
 			return err
 		}
-		if r.Header == nil {
-			r.Header = http.Header{}
-		}
-		r.Header.Set(HeaderContentType, ContentTypeApplicationXML)
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(contents))
 		r.GetBody = func() (io.ReadCloser, error) {
-			return ioutil.NopCloser(bytes.NewReader(contents)), nil
+			r := bytes.NewReader(contents)
+			return ioutil.NopCloser(r), nil
 		}
 		r.ContentLength = int64(len(contents))
+		if r.Header == nil {
+			r.Header = make(http.Header)
+		}
+		r.Header.Set(HeaderContentType, ContentTypeApplicationXML)
+		return nil
+	}
+}
+
+// OptHTTPClientTrace sets the http trace on the outgoing request.
+func OptHTTPClientTrace(ht *HTTPTrace) RequestOption {
+	return func(r *http.Request) error {
+		*r = *WithClientHTTPTrace(r, ht)
 		return nil
 	}
 }

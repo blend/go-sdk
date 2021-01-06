@@ -32,3 +32,12 @@ func HeaderAny(headers http.Header, key, value string) bool {
 	}
 	return false
 }
+
+// Headers creates headers from a given map.
+func Headers(from map[string]string) http.Header {
+	output := make(http.Header)
+	for key, value := range from {
+		output[key] = []string{value}
+	}
+	return output
+}
