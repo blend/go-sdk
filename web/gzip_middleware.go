@@ -7,11 +7,10 @@ import (
 // GZip is a middleware the implements gzip compression for requests that opt into it.
 func GZip(action Action) Action {
 	return func(r *Ctx) Result {
-		w := r.Response
-		if webutil.HeaderAny(r.Request.Header, HeaderAcceptEncoding, ContentEncodingGZIP) {
-			w.Header().Set(HeaderContentEncoding, ContentEncodingGZIP)
-			w.Header().Set(HeaderVary, "Accept-Encoding")
-			r.Response = webutil.NewGZipResponseWriter(w)
+		if webutil.HeaderAny(r.Request.Header, webutil.HeaderAcceptEncoding, webutil.ContentEncodingGZIP) {
+			r.Response.Header().Set(webutil.HeaderContentEncoding, webutil.ContentEncodingGZIP)
+			r.Response.Header().Set(webutil.HeaderVary, webutil.HeaderAcceptEncoding)
+			r.Response = webutil.NewGZipResponseWriter(r.Response)
 		}
 		return action(r)
 	}

@@ -37,16 +37,6 @@ func TestConfigPortOrDefault(t *testing.T) {
 	assert.Equal(c.Port, c.PortOrDefault())
 }
 
-func TestConfigBaseURLIsSecureScheme(t *testing.T) {
-	assert := assert.New(t)
-	var c Config
-	assert.False(c.BaseURLIsSecureScheme())
-	c.BaseURL = "http://hello.com"
-	assert.False(c.BaseURLIsSecureScheme())
-	c.BaseURL = "https://hello.com"
-	assert.True(c.BaseURLIsSecureScheme())
-}
-
 func TestConfigSessionTimeoutOrDefault(t *testing.T) {
 	assert := assert.New(t)
 	var c Config
@@ -168,10 +158,22 @@ func TestConfigResolve(t *testing.T) {
 	env.SetEnv(env.New())
 
 	defer env.Restore()
-	assert.Nil(c.Resolve(context.Background()))
+	assert.Nil(c.Resolve(env.WithVars(context.Background(), env.Env())))
 	assert.Empty(c.BindAddr)
 
 	env.Env().Set("BIND_ADDR", "hello")
-	assert.Nil(c.Resolve(context.Background()))
+	assert.Nil(c.Resolve(env.WithVars(context.Background(), env.Env())))
 	assert.Equal("hello", c.BindAddr)
+}
+
+func TestConfigResolve_CookieDomainFromBaseURL(t *testing.T) {
+	its := assert.New(t)
+
+	cfg := Config{
+		BaseURL: "https://example.com/foo/bar?buzz=fuzz",
+	}
+	err := (&cfg).Resolve(context.TODO())
+	its.Nil(err)
+	its.True(*cfg.CookieSecure)
+	its.Equal("example.com", cfg.CookieDomain)
 }

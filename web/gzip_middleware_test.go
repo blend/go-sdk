@@ -8,13 +8,15 @@ import (
 
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/r2"
+	"github.com/blend/go-sdk/webutil"
 )
 
 func TestGZipMiddlewarePlaintext(t *testing.T) {
 	assert := assert.New(t)
 
-	app := MustNew()
-	app.Use(GZip)
+	app := MustNew(
+		OptUse(GZip),
+	)
 	app.GET("/", ok)
 
 	req := MockGet(app, "/")
@@ -27,17 +29,17 @@ func TestGZipMiddlewarePlaintext(t *testing.T) {
 func TestGZipMiddlewareCompressed(t *testing.T) {
 	assert := assert.New(t)
 
-	app := MustNew()
-	app.Use(GZip)
-
+	app := MustNew(
+		OptUse(GZip),
+	)
 	app.GET("/", ok)
 
-	req := MockGet(app, "/", r2.OptHeaderValue(HeaderAcceptEncoding, "gzip"))
+	req := MockGet(app, "/", r2.OptHeaderValue(webutil.HeaderAcceptEncoding, "gzip"))
 	assert.Nil(req.Err)
 	body, meta, err := req.Bytes()
 
-	assert.Equal("gzip", meta.Header.Get(HeaderContentEncoding))
-	assert.Equal("Accept-Encoding", meta.Header.Get(HeaderVary))
+	assert.Equal("gzip", meta.Header.Get(webutil.HeaderContentEncoding))
+	assert.Equal(webutil.HeaderAcceptEncoding, meta.Header.Get(webutil.HeaderVary))
 	assert.Nil(err)
 
 	decompressor, err := gzip.NewReader(bytes.NewBuffer(body))

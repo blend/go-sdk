@@ -27,6 +27,12 @@ type JWTManager struct {
 	KeyProvider func(*Session) ([]byte, error)
 }
 
+// Apply applies the jwtm to the given auth manager.
+func (jwtm JWTManager) Apply(am *AuthManager) {
+	am.SerializeSessionValueHandler = jwtm.SerializeSessionValueHandler
+	am.ParseSessionValueHandler = jwtm.ParseSessionValueHandler
+}
+
 // Claims returns the sesion as a JWT standard claims object.
 func (jwtm JWTManager) Claims(session *Session) *jwt.StandardClaims {
 	return &jwt.StandardClaims{

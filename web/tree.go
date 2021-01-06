@@ -169,7 +169,6 @@ func (n *RouteNode) addRoute(method, path string, handler Handler) {
 				}
 				n.insertChild(numParams, method, path, fullPath, handler)
 				return
-
 			} else if i == len(path) { // Make node a (in-path) leaf
 				if n.Route != nil {
 					panic("a handle is already registered for path '" + fullPath + "'")
@@ -253,7 +252,6 @@ func (n *RouteNode) insertChild(numParams uint8, method, path, fullPath string, 
 				n.Children = []*RouteNode{child}
 				n = child
 			}
-
 		} else { // catchAll
 			if end != max || numParams > 1 {
 				panic("catch-all routes are only allowed at the end of the path in path '" + fullPath + "'")
@@ -387,7 +385,9 @@ walk: // outer loop for walking the tree
 						p = make(RouteParameters)
 					}
 
-					p[n.Path[2:]] = path[:]
+					// translation note:
+					// was path[:] but the effect is the same
+					p[n.Path[2:]] = path
 
 					route = n.Route
 					return

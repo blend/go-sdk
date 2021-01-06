@@ -3,6 +3,8 @@ package web
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/blend/go-sdk/webutil"
 )
 
 var (
@@ -20,7 +22,7 @@ type TextResultProvider struct{}
 func (trp TextResultProvider) NotFound() Result {
 	return &RawResult{
 		StatusCode:  http.StatusNotFound,
-		ContentType: ContentTypeText,
+		ContentType: webutil.ContentTypeText,
 		Response:    []byte("Not Found"),
 	}
 }
@@ -29,7 +31,7 @@ func (trp TextResultProvider) NotFound() Result {
 func (trp TextResultProvider) NotAuthorized() Result {
 	return &RawResult{
 		StatusCode:  http.StatusUnauthorized,
-		ContentType: ContentTypeText,
+		ContentType: webutil.ContentTypeText,
 		Response:    []byte("Not Authorized"),
 	}
 }
@@ -38,7 +40,7 @@ func (trp TextResultProvider) NotAuthorized() Result {
 func (trp TextResultProvider) InternalError(err error) Result {
 	return ResultWithLoggedError(&RawResult{
 		StatusCode:  http.StatusInternalServerError,
-		ContentType: ContentTypeText,
+		ContentType: webutil.ContentTypeText,
 		Response:    []byte(fmt.Sprintf("%+v", err)),
 	}, err)
 }
@@ -48,23 +50,23 @@ func (trp TextResultProvider) BadRequest(err error) Result {
 	if err != nil {
 		return &RawResult{
 			StatusCode:  http.StatusBadRequest,
-			ContentType: ContentTypeText,
+			ContentType: webutil.ContentTypeText,
 			Response:    []byte(fmt.Sprintf("Bad Request: %v", err)),
 		}
 	}
 	return &RawResult{
 		StatusCode:  http.StatusBadRequest,
-		ContentType: ContentTypeText,
+		ContentType: webutil.ContentTypeText,
 		Response:    []byte("Bad Request"),
 	}
 }
 
 // Status returns a plaintext result.
-func (trp TextResultProvider) Status(statusCode int, response ...interface{}) Result {
+func (trp TextResultProvider) Status(statusCode int, response interface{}) Result {
 	return &RawResult{
 		StatusCode:  statusCode,
-		ContentType: ContentTypeText,
-		Response:    []byte(fmt.Sprintf("%v", ResultOrDefault(http.StatusText(statusCode), response...))),
+		ContentType: webutil.ContentTypeText,
+		Response:    []byte(fmt.Sprint(ResultOrDefault(response, http.StatusText(statusCode)))),
 	}
 }
 
@@ -72,7 +74,7 @@ func (trp TextResultProvider) Status(statusCode int, response ...interface{}) Re
 func (trp TextResultProvider) OK() Result {
 	return &RawResult{
 		StatusCode:  http.StatusOK,
-		ContentType: ContentTypeText,
+		ContentType: webutil.ContentTypeText,
 		Response:    []byte("OK!"),
 	}
 }
@@ -81,7 +83,7 @@ func (trp TextResultProvider) OK() Result {
 func (trp TextResultProvider) Result(result interface{}) Result {
 	return &RawResult{
 		StatusCode:  http.StatusOK,
-		ContentType: ContentTypeText,
+		ContentType: webutil.ContentTypeText,
 		Response:    []byte(fmt.Sprintf("%v", result)),
 	}
 }

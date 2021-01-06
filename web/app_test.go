@@ -2,6 +2,7 @@ package web
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -14,6 +15,7 @@ import (
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/graceful"
 	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/webutil"
 )
 
 // assert an app is graceful
@@ -38,7 +40,7 @@ func TestAppNew(t *testing.T) {
 
 	app, err := New()
 	assert.Nil(err)
-	assert.NotNil(app.State)
+	assert.NotNil(app.BaseState)
 	assert.NotNil(app.Views)
 }
 
@@ -318,26 +320,14 @@ func TestAppProviderMiddlewareOrder(t *testing.T) {
 	assert.Nil(err)
 }
 
-func TestAppDefaultResultProvider(t *testing.T) {
-	assert := assert.New(t)
-
-	app, err := New(OptUse(ViewProviderAsDefault))
-	assert.Nil(err)
-
-	assert.NotEmpty(app.DefaultMiddleware)
-	rc := app.createCtx(nil, nil, nil, nil)
-	assert.NotNil(rc.DefaultProvider)
-	assert.NotNil(rc.App)
-}
-
 func TestAppDefaultResultProviderWithDefault(t *testing.T) {
 	assert := assert.New(t)
 
 	app, err := New(OptUse(ViewProviderAsDefault))
 	assert.Nil(err)
-	assert.NotEmpty(app.DefaultMiddleware)
+	assert.NotEmpty(app.BaseMiddleware)
 
-	rc := app.createCtx(nil, nil, nil, nil)
+	rc := NewCtx(nil, nil, app.ctxOptions(context.Background(), nil, nil)...)
 
 	// this will be set to the default initially
 	assert.NotNil(rc.DefaultProvider)
@@ -366,7 +356,7 @@ func TestAppDefaultResultProviderWithDefaultFromRoute(t *testing.T) {
 	assert.Nil(err)
 	defer meta.Body.Close()
 
-	assert.Equal(ContentTypeHTML, meta.Header.Get(HeaderContentType))
+	assert.Equal(webutil.ContentTypeHTML, meta.Header.Get(webutil.HeaderContentType))
 }
 
 func TestAppViewResult(t *testing.T) {
@@ -383,17 +373,28 @@ func TestAppViewResult(t *testing.T) {
 	contents, meta, err := MockGet(app, "/").Bytes()
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, meta.StatusCode, string(contents))
-	assert.Equal(ContentTypeHTML, meta.Header.Get(HeaderContentType))
+	assert.Equal(webutil.ContentTypeHTML, meta.Header.Get(webutil.HeaderContentType))
 	assert.Contains(string(contents), "foobarbaz")
 }
 
-func TestAppWritesLogs(t *testing.T) {
+func TestAppWritesLogsByDefault(t *testing.T) {
 	assert := assert.New(t)
 
 	buffer := bytes.NewBuffer(nil)
-	agent := logger.MustNew(logger.OptAll(), logger.OptOutput(buffer))
+	agent := logger.MustNew(
+		logger.OptAll(),
+		logger.OptFormatter(
+			logger.NewTextOutputFormatter(
+				logger.OptTextHideTimestamp(),
+				logger.OptTextNoColor(),
+			),
+		),
+		logger.OptOutput(buffer),
+	)
 
-	app, err := New(OptLog(agent))
+	app, err := New(
+		OptLog(agent),
+	)
 	assert.Nil(err)
 
 	app.GET("/", func(r *Ctx) Result {
@@ -402,16 +403,17 @@ func TestAppWritesLogs(t *testing.T) {
 	_, err = MockGet(app, "/").Discard()
 	assert.Nil(err)
 	agent.Drain()
-
 	assert.NotZero(buffer.Len())
 	assert.NotEmpty(buffer.String())
+
+	assert.Matches(`\[http.request\] 127\.0\.0\.1 GET \/ 200 (.*) text\/plain; charset=utf-8 3B	web.route=\/\n`, buffer.String(), "buffer should contain the non-zero status code") // we use a prefix here because the elapsed time is variable.
 }
 
 func TestAppBindAddr(t *testing.T) {
 	assert := assert.New(t)
 
-	env.Env().Set(EnvironmentVariableBindAddr, ":9999")
-	env.Env().Set(EnvironmentVariablePort, "1111")
+	env.Env().Set("BIND_ADDR", ":9999")
+	env.Env().Set("PORT", "1111")
 	defer env.Restore()
 
 	assert.Equal(":3333", MustNew(OptBindAddr(":3333")).Config.BindAddr)
@@ -444,7 +446,7 @@ func TestAppDefaultHeaders(t *testing.T) {
 	assert := assert.New(t)
 	app, err := New(OptDefaultHeader("foo", "bar"), OptDefaultHeader("baz", "buzz"))
 	assert.Nil(err)
-	assert.Equal([]string{"buzz"}, app.DefaultHeaders[http.CanonicalHeaderKey("baz")])
+	assert.Equal([]string{"buzz"}, app.BaseHeaders[http.CanonicalHeaderKey("baz")])
 
 	app.GET("/", func(r *Ctx) Result {
 		return Text.Result("ok")
@@ -482,14 +484,14 @@ func TestAppAddsDefaultHeaders(t *testing.T) {
 		return Text.Result("OK!")
 	})
 
-	go app.Start()
+	go func() { _ = app.Start() }()
 	<-app.NotifyStarted()
-	defer app.Stop()
+	defer func() { _ = app.Stop() }()
 
 	res, err := http.Get("http://" + app.Listener.Addr().String() + "/")
 	assert.Nil(err)
 	assert.NotEmpty(res.Header)
-	assert.Equal(PackageName, res.Header.Get(HeaderServer))
+	assert.Equal(PackageName, res.Header.Get(webutil.HeaderServer))
 }
 
 func TestAppHandlesPanics(t *testing.T) {
@@ -509,9 +511,9 @@ func TestAppHandlesPanics(t *testing.T) {
 				didRecover = true
 			}
 		}()
-		app.Start()
+		_ = app.Start()
 	}()
-	defer app.Stop()
+	defer func() { _ = app.Stop() }()
 	<-app.NotifyStarted()
 
 	res, err := http.Get("http://" + app.Listener.Addr().String() + "/")
@@ -766,4 +768,50 @@ func TestAppNilLoggerPanic(t *testing.T) {
 	res, err := MockGet(app, "/").Discard()
 	assert.Nil(err)
 	assert.Equal(http.StatusInternalServerError, res.StatusCode)
+}
+
+func TestAppContextRequestStarted(t *testing.T) {
+	assert := assert.New(t)
+
+	app, err := New()
+	assert.Nil(err)
+
+	var hadRequestStarted bool
+	app.GET("/", func(r *Ctx) Result {
+		hadRequestStarted = !GetRequestStarted(r.Context()).IsZero()
+		return nil
+	})
+
+	_, err = MockGet(app, "/").Discard()
+	assert.Nil(err)
+	assert.True(hadRequestStarted)
+}
+
+func TestAppMethodBare(t *testing.T) {
+	assert := assert.New(t)
+
+	buffer := bytes.NewBuffer(nil)
+	agent := logger.MustNew(
+		logger.OptAll(),
+		logger.OptFormatter(
+			logger.NewTextOutputFormatter(
+				logger.OptTextHideTimestamp(),
+				logger.OptTextNoColor(),
+			),
+		),
+		logger.OptOutput(buffer),
+	)
+
+	app, err := New(
+		OptLog(agent),
+	)
+	assert.Nil(err)
+
+	app.MethodBare(webutil.MethodGet, "/", func(r *Ctx) Result {
+		return Raw([]byte("ok!"))
+	})
+	_, err = MockGet(app, "/").Discard()
+	assert.Nil(err)
+	agent.Drain()
+	assert.Empty(buffer.String())
 }

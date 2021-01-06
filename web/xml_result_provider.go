@@ -62,10 +62,10 @@ func (xrp XMLResultProvider) OK() Result {
 }
 
 // Status returns a plaintext result.
-func (xrp XMLResultProvider) Status(statusCode int, response ...interface{}) Result {
+func (xrp XMLResultProvider) Status(statusCode int, response interface{}) Result {
 	return &XMLResult{
 		StatusCode: statusCode,
-		Response:   ResultOrDefault(http.StatusText(statusCode), response...),
+		Response:   ResultOrDefault(response, http.StatusText(statusCode)),
 	}
 }
 

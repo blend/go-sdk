@@ -1,33 +1,21 @@
 package web
 
-// ViewProviderAsDefault sets the context.DefaultResultProvider() equal to context.View().
-func ViewProviderAsDefault(action Action) Action {
-	return func(ctx *Ctx) Result {
-		ctx.DefaultProvider = ctx.Views
-		return action(ctx)
-	}
-}
+// Middleware is a func that implements middleware
+type Middleware func(Action) Action
 
-// JSONProviderAsDefault sets the context.DefaultResultProvider() equal to context.JSON().
-func JSONProviderAsDefault(action Action) Action {
-	return func(ctx *Ctx) Result {
-		ctx.DefaultProvider = JSON
-		return action(ctx)
+// NestMiddleware reads the middleware variadic args and organizes the calls
+// recursively in the order they appear. I.e. NestMiddleware(inner, third,
+// second, first) will call "first", "second", "third", then "inner".
+func NestMiddleware(action Action, middleware ...Middleware) Action {
+	if len(middleware) == 0 {
+		return action
 	}
-}
 
-// XMLProviderAsDefault sets the context.DefaultResultProvider() equal to context.XML().
-func XMLProviderAsDefault(action Action) Action {
-	return func(ctx *Ctx) Result {
-		ctx.DefaultProvider = XML
-		return action(ctx)
+	a := action
+	for _, i := range middleware {
+		if i != nil {
+			a = i(a)
+		}
 	}
-}
-
-// TextProviderAsDefault sets the context.DefaultResultProvider() equal to context.Text().
-func TextProviderAsDefault(action Action) Action {
-	return func(ctx *Ctx) Result {
-		ctx.DefaultProvider = Text
-		return action(ctx)
-	}
+	return a
 }
