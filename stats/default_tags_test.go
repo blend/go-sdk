@@ -18,7 +18,7 @@ func TestAddDefaultTagsFromEnv(t *testing.T) {
 	// Handles nil collector
 	AddDefaultTagsFromEnv(nil)
 
-	collector := NewMockCollector()
+	collector := NewMockCollector(32)
 	AddDefaultTagsFromEnv(collector)
 
 	tags := collector.DefaultTags()
@@ -34,7 +34,7 @@ func TestAddDefaultTags(t *testing.T) {
 	// Handles nil collector
 	AddDefaultTagsFromEnv(nil)
 
-	collector := NewMockCollector()
+	collector := NewMockCollector(32)
 	AddDefaultTags(collector, "someservice", "sandbox", "somecontainer")
 
 	tags := collector.DefaultTags()

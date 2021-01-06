@@ -20,3 +20,11 @@ func (vm ViewModel) Wrap(other interface{}) ViewModel {
 		ViewModel: other,
 	}
 }
+
+// State returns a state value.
+func (vm ViewModel) State(key string) interface{} {
+	if vm.Ctx == nil || vm.Ctx.State == nil {
+		return nil
+	}
+	return vm.Ctx.State.Get(key)
+}

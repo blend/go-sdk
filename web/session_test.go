@@ -12,8 +12,8 @@ func TestSession(t *testing.T) {
 	session := &Session{}
 	session.WithBaseURL("https://foo.com/bar")
 	assert.Equal("https://foo.com/bar", session.BaseURL)
-	session.WithUserAgent("bailey")
-	assert.Equal("bailey", session.UserAgent)
+	session.WithUserAgent("example-string")
+	assert.Equal("example-string", session.UserAgent)
 	session.WithRemoteAddr("10.10.32.1")
 	assert.Equal("10.10.32.1", session.RemoteAddr)
 }

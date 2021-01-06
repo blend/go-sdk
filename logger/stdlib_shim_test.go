@@ -16,8 +16,8 @@ func TestStdlibShim(t *testing.T) {
 		OptAll(),
 		OptText(OptTextHideTimestamp(), OptTextNoColor()),
 	)
-	defer log.Close()
 	assert.Nil(err)
+	defer log.Close()
 
 	shim := StdlibShim(log, OptShimWriterEventProvider(ShimWriterErrorEventProvider("error")))
 

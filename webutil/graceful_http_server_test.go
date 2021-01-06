@@ -36,7 +36,7 @@ func TestGracefulServer(t *testing.T) {
 
 	go func() {
 		defer func() { close(didShutdown) }()
-		graceful.ShutdownBySignal([]graceful.Graceful{gs}, graceful.OptShutdownSignal(stopSignal))
+		_ = graceful.ShutdownBySignal([]graceful.Graceful{gs}, graceful.OptShutdownSignal(stopSignal))
 	}()
 	<-gs.NotifyStarted()
 

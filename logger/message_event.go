@@ -2,6 +2,7 @@ package logger
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"time"
 )
@@ -29,6 +30,16 @@ func NewMessageEventListener(listener func(context.Context, MessageEvent)) Liste
 		if typed, isTyped := e.(MessageEvent); isTyped {
 			listener(ctx, typed)
 		}
+	}
+}
+
+// NewMessageEventFilter returns a new message event filter.
+func NewMessageEventFilter(filter func(context.Context, MessageEvent) (MessageEvent, bool)) Filter {
+	return func(ctx context.Context, e Event) (Event, bool) {
+		if typed, isTyped := e.(MessageEvent); isTyped {
+			return filter(ctx, typed)
+		}
+		return e, false
 	}
 }
 
@@ -62,10 +73,10 @@ func (e MessageEvent) GetFlag() string { return e.Flag }
 
 // WriteText implements TextWritable.
 func (e MessageEvent) WriteText(formatter TextFormatter, output io.Writer) {
-	io.WriteString(output, e.Text)
+	fmt.Fprint(output, e.Text)
 	if e.Elapsed > 0 {
-		io.WriteString(output, Space)
-		io.WriteString(output, "("+e.Elapsed.String()+")")
+		fmt.Fprint(output, Space)
+		fmt.Fprint(output, "("+e.Elapsed.String()+")")
 	}
 }
 

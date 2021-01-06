@@ -9,10 +9,11 @@ import (
 
 // Config is the logger config.
 type Config struct {
-	Flags  []string   `json:"flags,omitempty" yaml:"flags,omitempty" env:"LOG_FLAGS,csv"`
-	Format string     `json:"format,omitempty" yaml:"format,omitempty" env:"LOG_FORMAT"`
-	Text   TextConfig `json:"text,omitempty" yaml:"text,omitempty"`
-	JSON   JSONConfig `json:"json,omitempty" yaml:"json,omitempty"`
+	Flags    []string   `json:"flags,omitempty" yaml:"flags,omitempty" env:"LOG_FLAGS,csv"`
+	Writable []string   `json:"writable,omitempty" yaml:"writable,omitempty" env:"LOG_FLAGS_WRITABLE,csv"`
+	Format   string     `json:"format,omitempty" yaml:"format,omitempty" env:"LOG_FORMAT"`
+	Text     TextConfig `json:"text,omitempty" yaml:"text,omitempty"`
+	JSON     JSONConfig `json:"json,omitempty" yaml:"json,omitempty"`
 }
 
 // Resolve resolves the config.
@@ -26,6 +27,14 @@ func (c Config) FlagsOrDefault() []string {
 		return c.Flags
 	}
 	return DefaultFlags
+}
+
+// WritableOrDefault returns the enabled logger events.
+func (c Config) WritableOrDefault() []string {
+	if len(c.Writable) > 0 {
+		return c.Writable
+	}
+	return DefaultFlagsWritable
 }
 
 // FormatOrDefault returns the output format or a default.

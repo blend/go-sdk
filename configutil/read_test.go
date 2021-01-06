@@ -2,7 +2,6 @@ package configutil
 
 import (
 	"bytes"
-	"context"
 	"path/filepath"
 	"testing"
 
@@ -12,38 +11,14 @@ import (
 	"github.com/blend/go-sdk/uuid"
 )
 
-type config struct {
-	Environment string `json:"env" yaml:"env" env:"SERVICE_ENV"`
-	Other       string `json:"other" yaml:"other" env:"OTHER"`
-}
-
-type bareResolvedConfig struct {
-	config
-}
-
-// Resolve implements configutil.BareResolver.
-func (br *bareResolvedConfig) Resolve() error {
-	br.Environment = "bare resolved"
-	return nil
-}
-
-type resolvedConfig struct {
-	config
-}
-
-// Resolve implements configutil.BareResolver.
-func (r *resolvedConfig) Resolve(ctx context.Context) error {
-	r.Environment = env.GetVars(ctx).String("ENVIRONMENT")
-	return nil
-}
-
 func TestTryReadYAML(t *testing.T) {
 	assert := assert.New(t)
 
 	var cfg config
-	path, err := Read(&cfg, OptFilePaths("testdata/config.yaml"))
+	paths, err := Read(&cfg, OptPaths("testdata/config.yaml"))
 	assert.Nil(err)
-	assert.Equal(path, "testdata/config.yaml")
+	assert.Len(paths, 1)
+	assert.Equal("testdata/config.yaml", paths[0])
 	assert.Equal("test_yaml", cfg.Environment)
 	assert.Equal("foo", cfg.Other)
 }
@@ -52,9 +27,10 @@ func TestTryReadYML(t *testing.T) {
 	assert := assert.New(t)
 
 	var cfg config
-	path, err := Read(&cfg, OptFilePaths("testdata/config.yml"))
+	paths, err := Read(&cfg, OptPaths("testdata/config.yml"))
 	assert.Nil(err)
-	assert.Equal(path, "testdata/config.yml")
+	assert.Len(paths, 1)
+	assert.Equal("testdata/config.yml", paths[0])
 	assert.Equal("test_yml", cfg.Environment)
 	assert.Equal("foo", cfg.Other)
 }
@@ -63,9 +39,10 @@ func TestTryReadJSON(t *testing.T) {
 	assert := assert.New(t)
 
 	var cfg config
-	path, err := Read(&cfg, OptFilePaths("testdata/config.json"))
+	paths, err := Read(&cfg, OptPaths("testdata/config.json"))
 	assert.Nil(err)
-	assert.Equal(path, "testdata/config.json")
+	assert.Len(paths, 1)
+	assert.Equal("testdata/config.json", paths[0])
 	assert.Equal("test_json", cfg.Environment)
 	assert.Equal("moo", cfg.Other)
 }
@@ -74,18 +51,31 @@ func TestReadUnset(t *testing.T) {
 	assert := assert.New(t)
 
 	var cfg config
-	path, err := Read(&cfg, OptFilePaths(""))
+	paths, err := Read(&cfg, OptPaths(""))
 	assert.Nil(err)
-	assert.Empty(path)
+	assert.Empty(paths)
+	assert.Empty(paths)
 	assert.NotEqual("dev", cfg.Environment)
+}
+
+func TestReadMany(t *testing.T) {
+	assert := assert.New(t)
+
+	var cfg config
+	paths, err := Read(&cfg, OptPaths("testdata/project.yml", "testdata/config.yml"))
+	assert.Nil(err)
+	assert.Equal([]string{"testdata/project.yml", "testdata/config.yml"}, paths)
+	assert.Equal("test_yml", cfg.Environment)
+	assert.Equal("foo", cfg.Other)
+	assert.Equal("project-base", cfg.Base)
 }
 
 func TestReadPathNotFound(t *testing.T) {
 	assert := assert.New(t)
 
 	var cfg config
-	_, err := Read(&cfg, OptFilePaths(filepath.Join("testdata", uuid.V4().String())))
-	assert.True(IsNotExist(err))
+	_, err := Read(&cfg, OptPaths(filepath.Join("testdata", uuid.V4().String())))
+	assert.Nil(err)
 }
 
 func TestIsUnset(t *testing.T) {
@@ -145,25 +135,77 @@ func TestDeserializeJSON(t *testing.T) {
 	assert.Equal("foo", cfg.Other)
 }
 
-func TestReadBareResolve(t *testing.T) {
-	assert := assert.New(t)
-
-	var cfg bareResolvedConfig
-	path, err := Read(&cfg, OptFilePaths(""))
-	assert.Nil(err)
-	assert.Empty(path)
-	assert.Equal("bare resolved", cfg.Environment)
-}
-
 func TestReadResolver(t *testing.T) {
 	assert := assert.New(t)
 
 	var cfg resolvedConfig
 	path, err := Read(&cfg,
-		OptFilePaths(""),
+		OptPaths(""),
 		OptEnv(env.Vars{"ENVIRONMENT": "resolved"}),
 	)
 	assert.Nil(err)
 	assert.Empty(path)
 	assert.Equal("resolved", cfg.Environment)
+}
+
+func TestRead_multiple(t *testing.T) {
+	assert := assert.New(t)
+
+	contents0 := `
+serviceName: "serviceName-contents0"
+
+field0: "field0-contents0"
+field2: "field2-contents0"
+field3: "field3-contents0"
+
+child:
+  field0: "child-field0-contents0"
+  field2: "child-field2-contents0"
+  field3: "child-field3-contents0"
+`
+
+	contents1 := `
+serviceEnv: "serviceEnv-contents1"
+
+field1: "field1-contents1"
+field3: "field3-contents1"
+
+child:
+  field1: "child-field1-contents1"
+  field3: "child-field3-contents1"
+`
+
+	contents2 := `
+version: "version-contents2"
+
+field2: "field2-contents2"
+
+child:
+  field2: "child-field2-contents2"
+`
+
+	var cfg fullConfig
+	path, err := Read(&cfg,
+		OptPaths(""),
+		OptAddContentString("yml", contents0),
+		OptAddContentString("yml", contents1),
+		OptAddContentString("yml", contents2),
+		OptEnv(env.Vars{"SERVICE_ENV": "env-resolved"}),
+	)
+	assert.Nil(err)
+	assert.Empty(path)
+	assert.Equal("env-resolved", cfg.ServiceEnv)
+
+	assert.Equal("serviceName-contents0", cfg.ServiceName)
+	assert.Equal("version-contents2", cfg.Version)
+
+	assert.Equal("field0-contents0", cfg.Field0)
+	assert.Equal("field1-contents1", cfg.Field1)
+	assert.Equal("field2-contents2", cfg.Field2)
+	assert.Equal("field3-contents1", cfg.Field3)
+
+	assert.Equal("child-field0-contents0", cfg.Child.Field0)
+	assert.Equal("child-field1-contents1", cfg.Child.Field1)
+	assert.Equal("child-field2-contents2", cfg.Child.Field2)
+	assert.Equal("child-field3-contents1", cfg.Child.Field3)
 }

@@ -14,6 +14,7 @@ func OptConfig(cfg Config) Option {
 	return func(l *Logger) error {
 		l.Formatter = cfg.Formatter()
 		l.Flags = NewFlags(cfg.FlagsOrDefault()...)
+		l.Writable = NewFlags(cfg.WritableOrDefault()...)
 		return nil
 	}
 }
@@ -28,6 +29,7 @@ func OptConfigFromEnv() Option {
 		}
 		l.Formatter = cfg.Formatter()
 		l.Flags = NewFlags(cfg.FlagsOrDefault()...)
+		l.Writable = NewFlags(cfg.WritableOrDefault()...)
 		return nil
 	}
 }
@@ -87,9 +89,19 @@ func OptFlags(flags *Flags) Option {
 	return func(l *Logger) error { l.Flags = flags; return nil }
 }
 
+// OptWritable sets the writable flags on the logger.
+func OptWritable(flags *Flags) Option {
+	return func(l *Logger) error { l.Writable = flags; return nil }
+}
+
 // OptAll sets all flags enabled on the logger by default.
 func OptAll() Option {
 	return func(l *Logger) error { l.Flags.SetAll(); return nil }
+}
+
+// OptAllWritable sets all flags enabled on the logger by default.
+func OptAllWritable() Option {
+	return func(l *Logger) error { l.Writable.SetAll(); return nil }
 }
 
 // OptNone sets no flags enabled on the logger by default.
@@ -97,12 +109,27 @@ func OptNone() Option {
 	return func(l *Logger) error { l.Flags.SetNone(); return nil }
 }
 
+// OptNoneWritable sets no flags enabled on the logger by default.
+func OptNoneWritable() Option {
+	return func(l *Logger) error { l.Writable.SetNone(); return nil }
+}
+
 // OptEnabled sets enabled flags on the logger.
 func OptEnabled(flags ...string) Option {
 	return func(l *Logger) error { l.Flags.Enable(flags...); return nil }
 }
 
+// OptEnabledWritable sets enabled writable flags on the logger.
+func OptEnabledWritable(flags ...string) Option {
+	return func(l *Logger) error { l.Writable.Enable(flags...); return nil }
+}
+
 // OptDisabled sets disabled flags on the logger.
 func OptDisabled(flags ...string) Option {
 	return func(l *Logger) error { l.Flags.Disable(flags...); return nil }
+}
+
+// OptDisabledWritable sets disabled flags on the logger.
+func OptDisabledWritable(flags ...string) Option {
+	return func(l *Logger) error { l.Writable.Disable(flags...); return nil }
 }

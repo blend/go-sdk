@@ -7,7 +7,7 @@ import (
 	"github.com/blend/go-sdk/assert"
 )
 
-func TestInt64(t *testing.T) {
+func TestInt646464646464(t *testing.T) {
 	assert := assert.New(t)
 
 	intValue := Int64(0)

@@ -5,9 +5,6 @@ import (
 	"encoding/base64"
 	"net/http"
 	"net/url"
-	"strconv"
-
-	"github.com/blend/go-sdk/stringutil"
 )
 
 // PathRedirectHandler returns a handler for AuthManager.RedirectHandler based on a path.
@@ -24,13 +21,8 @@ func PathRedirectHandler(path string) func(*Ctx) *url.URL {
 // SessionIDs are generally 64 bytes.
 func NewSessionID() string {
 	b := make([]byte, 32)
-	rand.Read(b)
+	_, _ = rand.Read(b)
 	return base64.URLEncoding.EncodeToString(b)
-}
-
-// NewRequestID returns a pseudo-unique key for a request context.
-func NewRequestID() string {
-	return stringutil.Random(stringutil.Letters, 12)
 }
 
 // Base64URLDecode decodes a base64 string.
@@ -43,22 +35,29 @@ func Base64URLEncode(raw []byte) string {
 	return base64.URLEncoding.EncodeToString(raw)
 }
 
-// ParseInt32 parses an int32.
-func ParseInt32(v string) int32 {
-	parsed, _ := strconv.Atoi(v)
-	return int32(parsed)
-}
-
 // NewCookie returns a new name + value pair cookie.
 func NewCookie(name, value string) *http.Cookie {
 	return &http.Cookie{Name: name, Value: value}
 }
 
-// CopyHeaders copies headers.
-func CopyHeaders(headers http.Header) http.Header {
+// CopySingleHeaders copies headers in single value format.
+func CopySingleHeaders(headers map[string]string) http.Header {
 	output := make(http.Header)
-	for key, values := range headers {
-		output[key] = values
+	for key, value := range headers {
+		output[key] = []string{value}
+	}
+	return output
+}
+
+// MergeHeaders merges headers.
+func MergeHeaders(headers ...http.Header) http.Header {
+	output := make(http.Header)
+	for _, header := range headers {
+		for key, values := range header {
+			for _, value := range values {
+				output.Add(key, value)
+			}
+		}
 	}
 	return output
 }

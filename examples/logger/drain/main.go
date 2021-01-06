@@ -33,10 +33,7 @@ func main() {
 			fmt.Println("draining")
 			ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
 			defer cancel()
-			if err := log.DrainContext(ctx); err != nil {
-				fmt.Println("exited with", err.Error())
-				os.Exit(1)
-			}
+			log.DrainContext(ctx)
 			fmt.Println("exiting")
 			os.Exit(0)
 		}

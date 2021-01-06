@@ -1,5 +1,7 @@
 package webutil
 
+// github:codeowner @blend/seceng
+
 import (
 	"net"
 	"net/http"
@@ -7,7 +9,7 @@ import (
 
 // GetRemoteAddr gets the origin/client ip for a request.
 // X-FORWARDED-FOR is checked. If multiple IPs are included the first one is returned
-// X-REAL-IP is checked. If multiple IPs are included the first one is returned
+// X-REAL-IP is checked. If multiple IPs are included the last one is returned
 // Finally r.RemoteAddr is used
 // Only benevolent services will allow access to the real IP.
 func GetRemoteAddr(r *http.Request) string {

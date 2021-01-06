@@ -6,10 +6,12 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/blend/go-sdk/async"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
+	"github.com/blend/go-sdk/proxyprotocol"
 	"github.com/blend/go-sdk/webutil"
 )
 
@@ -24,18 +26,21 @@ func MustNew(options ...Option) *App {
 
 // New returns a new web app.
 func New(options ...Option) (*App, error) {
-	views := NewViewCache()
+	views, err := NewViewCache()
+	if err != nil {
+		return nil, err
+	}
 	a := App{
 		Latch:           async.NewLatch(),
-		Server:          &http.Server{},
-		State:           &SyncState{},
+		BaseContext:     func(_ net.Listener) context.Context { return context.Background() },
+		BaseHeaders:     BaseHeaders(),
+		BaseState:       new(SyncState),
+		Server:          new(http.Server),
 		Statics:         map[string]*StaticFileServer{},
-		DefaultHeaders:  CopyHeaders(DefaultHeaders),
 		Views:           views,
 		DefaultProvider: views,
 	}
 
-	var err error
 	for _, option := range options {
 		if err = option(&a); err != nil {
 			return nil, err
@@ -47,39 +52,52 @@ func New(options ...Option) (*App, error) {
 // App is the server for the app.
 type App struct {
 	*async.Latch
-	Auth                    AuthManager
-	Config                  Config
-	Log                     logger.Log
-	Views                   *ViewCache
-	TLSConfig               *tls.Config
-	Server                  *http.Server
-	ServerOptions           []webutil.HTTPServerOption
-	Listener                *net.TCPListener
-	DefaultHeaders          http.Header
-	Statics                 map[string]*StaticFileServer
-	Routes                  map[string]*RouteNode
+
+	Config Config
+
+	Auth        AuthManager
+	BaseContext func(net.Listener) context.Context
+
+	BaseHeaders    http.Header
+	BaseMiddleware []Middleware
+	BaseState      State
+
+	Log    logger.Log
+	Tracer Tracer
+
+	TLSConfig *tls.Config
+	Server    *http.Server
+	Listener  net.Listener
+
+	Statics map[string]*StaticFileServer
+	Routes  map[string]*RouteNode
+
+	DefaultProvider ResultProvider
+	Views           *ViewCache
+
 	NotFoundHandler         Handler
 	MethodNotAllowedHandler Handler
 	PanicAction             PanicAction
-	DefaultMiddleware       []Middleware
-	Tracer                  Tracer
-	DefaultProvider         ResultProvider
-	State                   *SyncState
 }
 
-// Use adds a new default middleware to the middleware chain.
-func (a *App) Use(middleware Middleware) {
-	a.DefaultMiddleware = append(a.DefaultMiddleware, middleware)
+// Background returns a base context.
+func (a *App) Background() context.Context {
+	if a.BaseContext != nil {
+		return a.BaseContext(a.Listener)
+	}
+	return context.Background()
 }
+
+// --------------------------------------------------------------------------------
+// Lifecycle
+// --------------------------------------------------------------------------------
 
 // Start starts the server and binds to the given address.
 func (a *App) Start() (err error) {
 	if !a.Latch.CanStart() {
 		return ex.New(async.ErrCannotStart)
 	}
-
-	serverOptions := append(a.httpServerOptions(), a.ServerOptions...)
-	for _, opt := range serverOptions {
+	for _, opt := range a.httpServerOptions() {
 		if err = opt(a.Server); err != nil {
 			return err
 		}
@@ -90,44 +108,54 @@ func (a *App) Start() (err error) {
 		return
 	}
 
-	serverProtocol := "http"
-	if a.Server.TLSConfig != nil {
-		serverProtocol = "https (tls)"
-	}
-	if a.Server.Addr == "" {
-		a.Server.Addr = a.Config.BindAddrOrDefault()
-	}
-	var listener net.Listener
-	listener, err = net.Listen("tcp", a.Server.Addr)
-	if err != nil {
-		err = ex.New(err)
-		return
-	}
-	var ok bool
-	a.Listener, ok = listener.(*net.TCPListener)
-	if !ok {
-		err = ex.New("listener returned was not a net.TCPListener")
-		return
-	}
-
-	logger.MaybeInfof(a.Log, "%s server started, listening on %s", serverProtocol, a.Server.Addr)
-	if a.Server.TLSConfig != nil && a.Server.TLSConfig.ClientCAs != nil {
-		logger.MaybeInfof(a.Log, "%s using client cert pool with (%d) client certs", serverProtocol, len(a.Server.TLSConfig.ClientCAs.Subjects()))
-	}
-
 	var shutdownErr error
-	a.Started()
-	if a.Server.TLSConfig != nil {
-		shutdownErr = a.Server.Serve(tls.NewListener(TCPKeepAliveListener{a.Listener}, a.Server.TLSConfig))
+	if a.Listener == nil {
+		serverProtocol := "http"
+		if a.Server.TLSConfig != nil {
+			serverProtocol = "https (tls)"
+		}
+		if a.Server.Addr == "" {
+			a.Server.Addr = a.Config.BindAddrOrDefault()
+		}
+
+		var rawListener net.Listener
+		rawListener, err = net.Listen("tcp", a.Server.Addr)
+		if err != nil {
+			err = ex.New(err)
+			return
+		}
+		typedListener, ok := rawListener.(*net.TCPListener)
+		if !ok {
+			err = ex.New("listener returned was not a net.TCPListener")
+			return
+		}
+		a.Listener = webutil.TCPKeepAliveListener{
+			TCPListener:     typedListener,
+			KeepAlive:       a.Config.KeepAliveOrDefault(),
+			KeepAlivePeriod: a.Config.KeepAlivePeriodOrDefault(),
+		}
+
+		if a.Config.UseProxyProtocol {
+			logger.MaybeInfofContext(a.Background(), a.Log, "%s using proxy protocol", serverProtocol)
+			a.Listener = &proxyprotocol.Listener{Listener: a.Listener}
+		}
+
+		if a.Server.TLSConfig != nil {
+			logger.MaybeInfofContext(a.Background(), a.Log, "%s using tls", serverProtocol)
+			a.Listener = tls.NewListener(a.Listener, a.Server.TLSConfig)
+		}
+		logger.MaybeInfofContext(a.Background(), a.Log, "%s server started, listening on %s", serverProtocol, a.Server.Addr)
 	} else {
-		shutdownErr = a.Server.Serve(TCPKeepAliveListener{a.Listener})
+		logger.MaybeInfofContext(a.Background(), a.Log, "http server started, using custom listener")
 	}
+
+	a.Started()
+	shutdownErr = a.Server.Serve(a.Listener)
 	if shutdownErr != nil && shutdownErr != http.ErrServerClosed {
 		err = ex.New(shutdownErr)
 	}
-	logger.MaybeInfof(a.Log, "server exited")
+	logger.MaybeInfofContext(a.Background(), a.Log, "server stopped serving")
 	a.Stopped()
-
 	return
 }
 
@@ -138,24 +166,30 @@ func (a *App) Stop() error {
 	}
 	a.Stopping()
 
-	ctx := context.Background()
+	ctx := a.Background()
 	var cancel context.CancelFunc
-	if a.Config.ShutdownGracePeriodOrDefault() > 0 {
-		ctx, cancel = context.WithTimeout(ctx, a.Config.ShutdownGracePeriodOrDefault())
+	if gracePeriod := a.Config.ShutdownGracePeriodOrDefault(); gracePeriod > 0 {
+		logger.MaybeInfofContext(ctx, a.Log, "server shutdown grace period: %v", gracePeriod)
+		ctx, cancel = context.WithTimeout(ctx, gracePeriod)
 		defer cancel()
 	}
-	logger.MaybeInfof(a.Log, "server shutting down")
+	logger.MaybeInfofContext(ctx, a.Log, "server keep alives disabled")
 	a.Server.SetKeepAlivesEnabled(false)
+	logger.MaybeInfofContext(ctx, a.Log, "server shutting down")
 	if err := a.Server.Shutdown(ctx); err != nil {
-		return ex.New(err)
+		if err == context.DeadlineExceeded {
+			logger.MaybeWarningfContext(ctx, a.Log, "server shutdown grace period exceeded, connections forcibly closed")
+		} else {
+			return ex.New(err)
+		}
 	}
-
-	a.Server = nil
-	a.Listener = nil
-	logger.MaybeInfof(a.Log, "server shutdown complete")
-
+	logger.MaybeInfofContext(a.Background(), a.Log, "server shutdown complete")
 	return nil
 }
+
+// --------------------------------------------------------------------------------
+// Register Controllers
+// --------------------------------------------------------------------------------
 
 // Register registers controllers with the app's router.
 func (a *App) Register(controllers ...Controller) {
@@ -167,6 +201,39 @@ func (a *App) Register(controllers ...Controller) {
 // --------------------------------------------------------------------------------
 // Static Result Methods
 // --------------------------------------------------------------------------------
+
+// ServeStatic serves files from the given file system root(s)..
+// If the path does not end with "/*filepath" that suffix will be added for you internally.
+// For example if root is "/etc" and *filepath is "passwd", the local file
+// "/etc/passwd" would be served.
+func (a *App) ServeStatic(route string, searchPaths []string, middleware ...Middleware) {
+	var searchPathFS []http.FileSystem
+	for _, searchPath := range searchPaths {
+		searchPathFS = append(searchPathFS, http.Dir(searchPath))
+	}
+	sfs := NewStaticFileServer(
+		OptStaticFileServerSearchPaths(searchPathFS...),
+		OptStaticFileServerCacheDisabled(true),
+	)
+	mountedRoute := a.formatStaticMountRoute(route)
+	a.Statics[mountedRoute] = sfs
+	a.Method(webutil.MethodGet, mountedRoute, sfs.Action, middleware...)
+}
+
+// ServeStaticCached serves files from the given file system root(s).
+// If the path does not end with "/*filepath" that suffix will be added for you internally.
+func (a *App) ServeStaticCached(route string, searchPaths []string, middleware ...Middleware) {
+	var searchPathFS []http.FileSystem
+	for _, searchPath := range searchPaths {
+		searchPathFS = append(searchPathFS, http.Dir(searchPath))
+	}
+	sfs := NewStaticFileServer(
+		OptStaticFileServerSearchPaths(searchPathFS...),
+	)
+	mountedRoute := a.formatStaticMountRoute(route)
+	a.Statics[mountedRoute] = sfs
+	a.Method(webutil.MethodGet, mountedRoute, sfs.Action, middleware...)
+}
 
 // SetStaticRewriteRule adds a rewrite rule for a specific statically served path.
 // It mutates the path for the incoming static file request to the fileserver according to the action.
@@ -189,99 +256,57 @@ func (a *App) SetStaticHeader(route, key, value string) error {
 	return ex.New("no static fileserver mounted at route", ex.OptMessagef("route: %s", mountedRoute))
 }
 
-// ServeStatic serves files from the given file system root(s)..
-// If the path does not end with "/*filepath" that suffix will be added for you internally.
-// For example if root is "/etc" and *filepath is "passwd", the local file
-// "/etc/passwd" would be served.
-func (a *App) ServeStatic(route string, searchPaths []string, middleware ...Middleware) {
-	var searchPathFS []http.FileSystem
-	for _, searchPath := range searchPaths {
-		searchPathFS = append(searchPathFS, http.Dir(searchPath))
-	}
-	sfs := NewStaticFileServer(
-		OptStaticFileServerSearchPaths(searchPathFS...),
-		OptStaticFileServerCacheDisabled(true),
-	)
-	mountedRoute := a.formatStaticMountRoute(route)
-	a.Statics[mountedRoute] = sfs
-	a.Handle("GET", mountedRoute, a.RenderAction(a.NestMiddleware(sfs.Action, middleware...)))
-}
-
-// ServeStaticCached serves files from the given file system root(s).
-// If the path does not end with "/*filepath" that suffix will be added for you internally.
-func (a *App) ServeStaticCached(route string, searchPaths []string, middleware ...Middleware) {
-	var searchPathFS []http.FileSystem
-	for _, searchPath := range searchPaths {
-		searchPathFS = append(searchPathFS, http.Dir(searchPath))
-	}
-	sfs := NewStaticFileServer(
-		OptStaticFileServerSearchPaths(searchPathFS...),
-	)
-	mountedRoute := a.formatStaticMountRoute(route)
-	a.Statics[mountedRoute] = sfs
-	a.Handle("GET", mountedRoute, a.RenderAction(a.NestMiddleware(sfs.Action, middleware...)))
-}
-
-func (a *App) formatStaticMountRoute(route string) string {
-	mountedRoute := route
-	if !strings.HasSuffix(mountedRoute, "*"+RouteTokenFilepath) {
-		if strings.HasSuffix(mountedRoute, "/") {
-			mountedRoute = mountedRoute + "*" + RouteTokenFilepath
-		} else {
-			mountedRoute = mountedRoute + "/*" + RouteTokenFilepath
-		}
-	}
-	return mountedRoute
-}
-
 // --------------------------------------------------------------------------------
 // Route Registration / HTTP Methods
 // --------------------------------------------------------------------------------
 
-// GET registers a GET request handler.
-/*
-Routes should be registered in the form:
-
-	app.GET("/myroute", myAction, myMiddleware...)
-
-It is important to note that routes are registered in order and
-cannot have any wildcards inside the routes.
-*/
+// GET registers a GET request route handler with the given middleware.
 func (a *App) GET(path string, action Action, middleware ...Middleware) {
-	a.Handle("GET", path, a.RenderAction(a.NestMiddleware(action, middleware...)))
+	a.Method(webutil.MethodGet, path, action, middleware...)
 }
 
-// OPTIONS registers a OPTIONS request handler.
+// OPTIONS registers a OPTIONS request route handler the given middleware.
 func (a *App) OPTIONS(path string, action Action, middleware ...Middleware) {
-	a.Handle("OPTIONS", path, a.RenderAction(a.NestMiddleware(action, middleware...)))
+	a.Method(webutil.MethodOptions, path, action, middleware...)
 }
 
-// HEAD registers a HEAD request handler.
+// HEAD registers a HEAD request route handler with the given middleware.
 func (a *App) HEAD(path string, action Action, middleware ...Middleware) {
-	a.Handle("HEAD", path, a.RenderAction(a.NestMiddleware(action, middleware...)))
+	a.Method(webutil.MethodHead, path, action, middleware...)
 }
 
-// PUT registers a PUT request handler.
+// PUT registers a PUT request route handler with the given middleware.
 func (a *App) PUT(path string, action Action, middleware ...Middleware) {
-	a.Handle("PUT", path, a.RenderAction(a.NestMiddleware(action, middleware...)))
+	a.Method(webutil.MethodPut, path, action, middleware...)
 }
 
-// PATCH registers a PATCH request handler.
+// PATCH registers a PATCH request route handler with the given middleware.
 func (a *App) PATCH(path string, action Action, middleware ...Middleware) {
-	a.Handle("PATCH", path, a.RenderAction(a.NestMiddleware(action, middleware...)))
+	a.Method(webutil.MethodPatch, path, action, middleware...)
 }
 
-// POST registers a POST request actions.
+// POST registers a POST request route handler with the given middleware.
 func (a *App) POST(path string, action Action, middleware ...Middleware) {
-	a.Handle("POST", path, a.RenderAction(a.NestMiddleware(action, middleware...)))
+	a.Method(webutil.MethodPost, path, action, middleware...)
 }
 
-// DELETE registers a DELETE request handler.
+// DELETE registers a DELETE request route handler with the given middleware.
 func (a *App) DELETE(path string, action Action, middleware ...Middleware) {
-	a.Handle("DELETE", path, a.RenderAction(a.NestMiddleware(action, middleware...)))
+	a.Method(webutil.MethodDelete, path, action, middleware...)
+}
+
+// Method registers an action for a given method and path with the given middleware.
+func (a *App) Method(method string, path string, action Action, middleware ...Middleware) {
+	a.Handle(method, path, a.RenderAction(NestMiddleware(action, append(middleware, a.BaseMiddleware...)...)))
+}
+
+// MethodBare registers an action for a given method and path with the given middleware that omits logging and tracing.
+func (a *App) MethodBare(method string, path string, action Action, middleware ...Middleware) {
+	a.Handle(method, path, a.RenderActionBare(NestMiddleware(action, append(middleware, a.BaseMiddleware...)...)))
 }
 
 // Handle adds a raw handler at a given method and path.
+// It skips middleware, you must implement things like logging and tracing yourself in the handler.
 func (a *App) Handle(method, path string, handler Handler) {
 	if len(path) == 0 {
 		panic("path must not be empty")
@@ -318,15 +343,17 @@ func (a *App) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if !a.Config.DisablePanicRecovery {
 		defer a.recover(w, req)
 	}
+	// load the request start time onto the request.
+	*req = *req.WithContext(WithRequestStarted(req.Context(), time.Now().UTC()))
 
 	path := req.URL.Path
 	if root := a.Routes[req.Method]; root != nil {
 		if route, params, tsr := root.getValue(path); route != nil {
 			route.Handler(w, req, route, params)
 			return
-		} else if req.Method != MethodConnect && path != "/" {
+		} else if req.Method != webutil.MethodConnect && path != "/" {
 			code := http.StatusMovedPermanently // 301 // Permanent redirect, request with GET method
-			if req.Method != MethodGet {
+			if req.Method != webutil.MethodGet {
 				code = http.StatusTemporaryRedirect // 307
 			}
 
@@ -342,11 +369,11 @@ func (a *App) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	if req.Method == MethodOptions {
+	if req.Method == webutil.MethodOptions {
 		// Handle OPTIONS requests
 		if a.Config.HandleOptions {
 			if allow := a.allowed(path, req.Method); len(allow) > 0 {
-				w.Header().Set(HeaderAllow, allow)
+				w.Header().Set(webutil.HeaderAllow, allow)
 				return
 			}
 		}
@@ -354,7 +381,7 @@ func (a *App) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		// Handle 405
 		if a.Config.HandleMethodNotAllowed {
 			if allow := a.allowed(path, req.Method); len(allow) > 0 {
-				w.Header().Set(HeaderAllow, allow)
+				w.Header().Set(webutil.HeaderAllow, allow)
 				if a.MethodNotAllowedHandler != nil {
 					a.MethodNotAllowedHandler(w, req, nil, nil)
 				} else {
@@ -374,89 +401,71 @@ func (a *App) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 // RenderAction is the translation step from Action to Handler.
-// this is where the bulk of the "pipeline" happens.
 func (a *App) RenderAction(action Action) Handler {
 	return func(w http.ResponseWriter, r *http.Request, route *Route, p RouteParameters) {
+		ctx := NewCtx(webutil.NewStatusResponseWriter(w), r, a.ctxOptions(r.Context(), route, p)...)
+		defer ctx.Close()
+		defer a.logRequest(ctx)
+
 		var err error
-		var tf TraceFinisher
-		ctx := a.createCtx(NewRawResponseWriter(w), r, route, p)
-		ctx.onRequestStart()
-		a.maybeLogTrigger(ctx.Context(), a.httpRequestEvent(ctx))
-
 		if a.Tracer != nil {
-			tf = a.Tracer.Start(ctx)
+			tf := ctx.Tracer.Start(ctx)
+			defer func() {
+				tf.Finish(ctx, err)
+			}()
 		}
 
-		if len(a.DefaultHeaders) > 0 {
-			for key, value := range a.DefaultHeaders {
-				// the reason for assignment here is we skip looping over the
-				// values and can just set the key's value in full
-				ctx.Response.Header()[key] = value
-			}
+		for key, value := range a.BaseHeaders {
+			ctx.Response.Header()[key] = value
 		}
 
-		//
-		// call the action
-		//
-		// note: if this panics, it will be recovered by `ServeHTTP` and the recover block in that
-		// function governed by the `RecoverPanics` configuration option.
-		result := action(ctx)
-
-		if result != nil {
-			// check for a prerender step
+		if result := action(ctx); result != nil {
 			if typed, ok := result.(ResultPreRender); ok {
-				if preRenderErr := typed.PreRender(ctx); preRenderErr != nil {
-					err = ex.Nest(err, preRenderErr)
-					a.maybeLogFatal(ctx.Context(), preRenderErr, ctx.Request)
+				if errPreRender := typed.PreRender(ctx); errPreRender != nil {
+					a.maybeLogFatal(ctx.Context(), errPreRender, ctx.Request)
+					err = ex.New(errPreRender, ex.OptInner(err))
 				}
 			}
-
-			// do the render, log any errors emitted
-			if resultErr := result.Render(ctx); resultErr != nil {
-				err = ex.Nest(err, resultErr)
-				a.maybeLogFatal(ctx.Context(), resultErr, ctx.Request)
+			if errRender := result.Render(ctx); errRender != nil {
+				a.maybeLogFatal(ctx.Context(), errRender, ctx.Request)
+				err = ex.New(errRender, ex.OptInner(err))
 			}
-
-			// check for a render complete step
-			// typically this is used to render error results if there was a problem rendering
-			// the result.
-			// this is usually set by the view renderer.
 			if typed, ok := result.(ResultPostRender); ok {
-				if postRenderErr := typed.PostRender(ctx); postRenderErr != nil {
-					err = ex.Nest(err, postRenderErr)
-					a.maybeLogFatal(ctx.Context(), postRenderErr, ctx.Request)
+				if errPostRender := typed.PostRender(ctx); errPostRender != nil {
+					a.maybeLogFatal(ctx.Context(), errPostRender, ctx.Request)
+					err = ex.New(errPostRender, ex.OptInner(err))
 				}
 			}
-		}
-
-		ctx.onRequestFinish()
-		ctx.Response.Close()
-		a.maybeLogTrigger(ctx.Context(), a.httpResponseEvent(ctx))
-		if tf != nil {
-			tf.Finish(ctx, err)
 		}
 	}
 }
 
-// NestMiddleware wraps an action with a given set of middleware, including app level default middleware.
-func (a *App) NestMiddleware(action Action, middleware ...Middleware) Action {
-	if len(middleware) == 0 && len(a.DefaultMiddleware) == 0 {
-		return action
-	}
+// RenderActionBare is the translation step from Action to Handler that omits logging.
+func (a *App) RenderActionBare(action Action) Handler {
+	return func(w http.ResponseWriter, r *http.Request, route *Route, p RouteParameters) {
+		ctx := NewCtx(webutil.NewStatusResponseWriter(w), r, a.ctxOptions(r.Context(), route, p)...)
+		defer ctx.Close()
 
-	finalMiddleware := make([]Middleware, len(middleware)+len(a.DefaultMiddleware))
-	cursor := len(finalMiddleware) - 1
-	for i := len(a.DefaultMiddleware) - 1; i >= 0; i-- {
-		finalMiddleware[cursor] = a.DefaultMiddleware[i]
-		cursor--
-	}
+		for key, value := range a.BaseHeaders {
+			ctx.Response.Header()[key] = value
+		}
 
-	for i := len(middleware) - 1; i >= 0; i-- {
-		finalMiddleware[cursor] = middleware[i]
-		cursor--
+		if result := action(ctx); result != nil {
+			if typed, ok := result.(ResultPreRender); ok {
+				if errPreRender := typed.PreRender(ctx); errPreRender != nil {
+					a.maybeLogFatal(ctx.Context(), errPreRender, ctx.Request)
+				}
+			}
+			if err := result.Render(ctx); err != nil {
+				a.maybeLogFatal(ctx.Context(), err, ctx.Request)
+			}
+			if typed, ok := result.(ResultPostRender); ok {
+				if errPostRender := typed.PostRender(ctx); errPostRender != nil {
+					a.maybeLogFatal(ctx.Context(), errPostRender, ctx.Request)
+				}
+			}
+		}
 	}
-
-	return NestMiddleware(action, finalMiddleware...)
 }
 
 //
@@ -477,8 +486,18 @@ func (a *App) StartupTasks() (err error) {
 // internal helpers
 //
 
-// httpServerOptions creates a new http.Server for the app.
-// This is ultimately what is started when you call `.Start()`.
+func (a *App) formatStaticMountRoute(route string) string {
+	mountedRoute := route
+	if !strings.HasSuffix(mountedRoute, "*"+RouteTokenFilepath) {
+		if strings.HasSuffix(mountedRoute, "/") {
+			mountedRoute = mountedRoute + "*" + RouteTokenFilepath
+		} else {
+			mountedRoute = mountedRoute + "/*" + RouteTokenFilepath
+		}
+	}
+	return mountedRoute
+}
+
 func (a *App) httpServerOptions() []webutil.HTTPServerOption {
 	return []webutil.HTTPServerOption{
 		webutil.OptHTTPServerHandler(a),
@@ -489,10 +508,11 @@ func (a *App) httpServerOptions() []webutil.HTTPServerOption {
 		webutil.OptHTTPServerReadHeaderTimeout(a.Config.ReadHeaderTimeoutOrDefault()),
 		webutil.OptHTTPServerWriteTimeout(a.Config.WriteTimeoutOrDefault()),
 		webutil.OptHTTPServerIdleTimeout(a.Config.IdleTimeoutOrDefault()),
+		webutil.OptHTTPServerBaseContext(a.BaseContext),
 	}
 }
 
-func (a *App) ctxOptions(route *Route, p RouteParameters) []CtxOption {
+func (a *App) ctxOptions(ctx context.Context, route *Route, p RouteParameters) []CtxOption {
 	return []CtxOption{
 		OptCtxApp(a),
 		OptCtxAuth(a.Auth),
@@ -500,13 +520,11 @@ func (a *App) ctxOptions(route *Route, p RouteParameters) []CtxOption {
 		OptCtxViews(a.Views),
 		OptCtxRoute(route),
 		OptCtxRouteParams(p),
-		OptCtxState(a.State.Copy()),
+		OptCtxState(a.BaseState.Copy()),
+		OptCtxLog(a.Log),
 		OptCtxTracer(a.Tracer),
+		OptCtxRequestStarted(GetRequestStarted(ctx)),
 	}
-}
-
-func (a *App) createCtx(w ResponseWriter, r *http.Request, route *Route, p RouteParameters, extra ...CtxOption) *Ctx {
-	return NewCtx(w, r, append(a.ctxOptions(route, p), extra...)...)
 }
 
 func (a *App) allowed(path, reqMethod string) (allow string) {
@@ -547,31 +565,6 @@ func (a *App) allowed(path, reqMethod string) (allow string) {
 	return
 }
 
-func (a *App) httpRequestEvent(ctx *Ctx) webutil.HTTPRequestEvent {
-	event := webutil.NewHTTPRequestEvent(ctx.Request)
-	if ctx.Route != nil {
-		event.Route = ctx.Route.String()
-	}
-	return event
-}
-
-func (a *App) httpResponseEvent(ctx *Ctx) webutil.HTTPResponseEvent {
-	event := webutil.NewHTTPResponseEvent(ctx.Request,
-		webutil.OptHTTPResponseStatusCode(ctx.Response.StatusCode()),
-		webutil.OptHTTPResponseContentLength(ctx.Response.ContentLength()),
-		webutil.OptHTTPResponseHeader(ctx.Response.Header()), // caveat: these do not get written out in text or json ever.
-		webutil.OptHTTPResponseElapsed(ctx.Elapsed()),
-	)
-	if ctx.Route != nil {
-		event.Route = ctx.Route.String()
-	}
-	if ctx.Response.Header() != nil {
-		event.ContentType = ctx.Response.Header().Get(HeaderContentType)
-		event.ContentEncoding = ctx.Response.Header().Get(HeaderContentEncoding)
-	}
-	return event
-}
-
 func (a *App) recover(w http.ResponseWriter, req *http.Request) {
 	if rcv := recover(); rcv != nil {
 		err := ex.New(rcv)
@@ -588,10 +581,10 @@ func (a *App) recover(w http.ResponseWriter, req *http.Request) {
 }
 
 func (a *App) maybeLogFatal(ctx context.Context, err error, req *http.Request) {
-	if a.Log == nil || err == nil {
+	if !logger.IsLoggerSet(a.Log) || err == nil {
 		return
 	}
-	a.Log.Trigger(
+	a.Log.TriggerContext(
 		ctx,
 		logger.NewErrorEvent(
 			logger.Fatal,
@@ -601,9 +594,26 @@ func (a *App) maybeLogFatal(ctx context.Context, err error, req *http.Request) {
 	)
 }
 
-func (a *App) maybeLogTrigger(ctx context.Context, e logger.Event) {
-	if a.Log == nil || e == nil {
+func (a *App) logRequest(r *Ctx) {
+	requestEvent := webutil.NewHTTPRequestEvent(r.Request.Clone(r.Context()),
+		webutil.OptHTTPRequestStatusCode(r.Response.StatusCode()),
+		webutil.OptHTTPRequestContentLength(r.Response.ContentLength()),
+		webutil.OptHTTPRequestHeader(r.Response.Header().Clone()),
+		webutil.OptHTTPRequestElapsed(r.Elapsed()),
+	)
+	if r.Route != nil {
+		requestEvent.Route = r.Route.String()
+	}
+	if requestEvent.Header != nil {
+		requestEvent.ContentType = requestEvent.Header.Get(webutil.HeaderContentType)
+		requestEvent.ContentEncoding = requestEvent.Header.Get(webutil.HeaderContentEncoding)
+	}
+	a.maybeLogTrigger(r.Context(), r.Log, requestEvent)
+}
+
+func (a *App) maybeLogTrigger(ctx context.Context, log logger.Log, e logger.Event) {
+	if !logger.IsLoggerSet(log) || e == nil {
 		return
 	}
-	a.Log.Trigger(ctx, e)
+	log.TriggerContext(ctx, e)
 }

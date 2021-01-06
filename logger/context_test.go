@@ -35,3 +35,20 @@ func TestContextWithLabels(t *testing.T) {
 	assert.Equal(labels, GetLabels(WithLabels(WithLabels(context.Background(), labels2), labels)))
 	assert.Nil(GetLabels(context.Background()))
 }
+
+func TestContextWithAnnotation(t *testing.T) {
+	assert := assert.New(t)
+
+	ctx := context.Background()
+
+	ctx = WithAnnotation(ctx, "one", "two")
+	expectedAnnotations := Annotations{"one": "two"}
+	assert.Equal(expectedAnnotations, GetAnnotations(ctx))
+
+	ctx = WithAnnotation(ctx, "two", "three")
+	expectedAnnotations = Annotations{
+		"one": "two",
+		"two": "three",
+	}
+	assert.Equal(expectedAnnotations, GetAnnotations(ctx))
+}

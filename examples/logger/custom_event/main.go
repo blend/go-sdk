@@ -69,9 +69,9 @@ func main() {
 
 	event := NewCustomEvent("bailey", "session0", "Console Demo")
 
-	text.Trigger(ctx, event)
+	text.TriggerContext(ctx, event)
 	text.Write(ctx, event)
-	js.Trigger(ctx, event)
+	js.TriggerContext(ctx, event)
 	js.Write(ctx, event)
 
 	done := make(chan struct{})
@@ -80,6 +80,6 @@ func main() {
 		fmt.Println("listener got event")
 		close(done)
 	}))
-	listener.Trigger(ctx, event)
+	listener.TriggerContext(ctx, event)
 	<-done
 }

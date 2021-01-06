@@ -38,7 +38,7 @@ func TestConfigResolve(t *testing.T) {
 	env.Env().Set("NO_COLOR", "true")
 
 	cfg := &Config{}
-	ctx := context.Background()
+	ctx := env.WithVars(context.Background(), env.Env())
 	assert.Nil(cfg.Resolve(ctx))
 
 	assert.Any(cfg.Flags, func(v interface{}) bool { return v.(string) == "foo" })

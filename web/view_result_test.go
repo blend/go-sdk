@@ -35,7 +35,8 @@ func TestViewResultRender(t *testing.T) {
 	assert.True(ex.Is((&ViewResult{}).Render(nil), ErrUnsetViewTemplate))
 
 	testView := template.New("testView")
-	testView.Parse("{{ .ViewModel.Text }}")
+	_, err := testView.Parse("{{ .ViewModel.Text }}")
+	assert.Nil(err)
 
 	vr := &ViewResult{
 		StatusCode: http.StatusOK,
@@ -43,14 +44,15 @@ func TestViewResultRender(t *testing.T) {
 		Template:   testView,
 	}
 
-	err := vr.Render(rc)
+	err = vr.Render(rc)
 	assert.Nil(err)
 
 	assert.NotZero(buffer.Len())
 	assert.True(strings.Contains(buffer.String(), "bar"))
 
 	testView = template.New("testView")
-	testView.Parse("{{ .Env.String \"HELLO\" }}")
+	_, err = testView.Parse("{{ .Env.String \"HELLO\" }}")
+	assert.Nil(err)
 
 	expected := "world"
 
@@ -84,7 +86,8 @@ func TestViewResultRenderErrorResponse(t *testing.T) {
 	assert.True(ex.Is((&ViewResult{}).Render(nil), ErrUnsetViewTemplate))
 
 	testView := template.New("testView")
-	testView.Parse("{{ .ViewModel.Text }}")
+	_, err := testView.Parse("{{ .ViewModel.Text }}")
+	assert.Nil(err)
 
 	vr := &ViewResult{
 		StatusCode: http.StatusOK,
@@ -94,7 +97,7 @@ func TestViewResultRenderErrorResponse(t *testing.T) {
 
 	rc.Response = &errorWriter{ResponseWriter: rc.Response}
 
-	err := vr.Render(rc)
+	err = vr.Render(rc)
 	assert.NotNil(err)
 }
 
@@ -105,7 +108,8 @@ func TestViewResultRenderError(t *testing.T) {
 	rc := NewCtx(webutil.NewMockResponse(buffer), nil)
 
 	testView := template.New("testView")
-	testView.Parse("{{.ViewModel.Foo}}")
+	_, err := testView.Parse("{{.ViewModel.Foo}}")
+	assert.Nil(err)
 
 	vr := &ViewResult{
 		StatusCode: http.StatusOK,
@@ -113,7 +117,7 @@ func TestViewResultRenderError(t *testing.T) {
 		Template:   testView,
 	}
 
-	err := vr.Render(rc)
+	err = vr.Render(rc)
 	assert.NotNil(err)
 	assert.NotZero(buffer.Len())
 }
@@ -157,7 +161,8 @@ func TestViewResultErrorNestedViews(t *testing.T) {
 	assert.Nil(err)
 
 	outerView := views.New("outerView")
-	outerView.Parse("Inner: {{ template \"innerView\" . }}")
+	_, err = outerView.Parse("Inner: {{ template \"innerView\" . }}")
+	assert.Nil(err)
 
 	testView := views.New("innerView")
 	_, err = testView.Parse("Foo: {{.ViewModel.Foo}}")

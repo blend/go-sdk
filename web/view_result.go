@@ -8,6 +8,7 @@ import (
 
 	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/ex"
+	"github.com/blend/go-sdk/webutil"
 )
 
 // ViewResult is a result that renders a view.
@@ -36,7 +37,7 @@ func (vr *ViewResult) Render(ctx *Ctx) (err error) {
 		}
 	}
 
-	ctx.Response.Header().Set(HeaderContentType, ContentTypeHTML)
+	ctx.Response.Header().Set(webutil.HeaderContentType, webutil.ContentTypeHTML)
 
 	// use a pooled buffer if possible
 	var buffer *bytes.Buffer
@@ -44,7 +45,7 @@ func (vr *ViewResult) Render(ctx *Ctx) (err error) {
 		buffer = vr.Views.BufferPool.Get()
 		defer vr.Views.BufferPool.Put(buffer)
 	} else {
-		buffer = bytes.NewBuffer(nil)
+		buffer = new(bytes.Buffer)
 	}
 
 	err = vr.Template.Execute(buffer, &ViewModel{
@@ -59,7 +60,7 @@ func (vr *ViewResult) Render(ctx *Ctx) (err error) {
 	if err != nil {
 		err = ex.New(err)
 		ctx.Response.WriteHeader(http.StatusInternalServerError)
-		ctx.Response.Write([]byte(fmt.Sprintf("%+v\n", err)))
+		_, _ = ctx.Response.Write([]byte(fmt.Sprintf("%+v\n", err)))
 		return
 	}
 

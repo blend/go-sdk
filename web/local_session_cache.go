@@ -20,6 +20,13 @@ type LocalSessionCache struct {
 	Sessions    map[string]*Session
 }
 
+// Apply applies the local session cache to a given auth manager.
+func (lsc *LocalSessionCache) Apply(am *AuthManager) {
+	am.FetchHandler = lsc.FetchHandler
+	am.PersistHandler = lsc.PersistHandler
+	am.RemoveHandler = lsc.RemoveHandler
+}
+
 // FetchHandler is a shim to interface with the auth manager.
 func (lsc *LocalSessionCache) FetchHandler(_ context.Context, sessionID string) (*Session, error) {
 	return lsc.Get(sessionID), nil

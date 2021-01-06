@@ -1,8 +1,6 @@
 package web
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -131,12 +129,4 @@ func TestReadSetCookies(t *testing.T) {
 			assert.NonFatal().Equal(c, tt.Cookies)
 		}
 	}
-}
-
-func toJSON(v interface{}) string {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return fmt.Sprintf("%#v", v)
-	}
-	return string(b)
 }

@@ -10,6 +10,6 @@ import (
 func TestOptTransport(t *testing.T) {
 	assert := assert.New(t)
 
-	r := New("http://foo.com", OptTransport(&http.Transport{}))
+	r := New(TestURL, OptTransport(&http.Transport{}))
 	assert.NotNil(r.Client.Timeout)
 }

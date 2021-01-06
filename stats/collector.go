@@ -9,6 +9,7 @@ type Collector interface {
 	Increment(name string, tags ...string) error
 	Gauge(name string, value float64, tags ...string) error
 	Histogram(name string, value float64, tags ...string) error
+	Distribution(name string, value float64, tags ...string) error
 	TimeInMilliseconds(name string, value time.Duration, tags ...string) error
 	Flush() error
 	Close() error

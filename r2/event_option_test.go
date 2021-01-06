@@ -23,7 +23,7 @@ func TestEventOptions(t *testing.T) {
 	assert.Equal("not-http", e.Response.Proto)
 
 	assert.Nil(e.Body)
-	OptEventBody([]byte(`bailey`))(&e)
+	OptEventBody([]byte(`example-string`))(&e)
 	assert.NotNil(e.Body)
-	assert.Equal("bailey", string(e.Body))
+	assert.Equal("example-string", string(e.Body))
 }

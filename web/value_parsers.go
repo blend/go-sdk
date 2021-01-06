@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+// Common errors
+var (
+	ErrInvalidBoolValue = fmt.Errorf("invalid boolean value")
+)
+
 // BoolValue parses a value as an bool.
 // If the input error is set it short circuits.
 func BoolValue(value string, inputErr error) (output bool, err error) {
@@ -15,12 +20,12 @@ func BoolValue(value string, inputErr error) (output bool, err error) {
 		return
 	}
 	switch strings.ToLower(value) {
-	case "1", "true", "yes":
+	case "1", "true", "yes", "on":
 		output = true
-	case "0", "false", "no":
+	case "0", "false", "no", "off":
 		output = false
 	default:
-		err = fmt.Errorf("invalid boolean value")
+		err = ErrInvalidBoolValue
 	}
 	return
 }

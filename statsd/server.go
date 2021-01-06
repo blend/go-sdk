@@ -2,7 +2,9 @@ package statsd
 
 import (
 	"fmt"
+	"log"
 	"net"
+	"strings"
 )
 
 // Server is a listener for statsd metrics.
@@ -10,6 +12,7 @@ import (
 // production anything.
 type Server struct {
 	Addr          string
+	Log           *log.Logger
 	MaxPacketSize int
 	Listener      net.PacketConn
 	Handler       func(...Metric)
@@ -39,12 +42,15 @@ func (s *Server) Start() error {
 		return fmt.Errorf("server cannot start; no listener or addr provided")
 	}
 
+	s.logf("statsd server listening: %s", s.Listener.LocalAddr().String())
 	data := make([]byte, s.MaxPacketSizeOrDefault())
 	var metrics []Metric
 	var n int
 	for {
 		n, _, err = s.Listener.ReadFrom(data)
-		if err != nil {
+		if IsErrUseOfClosedNetworkConnection(err) {
+			return nil
+		} else if err != nil {
 			return err
 		}
 		metrics, err = s.parseMetrics(data[:n])
@@ -146,3 +152,22 @@ func (s *Server) parseMetric(index *int, data []byte) (m Metric, err error) {
 	m.Value = string(value)
 	return
 }
+
+//
+// logging
+//
+
+func (s *Server) logf(format string, args ...interface{}) {
+	if s.Log != nil {
+		format = strings.TrimSpace(format)
+		s.Log.Printf(format+"\n", args...)
+	}
+}
+
+func (s *Server) logln(args ...interface{}) {
+	if s.Log != nil {
+		s.Log.Println(args...)
+	}
+}
+
+// FormatContent

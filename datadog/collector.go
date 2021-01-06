@@ -1,13 +1,11 @@
 package datadog
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
 	dogstatsd "github.com/DataDog/datadog-go/statsd"
 
-	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/stats"
 	"github.com/blend/go-sdk/timeutil"
 )
@@ -36,11 +34,6 @@ func New(cfg Config, opts ...dogstatsd.Option) (*Collector, error) {
 		client:      client,
 		defaultTags: cfg.DefaultTags,
 	}
-
-	collector.AddDefaultTag("service", env.Env().String(env.VarServiceName))
-	collector.AddDefaultTag("env", env.Env().String(env.VarServiceEnv))
-	collector.AddDefaultTag("hostname", env.Env().String(env.VarHostname))
-
 	return collector, nil
 }
 
@@ -59,9 +52,14 @@ type Collector struct {
 	defaultTags []string
 }
 
-// AddDefaultTag adds a new default tag and returns a reference to the collector.
-func (dc *Collector) AddDefaultTag(key, value string) {
-	dc.defaultTags = append(dc.defaultTags, fmt.Sprintf("%s:%s", key, value))
+// AddDefaultTag adds a new default tag.
+func (dc *Collector) AddDefaultTag(name, value string) {
+	dc.defaultTags = append(dc.defaultTags, stats.Tag(name, value))
+}
+
+// AddDefaultTags adds new default tags.
+func (dc *Collector) AddDefaultTags(tags ...string) {
+	dc.defaultTags = append(dc.defaultTags, tags...)
 }
 
 // DefaultTags returns the default tags for the collector.
@@ -71,27 +69,32 @@ func (dc *Collector) DefaultTags() []string {
 
 // Count increments a counter by a value.
 func (dc *Collector) Count(name string, value int64, tags ...string) error {
-	return dc.client.Count(name, value, dc.tags(tags...), 1.0)
+	return dc.client.Count(name, value, dc.tagsWithDefaults(tags...), 1.0)
 }
 
 // Increment increments a counter by 1.
 func (dc *Collector) Increment(name string, tags ...string) error {
-	return dc.client.Count(name, 1, dc.tags(tags...), 1.0)
+	return dc.client.Count(name, 1, dc.tagsWithDefaults(tags...), 1.0)
 }
 
 // Gauge sets a gauge value.
 func (dc *Collector) Gauge(name string, value float64, tags ...string) error {
-	return dc.client.Gauge(name, value, dc.tags(tags...), 1.0)
+	return dc.client.Gauge(name, value, dc.tagsWithDefaults(tags...), 1.0)
 }
 
-// Histogram sets a guage value.
+// Histogram sets a gauge value that statistics are computed on the agent.
 func (dc *Collector) Histogram(name string, value float64, tags ...string) error {
-	return dc.client.Histogram(name, value, dc.tags(tags...), 1.0)
+	return dc.client.Histogram(name, value, dc.tagsWithDefaults(tags...), 1.0)
+}
+
+// Distribution sets a gauge value that statistics are computed on the server.
+func (dc *Collector) Distribution(name string, value float64, tags ...string) error {
+	return dc.client.Distribution(name, value, dc.tagsWithDefaults(tags...), 1.0)
 }
 
 // TimeInMilliseconds sets a timing value.
 func (dc *Collector) TimeInMilliseconds(name string, value time.Duration, tags ...string) error {
-	return dc.client.TimeInMilliseconds(name, timeutil.Milliseconds(value), dc.tags(tags...), 1.0)
+	return dc.client.TimeInMilliseconds(name, timeutil.Milliseconds(value), dc.tagsWithDefaults(tags...), 1.0)
 }
 
 // Flush forces a flush of all the queued statsd payloads.
@@ -125,12 +128,12 @@ func (dc *Collector) CreateEvent(title, text string, tags ...string) stats.Event
 	return stats.Event{
 		Title: title,
 		Text:  text,
-		Tags:  dc.tags(tags...),
+		Tags:  dc.tagsWithDefaults(tags...),
 	}
 }
 
 // helpers
-func (dc *Collector) tags(tags ...string) []string {
+func (dc *Collector) tagsWithDefaults(tags ...string) []string {
 	return append(dc.defaultTags, tags...)
 }
 

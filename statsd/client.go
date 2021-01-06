@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/ex"
+	"github.com/blend/go-sdk/stats"
 )
 
 // Error classes.
@@ -17,6 +18,10 @@ const (
 	ErrAddrUnset         ex.Class = "statsd client address unset"
 	ErrMaxPacketSize     ex.Class = "statsd max packet size exceeded"
 	ErrSampleRateInvalid ex.Class = "statsd invalid sample rate"
+)
+
+var (
+	_ stats.Collector = (*Client)(nil)
 )
 
 // New creates a new statsd client and opens
@@ -84,7 +89,7 @@ func OptConfig(cfg Config) ClientOpt {
 		c.MaxPacketSize = cfg.MaxPacketSize
 		c.MaxBufferSize = cfg.MaxBufferSize
 		for key, value := range cfg.DefaultTags {
-			c.AddDefaultTag(key, value)
+			c.AddDefaultTags(stats.Tag(key, value))
 		}
 		return OptSampleRate(cfg.SampleRate)(c)
 	}
@@ -130,9 +135,14 @@ type Client struct {
 	bufferCount int
 }
 
-// AddDefaultTag adds a default tag.
-func (c *Client) AddDefaultTag(key, value string) {
-	c.defaultTags = append(c.defaultTags, Tag(key, value))
+// AddDefaultTag adds a new default tag.
+func (c *Client) AddDefaultTag(name, value string) {
+	c.defaultTags = append(c.defaultTags, stats.Tag(name, value))
+}
+
+// AddDefaultTags adds default tags.
+func (c *Client) AddDefaultTags(tags ...string) {
+	c.defaultTags = append(c.defaultTags, tags...)
 }
 
 // DefaultTags returns the default tags.
@@ -163,6 +173,11 @@ func (c *Client) TimeInMilliseconds(name string, value time.Duration, tags ...st
 // Histogram is an no-op for raw statsd.
 func (c *Client) Histogram(name string, value float64, tags ...string) error {
 	return c.sendFloat(MetricTypeHistogram, name, value, tags...)
+}
+
+// Distribution is an no-op for raw statsd.
+func (c *Client) Distribution(name string, value float64, tags ...string) error {
+	return c.sendFloat(MetricTypeDistribution, name, value, tags...)
 }
 
 // Flush is a no-op.
