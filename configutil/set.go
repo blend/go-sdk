@@ -119,6 +119,44 @@ func SetIntPtr(destination **int, sources ...IntSource) ResolveAction {
 	}
 }
 
+// SetInt32 coalesces a given list of sources into a variable.
+func SetInt32(destination *int32, sources ...Int32Source) ResolveAction {
+	return func(ctx context.Context) error {
+		var value *int32
+		var err error
+		for _, source := range sources {
+			value, err = source.Int32(ctx)
+			if err != nil {
+				return err
+			}
+			if value != nil {
+				*destination = *value
+				return nil
+			}
+		}
+		return nil
+	}
+}
+
+// SetInt32Ptr coalesces a given list of sources into a variable.
+func SetInt32Ptr(destination **int32, sources ...Int32Source) ResolveAction {
+	return func(ctx context.Context) error {
+		var value *int32
+		var err error
+		for _, source := range sources {
+			value, err = source.Int32(ctx)
+			if err != nil {
+				return err
+			}
+			if value != nil {
+				*destination = value
+				return nil
+			}
+		}
+		return nil
+	}
+}
+
 // SetInt64 coalesces a given list of sources into a variable.
 func SetInt64(destination *int64, sources ...Int64Source) ResolveAction {
 	return func(ctx context.Context) error {

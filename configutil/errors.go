@@ -26,6 +26,10 @@ func IsIgnored(err error) bool {
 }
 
 // IsNotExist returns if an error is an os.ErrNotExist.
+//
+// Read will never return a not found error, instead it will
+// simply skip over that file, `IsNotExist` should be used
+// in other situations like in resolvers.
 func IsNotExist(err error) bool {
 	if err == nil {
 		return false

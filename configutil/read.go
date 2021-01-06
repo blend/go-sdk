@@ -13,56 +13,72 @@ import (
 	"github.com/blend/go-sdk/ex"
 )
 
-// Read reads a config from optional path(s).
-// Paths will be tested from a standard set of defaults (ex. config.yml)
-// and optionally a csv named in the `CONFIG_PATH` environment variable.
-func Read(ref Any, options ...Option) (path string, err error) {
+// MustRead reads a config from optional path(s) and panics on error.
+//
+// It is functionally equivalent to `Read` outside error handling; see this function for more information.
+func MustRead(ref Any, options ...Option) (filePaths []string) {
+	var err error
+	filePaths, err = Read(ref, options...)
+	if !IsIgnored(err) {
+		panic(err)
+	}
+	return
+}
+
+// Read reads a config from optional path(s), returning the paths read from (in the order visited), and an error if there were any issues.
+/*
+If the ref type is a `Resolver` the `Resolve(context.Context) error` method will
+be called on the ref and passed a context configured from the given options.
+
+By default, a well known set of paths will be read from (including a path read from the environment variable `CONFIG_PATH`).
+
+You can override this by providing options to specify which paths will be read from:
+
+	paths, err := configutil.Read(&cfg, configutil.OptPaths("foo.yml"))
+
+The above will _only_ read from `foo.yml` to populate the `cfg` reference.
+*/
+func Read(ref Any, options ...Option) (paths []string, err error) {
 	var configOptions ConfigOptions
 	configOptions, err = createConfigOptions(options...)
 	if err != nil {
 		return
 	}
 
-	if configOptions.Contents != nil {
-		MaybeDebugf(configOptions.Log, "reading reader contents with extension `%s`", configOptions.ContentsExt)
-		err = deserialize(configOptions.ContentsExt, configOptions.Contents, ref)
+	for _, contents := range configOptions.Contents {
+		MaybeDebugf(configOptions.Log, "reading config contents with extension `%s`", contents.Ext)
+		err = deserialize(contents.Ext, contents.Contents, ref)
 		if err != nil {
-			return
-		}
-	} else {
-		// for each of the paths
-		// if the path doesn't exist, continue, read the path that is found.
-		var f *os.File
-		for _, path = range configOptions.FilePaths {
-			if path == "" {
-				continue
-			}
-			MaybeDebugf(configOptions.Log, "checking for config file %s", path)
-			f, err = os.Open(path)
-			if IsNotExist(err) {
-				continue
-			}
-			if err != nil {
-				err = ex.New(err)
-				break
-			}
-			defer f.Close()
-			MaybeDebugf(configOptions.Log, "reading config file %s", path)
-			err = deserialize(filepath.Ext(path), f, ref)
-			break
-		}
-		if err != nil && !IsNotExist(err) {
 			return
 		}
 	}
 
-	if typed, ok := ref.(BareResolver); ok {
-		MaybeDebugf(configOptions.Log, "calling legacy config resolver")
-		MaybeWarningf(configOptions.Log, "deprecated; the legacy config resolver should be replaced with `.Resolve(context.Context) error`")
-		if resolveErr := typed.Resolve(); resolveErr != nil {
-			err = resolveErr
+	var f *os.File
+	var path string
+	var resolveErr error
+	for _, path = range configOptions.FilePaths {
+		if path == "" {
+			continue
+		}
+		MaybeDebugf(configOptions.Log, "checking for config path: %s", path)
+		f, resolveErr = os.Open(path)
+		if IsNotExist(resolveErr) {
+			continue
+		}
+		if resolveErr != nil {
+			err = ex.New(resolveErr)
+			break
+		}
+		defer f.Close()
+
+		MaybeDebugf(configOptions.Log, "reading config path: %s", path)
+		resolveErr = deserialize(filepath.Ext(path), f, ref)
+		if resolveErr != nil {
+			err = ex.New(resolveErr)
 			return
 		}
+
+		paths = append(paths, path)
 	}
 
 	if typed, ok := ref.(Resolver); ok {
@@ -78,13 +94,13 @@ func Read(ref Any, options ...Option) (path string, err error) {
 func createConfigOptions(options ...Option) (configOptions ConfigOptions, err error) {
 	configOptions.Env = env.Env()
 	configOptions.FilePaths = DefaultPaths
+	if configOptions.Env.Has(EnvVarConfigPath) {
+		configOptions.FilePaths = append(configOptions.Env.CSV(EnvVarConfigPath), configOptions.FilePaths...)
+	}
 	for _, option := range options {
 		if err = option(&configOptions); err != nil {
 			return
 		}
-	}
-	if configOptions.Env.Has(EnvVarConfigPath) {
-		configOptions.FilePaths = append(configOptions.Env.CSV(EnvVarConfigPath), configOptions.FilePaths...)
 	}
 	return
 }
