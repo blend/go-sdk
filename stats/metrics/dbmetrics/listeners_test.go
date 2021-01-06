@@ -30,7 +30,7 @@ func TestAddListenersStats(t *testing.T) {
 
 	AddListeners(log, collector)
 
-	log.Trigger(context.Background(), db.NewQueryEvent("select 'ok!'", time.Second))
+	log.TriggerContext(context.Background(), db.NewQueryEvent("select 'ok!'", time.Second))
 
 	qm := <-collector.Events
 	assert.Equal(MetricNameDBQuery, qm.Name)

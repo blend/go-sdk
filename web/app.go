@@ -591,7 +591,7 @@ func (a *App) maybeLogFatal(ctx context.Context, err error, req *http.Request) {
 	if a.Log == nil || err == nil {
 		return
 	}
-	a.Log.Trigger(
+	a.Log.TriggerContext(
 		ctx,
 		logger.NewErrorEvent(
 			logger.Fatal,
@@ -605,5 +605,5 @@ func (a *App) maybeLogTrigger(ctx context.Context, e logger.Event) {
 	if a.Log == nil || e == nil {
 		return
 	}
-	a.Log.Trigger(ctx, e)
+	a.Log.TriggerContext(ctx, e)
 }

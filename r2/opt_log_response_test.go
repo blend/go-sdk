@@ -21,7 +21,7 @@ type mockLogger struct {
 	Events []logger.Event
 }
 
-func (ml *mockLogger) Trigger(ctx context.Context, e logger.Event) {
+func (ml *mockLogger) TriggerContext(ctx context.Context, e logger.Event) {
 	ml.Events = append(ml.Events, e)
 	return
 }

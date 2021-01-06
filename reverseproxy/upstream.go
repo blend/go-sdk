@@ -55,7 +55,7 @@ func (u *Upstream) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	w := webutil.NewResponseWriter(rw)
 
 	if u.Log != nil {
-		u.Log.Trigger(req.Context(), webutil.NewHTTPRequestEvent(req))
+		u.Log.TriggerContext(req.Context(), webutil.NewHTTPRequestEvent(req))
 
 		start := time.Now()
 		defer func() {
@@ -72,7 +72,7 @@ func (u *Upstream) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 				wre.ContentEncoding = value
 			}
 
-			u.Log.Trigger(req.Context(), wre)
+			u.Log.TriggerContext(req.Context(), wre)
 		}()
 	}
 

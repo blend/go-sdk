@@ -188,7 +188,7 @@ func (js *JobScheduler) Enable() {
 		lifecycle.OnEnabled(ctx)
 	}
 	if js.Log != nil && !js.Config().ShouldSkipLoggerListenersOrDefault() {
-		js.Log.Trigger(ctx, NewEvent(FlagEnabled, js.Name()))
+		js.Log.TriggerContext(ctx, NewEvent(FlagEnabled, js.Name()))
 	}
 }
 
@@ -200,7 +200,7 @@ func (js *JobScheduler) Disable() {
 		lifecycle.OnDisabled(ctx)
 	}
 	if js.Log != nil && !js.Config().ShouldSkipLoggerListenersOrDefault() {
-		js.Log.Trigger(ctx, NewEvent(FlagDisabled, js.Name()))
+		js.Log.TriggerContext(ctx, NewEvent(FlagDisabled, js.Name()))
 	}
 }
 
@@ -623,7 +623,7 @@ func (js *JobScheduler) onJobError(ctx context.Context, err error) {
 func (js *JobScheduler) withInvocationLogContext(parent context.Context, ji *JobInvocation) context.Context {
 	parent = logger.WithPath(parent, js.Name(), ji.ID)
 	if js.Config().ShouldSkipLoggerOutputOrDefault() {
-		parent = logger.WithSkipWrite(parent)
+		parent = logger.WithSkipWrite(parent, true)
 	}
 	return parent
 }
@@ -631,7 +631,7 @@ func (js *JobScheduler) withInvocationLogContext(parent context.Context, ji *Job
 func (js *JobScheduler) withLogContext(parent context.Context) context.Context {
 	parent = logger.WithPath(parent, js.Name())
 	if js.Config().ShouldSkipLoggerOutputOrDefault() {
-		parent = logger.WithSkipWrite(parent)
+		parent = logger.WithSkipWrite(parent, true)
 	}
 	return parent
 }
@@ -640,20 +640,20 @@ func (js *JobScheduler) logTrigger(ctx context.Context, e logger.Event) {
 	if js.Log == nil {
 		return
 	}
-	js.Log.Trigger(ctx, e)
+	js.Log.TriggerContext(ctx, e)
 }
 
 func (js *JobScheduler) debugf(ctx context.Context, format string, args ...interface{}) {
 	if js.Log == nil {
 		return
 	}
-	js.Log.WithContext(ctx).Debugf(format, args...)
+	js.Log.DebugfContext(ctx, format, args...)
 }
 
 func (js *JobScheduler) error(ctx context.Context, err error) error {
 	if js.Log == nil {
 		return err
 	}
-	js.Log.WithContext(ctx).Error(err)
+	js.Log.ErrorContext(ctx, err)
 	return err
 }

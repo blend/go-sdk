@@ -26,10 +26,10 @@ func createResponseEvent(req *http.Request, rw *webutil.ResponseWriter, start ti
 func logged(log logger.Log, handler http.HandlerFunc) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		start := time.Now()
-		log.Trigger(req.Context(), webutil.NewHTTPRequestEvent(req))
+		log.TriggerContext(req.Context(), webutil.NewHTTPRequestEvent(req))
 		rw := webutil.NewResponseWriter(res)
 		handler(rw, req)
-		log.Trigger(req.Context(), createResponseEvent(req, rw, start))
+		log.TriggerContext(req.Context(), createResponseEvent(req, rw, start))
 	}
 }
 

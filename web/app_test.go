@@ -401,7 +401,7 @@ func TestAppWritesLogs(t *testing.T) {
 	})
 	_, err = MockGet(app, "/").Discard()
 	assert.Nil(err)
-	assert.Nil(agent.Drain())
+	agent.Drain()
 
 	assert.NotZero(buffer.Len())
 	assert.NotEmpty(buffer.String())

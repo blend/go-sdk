@@ -23,7 +23,7 @@ func LoggedUnary(log logger.Triggerable) grpc.UnaryServerInterceptor {
 				event.UserAgent = MetaValue(md, MetaTagUserAgent)
 				event.ContentType = MetaValue(md, MetaTagContentType)
 			}
-			log.Trigger(ctx, event)
+			log.TriggerContext(ctx, event)
 		}
 		return result, err
 	}
@@ -42,7 +42,7 @@ func LoggedStream(log logger.Triggerable) grpc.StreamServerInterceptor {
 				event.UserAgent = MetaValue(md, MetaTagUserAgent)
 				event.ContentType = MetaValue(md, MetaTagContentType)
 			}
-			log.Trigger(context.Background(), event)
+			log.TriggerContext(context.Background(), event)
 		}
 		return err
 	}
