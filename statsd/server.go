@@ -42,8 +42,7 @@ func (s *Server) Start() error {
 		return fmt.Errorf("server cannot start; no listener or addr provided")
 	}
 
-	s.logf("statsd server listening: %q", s.Listener.LocalAddr().String())
-
+	s.logf("statsd server listening: %s", s.Listener.LocalAddr().String())
 	data := make([]byte, s.MaxPacketSizeOrDefault())
 	var metrics []Metric
 	var n int
