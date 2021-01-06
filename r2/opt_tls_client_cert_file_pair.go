@@ -1,11 +1,9 @@
 package r2
 
-import (
-	"crypto/tls"
-)
+import "crypto/tls"
 
-// OptTLSClientCert adds a client cert and key to the request.
-func OptTLSClientCert(cert, key []byte) Option {
+// OptTLSClientCertFilePair adds a client cert and key to the request.
+func OptTLSClientCertFilePair(certFile, keyFile string) Option {
 	return func(r *Request) error {
 		transport, err := EnsureHTTPTransport(r)
 		if err != nil {
@@ -15,7 +13,7 @@ func OptTLSClientCert(cert, key []byte) Option {
 		if transport.TLSClientConfig == nil {
 			transport.TLSClientConfig = &tls.Config{}
 		}
-		cert, err := tls.X509KeyPair(cert, key)
+		cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 		if err != nil {
 			return err
 		}

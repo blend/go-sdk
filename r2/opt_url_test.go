@@ -9,11 +9,10 @@ import (
 func TestOptURL(t *testing.T) {
 	assert := assert.New(t)
 
-	r := New("http://foo.com", OptURL("https://foo.bar.com/buzz?a=b"))
-	assert.NotNil(r.URL)
-	assert.Equal("https://foo.bar.com/buzz?a=b", r.URL.String())
+	r := New(TestURL, OptURL("https://foo.bar.com/buzz?a=b"))
+	assert.NotNil(r.Request.URL)
+	assert.Equal("https://foo.bar.com/buzz?a=b", r.Request.URL.String())
 
 	var unset Request
-	OptURL("https://foo.bar.com/buzz?a=b")(&unset)
-	assert.Equal("https://foo.bar.com/buzz?a=b", unset.URL.String())
+	assert.NotNil(OptURL("https://foo.bar.com/buzz?a=b")(&unset))
 }

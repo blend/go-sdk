@@ -1,6 +1,7 @@
 package r2
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -30,6 +31,31 @@ func NewEvent(flag string, options ...EventOption) Event {
 	return e
 }
 
+// NewEventListener returns a new r2 event listener.
+func NewEventListener(listener func(context.Context, Event)) logger.Listener {
+	return func(ctx context.Context, e logger.Event) {
+		if typed, isTyped := e.(Event); isTyped {
+			listener(ctx, typed)
+		}
+	}
+}
+
+// NewEventFilter returns a new r2 event filter.
+func NewEventFilter(filter func(context.Context, Event) (Event, bool)) logger.Filter {
+	return func(ctx context.Context, e logger.Event) (logger.Event, bool) {
+		if typed, isTyped := e.(Event); isTyped {
+			return filter(ctx, typed)
+		}
+		return e, false
+	}
+}
+
+var (
+	_ logger.Event        = (*Event)(nil)
+	_ logger.TextWritable = (*Event)(nil)
+	_ logger.JSONWritable = (*Event)(nil)
+)
+
 // Event is a response to outgoing requests.
 type Event struct {
 	Flag string
@@ -49,18 +75,18 @@ func (e Event) GetFlag() string { return e.Flag }
 // WriteText writes the event to a text writer.
 func (e Event) WriteText(tf logger.TextFormatter, wr io.Writer) {
 	if e.Request != nil && e.Response != nil {
-		io.WriteString(wr, fmt.Sprintf("%s %s %s (%v)", e.Request.Method, e.Request.URL.String(), webutil.ColorizeStatusCodeWithFormatter(tf, e.Response.StatusCode), e.Elapsed))
+		fmt.Fprintf(wr, "%s %s %s (%v)", e.Request.Method, e.Request.URL.String(), webutil.ColorizeStatusCodeWithFormatter(tf, e.Response.StatusCode), e.Elapsed)
 	} else if e.Request != nil {
-		io.WriteString(wr, fmt.Sprintf("%s %s", e.Request.Method, e.Request.URL.String()))
+		fmt.Fprintf(wr, "%s %s", e.Request.Method, e.Request.URL.String())
 	}
 	if e.Body != nil {
-		io.WriteString(wr, logger.Newline)
-		io.WriteString(wr, string(e.Body))
+		fmt.Fprint(wr, logger.Newline)
+		fmt.Fprint(wr, string(e.Body))
 	}
 }
 
 // Decompose implements logger.JSONWritable.
-func (e *Event) Decompose() map[string]interface{} {
+func (e Event) Decompose() map[string]interface{} {
 	output := make(map[string]interface{})
 	if e.Request != nil {
 		var url string

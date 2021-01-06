@@ -10,25 +10,19 @@ import (
 	"github.com/blend/go-sdk/logger"
 )
 
-const (
-	// maxLogBytes is the maximum number of bytes to log from a response.
-	// it is currently set to 1mb.
-	maxLogBytes = 1 << 20
-)
-
 // OptLogResponse adds an OnResponse listener to log the response of a call.
 func OptLogResponse(log logger.Triggerable) Option {
-	return OptOnResponse(func(req *http.Request, res *http.Response, started time.Time, err error) error {
+	return OptOnResponse(func(req *http.Request, res *http.Response, startedUTC time.Time, err error) error {
 		if err != nil {
 			return err
 		}
 		event := NewEvent(FlagResponse,
 			OptEventRequest(req),
 			OptEventResponse(res),
-			OptEventElapsed(time.Now().UTC().Sub(started)),
+			OptEventElapsed(time.Now().UTC().Sub(startedUTC)),
 		)
 
-		logger.MaybeTrigger(req.Context(), log, event)
+		logger.MaybeTriggerContext(req.Context(), log, event)
 		return nil
 	})
 }
@@ -58,7 +52,7 @@ func OptLogResponseWithBody(log logger.Triggerable) Option {
 			OptEventElapsed(time.Now().UTC().Sub(started)),
 		)
 
-		logger.MaybeTrigger(req.Context(), log, event)
+		logger.MaybeTriggerContext(req.Context(), log, event)
 		return nil
 	})
 }
