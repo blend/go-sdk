@@ -37,6 +37,16 @@ func NewAuditEventListener(listener func(context.Context, AuditEvent)) Listener 
 	}
 }
 
+// NewAuditEventFilter returns a new audit event filter.
+func NewAuditEventFilter(filter func(context.Context, AuditEvent) (AuditEvent, bool)) Filter {
+	return func(ctx context.Context, e Event) (Event, bool) {
+		if typed, isTyped := e.(AuditEvent); isTyped {
+			return filter(ctx, typed)
+		}
+		return e, false
+	}
+}
+
 // AuditEventOption is an option for AuditEvents.
 type AuditEventOption func(*AuditEvent)
 
@@ -104,51 +114,51 @@ func (e AuditEvent) GetFlag() string { return Audit }
 // WriteText implements TextWritable.
 func (e AuditEvent) WriteText(formatter TextFormatter, wr io.Writer) {
 	if len(e.Context) > 0 {
-		io.WriteString(wr, formatter.Colorize("Context:", ansi.ColorLightBlack))
-		io.WriteString(wr, e.Context)
-		io.WriteString(wr, Space)
+		fmt.Fprint(wr, formatter.Colorize("Context:", ansi.ColorLightBlack))
+		fmt.Fprint(wr, e.Context)
+		fmt.Fprint(wr, Space)
 	}
 	if len(e.Principal) > 0 {
-		io.WriteString(wr, formatter.Colorize("Principal:", ansi.ColorLightBlack))
-		io.WriteString(wr, e.Principal)
-		io.WriteString(wr, Space)
+		fmt.Fprint(wr, formatter.Colorize("Principal:", ansi.ColorLightBlack))
+		fmt.Fprint(wr, e.Principal)
+		fmt.Fprint(wr, Space)
 	}
 	if len(e.Verb) > 0 {
-		io.WriteString(wr, formatter.Colorize("Verb:", ansi.ColorLightBlack))
-		io.WriteString(wr, e.Verb)
-		io.WriteString(wr, Space)
+		fmt.Fprint(wr, formatter.Colorize("Verb:", ansi.ColorLightBlack))
+		fmt.Fprint(wr, e.Verb)
+		fmt.Fprint(wr, Space)
 	}
 	if len(e.Noun) > 0 {
-		io.WriteString(wr, formatter.Colorize("Noun:", ansi.ColorLightBlack))
-		io.WriteString(wr, e.Noun)
-		io.WriteString(wr, Space)
+		fmt.Fprint(wr, formatter.Colorize("Noun:", ansi.ColorLightBlack))
+		fmt.Fprint(wr, e.Noun)
+		fmt.Fprint(wr, Space)
 	}
 	if len(e.Subject) > 0 {
-		io.WriteString(wr, formatter.Colorize("Subject:", ansi.ColorLightBlack))
-		io.WriteString(wr, e.Subject)
-		io.WriteString(wr, Space)
+		fmt.Fprint(wr, formatter.Colorize("Subject:", ansi.ColorLightBlack))
+		fmt.Fprint(wr, e.Subject)
+		fmt.Fprint(wr, Space)
 	}
 	if len(e.Property) > 0 {
-		io.WriteString(wr, formatter.Colorize("Property:", ansi.ColorLightBlack))
-		io.WriteString(wr, e.Property)
-		io.WriteString(wr, Space)
+		fmt.Fprint(wr, formatter.Colorize("Property:", ansi.ColorLightBlack))
+		fmt.Fprint(wr, e.Property)
+		fmt.Fprint(wr, Space)
 	}
 	if len(e.RemoteAddress) > 0 {
-		io.WriteString(wr, formatter.Colorize("Remote Addr:", ansi.ColorLightBlack))
-		io.WriteString(wr, e.RemoteAddress)
-		io.WriteString(wr, Space)
+		fmt.Fprint(wr, formatter.Colorize("Remote Addr:", ansi.ColorLightBlack))
+		fmt.Fprint(wr, e.RemoteAddress)
+		fmt.Fprint(wr, Space)
 	}
 	if len(e.UserAgent) > 0 {
-		io.WriteString(wr, formatter.Colorize("UA:", ansi.ColorLightBlack))
-		io.WriteString(wr, e.UserAgent)
-		io.WriteString(wr, Space)
+		fmt.Fprint(wr, formatter.Colorize("UA:", ansi.ColorLightBlack))
+		fmt.Fprint(wr, e.UserAgent)
+		fmt.Fprint(wr, Space)
 	}
 	if len(e.Extra) > 0 {
 		var values []string
 		for key, value := range e.Extra {
 			values = append(values, fmt.Sprintf("%s%s", formatter.Colorize(key+":", ansi.ColorLightBlack), value))
 		}
-		io.WriteString(wr, strings.Join(values, " "))
+		fmt.Fprint(wr, strings.Join(values, " "))
 	}
 }
 

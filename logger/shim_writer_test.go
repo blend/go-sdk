@@ -17,16 +17,16 @@ func TestShimLogger(t *testing.T) {
 		OptAll(),
 		OptText(OptTextHideTimestamp(), OptTextNoColor()),
 	)
-	defer log.Close()
 	assert.Nil(err)
+	defer log.Close()
 
 	sw := NewShimWriter(log,
 		OptShimWriterEventProvider(
 			ShimWriterMessageEventProvider("shim"),
 		),
 	)
-	fmt.Fprintf(sw, "this is a test\n")
-	fmt.Fprintf(sw, "this is also a test\n")
+	fmt.Fprintln(sw, "this is a test")
+	fmt.Fprintln(sw, "this is also a test")
 
 	assert.NotEmpty(buf.String())
 	assert.Equal("[shim] this is a test\n[shim] this is also a test\n", buf.String())

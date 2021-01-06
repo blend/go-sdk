@@ -2,25 +2,40 @@ package logger
 
 import (
 	"context"
+	"os"
 )
 
 // IsLoggerSet returns if the logger instance is set.
 func IsLoggerSet(log interface{}) bool {
-	if log == nil {
-		return false
-	}
 	if typed, ok := log.(*Logger); ok {
 		return typed != nil
 	}
-	return true
+	return log != nil
+}
+
+// MaybeDrainContext drains a logger if it's a valid reference and can be drained.
+func MaybeDrainContext(ctx context.Context, log interface{}) {
+	if typed, ok := log.(*Logger); ok && typed != nil {
+		typed.DrainContext(ctx)
+	}
 }
 
 // MaybeTrigger triggers an event if the logger is set.
+//
+// DEPRECATION(1.2021*): this method will be changed to drop the context and use `context.Background()`.
 func MaybeTrigger(ctx context.Context, log Triggerable, e Event) {
 	if !IsLoggerSet(log) {
 		return
 	}
-	log.Trigger(ctx, e)
+	log.TriggerContext(ctx, e)
+}
+
+// MaybeTriggerContext triggers an event if the logger is set in a given context.
+func MaybeTriggerContext(ctx context.Context, log Triggerable, e Event) {
+	if !IsLoggerSet(log) {
+		return
+	}
+	log.TriggerContext(ctx, e)
 }
 
 // MaybeInfo triggers Info if the logger is set.
@@ -32,11 +47,11 @@ func MaybeInfo(log InfoReceiver, args ...interface{}) {
 }
 
 // MaybeInfoContext triggers Info in a given context if the logger.
-func MaybeInfoContext(ctx context.Context, log Scoper, args ...interface{}) {
+func MaybeInfoContext(ctx context.Context, log InfoReceiver, args ...interface{}) {
 	if !IsLoggerSet(log) {
 		return
 	}
-	log.WithContext(ctx).Info(args...)
+	log.InfoContext(ctx, args...)
 }
 
 // MaybeInfof triggers Infof if the logger is set.
@@ -48,11 +63,11 @@ func MaybeInfof(log InfofReceiver, format string, args ...interface{}) {
 }
 
 // MaybeInfofContext triggers Infof in a given context if the logger is set.
-func MaybeInfofContext(ctx context.Context, log Scoper, format string, args ...interface{}) {
+func MaybeInfofContext(ctx context.Context, log InfofReceiver, format string, args ...interface{}) {
 	if !IsLoggerSet(log) {
 		return
 	}
-	log.WithContext(ctx).Infof(format, args...)
+	log.InfofContext(ctx, format, args...)
 }
 
 // MaybeDebug triggers Debug if the logger is set.
@@ -64,11 +79,11 @@ func MaybeDebug(log DebugReceiver, args ...interface{}) {
 }
 
 // MaybeDebugContext triggers Debug in a given context if the logger is set.
-func MaybeDebugContext(ctx context.Context, log Scoper, args ...interface{}) {
+func MaybeDebugContext(ctx context.Context, log DebugReceiver, args ...interface{}) {
 	if !IsLoggerSet(log) {
 		return
 	}
-	log.WithContext(ctx).Debug(args...)
+	log.DebugContext(ctx, args...)
 }
 
 // MaybeDebugf triggers Debugf if the logger is set.
@@ -80,11 +95,11 @@ func MaybeDebugf(log DebugfReceiver, format string, args ...interface{}) {
 }
 
 // MaybeDebugfContext triggers Debugf in a given context if the logger is set.
-func MaybeDebugfContext(ctx context.Context, log Scoper, format string, args ...interface{}) {
+func MaybeDebugfContext(ctx context.Context, log DebugfReceiver, format string, args ...interface{}) {
 	if !IsLoggerSet(log) {
 		return
 	}
-	log.WithContext(ctx).Debugf(format, args...)
+	log.DebugfContext(ctx, format, args...)
 }
 
 // MaybeWarningf triggers Warningf if the logger is set.
@@ -96,11 +111,11 @@ func MaybeWarningf(log WarningfReceiver, format string, args ...interface{}) {
 }
 
 // MaybeWarningfContext triggers Warningf in a given context if the logger is set.
-func MaybeWarningfContext(ctx context.Context, log Scoper, format string, args ...interface{}) {
+func MaybeWarningfContext(ctx context.Context, log WarningfReceiver, format string, args ...interface{}) {
 	if !IsLoggerSet(log) {
 		return
 	}
-	log.WithContext(ctx).Warningf(format, args...)
+	log.WarningfContext(ctx, format, args...)
 }
 
 // MaybeWarning triggers Warning if the logger is set.
@@ -112,11 +127,11 @@ func MaybeWarning(log WarningReceiver, err error) {
 }
 
 // MaybeWarningContext triggers Warning in a given context if the logger is set.
-func MaybeWarningContext(ctx context.Context, log Scoper, err error) {
+func MaybeWarningContext(ctx context.Context, log WarningReceiver, err error) {
 	if !IsLoggerSet(log) || err == nil {
 		return
 	}
-	log.WithContext(ctx).Warning(err)
+	log.WarningContext(ctx, err)
 }
 
 // MaybeErrorf triggers Errorf if the logger is set.
@@ -128,11 +143,11 @@ func MaybeErrorf(log ErrorfReceiver, format string, args ...interface{}) {
 }
 
 // MaybeErrorfContext triggers Errorf in a given context if the logger is set.
-func MaybeErrorfContext(ctx context.Context, log Scoper, format string, args ...interface{}) {
+func MaybeErrorfContext(ctx context.Context, log ErrorfReceiver, format string, args ...interface{}) {
 	if !IsLoggerSet(log) {
 		return
 	}
-	log.WithContext(ctx).Errorf(format, args...)
+	log.ErrorfContext(ctx, format, args...)
 }
 
 // MaybeError triggers Error if the logger is set.
@@ -144,11 +159,11 @@ func MaybeError(log ErrorReceiver, err error) {
 }
 
 // MaybeErrorContext triggers Error in a given context if the logger is set.
-func MaybeErrorContext(ctx context.Context, log Scoper, err error) {
+func MaybeErrorContext(ctx context.Context, log ErrorReceiver, err error) {
 	if !IsLoggerSet(log) || err == nil {
 		return
 	}
-	log.WithContext(ctx).Error(err)
+	log.ErrorContext(ctx, err)
 }
 
 // MaybeFatalf triggers Fatalf if the logger is set.
@@ -160,11 +175,11 @@ func MaybeFatalf(log FatalfReceiver, format string, args ...interface{}) {
 }
 
 // MaybeFatalfContext triggers Fatalf in a given context if the logger is set.
-func MaybeFatalfContext(ctx context.Context, log Scoper, format string, args ...interface{}) {
+func MaybeFatalfContext(ctx context.Context, log FatalfReceiver, format string, args ...interface{}) {
 	if !IsLoggerSet(log) {
 		return
 	}
-	log.WithContext(ctx).Fatalf(format, args...)
+	log.FatalfContext(ctx, format, args...)
 }
 
 // MaybeFatal triggers Fatal if the logger is set.
@@ -176,9 +191,19 @@ func MaybeFatal(log FatalReceiver, err error) {
 }
 
 // MaybeFatalContext triggers Fatal in a given context if the logger is set.
-func MaybeFatalContext(ctx context.Context, log Scoper, err error) {
+func MaybeFatalContext(ctx context.Context, log FatalReceiver, err error) {
 	if !IsLoggerSet(log) || err == nil {
 		return
 	}
-	log.WithContext(ctx).Fatal(err)
+	log.FatalContext(ctx, err)
+}
+
+// MaybeFatalExit triggers Fatal if the logger is set and the error is set, and exit(1)s.
+func MaybeFatalExit(log FatalCloser, err error) {
+	if !IsLoggerSet(log) || err == nil {
+		return
+	}
+	log.Fatal(err)
+	log.Close()
+	os.Exit(1)
 }
