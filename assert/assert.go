@@ -319,6 +319,15 @@ func (a *Assertions) AnyOfString(target []string, predicate PredicateOfString, u
 	return true
 }
 
+// AnyCount applies a predicate and passes if it fires a given number of times .
+func (a *Assertions) AnyCount(target interface{}, times int, predicate Predicate, userMessageComponents ...interface{}) bool {
+	a.assertion()
+	if didFail, message := shouldAnyCount(target, times, predicate); didFail {
+		return a.fail(message, userMessageComponents...)
+	}
+	return true
+}
+
 // All applies a predicate.
 func (a *Assertions) All(target interface{}, predicate Predicate, userMessageComponents ...interface{}) bool {
 	a.assertion()
@@ -769,6 +778,34 @@ func shouldAny(target interface{}, predicate Predicate) (bool, string) {
 		}
 	}
 	return true, "Predicate did not fire for any element in target"
+}
+
+func shouldAnyCount(target interface{}, times int, predicate Predicate) (bool, string) {
+	t := reflect.TypeOf(target)
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+
+	v := reflect.ValueOf(target)
+	for v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	if t.Kind() != reflect.Slice {
+		return true, "`target` is not a slice"
+	}
+
+	var seen int
+	for x := 0; x < v.Len(); x++ {
+		obj := v.Index(x).Interface()
+		if predicate(obj) {
+			seen++
+		}
+	}
+	if seen != times {
+		return true, shouldBeMultipleMessage(times, seen, "Predicate should fire a given number of times")
+	}
+	return false, ""
 }
 
 func shouldAnyOfInt(target []int, predicate PredicateOfInt) (bool, string) {
