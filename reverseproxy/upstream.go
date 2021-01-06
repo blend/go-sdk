@@ -14,7 +14,7 @@ import (
 )
 
 // NewUpstream returns a new upstram.
-func NewUpstream(target *url.URL) *Upstream {
+func NewUpstream(target *url.URL, opts ...UpstreamOption) *Upstream {
 	rp := httputil.NewSingleHostReverseProxy(target)
 	u := &Upstream{
 		URL:          target,
@@ -52,19 +52,16 @@ func (u *Upstream) UseHTTP2() error {
 
 // ServeHTTP
 func (u *Upstream) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	w := webutil.NewResponseWriter(rw)
+	w := webutil.NewStatusResponseWriter(rw)
 
 	if u.Log != nil {
-		u.Log.TriggerContext(req.Context(), webutil.NewHTTPRequestEvent(req))
-
 		start := time.Now()
 		defer func() {
-			wre := webutil.NewHTTPResponseEvent(req,
-				webutil.OptHTTPResponseStatusCode(w.StatusCode()),
-				webutil.OptHTTPResponseContentLength(w.ContentLength()),
-				webutil.OptHTTPResponseElapsed(time.Since(start)),
+			wre := webutil.NewHTTPRequestEvent(req,
+				webutil.OptHTTPRequestStatusCode(w.StatusCode()),
+				webutil.OptHTTPRequestContentLength(w.ContentLength()),
+				webutil.OptHTTPRequestElapsed(time.Since(start)),
 			)
-
 			if value := w.Header().Get("Content-Type"); len(value) > 0 {
 				wre.ContentType = value
 			}
@@ -75,7 +72,6 @@ func (u *Upstream) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			u.Log.TriggerContext(req.Context(), wre)
 		}()
 	}
-
 	u.ReverseProxy.ServeHTTP(w, req)
 }
 

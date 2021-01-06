@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
@@ -16,14 +17,17 @@ const (
 )
 
 // NewProxy returns a new proxy.
-func NewProxy(opts ...ProxyOption) *Proxy {
+func NewProxy(opts ...ProxyOption) (*Proxy, error) {
+	var err error
 	p := Proxy{
 		Headers: http.Header{},
 	}
 	for _, opt := range opts {
-		opt(&p)
+		if err = opt(&p); err != nil {
+			return nil, err
+		}
 	}
-	return &p
+	return &p, nil
 }
 
 // Proxy is a factory for a simple reverse proxy.
@@ -34,6 +38,7 @@ type Proxy struct {
 	Resolver         Resolver
 	Tracer           webutil.HTTPTracer
 	TransformRequest TransformRequest
+	Timeout          time.Duration
 }
 
 // ServeHTTP is the http entrypoint.
