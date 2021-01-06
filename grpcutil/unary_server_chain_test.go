@@ -9,11 +9,11 @@ import (
 	"github.com/blend/go-sdk/assert"
 )
 
-func TestUnaryChain(t *testing.T) {
+func TestUnaryServerChain(t *testing.T) {
 	assert := assert.New(t)
 
 	var calls []string
-	combined := UnaryChain(
+	combined := UnaryServerChain(
 		func(ctx context.Context, args interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 			calls = append(calls, "first")
 			return handler(ctx, args)

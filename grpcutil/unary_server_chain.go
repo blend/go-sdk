@@ -6,8 +6,8 @@ import (
 	"google.golang.org/grpc"
 )
 
-// UnaryChain reads the middleware variadic args and organizes the calls recursively in the order they appear.
-func UnaryChain(interceptors ...grpc.UnaryServerInterceptor) grpc.UnaryServerInterceptor {
+// UnaryServerChain reads the middleware variadic args and organizes the calls recursively in the order they appear.
+func UnaryServerChain(interceptors ...grpc.UnaryServerInterceptor) grpc.UnaryServerInterceptor {
 	// if we don't have interceptors, return a no-op.
 	if len(interceptors) == 0 {
 		return func(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {

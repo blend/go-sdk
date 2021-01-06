@@ -13,7 +13,7 @@ import (
 func TestRecoverUnary(t *testing.T) {
 	assert := assert.New(t)
 
-	interceptor := RecoverUnary(WithRecoveryHandler(func(p interface{}) error {
+	interceptor := RecoverServerUnary(WithServerRecoveryHandler(func(p interface{}) error {
 		return fmt.Errorf("panic: %v", p)
 	}))
 
@@ -27,7 +27,7 @@ func TestRecoverUnary(t *testing.T) {
 func TestRecoverStream(t *testing.T) {
 	assert := assert.New(t)
 
-	interceptor := RecoverStream(WithRecoveryHandler(func(p interface{}) error {
+	interceptor := RecoverServerStream(WithServerRecoveryHandler(func(p interface{}) error {
 		return fmt.Errorf("panic: %v", p)
 	}))
 

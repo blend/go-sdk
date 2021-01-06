@@ -2,6 +2,7 @@ package grpcutil
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"time"
 
@@ -12,7 +13,7 @@ import (
 
 // Logger flags
 const (
-	RPC = "rpc"
+	FlagRPC = "rpc"
 )
 
 // these are compile time assertions
@@ -25,6 +26,7 @@ var (
 // NewRPCEvent creates a new rpc event.
 func NewRPCEvent(method string, elapsed time.Duration, options ...RPCEventOption) RPCEvent {
 	rpe := RPCEvent{
+		Engine:  EngineGRPC,
 		Method:  method,
 		Elapsed: elapsed,
 	}
@@ -40,6 +42,16 @@ func NewRPCEventListener(listener func(context.Context, RPCEvent)) logger.Listen
 		if typed, isTyped := e.(RPCEvent); isTyped {
 			listener(ctx, typed)
 		}
+	}
+}
+
+// NewRPCEventFilter returns a new rpc event filter.
+func NewRPCEventFilter(filter func(context.Context, RPCEvent) (RPCEvent, bool)) logger.Filter {
+	return func(ctx context.Context, e logger.Event) (logger.Event, bool) {
+		if typed, isTyped := e.(RPCEvent); isTyped {
+			return filter(ctx, typed)
+		}
+		return e, false
 	}
 }
 
@@ -99,44 +111,44 @@ type RPCEvent struct {
 }
 
 // GetFlag implements Event.
-func (e RPCEvent) GetFlag() string { return RPC }
+func (e RPCEvent) GetFlag() string { return FlagRPC }
 
 // WriteText implements TextWritable.
 func (e RPCEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
 	if e.Engine != "" {
-		io.WriteString(wr, "[")
-		io.WriteString(wr, tf.Colorize(e.Engine, ansi.ColorLightWhite))
-		io.WriteString(wr, "]")
+		fmt.Fprint(wr, "[")
+		fmt.Fprint(wr, tf.Colorize(e.Engine, ansi.ColorLightWhite))
+		fmt.Fprint(wr, "]")
 	}
 	if e.Method != "" {
 		if e.Engine != "" {
-			io.WriteString(wr, logger.Space)
+			fmt.Fprint(wr, logger.Space)
 		}
-		io.WriteString(wr, tf.Colorize(e.Method, ansi.ColorBlue))
+		fmt.Fprint(wr, tf.Colorize(e.Method, ansi.ColorBlue))
 	}
 	if e.Peer != "" {
-		io.WriteString(wr, logger.Space)
-		io.WriteString(wr, e.Peer)
+		fmt.Fprint(wr, logger.Space)
+		fmt.Fprint(wr, e.Peer)
 	}
 	if e.Authority != "" {
-		io.WriteString(wr, logger.Space)
-		io.WriteString(wr, e.Authority)
+		fmt.Fprint(wr, logger.Space)
+		fmt.Fprint(wr, e.Authority)
 	}
 	if e.UserAgent != "" {
-		io.WriteString(wr, logger.Space)
-		io.WriteString(wr, e.UserAgent)
+		fmt.Fprint(wr, logger.Space)
+		fmt.Fprint(wr, e.UserAgent)
 	}
 	if e.ContentType != "" {
-		io.WriteString(wr, logger.Space)
-		io.WriteString(wr, e.ContentType)
+		fmt.Fprint(wr, logger.Space)
+		fmt.Fprint(wr, e.ContentType)
 	}
 
-	io.WriteString(wr, logger.Space)
-	io.WriteString(wr, e.Elapsed.String())
+	fmt.Fprint(wr, logger.Space)
+	fmt.Fprint(wr, e.Elapsed.String())
 
 	if e.Err != nil {
-		io.WriteString(wr, logger.Space)
-		io.WriteString(wr, tf.Colorize("failed", ansi.ColorRed))
+		fmt.Fprint(wr, logger.Space)
+		fmt.Fprint(wr, tf.Colorize("failed", ansi.ColorRed))
 	}
 }
 

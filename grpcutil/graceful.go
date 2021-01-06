@@ -51,15 +51,15 @@ func (gz *Graceful) Stop() error {
 
 // IsRunning returns if the server is running.
 func (gz *Graceful) IsRunning() bool {
-	return gz.IsRunning()
+	return gz.Latch.IsStarted()
 }
 
 // NotifyStarted returns the notify started signal.
 func (gz *Graceful) NotifyStarted() <-chan struct{} {
-	return gz.NotifyStarted()
+	return gz.Latch.NotifyStarted()
 }
 
 // NotifyStopped returns the notify stopped signal.
 func (gz *Graceful) NotifyStopped() <-chan struct{} {
-	return gz.NotifyStopped()
+	return gz.Latch.NotifyStopped()
 }

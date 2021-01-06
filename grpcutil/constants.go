@@ -7,3 +7,8 @@ const (
 	MetaTagContentType = "content-type"
 	MetaTagUserAgent   = "user-agent"
 )
+
+// Our default engine
+const (
+	EngineGRPC = "grpc"
+)

@@ -4,8 +4,8 @@ import (
 	"google.golang.org/grpc"
 )
 
-// StreamChain reads the middleware variadic args and organizes the calls recursively in the order they appear.
-func StreamChain(interceptors ...grpc.StreamServerInterceptor) grpc.StreamServerInterceptor {
+// StreamServerChain reads the middleware variadic args and organizes the calls recursively in the order they appear.
+func StreamServerChain(interceptors ...grpc.StreamServerInterceptor) grpc.StreamServerInterceptor {
 	// if we don't have interceptors, return a no-op.
 	if len(interceptors) == 0 {
 		return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {

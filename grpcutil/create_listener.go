@@ -7,13 +7,16 @@ import (
 	"github.com/blend/go-sdk/ex"
 )
 
-// Listener creates a net listener for a given bind address.
+// CreateListener creates a net listener for a given bind address.
 // It handles detecting if we should create a unix socket address.
-func Listener(bindAddr string) (net.Listener, error) {
+func CreateListener(bindAddr string) (net.Listener, error) {
 	var socketListener net.Listener
 	var err error
 	if strings.HasPrefix(bindAddr, "unix://") {
 		socketListener, err = net.Listen("unix", strings.TrimPrefix(bindAddr, "unix://"))
+		if typed, ok := socketListener.(*net.UnixListener); ok {
+			typed.SetUnlinkOnClose(true)
+		}
 	} else {
 		socketListener, err = net.Listen("tcp", bindAddr)
 	}

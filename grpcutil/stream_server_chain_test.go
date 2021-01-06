@@ -9,11 +9,11 @@ import (
 	"github.com/blend/go-sdk/assert"
 )
 
-func TestStreamChain(t *testing.T) {
+func TestStreamServerChain(t *testing.T) {
 	assert := assert.New(t)
 
 	var calls []string
-	combined := StreamChain(
+	combined := StreamServerChain(
 		func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 			calls = append(calls, "first")
 			return handler(srv, ss)
