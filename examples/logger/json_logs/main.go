@@ -8,28 +8,24 @@ import (
 	"os"
 	"time"
 
-	"github.com/blend/go-sdk/bufferutil"
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/webutil"
 )
 
-var pool = bufferutil.NewPool(16)
-
-func createResponseEvent(req *http.Request, rw *webutil.ResponseWriter, start time.Time) webutil.HTTPResponseEvent {
-	return webutil.NewHTTPResponseEvent(req,
-		webutil.OptHTTPResponseStatusCode(rw.StatusCode()),
-		webutil.OptHTTPResponseContentLength(rw.ContentLength()),
-		webutil.OptHTTPResponseElapsed(time.Now().Sub(start)),
+func createRequestEvent(req *http.Request, rw webutil.ResponseWriter, start time.Time) webutil.HTTPRequestEvent {
+	return webutil.NewHTTPRequestEvent(req,
+		webutil.OptHTTPRequestStatusCode(rw.StatusCode()),
+		webutil.OptHTTPRequestContentLength(rw.ContentLength()),
+		webutil.OptHTTPRequestElapsed(time.Since(start)),
 	)
 }
 
 func logged(log logger.Log, handler http.HandlerFunc) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		start := time.Now()
-		log.TriggerContext(req.Context(), webutil.NewHTTPRequestEvent(req))
-		rw := webutil.NewResponseWriter(res)
+		rw := webutil.NewStatusResponseWriter(res)
 		handler(rw, req)
-		log.TriggerContext(req.Context(), createResponseEvent(req, rw, start))
+		log.TriggerContext(req.Context(), createRequestEvent(req, rw, start))
 	}
 }
 

@@ -17,20 +17,10 @@ import (
 	"github.com/blend/go-sdk/webutil"
 )
 
-// linker metadata block
-// this block must be present
-// it is used by goreleaser
-var (
-	version = "dev"
-	commit  = "none"
-	date    = "unknown"
-)
-
 func main() {
 	log, err := logger.New(
 		logger.OptConfigFromEnv(),
-		logger.OptEnabled(webutil.HTTPRequest),
-		logger.OptEnabled(webutil.HTTPResponse),
+		logger.OptEnabled(webutil.FlagHTTPRequest),
 		logger.OptPath("reverse-proxy"),
 	)
 	if err != nil {
@@ -67,7 +57,7 @@ func main() {
 
 	var listenerOptions []proxyprotocol.CreateListenerOption
 
-	proxy := reverseproxy.NewProxy()
+	proxy, _ := reverseproxy.NewProxy()
 	proxy.Log = log
 
 	var servers []graceful.Graceful
@@ -81,7 +71,10 @@ func main() {
 
 		proxyUpstream := reverseproxy.NewUpstream(target)
 		proxyUpstream.Log = log
-		proxyUpstream.UseHTTP2()
+		if err = proxyUpstream.UseHTTP2(); err != nil {
+			log.Fatal(err)
+			os.Exit(1)
+		}
 		proxy.Upstreams = append(proxy.Upstreams, proxyUpstream)
 	}
 

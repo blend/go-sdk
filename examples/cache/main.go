@@ -13,8 +13,6 @@ import (
 	"github.com/blend/go-sdk/webutil"
 )
 
-type dataCacheKey struct{}
-
 func getData() (interface{}, error) {
 	time.Sleep(500 * time.Millisecond)
 	var output []string
@@ -26,7 +24,7 @@ func getData() (interface{}, error) {
 
 func main() {
 	log := logger.Prod()
-	log.Disable(webutil.HTTPRequest, webutil.HTTPResponse) // disable noisey events.
+	log.Disable(webutil.FlagHTTPRequest) // disable noisey events.
 	app, err := web.New(
 		web.OptConfigFromEnv(),
 		web.OptLog(log),
