@@ -7,6 +7,7 @@ import (
 	"github.com/blend/go-sdk/ref"
 
 	"github.com/DataDog/datadog-go/statsd"
+
 	"github.com/blend/go-sdk/assert"
 	"github.com/blend/go-sdk/stats"
 	"github.com/blend/go-sdk/uuid"
@@ -79,7 +80,7 @@ func TestCollectorNew(t *testing.T) {
 	assert.Nil(err)
 	assert.NotNil(c)
 	assert.NotNil(c.client)
-	assert.NotEmpty(c.defaultTags)
+	assert.Empty(c.defaultTags)
 
 	c, err = New(cfg, statsd.WithNamespace("hello"))
 	assert.Nil(err)
