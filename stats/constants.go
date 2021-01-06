@@ -11,22 +11,19 @@ const (
 
 // Tag names are names for tags, either on metrics or traces.
 const (
-	TagService   string = "service"
-	TagJob       string = "job"
-	TagEnv       string = "env"
-	TagHostname  string = "hostname"
-	TagContainer string = "container"
-	TagSeverity  string = "severity"
-	TagError     string = "error"
 	TagClass     string = "class"
+	TagContainer string = "container"
+	TagEnv       string = "env"
+	TagError     string = "error"
+	TagHostname  string = "hostname"
+	TagJob       string = "job"
+	TagService   string = "service"
+	TagSeverity  string = "severity"
+	TagVersion   string = "version"
 )
 
 // Specialized / default values
 const (
-	ListenerNameStats string = "stats"
+	FilterNameSanitization        = "sanitization"
+	ListenerNameStats      string = "stats"
 )
-
-// Tag creates a new tag.
-func Tag(key, value string) string {
-	return key + ":" + value
-}

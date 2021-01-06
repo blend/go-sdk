@@ -18,44 +18,44 @@ func TestMockCollectorDefaultTags(t *testing.T) {
 		assert.Equal("k3:v3", actualTags[2])
 	}
 
-	collector := NewMockCollector()
-	collector.AddDefaultTag("k1", "v1")
-	collector.AddDefaultTag("k2", "v2")
+	collector := NewMockCollector(32)
+	collector.AddDefaultTags(Tag("k1", "v1"))
+	collector.AddDefaultTags(Tag("k2", "v2"))
 
 	tags := collector.DefaultTags()
 	assert.Len(tags, 2)
 	assert.Equal("k1:v1", tags[0])
 	assert.Equal("k2:v2", tags[1])
 
-	go collector.Count("event", 10, "k3:v3")
-	mockMetric := <-collector.Events
+	assert.Nil(collector.Count("event", 10, "k3:v3"))
+	mockMetric := <-collector.Metrics
 	assertTags(mockMetric.Tags)
 
-	go collector.Increment("event", "k3:v3")
-	mockMetric = <-collector.Events
+	assert.Nil(collector.Increment("event", "k3:v3"))
+	mockMetric = <-collector.Metrics
 	assertTags(mockMetric.Tags)
 
-	go collector.Gauge("event", 0.1, "k3:v3")
-	mockMetric = <-collector.Events
+	assert.Nil(collector.Gauge("event", 0.1, "k3:v3"))
+	mockMetric = <-collector.Metrics
 	assertTags(mockMetric.Tags)
 
-	go collector.Histogram("event", 0.1, "k3:v3")
-	mockMetric = <-collector.Events
+	assert.Nil(collector.Histogram("event", 0.1, "k3:v3"))
+	mockMetric = <-collector.Metrics
 	assertTags(mockMetric.Tags)
 
-	go collector.TimeInMilliseconds("event", time.Second, "k3:v3")
-	mockMetric = <-collector.Events
+	assert.Nil(collector.TimeInMilliseconds("event", time.Second, "k3:v3"))
+	mockMetric = <-collector.Metrics
 	assertTags(mockMetric.Tags)
 }
 
 func TestMockCollectorCount(t *testing.T) {
 	assert := assert.New(t)
 
-	collector := NewMockCollector()
+	collector := NewMockCollector(32)
 
-	go collector.Count("event", 10)
+	assert.Nil(collector.Count("event", 10))
 
-	mockMetric := <-collector.Events
+	mockMetric := <-collector.Metrics
 	assert.Equal("event", mockMetric.Name)
 	assert.Equal(10, mockMetric.Count)
 	assert.Zero(mockMetric.Gauge)
@@ -66,11 +66,11 @@ func TestMockCollectorCount(t *testing.T) {
 func TestMockCollectorIncrement(t *testing.T) {
 	assert := assert.New(t)
 
-	collector := NewMockCollector()
+	collector := NewMockCollector(32)
 
-	go collector.Increment("event", "")
+	assert.Nil(collector.Increment("event", ""))
 
-	mockMetric := <-collector.Events
+	mockMetric := <-collector.Metrics
 	assert.Equal("event", mockMetric.Name)
 	assert.Equal(1, mockMetric.Count)
 	assert.Zero(mockMetric.Gauge)
@@ -81,11 +81,11 @@ func TestMockCollectorIncrement(t *testing.T) {
 func TestMockCollectorGauge(t *testing.T) {
 	assert := assert.New(t)
 
-	collector := NewMockCollector()
+	collector := NewMockCollector(32)
 
-	go collector.Gauge("event", 0.1)
+	assert.Nil(collector.Gauge("event", 0.1))
 
-	mockMetric := <-collector.Events
+	mockMetric := <-collector.Metrics
 	assert.Equal("event", mockMetric.Name)
 	assert.Equal(0.1, mockMetric.Gauge)
 	assert.Zero(mockMetric.Count)
@@ -96,11 +96,11 @@ func TestMockCollectorGauge(t *testing.T) {
 func TestMockCollectorHistogram(t *testing.T) {
 	assert := assert.New(t)
 
-	collector := NewMockCollector()
+	collector := NewMockCollector(32)
 
-	go collector.Histogram("event", 0.1)
+	assert.Nil(collector.Histogram("event", 0.1))
 
-	mockMetric := <-collector.Events
+	mockMetric := <-collector.Metrics
 	assert.Equal("event", mockMetric.Name)
 	assert.Equal(0.1, mockMetric.Histogram)
 	assert.Zero(mockMetric.Gauge)
@@ -111,11 +111,11 @@ func TestMockCollectorHistogram(t *testing.T) {
 func TestMockCollectorTimeInMilliseconds(t *testing.T) {
 	assert := assert.New(t)
 
-	collector := NewMockCollector()
+	collector := NewMockCollector(32)
 
-	go collector.TimeInMilliseconds("event", time.Second)
+	assert.Nil(collector.TimeInMilliseconds("event", time.Second))
 
-	mockMetric := <-collector.Events
+	mockMetric := <-collector.Metrics
 	assert.Equal("event", mockMetric.Name)
 	assert.Equal(1000, mockMetric.TimeInMilliseconds)
 	assert.Zero(mockMetric.Gauge)
@@ -126,7 +126,7 @@ func TestMockCollectorTimeInMilliseconds(t *testing.T) {
 func TestMockCollectorFlush(t *testing.T) {
 	assert := assert.New(t)
 
-	collector := NewMockCollector()
+	collector := NewMockCollector(32)
 
 	err := collector.Flush()
 	assert.Nil(err)
@@ -140,7 +140,7 @@ func TestMockCollectorFlush(t *testing.T) {
 func TestMockCollectorClose(t *testing.T) {
 	assert := assert.New(t)
 
-	collector := NewMockCollector()
+	collector := NewMockCollector(32)
 
 	err := collector.Close()
 	assert.Nil(err)

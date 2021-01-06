@@ -17,8 +17,8 @@ func TestMockEventCollectorDefaultTags(t *testing.T) {
 	}
 
 	collector := NewMockEventCollector()
-	collector.AddDefaultTag("k1", "v1")
-	collector.AddDefaultTag("k2", "v2")
+	collector.AddDefaultTags(Tag("k1", "v1"))
+	collector.AddDefaultTags(Tag("k2", "v2"))
 
 	tags := collector.DefaultTags()
 	assert.Len(tags, 2)
@@ -28,7 +28,7 @@ func TestMockEventCollectorDefaultTags(t *testing.T) {
 	event := collector.CreateEvent("event", "text", "k3:v3")
 	assertTags(event.Tags)
 
-	go collector.SendEvent(event)
+	go func() { _ = collector.SendEvent(event) }()
 	receivedEvent := <-collector.Events
 	assertTags(receivedEvent.Tags)
 }
@@ -50,7 +50,7 @@ func TestMockEventCollectorSendEvent(t *testing.T) {
 	collector := NewMockEventCollector()
 	event := collector.CreateEvent("event", "text", "k:v")
 
-	go collector.SendEvent(event)
+	go func() { _ = collector.SendEvent(event) }()
 	receivedEvent := <-collector.Events
 	assert.Equal("event", receivedEvent.Title)
 	assert.Equal("text", receivedEvent.Text)

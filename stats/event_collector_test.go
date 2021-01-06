@@ -27,5 +27,6 @@ func TestEventCheck(t *testing.T) {
 
 	event.Text = "text"
 	err = event.Check()
+	assert.Nil(err)
 	assert.Nil(event.Check())
 }
