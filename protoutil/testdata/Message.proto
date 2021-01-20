@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package testdata;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+option go_package = ".;testdata";
+
+message Message {
+    string uid = 10;
+    google.protobuf.Timestamp timestamp_utc = 11;
+    google.protobuf.Duration elapsed = 12;
+    int32 status_code = 13;
+    int64 content_length = 14;
+    double value = 15;
+    string error = 16;
+}
