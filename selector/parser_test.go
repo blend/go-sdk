@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/ex"
 )
 
 func TestParserIsWhitespace(t *testing.T) {
@@ -22,23 +23,6 @@ func TestParserIsWhitespace(t *testing.T) {
 	assert.False(l.isWhitespace('Z'))
 	assert.False(l.isWhitespace('1'))
 	assert.False(l.isWhitespace('-'))
-}
-
-func TestParserIsAlpha(t *testing.T) {
-	assert := assert.New(t)
-
-	l := &Parser{}
-	assert.True(l.isAlpha('a'))
-	assert.True(l.isAlpha('z'))
-	assert.True(l.isAlpha('A'))
-	assert.True(l.isAlpha('Z'))
-	assert.True(l.isAlpha('1'))
-
-	assert.False(l.isAlpha('-'))
-	assert.False(l.isAlpha(' '))
-	assert.False(l.isAlpha('\n'))
-	assert.False(l.isAlpha('\r'))
-	assert.False(l.isAlpha('\t'))
 }
 
 func TestParserSkipWhitespace(t *testing.T) {
@@ -59,15 +43,31 @@ func TestParserReadWord(t *testing.T) {
 	assert := assert.New(t)
 
 	l := &Parser{s: "foo != bar"}
-	assert.Equal("foo", l.readWord())
+	word, err := l.readWord()
+	assert.Nil(err)
+	assert.Equal("foo", word)
 	assert.Equal(" ", string(l.current()))
 
 	l = &Parser{s: "foo,"}
-	assert.Equal("foo", l.readWord())
+	word, err = l.readWord()
+	assert.Nil(err)
+	assert.Equal("foo", word)
 	assert.Equal(",", string(l.current()))
 
 	l = &Parser{s: "foo"}
-	assert.Equal("foo", l.readWord())
+	word, err = l.readWord()
+	assert.Nil(err)
+	assert.Equal("foo", word)
+	assert.True(l.done())
+
+	l = &Parser{
+		s:   "foo ==",
+		pos: 6,
+	}
+	word, err = l.readWord()
+	assert.NotNil(err)
+	assert.True(ex.Is(err, ErrInvalidSelector))
+	assert.Empty(word)
 	assert.True(l.done())
 }
 
@@ -286,4 +286,21 @@ func TestParserLex(t *testing.T) {
 	l := &Parser{s: ""}
 	_, err := l.Parse()
 	assert.Nil(err)
+}
+
+func TestParserErrors(t *testing.T) {
+	its := assert.New(t)
+
+	sel, err := Parse("foo ==")
+	its.NotNil(err)
+	its.Nil(sel)
+
+	typed, ok := err.(*ParseError)
+	its.True(ok)
+	its.Equal(ErrInvalidSelector, typed.Err)
+	its.Equal("foo ==", typed.Input)
+	its.Equal(6, typed.Position)
+
+	its.Equal("invalid selector", typed.Class().Error())
+	its.Equal(`"foo ==":0:6: invalid selector; expected non-empty key`, typed.Error())
 }
