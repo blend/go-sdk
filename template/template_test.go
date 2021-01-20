@@ -600,28 +600,6 @@ func TestTemplateViewFuncMatches(t *testing.T) {
 	assert.Equal("nope", buffer.String())
 }
 
-func TestTemplateViewFuncSha1(t *testing.T) {
-	assert := assert.New(t)
-
-	test := `{{ .Var "foo" | sha1 }}`
-	temp := New().WithBody(test).WithVar("foo", "this is only a test")
-	buffer := bytes.NewBuffer(nil)
-	err := temp.Process(buffer)
-	assert.Nil(err)
-	assert.Equal("e7ee879d16c08f616c32e5bbe2253bdba18cf003", buffer.String())
-}
-
-func TestTemplateViewFuncMD5(t *testing.T) {
-	assert := assert.New(t)
-
-	test := `{{ .Var "foo" | md5 }}`
-	temp := New().WithBody(test).WithVar("foo", "this is only a test")
-	buffer := bytes.NewBuffer(nil)
-	err := temp.Process(buffer)
-	assert.Nil(err)
-	assert.Equal("e668034188ba397a9b6ff95d2a8e7203", buffer.String())
-}
-
 func TestTemplateViewFuncSha256(t *testing.T) {
 	assert := assert.New(t)
 
@@ -1040,4 +1018,54 @@ func TestViewfuncQuote(t *testing.T) {
 
 	tmp = New().WithBody("{{ .Vars.foo | quote }}").WithVar("foo", "\n\"foo\"\t")
 	assert.Equal(`"foo"`, tmp.MustProcessString())
+}
+
+func TestViewfuncSeqInt(t *testing.T) {
+	assert := assert.New(t)
+
+	tmp := New().WithBody("{{ range $x := seq_int 0 5 }}{{$x}}{{end}}")
+	assert.Equal(`01234`, tmp.MustProcessString())
+
+	tmp = New().WithBody("{{ range $x := seq_int 5 0 }}{{$x}}{{end}}")
+	assert.Equal(`54321`, tmp.MustProcessString())
+}
+
+func TestViewFuncAdd(t *testing.T) {
+	assert := assert.New(t)
+
+	tmp := New().WithBody("{{ add 1 2 3 4 | to_int }}")
+	assert.Equal(`10`, tmp.MustProcessString())
+
+	tmp = New().WithBody("{{ add 4 3 2 1 | to_int }}")
+	assert.Equal(`10`, tmp.MustProcessString())
+}
+
+func TestViewFuncMul(t *testing.T) {
+	assert := assert.New(t)
+
+	tmp := New().WithBody("{{ mul 1 2 3 4 | to_int   }}")
+	assert.Equal(`24`, tmp.MustProcessString())
+
+	tmp = New().WithBody("{{ mul 4 3 2 1 | to_int  }}")
+	assert.Equal(`24`, tmp.MustProcessString())
+}
+
+func TestViewFuncSub(t *testing.T) {
+	assert := assert.New(t)
+
+	tmp := New().WithBody("{{ sub 1 2 3 4 | to_int }}")
+	assert.Equal(`-8`, tmp.MustProcessString())
+
+	tmp = New().WithBody("{{ sub 4 3 2 1 | to_int }}")
+	assert.Equal(`-2`, tmp.MustProcessString())
+}
+
+func TestViewFuncDiv(t *testing.T) {
+	assert := assert.New(t)
+
+	tmp := New().WithBody("{{ div 1 2 4 }}")
+	assert.Equal(`0.125`, tmp.MustProcessString())
+
+	tmp = New().WithBody("{{ div 4 2 1 }}")
+	assert.Equal(`2`, tmp.MustProcessString())
 }
