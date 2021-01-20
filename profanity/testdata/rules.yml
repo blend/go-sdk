@@ -1,0 +1,93 @@
+GOLANG_LOGGER: #note: this does not affect go-sdk/logger because of the package selector
+  description: "please use `logger.Log`, not a type reference"
+  contents:
+    contains:
+      include:
+      - "*logger.Logger"
+
+GOLANG_STRETCHR_TESTIFY:
+  description: "please use `github.com/blend/go-sdk/assert`"
+  goImports:
+    include:
+    - "github.com/stretchr/testify/assert"
+
+GOLANG_LATCH:
+  description: "please use the latch constructor, `async.NewLatch()`"
+  contents:
+    contains:
+      include:
+      - "async.Latch{}"
+
+GOLANG_ASSERT_NON_TEST:
+  description: "do not include assert in non _test.go files"
+  files:
+    exclude:
+    - "*_test.go"
+  goImports:
+    include:
+    - "github.com/blend/go-sdk/assert"
+
+GOLANG_DEPRECATED:
+  description: "please switch to using `github.com/blend/go-sdk`"
+  goImports:
+    include:
+    - "github.com/blendlabs/*"
+
+GOLANG_YAML:
+  description: "please use `gopkg.in/yaml.v3`"
+  goImports:
+    include:
+    - "gopkg.in/yaml.v2"
+
+GOLANG_PRINTLN:
+  description: "please remove debugging `println` statements"
+  files:
+    exclude:
+    - "examples/*"
+  goCalls:
+  - func: "println"
+  - func: "print"
+
+GOLANG_FMT_PRINT:
+  description: "please remove debugging `fmt.Print*` statements; if you have to use `fmt.Print*` use `fmt.Fprint*(os.Stdout`"
+  files:
+    exclude:
+    - "*/examples/*"
+    - "*/cmd/*"
+    - "*/_bench/*"
+    - "*/_fontdata/*"
+  goCalls:
+  - func: "Print"
+    package: "fmt"
+  - func: "Printf"
+    package: "fmt"
+  - func: "Println"
+    package: "fmt"
+
+GOLANG_CMD_IMPORTS:
+  description: "please don't reference cmd packages"
+  goImports:
+    include:
+    - "github.com/blend/go-sdk/cmd*"
+
+GOLANG_EXAMPLES_IMPORTS:
+  description: "please don't reference example packages"
+  files:
+    exclude:
+    - "examples/*"
+  goImports:
+    include:
+    - "github.com/blend/go-sdk/example*"
+
+GOLANG_CONTEXT_SHADOWED:
+  description: "you should not shadow the context package"
+  contents:
+    contains:
+      include:
+      - "context context.Context"
+
+GIT_MERGE_CONFLICTS:
+  description: "do not commit merge conflicted code"
+  contents:
+    contains:
+      include: [ "<<<<<<<", ">>>>>>>"]
