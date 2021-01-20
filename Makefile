@@ -21,7 +21,8 @@ export DB_SSLMODE
 
 all: ci
 
-ci: deps vet profanity cover-ci
+# NOTE: `profanity` has been temporarily removed
+ci: deps vet cover-ci
 
 new-install: deps dev-deps install-all
 
