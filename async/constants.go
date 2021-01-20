@@ -16,6 +16,7 @@ const (
 
 // Constants
 const (
-	DefaultQueueMaxWork = 1 << 10
-	DefaultInterval     = 500 * time.Millisecond
+	DefaultQueueMaxWork        = 1 << 10
+	DefaultInterval            = 500 * time.Millisecond
+	DefaultShutdownGracePeriod = 10 * time.Second
 )

@@ -99,13 +99,15 @@ func (i *Interval) Dispatch() {
 		time.Sleep(i.Delay)
 	}
 
-	tick := time.Tick(i.Interval)
+	tick := time.NewTicker(i.Interval)
+	defer tick.Stop()
+
 	var err error
 	var stopping <-chan struct{}
 	for {
 		stopping = i.NotifyStopping()
 		select {
-		case <-tick:
+		case <-tick.C:
 			err = i.Action(context.Background())
 			if err != nil && i.Errors != nil {
 				i.Errors <- err

@@ -27,13 +27,13 @@ func TestIntervalWorker(t *testing.T) {
 
 	assert.Equal(time.Millisecond, w.Interval)
 
-	go w.Start()
+	go func() { _ = w.Start() }()
 	<-w.NotifyStarted()
 
 	assert.True(w.IsStarted())
 	unbuffered <- true
 	close(unbuffered)
-	w.Stop()
+	assert.Nil(w.Stop())
 	assert.True(w.IsStopped())
 	assert.True(didWork)
 }
