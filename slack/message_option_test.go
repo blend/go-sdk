@@ -14,18 +14,18 @@ func TestMessageOptions(t *testing.T) {
 	}
 
 	assert.Empty(message.Channel)
-	message = ApplyMessageOptions(message, WithChannel("#foo"))
+	message = ApplyMessageOptions(message, OptMessageChannel("#foo"))
 	assert.Equal("#foo", message.Channel)
 
 	assert.Empty(message.IconURL)
-	message = ApplyMessageOptions(message, WithIconURL("https://foo.bar.com/icon.png"))
+	message = ApplyMessageOptions(message, OptMessageIconURL("https://foo.bar.com/icon.png"))
 	assert.Equal("https://foo.bar.com/icon.png", message.IconURL)
 
 	assert.Empty(message.IconEmoji)
-	message = ApplyMessageOptions(message, WithIconEmoji(":fire:"))
+	message = ApplyMessageOptions(message, OptMessageIconEmoji(":fire:"))
 	assert.Equal(":fire:", message.IconEmoji)
 
 	assert.Empty(message.Username)
-	message = ApplyMessageOptions(message, WithUsername("baileydog"))
-	assert.Equal("baileydog", message.Username)
+	message = ApplyMessageOptions(message, OptMessageUsername("example-stringdog"))
+	assert.Equal("example-stringdog", message.Username)
 }
