@@ -23,7 +23,7 @@ func TestNewConfigFromEnv(t *testing.T) {
 	env.Env().Set("OAUTH_CLIENT_SECRET", "bar")
 
 	cfg := &Config{}
-	ctx := context.Background()
+	ctx := env.WithVars(context.Background(), env.Env())
 	assert.Nil(cfg.Resolve(ctx))
 	assert.Equal("foo", cfg.ClientID)
 	assert.Equal("bar", cfg.ClientSecret)

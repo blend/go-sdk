@@ -55,7 +55,7 @@ func OptQueueContext(ctx context.Context) QueueOption {
 
 // Queue is a queue with multiple workers.
 type Queue struct {
-	*Latch
+	Latch *Latch
 
 	Action      WorkAction
 	Context     context.Context
@@ -84,10 +84,10 @@ func (q *Queue) Enqueue(obj interface{}) {
 // Start starts the queue and its workers.
 // This call blocks.
 func (q *Queue) Start() error {
-	if !q.CanStart() {
+	if !q.Latch.CanStart() {
 		return ex.New(ErrCannotStart)
 	}
-	q.Starting()
+	q.Latch.Starting()
 
 	// create channel(s)
 	q.Work = make(chan interface{}, q.MaxWork)
@@ -100,7 +100,7 @@ func (q *Queue) Start() error {
 		worker.Finalizer = q.ReturnWorker
 
 		// start the worker on its own goroutine
-		go worker.Start()
+		go func() { _ = worker.Start() }()
 		<-worker.NotifyStarted()
 		q.Workers <- worker
 	}
@@ -110,38 +110,45 @@ func (q *Queue) Start() error {
 
 // Dispatch processes work items in a loop.
 func (q *Queue) Dispatch() {
-	q.Started()
+	q.Latch.Started()
 	var workItem interface{}
 	var worker *Worker
 	var stopping <-chan struct{}
 	for {
-		stopping = q.NotifyStopping()
+		stopping = q.Latch.NotifyStopping()
+		select {
+		case <-stopping:
+			q.Latch.Stopped()
+			return
+		default:
+		}
 		select {
 		case workItem = <-q.Work:
-			stopping = q.NotifyStopping()
+			stopping = q.Latch.NotifyStopping()
 			select {
 			case worker = <-q.Workers:
 				worker.Enqueue(workItem)
 			case <-stopping:
-				q.Stopped()
+				q.Latch.Stopped()
 				return
 			}
 		case <-stopping:
-			q.Stopped()
+			q.Latch.Stopped()
 			return
 		}
 	}
 }
 
-// Stop stops the queue
+// Stop stops the queue.
 func (q *Queue) Stop() error {
-	if !q.CanStop() {
+	if !q.Latch.CanStop() {
 		return ex.New(ErrCannotStop)
 	}
-	q.WaitStopped()
-	for x := 0; x < q.Parallelism; x++ {
+	q.Latch.WaitStopped()
+	workerCount := len(q.Workers)
+	for x := 0; x < workerCount; x++ {
 		worker := <-q.Workers
-		worker.Stop()
+		_ = worker.Stop()
 		q.Workers <- worker
 	}
 	return nil
@@ -150,12 +157,11 @@ func (q *Queue) Stop() error {
 // Close stops the queue.
 // Any work left in the queue will be discarded.
 func (q *Queue) Close() error {
-	q.WaitStopped()
+	q.Latch.WaitStopped()
 	return nil
 }
 
-// ReturnWorker creates an action handler that returns a given worker to the worker queue.
-// It wraps any action provided to the queue.
+// ReturnWorker returns a given worker to the worker queue.
 func (q *Queue) ReturnWorker(ctx context.Context, worker *Worker) error {
 	q.Workers <- worker
 	return nil

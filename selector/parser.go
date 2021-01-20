@@ -1,21 +1,9 @@
 package selector
 
 import (
+	"fmt"
 	"strings"
 	"unicode/utf8"
-)
-
-const (
-	// OpEquals is an operator.
-	OpEquals = "="
-	// OpDoubleEquals is an operator.
-	OpDoubleEquals = "=="
-	// OpNotEquals is an operator.
-	OpNotEquals = "!="
-	// OpIn is an operator.
-	OpIn = "in"
-	// OpNotIn is an operator.
-	OpNotIn = "notin"
 )
 
 // Parser parses a selector incrementally.
@@ -38,8 +26,9 @@ func (p *Parser) Parse() (Selector, error) {
 	}
 
 	var b rune
-	var selector Selector
+	var selector, subSelector Selector
 	var err error
+	var word string
 	var op string
 
 	// loop over "clauses"
@@ -47,30 +36,53 @@ func (p *Parser) Parse() (Selector, error) {
 	for {
 		// sniff the !haskey form
 		b = p.current()
+
 		if b == Bang {
 			p.advance() // we aren't going to use the '!'
-			selector = p.addAnd(selector, p.notHasKey(p.readWord()))
+
+			// read off the !KEY
+			// readWord will leave us on the next non-alpha char
+			word, err = p.readWord()
+			if err != nil {
+				return nil, err
+			}
+
+			selector = p.addAnd(selector, p.notHasKey(word)) // add the !KEY term
 			if p.done() {
 				break
 			}
+
+			p.skipToNonWhitespace()
+			b = p.current()
+			if b != Comma {
+				return nil, p.parseError("consecutive not has key terms")
+			}
+
 			continue
 		}
 
 		// we're done peeking the first char
-		key := p.readWord()
+		// read the first KEY
+		word, err = p.readWord()
+		if err != nil {
+			return nil, err
+		}
 
-		p.mark()
+		p.mark() // mark to revert if the sniff fails
 
-		// check if the next character after the word is a comma
+		// sniff if the next character after the word is a comma
 		// this indicates it's a "key" form, or existence check on a key
-		b = p.skipToComma()
+		b = p.skipToNonWhitespace() // the comma is not whitespace
 		if b == Comma || p.isTerminator(b) || p.done() {
-			selector = p.addAnd(selector, p.hasKey(key))
+			selector = p.addAnd(selector, p.hasKey(word))
+
 			p.advance()
 			if p.done() {
 				break
 			}
+			p.skipToNonWhitespace()
 			continue
+
 		} else {
 			p.popMark()
 		}
@@ -80,42 +92,30 @@ func (p *Parser) Parse() (Selector, error) {
 			return nil, err
 		}
 
-		var subSelector Selector
 		switch op {
 		case OpEquals, OpDoubleEquals:
-			subSelector, err = p.equals(key)
-			if err != nil {
-				return nil, err
-			}
-			selector = p.addAnd(selector, subSelector)
+			subSelector, err = p.equals(word)
 		case OpNotEquals:
-			subSelector, err = p.notEquals(key)
-			if err != nil {
-				return nil, err
-			}
-			selector = p.addAnd(selector, subSelector)
+			subSelector, err = p.notEquals(word)
 		case OpIn:
-			subSelector, err = p.in(key)
-			if err != nil {
-				return nil, err
-			}
-			selector = p.addAnd(selector, subSelector)
+			subSelector, err = p.in(word)
 		case OpNotIn:
-			subSelector, err = p.notIn(key)
-			if err != nil {
-				return nil, err
-			}
-			selector = p.addAnd(selector, subSelector)
+			subSelector, err = p.notIn(word)
 		default:
-			return nil, ErrInvalidOperator
+			return nil, p.parseError("invalid operator")
 		}
+		if err != nil {
+			return nil, err
+		}
+		selector = p.addAnd(selector, subSelector)
 
-		b = p.skipToComma()
+		b = p.skipToNonWhitespace()
 		if b == Comma {
 			p.advance()
 			if p.done() {
 				break
 			}
+			p.skipToNonWhitespace()
 			continue
 		}
 
@@ -124,7 +124,8 @@ func (p *Parser) Parse() (Selector, error) {
 			break
 		}
 
-		return nil, ErrInvalidSelector
+		// we have a "foo == bar foo" situation
+		return nil, p.parseError("keys not separated by comma")
 	}
 
 	if !p.skipValidation {
@@ -157,12 +158,18 @@ func (p *Parser) notHasKey(key string) Selector {
 }
 
 func (p *Parser) equals(key string) (Selector, error) {
-	value := p.readWord()
+	value, err := p.readWord()
+	if err != nil {
+		return nil, err
+	}
 	return Equals{Key: key, Value: value}, nil
 }
 
 func (p *Parser) notEquals(key string) (Selector, error) {
-	value := p.readWord()
+	value, err := p.readWord()
+	if err != nil {
+		return nil, err
+	}
 	return NotEquals{Key: key, Value: value}, nil
 }
 
@@ -200,18 +207,6 @@ func (p *Parser) popMark() {
 	p.m = 0
 }
 
-/*
-// read returns the rune currently lexed, and advances the position.
-func (p *Parser) read() (r rune) {
-	var width int
-	if p.pos < len(p.s) {
-		r, width = utf8.DecodeRuneInString(p.s[p.pos:])
-		p.pos += width
-	}
-	return r
-}
-*/
-
 // current returns the rune at the current position.
 func (p *Parser) current() (r rune) {
 	r, _ = utf8.DecodeRuneInString(p.s[p.pos:])
@@ -226,50 +221,59 @@ func (p *Parser) advance() {
 	}
 }
 
-/*
-// prev moves the cursor back a rune.
-func (p *Parser) prev() {
-	if p.pos > 0 {
-		p.pos--
-	}
-}
-*/
-
 // readOp reads a valid operator.
 // valid operators include:
 // [ =, ==, !=, in, notin ]
 // errors if it doesn't read one of the above, or there is another structural issue.
+// this will leave the position on the character after the operator
 func (p *Parser) readOp() (string, error) {
 	// skip preceding whitespace
 	p.skipWhiteSpace()
+
+	const (
+		stateFirstOpChar = 0
+		stateEqual       = 1
+		stateBang        = 2
+		stateInI         = 3
+		stateNotInN      = 4
+		stateNotInO      = 5
+		stateNotInT      = 6
+		stateNotInI      = 7
+	)
 
 	var state int
 	var ch rune
 	var op []rune
 	for {
+		if p.done() {
+			return "", p.parseError("invalid operator")
+		}
+
 		ch = p.current()
 
 		switch state {
-		case 0: // initial state, determine what op we're reading for
+		case stateFirstOpChar: // initial state, determine what op we're reading for
 			if ch == Equal {
-				state = 1
+				state = stateEqual
 				break
 			}
 			if ch == Bang {
-				state = 2
+				state = stateBang
 				break
 			}
 			if ch == 'i' {
-				state = 6
+				state = stateInI
 				break
 			}
 			if ch == 'n' {
-				state = 7
+				state = stateNotInN
 				break
 			}
-			return "", ErrInvalidOperator
-		case 1: // =
-			if p.isWhitespace(ch) || p.isAlpha(ch) || ch == Comma {
+
+			return "", p.parseError("invalid operator")
+
+		case stateEqual:
+			if p.isWhitespace(ch) || isAlpha(ch) || ch == Comma {
 				return string(op), nil
 			}
 			if ch == Equal {
@@ -277,120 +281,146 @@ func (p *Parser) readOp() (string, error) {
 				p.advance()
 				return string(op), nil
 			}
-			return "", ErrInvalidOperator
-		case 2: // !
+
+			return "", p.parseError("invalid operator")
+
+		case stateBang:
 			if ch == Equal {
 				op = append(op, ch)
 				p.advance()
 				return string(op), nil
 			}
-			return "", ErrInvalidOperator
-		case 6: // in
+
+			return "", p.parseError("invalid operator")
+
+		case stateInI:
 			if ch == 'n' {
 				op = append(op, ch)
 				p.advance()
 				return string(op), nil
 			}
-			return "", ErrInvalidOperator
-		case 7: // o
+
+			return "", p.parseError("invalid operator")
+
+		case stateNotInN:
 			if ch == 'o' {
-				state = 8
+				state = stateNotInO
 				break
 			}
-			return "", ErrInvalidOperator
-		case 8: // t
+
+			return "", p.parseError("invalid operator")
+
+		case stateNotInO:
 			if ch == 't' {
-				state = 9
+				state = stateNotInT
 				break
 			}
-			return "", ErrInvalidOperator
-		case 9: // i
+
+			return "", p.parseError("invalid operator")
+
+		case stateNotInT:
 			if ch == 'i' {
-				state = 10
+				state = stateNotInI
 				break
 			}
-			return "", ErrInvalidOperator
-		case 10: // n
+
+			return "", p.parseError("invalid operator")
+
+		case stateNotInI:
 			if ch == 'n' {
 				op = append(op, ch)
 				p.advance()
 				return string(op), nil
 			}
-			return "", ErrInvalidOperator
+
+			return "", p.parseError("invalid operator")
 		}
 
 		op = append(op, ch)
 		p.advance()
-
-		if p.done() {
-			return string(op), nil
-		}
 	}
 }
 
 // readWord skips whitespace, then reads a word until whitespace or a token.
 // it will leave the cursor on the next char after the word, i.e. the space or token.
-func (p *Parser) readWord() string {
-	// skip preceding whitespace
+func (p *Parser) readWord() (string, error) {
 	p.skipWhiteSpace()
 
 	var word []rune
 	var ch rune
 	for {
-		ch = p.current()
-
-		if p.isWhitespace(ch) {
-			return string(word)
+		if p.done() {
+			break
 		}
-		if p.isSpecialSymbol(ch) {
-			return string(word)
+
+		ch = p.current()
+		if isWhitespace(ch) ||
+			ch == Comma ||
+			isOperatorSymbol(ch) {
+			break
 		}
 
 		word = append(word, ch)
 		p.advance()
-
-		if p.done() {
-			return string(word)
-		}
 	}
+	if len(word) == 0 {
+		return "", p.parseError("expected non-empty key")
+	}
+
+	return string(word), nil
 }
 
+// readCSV reads an array of strings in csv form.
+// it expects to start just before the first `(` and
+// will read until just past the closing `)`
 func (p *Parser) readCSV() (results []string, err error) {
 	// skip preceding whitespace
 	p.skipWhiteSpace()
+
+	const (
+		stateBeforeParens          = 0
+		stateWord                  = 1
+		stateWhitespaceAfterSymbol = 2
+		stateWhitespaceAfterWord   = 3
+	)
 
 	var word []rune
 	var ch rune
 	var state int
 
 	for {
-		ch = p.current()
-
 		if p.done() {
-			err = ErrInvalidSelector
 			results = nil
+			err = ErrInvalidSelector
 			return
 		}
 
+		ch = p.current()
+
 		switch state {
-		case 0: // leading paren
+		case stateBeforeParens:
 			if ch == OpenParens {
-				state = 2 // spaces or alphas
+				state = stateWhitespaceAfterSymbol
 				p.advance()
 				continue
 			}
+
 			// not open parens, bail
-			err = ErrInvalidSelector
+
+			err = p.parseError("csv; expects open parenthesis")
 			results = nil
 			return
-		case 1: // alphas (in word)
+
+		case stateWord:
 
 			if ch == Comma {
 				if len(word) > 0 {
 					results = append(results, string(word))
 					word = nil
 				}
-				state = 2 // from comma
+
+				// the symbol is the comma
+				state = stateWhitespaceAfterSymbol
 				p.advance()
 				continue
 			}
@@ -404,13 +434,18 @@ func (p *Parser) readCSV() (results []string, err error) {
 			}
 
 			if p.isWhitespace(ch) {
-				state = 3
+				if len(word) > 0 {
+					results = append(results, string(word))
+					word = nil
+				}
+
+				state = stateWhitespaceAfterWord
 				p.advance()
 				continue
 			}
 
 			if !p.isValidValue(ch) {
-				err = ErrInvalidSelector
+				err = p.parseError("csv; word contains invalid characters")
 				results = nil
 				return
 			}
@@ -419,13 +454,7 @@ func (p *Parser) readCSV() (results []string, err error) {
 			p.advance()
 			continue
 
-		case 2: //whitespace after symbol
-
-			if ch == CloseParens {
-				p.advance()
-				return
-			}
-
+		case stateWhitespaceAfterSymbol:
 			if p.isWhitespace(ch) {
 				p.advance()
 				continue
@@ -436,15 +465,20 @@ func (p *Parser) readCSV() (results []string, err error) {
 				continue
 			}
 
-			if p.isAlpha(ch) {
-				state = 1
+			if isAlpha(ch) {
+				state = stateWord
 				continue
 			}
 
-			err = ErrInvalidSelector
+			if ch == CloseParens {
+				p.advance()
+				return
+			}
+
+			err = p.parseError("csv; invalid characters after ','")
 			return
 
-		case 3: //whitespace after alpha
+		case stateWhitespaceAfterWord:
 
 			if ch == CloseParens {
 				if len(word) > 0 {
@@ -460,16 +494,12 @@ func (p *Parser) readCSV() (results []string, err error) {
 			}
 
 			if ch == Comma {
-				if len(word) > 0 {
-					results = append(results, string(word))
-					word = nil
-				}
+				state = stateWhitespaceAfterSymbol
 				p.advance()
-				state = 2
 				continue
 			}
 
-			err = ErrInvalidSelector
+			err = p.parseError("csv; consecutive whitespace separated words without a comma")
 			results = nil
 			return
 		}
@@ -477,27 +507,24 @@ func (p *Parser) readCSV() (results []string, err error) {
 }
 
 func (p *Parser) skipWhiteSpace() {
-	if p.done() {
-		return
-	}
 	var ch rune
 	for {
+		if p.done() {
+			return
+		}
 		ch = p.current()
 		if !p.isWhitespace(ch) {
 			return
 		}
 		p.advance()
-		if p.done() {
-			return
-		}
 	}
 }
 
-func (p *Parser) skipToComma() (ch rune) {
-	if p.done() {
-		return
-	}
+func (p *Parser) skipToNonWhitespace() (ch rune) {
 	for {
+		if p.done() {
+			return
+		}
 		ch = p.current()
 		if ch == Comma {
 			return
@@ -506,9 +533,6 @@ func (p *Parser) skipToComma() (ch rune) {
 			return
 		}
 		p.advance()
-		if p.done() {
-			return
-		}
 	}
 }
 
@@ -517,20 +541,20 @@ func (p *Parser) isWhitespace(ch rune) bool {
 	return ch == Space || ch == Tab || ch == CarriageReturn || ch == NewLine
 }
 
-// isSpecialSymbol returns if the ch is on the selector symbol list.
-func (p *Parser) isSpecialSymbol(ch rune) bool {
-	return isSelectorSymbol(ch)
-}
-
 // isTerminator returns if we've reached the end of the string
 func (p *Parser) isTerminator(ch rune) bool {
 	return ch == 0
 }
 
-func (p *Parser) isAlpha(ch rune) bool {
-	return isAlpha(ch)
-}
-
 func (p *Parser) isValidValue(ch rune) bool {
 	return isAlpha(ch) || isNameSymbol(ch)
+}
+
+func (p *Parser) parseError(message ...interface{}) error {
+	return &ParseError{
+		Err:      ErrInvalidSelector,
+		Input:    p.s,
+		Position: p.pos,
+		Message:  fmt.Sprint(message...),
+	}
 }

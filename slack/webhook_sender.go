@@ -8,6 +8,7 @@ import (
 
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/r2"
+	"github.com/blend/go-sdk/webutil"
 )
 
 const (
@@ -22,7 +23,7 @@ var (
 // New creates a new webhook sender.
 func New(cfg Config) *WebhookSender {
 	return &WebhookSender{
-		Transport: &http.Transport{},
+		Transport: new(http.Transport),
 		Config:    cfg,
 	}
 }
@@ -34,33 +35,37 @@ type WebhookSender struct {
 	Config          Config
 }
 
-// Defaults returns default message options.
-func (whs WebhookSender) Defaults() []MessageOption {
+// MessageDefaults returns default message options.
+func (whs WebhookSender) MessageDefaults() []MessageOption {
 	return []MessageOption{
-		WithUsernameOrDefault(whs.Config.Username),
-		WithChannelOrDefault(whs.Config.Channel),
-		WithIconEmojiOrDefault(whs.Config.IconEmoji),
-		WithIconURLOrDefault(whs.Config.IconURL),
+		OptMessageUsernameOrDefault(whs.Config.Username),
+		OptMessageChannelOrDefault(whs.Config.Channel),
+		OptMessageIconEmojiOrDefault(whs.Config.IconEmoji),
+		OptMessageIconURLOrDefault(whs.Config.IconURL),
 	}
+}
+
+func (whs WebhookSender) send(ctx context.Context, message Message) (*http.Response, error) {
+	message = ApplyMessageOptions(message, whs.MessageDefaults()...)
+	options := append(whs.RequestDefaults,
+		r2.OptPost(),
+		r2.OptTransport(whs.Transport),
+		r2.OptJSONBody(message),
+		r2.OptHeaderValue(webutil.HeaderContentType, "application/json"),
+	)
+	return r2.New(whs.Config.Webhook, options...).Do()
 }
 
 // Send sends a slack hook.
 func (whs WebhookSender) Send(ctx context.Context, message Message) error {
-	messageWithDefaults := ApplyMessageOptions(message, whs.Defaults()...)
-
-	options := append(whs.RequestDefaults, r2.OptTransport(whs.Transport), r2.OptJSONBody(messageWithDefaults))
-
-	res, err := r2.New(whs.Config.Webhook, options...).Do()
+	res, err := whs.send(ctx, message)
 	if err != nil {
 		return err
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode > http.StatusOK {
-		contents, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			return ex.New(err)
-		}
+	if statusCode := res.StatusCode; statusCode < http.StatusOK || statusCode > 299 {
+		contents, _ := ioutil.ReadAll(res.Body)
 		return ex.New(ErrNon200, ex.OptMessage(string(contents)))
 	}
 	return nil
@@ -68,11 +73,7 @@ func (whs WebhookSender) Send(ctx context.Context, message Message) error {
 
 // SendAndReadResponse sends a slack hook and returns the deserialized response
 func (whs WebhookSender) SendAndReadResponse(ctx context.Context, message Message) (*PostMessageResponse, error) {
-	messageWithDefaults := ApplyMessageOptions(message, whs.Defaults()...)
-
-	options := append(whs.RequestDefaults, r2.OptTransport(whs.Transport), r2.OptJSONBody(messageWithDefaults))
-
-	res, err := r2.New(whs.Config.Webhook, options...).Do()
+	res, err := whs.send(ctx, message)
 	if err != nil {
 		return nil, err
 	}
@@ -83,11 +84,9 @@ func (whs WebhookSender) SendAndReadResponse(ctx context.Context, message Messag
 	if err != nil {
 		return nil, ex.New(err)
 	}
-
-	if res.StatusCode > http.StatusOK {
+	if statusCode := res.StatusCode; statusCode < http.StatusOK || statusCode > 299 {
 		return &contents, ex.New(ErrNon200, ex.OptMessagef("%#v", contents))
 	}
-
 	return &contents, nil
 }
 
@@ -125,4 +124,16 @@ func (whs WebhookSender) PostMessageContext(ctx context.Context, channel, messag
 		option(&message)
 	}
 	return whs.Send(ctx, message)
+}
+
+// PostMessageAndReadResponseContext posts a basic message to a given channel and returns the deserialized response
+func (whs WebhookSender) PostMessageAndReadResponseContext(ctx context.Context, channel, messageText string, options ...MessageOption) (*PostMessageResponse, error) {
+	message := Message{
+		Channel: channel,
+		Text:    messageText,
+	}
+	for _, option := range options {
+		option(&message)
+	}
+	return whs.SendAndReadResponse(ctx, message)
 }

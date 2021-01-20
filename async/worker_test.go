@@ -20,7 +20,7 @@ func TestWorker(t *testing.T) {
 		assert.Equal("hello", obj)
 		return nil
 	})
-	go w.Start()
+	go func() { _ = w.Start() }()
 	<-w.NotifyStarted()
 
 	assert.True(w.Latch.IsStarted())

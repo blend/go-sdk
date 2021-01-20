@@ -7,7 +7,7 @@ import (
 
 // NewBatch creates a new batch processor.
 // Batch processes are a known quantity of work that needs to be processed in parallel.
-func NewBatch(action WorkAction, work chan interface{}, options ...BatchOption) *Batch {
+func NewBatch(work chan interface{}, action WorkAction, options ...BatchOption) *Batch {
 	b := Batch{
 		Action:      action,
 		Work:        work,
@@ -59,21 +59,20 @@ func (b *Batch) Process(ctx context.Context) {
 	// create and start workers.
 	for x := 0; x < b.Parallelism; x++ {
 		worker := NewWorker(b.Action)
+		worker.Context = ctx
 		worker.Errors = b.Errors
 		worker.Finalizer = returnWorker
 
 		workerStarted := worker.NotifyStarted()
-		go worker.Start()
+		go func() { _ = worker.Start() }()
 		<-workerStarted
 
 		allWorkers[x] = worker
 		availableWorkers <- worker
 	}
-
 	defer func() {
-		// stop the workers
 		for x := 0; x < len(allWorkers); x++ {
-			allWorkers[x].Stop()
+			_ = allWorkers[x].Stop()
 		}
 	}()
 
@@ -81,10 +80,20 @@ func (b *Batch) Process(ctx context.Context) {
 	var worker *Worker
 	var workItem interface{}
 	for x := 0; x < numWorkItems; x++ {
-		workItem = <-b.Work
 		select {
-		case worker = <-availableWorkers:
-			worker.Enqueue(workItem)
+		case <-ctx.Done():
+			return
+		default:
+		}
+
+		select {
+		case workItem = <-b.Work:
+			select {
+			case worker = <-availableWorkers:
+				worker.Enqueue(workItem)
+			case <-ctx.Done():
+				return
+			}
 		case <-ctx.Done():
 			return
 		}

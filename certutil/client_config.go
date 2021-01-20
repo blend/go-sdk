@@ -19,14 +19,17 @@ func NewClientTLSConfig(clientCert KeyPair, certificateAuthorities []KeyPair) (*
 		return nil, ex.New(err)
 	}
 
-	if len(clientCertPEM) == 0 || len(clientKeyPEM) == 0 {
-		return nil, ex.New("empty cert or key pem")
+	if len(clientCertPEM) == 0 {
+		return nil, ex.New("invalid key pair; empty cert pem data")
+	}
+	if len(clientKeyPEM) == 0 {
+		return nil, ex.New("invalid key pair; empty key pem data")
 	}
 	cert, err := tls.X509KeyPair(clientCertPEM, clientKeyPEM)
 	if err != nil {
 		return nil, ex.New(err)
 	}
-	config := &tls.Config{}
+	config := new(tls.Config)
 
 	rootCAPool, err := x509.SystemCertPool()
 	if err != nil {

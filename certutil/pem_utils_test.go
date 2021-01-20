@@ -8,6 +8,8 @@ import (
 )
 
 func TestParseCertPEM(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	certs, err := ParseCertPEM(certLiteral)
@@ -27,6 +29,8 @@ func TestParseCertPEM(t *testing.T) {
 }
 
 func TestCommonNamesForCertPair(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	kp := KeyPair{Cert: string(certLiteral)}

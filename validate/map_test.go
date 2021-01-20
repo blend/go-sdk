@@ -10,8 +10,7 @@ import (
 func TestMapKeys(t *testing.T) {
 	assert := assert.New(t)
 
-	var err error
-	err = Map("foo").Keys("a", "b", "c")()
+	err := Map("foo").Keys("a", "b", "c")()
 	assert.NotNil(err)
 	assert.Equal(ErrInstanceNotMap, ex.ErrClass(err))
 

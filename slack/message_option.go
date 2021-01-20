@@ -11,15 +11,15 @@ func ApplyMessageOptions(m Message, options ...MessageOption) Message {
 // MessageOption is a mutator for messages.
 type MessageOption func(m *Message)
 
-// WithChannel sets the channel.
-func WithChannel(channel string) MessageOption {
+// OptMessageChannel sets the channel.
+func OptMessageChannel(channel string) MessageOption {
 	return func(m *Message) {
 		m.Channel = channel
 	}
 }
 
-// WithChannelOrDefault sets the channel if its unset.
-func WithChannelOrDefault(channel string) MessageOption {
+// OptMessageChannelOrDefault sets the channel if its unset.
+func OptMessageChannelOrDefault(channel string) MessageOption {
 	return func(m *Message) {
 		if len(m.Channel) == 0 {
 			m.Channel = channel
@@ -27,22 +27,22 @@ func WithChannelOrDefault(channel string) MessageOption {
 	}
 }
 
-// WithResponseType sets the response type.
-func WithResponseType(responseType string) MessageOption {
+// OptMessageResponseType sets the response type.
+func OptMessageResponseType(responseType string) MessageOption {
 	return func(m *Message) {
 		m.ResponseType = responseType
 	}
 }
 
-// WithUsername sets the username.
-func WithUsername(username string) MessageOption {
+// OptMessageUsername sets the username.
+func OptMessageUsername(username string) MessageOption {
 	return func(m *Message) {
 		m.Username = username
 	}
 }
 
-// WithUsernameOrDefault sets the username.
-func WithUsernameOrDefault(username string) MessageOption {
+// OptMessageUsernameOrDefault sets the username.
+func OptMessageUsernameOrDefault(username string) MessageOption {
 	return func(m *Message) {
 		if len(m.Username) == 0 {
 			m.Username = username
@@ -50,15 +50,15 @@ func WithUsernameOrDefault(username string) MessageOption {
 	}
 }
 
-// WithIconEmoji sets the icon emoji.
-func WithIconEmoji(emoji string) MessageOption {
+// OptMessageIconEmoji sets the icon emoji.
+func OptMessageIconEmoji(emoji string) MessageOption {
 	return func(m *Message) {
 		m.IconEmoji = emoji
 	}
 }
 
-// WithIconEmojiOrDefault sets the icon emoji.
-func WithIconEmojiOrDefault(emoji string) MessageOption {
+// OptMessageIconEmojiOrDefault sets the icon emoji.
+func OptMessageIconEmojiOrDefault(emoji string) MessageOption {
 	return func(m *Message) {
 		if len(m.IconEmoji) == 0 {
 			m.IconEmoji = emoji
@@ -66,15 +66,15 @@ func WithIconEmojiOrDefault(emoji string) MessageOption {
 	}
 }
 
-// WithIconURL sets the icon url.
-func WithIconURL(url string) MessageOption {
+// OptMessageIconURL sets the icon url.
+func OptMessageIconURL(url string) MessageOption {
 	return func(m *Message) {
 		m.IconURL = url
 	}
 }
 
-// WithIconURLOrDefault sets the icon url.
-func WithIconURLOrDefault(url string) MessageOption {
+// OptMessageIconURLOrDefault sets the icon url.
+func OptMessageIconURLOrDefault(url string) MessageOption {
 	return func(m *Message) {
 		if len(m.IconURL) == 0 {
 			m.IconURL = url
@@ -82,8 +82,8 @@ func WithIconURLOrDefault(url string) MessageOption {
 	}
 }
 
-// WithMessageAttachment adds a message attachment.
-func WithMessageAttachment(attachment MessageAttachment) MessageOption {
+// OptMessageAttachment adds a message attachment.
+func OptMessageAttachment(attachment MessageAttachment) MessageOption {
 	return func(m *Message) {
 		m.Attachments = append(m.Attachments, attachment)
 	}

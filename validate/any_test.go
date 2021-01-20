@@ -235,13 +235,11 @@ func TestAnyRefNotEmpty(t *testing.T) {
 func TestAnyRefLen(t *testing.T) {
 	assert := assert.New(t)
 
-	var err error
-	err = Any(1234).Len(10)()
+	err := Any(1234).Len(10)()
 	assert.NotNil(err)
 	assert.Equal(ErrNonLengthType, ex.ErrClass(err))
 
-	var verr error
-	verr = Any([]int{1, 2, 3, 4}).Len(4)()
+	verr := Any([]int{1, 2, 3, 4}).Len(4)()
 	assert.Nil(verr)
 
 	verr = Any(map[int]bool{1: true, 2: true}).Len(2)()

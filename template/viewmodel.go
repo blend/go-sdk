@@ -33,6 +33,11 @@ func (vm Viewmodel) Var(key string, defaults ...interface{}) (interface{}, error
 	return nil, fmt.Errorf("template variable `%s` is unset and no default is provided", key)
 }
 
+// Has is an alias to `HasVar`.
+func (vm Viewmodel) Has(key string) bool {
+	return vm.HasVar(key)
+}
+
 // HasVar returns if a variable is set.
 func (vm Viewmodel) HasVar(key string) bool {
 	_, hasKey := vm.vars[key]

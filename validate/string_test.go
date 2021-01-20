@@ -15,16 +15,33 @@ func TestStringRequired(t *testing.T) {
 	var verr error
 	verr = String(nil).Required()()
 	assert.NotNil(verr)
-	assert.Equal(ErrStringRequired, ErrCause(ErrStringRequired))
+	assert.Equal(ErrStringRequired, ErrCause(verr))
 
 	bad := ""
 	verr = String(&bad).Required()()
 	assert.NotNil(verr)
-	assert.Equal(ErrStringRequired, ErrCause(ErrStringRequired))
+	assert.Equal(ErrStringRequired, ErrCause(verr))
 
 	good := "ok!"
 	verr = String(&good).Required()()
 	assert.Nil(verr)
+}
+
+func TestStringForbidden(t *testing.T) {
+	assert := assert.New(t)
+
+	var verr error
+	verr = String(nil).Forbidden()()
+	assert.Nil(verr)
+
+	empty := ""
+	verr = String(&empty).Forbidden()()
+	assert.Nil(verr)
+
+	set := "ok!"
+	verr = String(&set).Forbidden()()
+	assert.NotNil(verr)
+	assert.Equal(ErrStringForbidden, ErrCause(verr))
 }
 
 func TestStringMin(t *testing.T) {

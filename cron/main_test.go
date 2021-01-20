@@ -2,9 +2,16 @@ package cron
 
 import (
 	"context"
+	"os"
 	"sync"
+	"testing"
 	"time"
 )
+
+// TestMain is the testing entrypoint.
+func TestMain(m *testing.M) {
+	os.Exit(m.Run())
+}
 
 func noop(_ context.Context) error { return nil }
 
@@ -81,23 +88,6 @@ func (tj *testJobWithTimeout) Lifecycle() JobLifecycle {
 
 func (tj *testJobWithTimeout) OnCancellation(ctx context.Context) {
 	tj.CancellationDelegate()
-}
-
-type testJobInterval struct {
-	RunEvery    time.Duration
-	RunDelegate func(ctx context.Context) error
-}
-
-func (tj *testJobInterval) Name() string {
-	return "testJobInterval"
-}
-
-func (tj *testJobInterval) Schedule() Schedule {
-	return Every(tj.RunEvery)
-}
-
-func (tj *testJobInterval) Execute(ctx context.Context) error {
-	return tj.RunDelegate(ctx)
 }
 
 var (

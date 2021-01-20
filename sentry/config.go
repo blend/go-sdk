@@ -2,22 +2,25 @@ package sentry
 
 import (
 	"context"
+	"fmt"
+	"net/url"
 
+	"github.com/blend/go-sdk/configutil"
 	"github.com/blend/go-sdk/env"
 )
 
 // Config is the sentry config.
 type Config struct {
 	// The DSN to use. If the DSN is not set, the client is effectively disabled.
-	DSN string `json:"dsn" yaml:"dsn" env:"SENTRY_DSN"`
+	DSN string `json:"dsn" yaml:"dsn"`
 	// The server name to be reported.
-	ServerName string `json:"serverName" yaml:"serverName" env:"SENTRY_SERVER_NAME"`
+	ServerName string `json:"serverName" yaml:"serverName"`
 	// The dist to be sent with events.
-	Dist string `json:"dist" yaml:"dist" env:"SENTRY_DIST"`
+	Dist string `json:"dist" yaml:"dist"`
 	// The release to be sent with events.
-	Release string `json:"release" yaml:"release" env:"SENTRY_RELEASE"`
+	Release string `json:"release" yaml:"release"`
 	// The environment to be sent with events.
-	Environment string `json:"environment" yaml:"environment" env:"SENTRY_ENVIRONMENT"`
+	Environment string `json:"environment" yaml:"environment"`
 	// Maximum number of breadcrumbs.
 	MaxBreadcrumbs int `json:"maxBreadCrumbs" yaml:"maxBreadCrumbs"`
 }
@@ -29,37 +32,22 @@ func (c Config) IsZero() bool {
 
 // Resolve applies configutil resoltion steps.
 func (c *Config) Resolve(ctx context.Context) error {
-	return env.GetVars(ctx).ReadInto(c)
+	return configutil.Resolve(ctx,
+		configutil.SetString(&c.DSN, configutil.String(c.DSN), configutil.Env("SENTRY_DSN")),
+		configutil.SetString(&c.ServerName, configutil.String(c.ServerName), configutil.Env(env.VarServiceName)),
+		configutil.SetString(&c.Environment, configutil.String(c.Environment), configutil.Env(env.VarServiceEnv)),
+	)
 }
 
-// ServerNameOrDefault returns the server name or a default.
-func (c Config) ServerNameOrDefault() string {
-	if c.ServerName != "" {
-		return c.ServerName
+// GetDSNHost returns just the scheme and hostname for the dsn.
+func (c *Config) GetDSNHost() string {
+	if c.DSN == "" {
+		return ""
 	}
-	return env.Env().ServiceName()
-}
 
-// EnvironmentOrDefault returns the environment or a default.
-func (c Config) EnvironmentOrDefault() string {
-	if c.Environment != "" {
-		return c.Environment
+	parsedURL, _ := url.Parse(c.DSN)
+	if parsedURL == nil {
+		return ""
 	}
-	return env.Env().ServiceEnv()
-}
-
-// DistOrDefault returns the dist or a default.
-func (c Config) DistOrDefault() string {
-	if c.Dist != "" {
-		return c.Dist
-	}
-	return ""
-}
-
-// ReleaseOrDefault returns the release or a default.
-func (c Config) ReleaseOrDefault() string {
-	if c.Release != "" {
-		return c.Release
-	}
-	return ""
+	return fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
 }

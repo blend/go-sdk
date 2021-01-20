@@ -8,6 +8,8 @@ import (
 )
 
 func TestNewCertManagerWithKeyPairs(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	mgr, err := NewCertManagerWithKeyPairs(KeyPair{
@@ -25,6 +27,8 @@ func TestNewCertManagerWithKeyPairs(t *testing.T) {
 }
 
 func TestCertManagerAddClientCert(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	mgr := NewCertManager()
@@ -35,6 +39,8 @@ func TestCertManagerAddClientCert(t *testing.T) {
 }
 
 func TestCertManagerRemoveClientCert(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	mgr := NewCertManager()
@@ -46,6 +52,8 @@ func TestCertManagerRemoveClientCert(t *testing.T) {
 }
 
 func TestCertManagerGetConfigForClient(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	mgr := NewCertManager()
