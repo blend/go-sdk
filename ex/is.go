@@ -20,6 +20,9 @@ func Is(err interface{}, cause error) bool {
 		}
 		return (typed.Class == cause) || (typed.Class.Error() == cause.Error())
 	}
+	if typed, ok := err.(ClassProvider); ok {
+		return typed.Class() == cause || (typed.Class().Error() == cause.Error())
+	}
 
 	// handle the case of multi-exceptions
 	if multiTyped, ok := err.(Multi); ok {
