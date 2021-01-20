@@ -6,11 +6,11 @@ import (
 	"runtime"
 	"time"
 
-	raven "github.com/getsentry/sentry-go"
+	raven "github.com/blend/sentry-go"
 
+	"github.com/blend/go-sdk/env"
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/logger"
-	"github.com/blend/go-sdk/webutil"
 )
 
 var (
@@ -31,10 +31,10 @@ func New(cfg Config) (*Client, error) {
 	rc, err := raven.NewClient(
 		raven.ClientOptions{
 			Dsn:         cfg.DSN,
-			Environment: cfg.EnvironmentOrDefault(),
-			ServerName:  cfg.ServerNameOrDefault(),
-			Dist:        cfg.DistOrDefault(),
-			Release:     cfg.ReleaseOrDefault(),
+			Environment: cfg.Environment,
+			ServerName:  cfg.ServerName,
+			Dist:        cfg.Dist,
+			Release:     cfg.Release,
 		},
 	)
 	if err != nil {
@@ -59,6 +59,22 @@ func (c Client) Notify(ctx context.Context, ee logger.ErrorEvent) {
 }
 
 func errEvent(ctx context.Context, ee logger.ErrorEvent) *raven.Event {
+	exceptions := []raven.Exception{
+		{
+			Type:       ex.ErrClass(ee.Err).Error(),
+			Value:      ex.ErrMessage(ee.Err),
+			Stacktrace: errStackTrace(ee.Err),
+		},
+	}
+	var innerErr error
+	for innerErr = ex.ErrInner(ee.Err); innerErr != nil; innerErr = ex.ErrInner(innerErr) {
+		exceptions = append(exceptions, raven.Exception{
+			Type:       ex.ErrClass(innerErr).Error(),
+			Value:      ex.ErrMessage(innerErr),
+			Stacktrace: errStackTrace(innerErr),
+		})
+	}
+
 	return &raven.Event{
 		Timestamp:   logger.GetEventTimestamp(ctx, ee),
 		Fingerprint: errFingerprint(ctx, ex.ErrClass(ee.Err).Error()),
@@ -74,15 +90,9 @@ func errEvent(ctx context.Context, ee logger.ErrorEvent) *raven.Event {
 				Version: raven.Version,
 			}},
 		},
-		Request: errRequest(ee),
-		Message: ex.ErrClass(ee.Err).Error(),
-		Exception: []raven.Exception{
-			{
-				Type:       ex.ErrClass(ee.Err).Error(),
-				Value:      ex.ErrMessage(ee.Err),
-				Stacktrace: errStackTrace(ee.Err),
-			},
-		},
+		Request:   errRequest(ee),
+		Message:   ex.ErrClass(ee.Err).Error(),
+		Exception: exceptions,
 	}
 }
 
@@ -94,7 +104,12 @@ func errFingerprint(ctx context.Context, extra ...string) []string {
 }
 
 func errTags(ctx context.Context) map[string]string {
-	return logger.GetLabels(ctx)
+	labels := logger.GetLabels(ctx)
+	if labels == nil {
+		labels = make(map[string]string)
+	}
+	labels["hostname"] = env.Env().Hostname()
+	return labels
 }
 
 func errExtra(ctx context.Context) map[string]interface{} {
@@ -110,13 +125,7 @@ func errRequest(ee logger.ErrorEvent) *raven.Request {
 		return &raven.Request{}
 	}
 
-	req := raven.NewRequest(typed)
-
-	// remove cookies from the sentry request if they exist
-	req.Cookies = ""
-	delete(req.Headers, webutil.HeaderCookie)
-
-	return req
+	return raven.NewRequest(typed)
 }
 
 func errStackTrace(err error) *raven.Stacktrace {

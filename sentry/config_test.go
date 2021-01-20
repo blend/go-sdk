@@ -5,38 +5,49 @@ import (
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
-	"github.com/blend/go-sdk/configutil"
 	"github.com/blend/go-sdk/env"
 )
 
-var (
-	_ configutil.Resolver = (*Config)(nil)
-)
+func Test_Config_Resolve(t *testing.T) {
+	its := assert.New(t)
 
-func TestConfigResolve(t *testing.T) {
-	assert := assert.New(t)
+	vars := env.Vars{
+		"SENTRY_DSN":       "test-dsn",
+		env.VarServiceEnv:  env.ServiceEnvTest,
+		env.VarServiceName: "sentry-test",
+	}
 
-	env.Restore()
-	env.Env().Set("SENTRY_DSN", "http://foo@example.com/1")
-	env.Env().Set(env.VarServiceName, "go-sdk-server")
-	env.Env().Set("SENTRY_SERVER_NAME", "go-sdk-web-server")
-	env.Env().Set("SENTRY_DIST", "v1.0.0")
-	env.Env().Set("SENTRY_RELEASE", "deadbeef")
-	env.Env().Set(env.VarServiceEnv, "dev")
-	env.Env().Set("SENTRY_ENVIRONMENT", "test")
+	cfg := new(Config)
+	err := cfg.Resolve(env.WithVars(context.Background(), vars))
+	its.Nil(err)
+	its.Equal("test-dsn", cfg.DSN)
+	its.False(cfg.IsZero())
+	its.Equal(env.ServiceEnvTest, cfg.Environment)
+	its.Equal("sentry-test", cfg.ServerName)
+}
 
-	cfg := &Config{}
-	assert.True(cfg.IsZero())
-	assert.Equal("go-sdk-server", cfg.ServerNameOrDefault())
-	assert.Equal("dev", cfg.EnvironmentOrDefault())
-	assert.Empty(cfg.DistOrDefault())
-	assert.Empty(cfg.ReleaseOrDefault())
+func Test_Config_Resolve_noDSN(t *testing.T) {
+	its := assert.New(t)
 
-	assert.Nil(cfg.Resolve(context.Background()))
-	assert.False(cfg.IsZero())
-	assert.Equal("http://foo@example.com/1", cfg.DSN)
-	assert.Equal("go-sdk-web-server", cfg.ServerName)
-	assert.Equal("v1.0.0", cfg.Dist)
-	assert.Equal("deadbeef", cfg.Release)
-	assert.Equal("test", cfg.Environment)
+	vars := env.Vars{
+		env.VarServiceEnv:  env.ServiceEnvTest,
+		env.VarServiceName: "sentry-test",
+	}
+
+	cfg := new(Config)
+	err := cfg.Resolve(env.WithVars(context.Background(), vars))
+	its.Nil(err)
+	its.Empty(cfg.DSN)
+	its.True(cfg.IsZero())
+	its.Equal(env.ServiceEnvTest, cfg.Environment)
+	its.Equal("sentry-test", cfg.ServerName)
+}
+
+func Test_Config_GetDSNHost(t *testing.T) {
+	its := assert.New(t)
+
+	cfg := &Config{
+		DSN: "https://admin:nopasswd@example.com/buzz/fuzz?query=value",
+	}
+	its.Equal("https://example.com", cfg.GetDSNHost())
 }
