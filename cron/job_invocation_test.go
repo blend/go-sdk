@@ -19,7 +19,7 @@ func TestJobInvocationElapsed(t *testing.T) {
 		Complete: started.Add(200 * time.Millisecond),
 	}).Elapsed())
 
-	assert.Zero((&JobInvocation{
+	assert.NotZero((&JobInvocation{
 		Started: started,
 	}).Elapsed())
 }
@@ -35,7 +35,7 @@ func TestJobInvocationClone(t *testing.T) {
 		Complete:   ts.Add(100 * time.Millisecond),
 		Err:        fmt.Errorf("this is a test"),
 		Status:     JobInvocationStatusErrored,
-		Parameters: map[string]string{"foo": "bar", "bailey": "dog"},
+		Parameters: map[string]string{"foo": "bar", "example-string": "dog"},
 		State:      "this is also a test",
 		Cancel:     func() {},
 	}

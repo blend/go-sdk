@@ -15,6 +15,11 @@ type ConfigProvider interface {
 	Config() JobConfig
 }
 
+// BackgroundProvider is a type that returns a base context based on a parent.
+type BackgroundProvider interface {
+	Background(context.Context) context.Context
+}
+
 // ScheduleProvider is a type that provides a schedule for the job.
 // If a job does not implement this method, it is treated as
 // "OnDemand" or a job that must be triggered explicitly.

@@ -8,15 +8,25 @@ import (
 	"time"
 
 	"github.com/blend/go-sdk/ex"
-	"github.com/blend/go-sdk/stringutil"
 )
 
-// ParseString parses a cron formatted string into a schedule.
-// The string must be at least 5 components, whitespace separated.
-// If the string has 5 components a 0 will be prepended for the seconds component, and a * appended for the year component.
-// If the string has 6 components a * appended for the year component.
-// (seconds) (minutes) (hours) (day of month) (month) (day of week) (year)
-/*
+/*ParseSchedule parses a cron formatted string into a schedule.
+
+The string must be at least 5 components, whitespace separated.
+If the string has 5 components a 0 will be prepended for the seconds component, and a * appended for the year component.
+If the string has 6 components a * appended for the year component.
+
+The components are (in short form / 5 component):
+	(minutes) (hours) (day of month) (month) (day of week)
+
+The components are (in medium form / 6 component):
+	(seconds) (hours) (day of month) (month) (day of week)
+
+The components are (in long form / 7 component):
+	(seconds) (minutes) (hours) (day of month) (month) (day of week) (year)
+
+The full list of possible field values:
+
 	Field name     Mandatory?   Allowed values    Allowed special characters
 	----------     ----------   --------------    --------------------------
 	Seconds        No           0-59              * / , -
@@ -26,31 +36,47 @@ import (
 	Month          Yes          1-12 or JAN-DEC   * / , -
 	Day of week    Yes          0-6 or SUN-SAT    * / , - L #
 	Year           No           1970–2099         * / , -
+
+You can also use shorthands:
+
+	"@yearly" is equivalent to "0 0 0 1 1 * *"
+	"@monthly" is equivalent to "0 0 0 1 * * *"
+	"@weekly" is equivalent to "0 0 0 * * 0 *"
+	"@daily" is equivalent to "0 0 0 * * * *"
+	"@hourly" is equivalent to "0 0 * * * * *"
+	"@every 500ms" is equivalent to "cron.Every(500 * time.Millisecond)""
+	"@immediately-then @every 500ms" is equivalent to "cron.Immediately().Then(cron.Every(500*time.Millisecond))"
+
 */
-/*
-You can also use shorthands for the cron string:
-	@yearly is equivalent to "0 0 0 1 1 * *"
-	@monthly is equivalent to "0 0 0 1 * * *"
-	@weekly is equivalent to "0 0 0 * * 0 *"
-	@daily is equivalent to "0 0 0 * * * *"
-	@hourly is equivalent to "0 0 * * * * *"
-	@every xyz will parse the `xyz` value as a duration and return an every schedule for that
-*/
-func ParseString(cronString string) (Schedule, error) {
+func ParseSchedule(cronString string) (Schedule, error) {
+	cronString = strings.TrimSpace(cronString)
+
 	// escape shorthands.
-	if shorthand, ok := StringScheduleShorthands[strings.TrimSpace(cronString)]; ok {
+	if shorthand, ok := StringScheduleShorthands[cronString]; ok {
 		cronString = shorthand
 	}
 
-	if strings.HasPrefix(cronString, "@every") {
-		duration, err := time.ParseDuration(strings.TrimSpace(strings.TrimPrefix(cronString, "@every")))
+	var immediately bool
+	if strings.HasPrefix(cronString, StringScheduleImmediatelyThen) {
+		immediately = true
+		cronString = strings.TrimPrefix(cronString, StringScheduleImmediatelyThen)
+		cronString = strings.TrimSpace(cronString)
+	}
+
+	if strings.HasPrefix(cronString, StringScheduleEvery) {
+		cronString = strings.TrimPrefix(cronString, StringScheduleEvery)
+		cronString = strings.TrimSpace(cronString)
+		duration, err := time.ParseDuration(cronString)
 		if err != nil {
 			return nil, ex.New(ErrStringScheduleInvalid, ex.OptInner(err))
+		}
+		if immediately {
+			return Immediately().Then(Every(duration)), nil
 		}
 		return Every(duration), nil
 	}
 
-	parts := stringutil.SplitSpace(cronString)
+	parts := strings.Fields(cronString)
 	if len(parts) < 5 || len(parts) > 7 {
 		return nil, ex.New(ErrStringScheduleInvalid, ex.OptInner(ErrStringScheduleComponents), ex.OptMessagef("provided string; %s", cronString))
 	}
@@ -107,6 +133,10 @@ func ParseString(cronString string) (Schedule, error) {
 		DaysOfWeek:  daysOfWeek,
 		Years:       years,
 	}
+
+	if immediately {
+		return Immediately().Then(schedule), nil
+	}
 	return schedule, nil
 }
 
@@ -116,6 +146,12 @@ const (
 	ErrStringScheduleComponents      ex.Class = "cron: must have at least (5) components space delimited; ex: '0 0 * * * * *'"
 	ErrStringScheduleValueOutOfRange ex.Class = "cron: string schedule part out of range"
 	ErrStringScheduleInvalidRange    ex.Class = "cron: range (from-to) invalid"
+)
+
+// String schedule constants
+const (
+	StringScheduleImmediatelyThen = "@immediately-then"
+	StringScheduleEvery           = "@every"
 )
 
 // String schedule shorthands labels
@@ -392,7 +428,7 @@ func parseEvery(values string, parser func(string) (int, error), validator func(
 	}
 
 	var output []int
-	for x := 0; x < 60; x = x + every {
+	for x := 0; x < 60; x += every {
 		output = append(output, x)
 	}
 	return output, nil
@@ -555,15 +591,17 @@ func csvOfInts(values []int, placeholder string) string {
 
 // these are special characters
 const (
-	cronSpecialComma    = ',' //
-	cronSpecialDash     = '-'
-	cronSpecialStar     = '*'
-	cronSpecialSlash    = '/'
-	cronSpecialQuestion = '?' // sometimes used as the startup time, sometimes as a *
+	cronSpecialComma = ',' //
+	cronSpecialDash  = '-'
+	cronSpecialStar  = '*'
 
-	cronSpecialLast       = 'L'
-	cronSpecialWeekday    = 'W' // nearest weekday to the given day of the month
-	cronSpecialDayOfMonth = '#' //
+	// these are unused
+	// cronSpecialSlash = '/'
+	// cronSpecialQuestion = '?' // sometimes used as the startup time, sometimes as a *
+
+	// cronSpecialLast       = 'L'
+	// cronSpecialWeekday    = 'W' // nearest weekday to the given day of the month
+	// cronSpecialDayOfMonth = '#' //
 
 	cronSpecialEvery = "*/"
 )

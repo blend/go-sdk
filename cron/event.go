@@ -77,8 +77,8 @@ func (e Event) Complete() bool {
 // WriteText implements logger.TextWritable.
 func (e Event) WriteText(tf logger.TextFormatter, wr io.Writer) {
 	if e.Elapsed > 0 {
-		io.WriteString(wr, logger.Space)
-		io.WriteString(wr, fmt.Sprintf("(%v)", e.Elapsed))
+		fmt.Fprint(wr, logger.Space)
+		fmt.Fprintf(wr, "(%v)", e.Elapsed)
 	}
 }
 

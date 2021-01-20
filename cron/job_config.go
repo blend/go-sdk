@@ -1,6 +1,16 @@
 package cron
 
-import "time"
+import (
+	"context"
+	"time"
+
+	"github.com/blend/go-sdk/configutil"
+	"github.com/blend/go-sdk/ref"
+)
+
+var (
+	_ configutil.Resolver = (*JobConfig)(nil)
+)
 
 // JobConfig is a configuration set for a job.
 type JobConfig struct {
@@ -16,10 +26,17 @@ type JobConfig struct {
 	Timeout time.Duration `json:"timeout" yaml:"timeout"`
 	// ShutdownGracePeriod represents the time a job is given to clean itself up.
 	ShutdownGracePeriod time.Duration `json:"shutdownGracePeriod" yaml:"shutdownGracePeriod"`
-	// ShouldSkipLoggerListeners skips triggering logger events if it is set to true.
-	ShouldSkipLoggerListeners *bool `json:"shouldSkipLoggerListeners" yaml:"shouldSkipLoggerListeners"`
-	// ShouldSkipLoggerOutput skips writing logger output if it is set to true.
-	ShouldSkipLoggerOutput *bool `json:"shouldSkipLoggerOutput" yaml:"shouldSkipLoggerOutput"`
+	// SkipLoggerTrigger skips triggering logger events if it is set to true.
+	SkipLoggerTrigger bool `json:"skipLoggerTrigger" yaml:"skipLoggerTrigger"`
+}
+
+// Resolve implements configutil.Resolver.
+func (jc *JobConfig) Resolve(ctx context.Context) error {
+	return configutil.Resolve(ctx,
+		configutil.SetBool(&jc.Disabled, configutil.Bool(jc.Disabled), configutil.Bool(ref.Bool(DefaultDisabled))),
+		configutil.SetDuration(&jc.Timeout, configutil.Duration(jc.Timeout), configutil.Duration(DefaultTimeout)),
+		configutil.SetDuration(&jc.ShutdownGracePeriod, configutil.Duration(jc.ShutdownGracePeriod), configutil.Duration(DefaultShutdownGracePeriod)),
+	)
 }
 
 // DisabledOrDefault returns a value or a default.
@@ -44,20 +61,4 @@ func (jc JobConfig) ShutdownGracePeriodOrDefault() time.Duration {
 		return jc.ShutdownGracePeriod
 	}
 	return DefaultShutdownGracePeriod
-}
-
-// ShouldSkipLoggerListenersOrDefault returns a value or a default.
-func (jc JobConfig) ShouldSkipLoggerListenersOrDefault() bool {
-	if jc.ShouldSkipLoggerListeners != nil {
-		return *jc.ShouldSkipLoggerListeners
-	}
-	return DefaultShouldSkipLoggerListeners
-}
-
-// ShouldSkipLoggerOutputOrDefault returns a value or a default.
-func (jc JobConfig) ShouldSkipLoggerOutputOrDefault() bool {
-	if jc.ShouldSkipLoggerOutput != nil {
-		return *jc.ShouldSkipLoggerOutput
-	}
-	return DefaultShouldSkipLoggerOutput
 }

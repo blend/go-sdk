@@ -17,7 +17,7 @@ type stringScheduleTestCase struct {
 	After       time.Time
 }
 
-func TestParseString(t *testing.T) {
+func TestParseSchedule(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := []stringScheduleTestCase{
@@ -41,18 +41,14 @@ func TestParseString(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		parsed, err := ParseString(tc.Input)
+		parsed, err := ParseSchedule(tc.Input)
 		if tc.ExpectedErr != nil {
 			assert.NotNil(err)
 			assert.True(ex.Is(err, tc.ExpectedErr))
 		} else {
 			assert.Nil(err)
 			next := parsed.Next(tc.After)
-			if typed, ok := parsed.(*StringSchedule); ok {
-				assert.Equal(tc.Expected, next, fmt.Sprintf("%s vs. %s\n%v vs. %v", tc.Input, typed.String(), tc.Expected.Format(time.RFC3339), next.Format(time.RFC3339)))
-			} else {
-				assert.Equal(tc.Expected, next, fmt.Sprintf("%v vs. %v\n", tc.Expected.Format(time.RFC3339), next.Format(time.RFC3339)))
-			}
+			assert.Equal(tc.Expected, next, fmt.Sprintf("%s parsed as %v\n%v vs. %v", tc.Input, parsed, tc.Expected.Format(time.RFC3339), next.Format(time.RFC3339)))
 		}
 	}
 }
@@ -60,7 +56,7 @@ func TestParseString(t *testing.T) {
 func TestStringScheduleEvery(t *testing.T) {
 	assert := assert.New(t)
 
-	schedule, err := ParseString("*/1 * * * * * *")
+	schedule, err := ParseSchedule("*/1 * * * * * *")
 	assert.Nil(err)
 
 	last := time.Date(2019, 01, 29, 0, 0, 0, 0, time.UTC)
@@ -80,4 +76,40 @@ func TestMapKeysToArray(t *testing.T) {
 	}))
 	assert.Empty(mapKeysToArray(nil))
 	assert.Empty(mapKeysToArray(map[int]bool{}))
+}
+
+func Test_ParseString_immediately(t *testing.T) {
+	its := assert.New(t)
+
+	var parsed Schedule
+	var err error
+	var input string
+	var now, next time.Time
+	after := time.Date(2018, 12, 29, 13, 12, 11, 10, time.UTC)
+
+	now = Now()
+	input = "@immediately-then */1 * * * * *"
+	parsed, err = ParseSchedule(input)
+	its.Nil(err)
+	next = parsed.Next(after)
+	its.NotInTimeDelta(after, next, time.Second) // should be now
+	its.InTimeDelta(now, next, time.Second)      // should be now
+	next = parsed.Next(after)                    // should kick in real schedule
+	its.InTimeDelta(time.Date(2018, 12, 29, 13, 12, 12, 10, time.UTC), next, time.Millisecond)
+
+	input = "@immediately-then bogus"
+	parsed, err = ParseSchedule(input)
+	its.True(ex.Is(err, ErrStringScheduleInvalid))
+	its.Nil(parsed)
+
+	now = Now()
+	input = "@immediately-then @every 500ms"
+	parsed, err = ParseSchedule(input)
+	its.Nil(err)
+	next = parsed.Next(after)
+	its.NotInTimeDelta(after, next, time.Second) // should be now
+	its.InTimeDelta(now, next, time.Second)      // should be now
+
+	next = parsed.Next(after) // should kick in real schedule
+	its.InTimeDelta(time.Date(2018, 12, 29, 13, 12, 11, 10+int(500*time.Millisecond), time.UTC), next, time.Millisecond)
 }
