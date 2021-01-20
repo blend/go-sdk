@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"golang.org/x/oauth2"
@@ -16,14 +15,20 @@ import (
 
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/r2"
-	"github.com/blend/go-sdk/stringutil"
 	"github.com/blend/go-sdk/uuid"
 	"github.com/blend/go-sdk/webutil"
 )
 
 // New returns a new manager mutated by a given set of options.
 func New(options ...Option) (*Manager, error) {
-	manager := &Manager{}
+	manager := &Manager{
+		Config: oauth2.Config{
+			Endpoint: google.Endpoint,
+			Scopes:   DefaultScopes,
+		},
+		PublicKeyCache: new(PublicKeyCache),
+	}
+
 	for _, option := range options {
 		if err := option(manager); err != nil {
 			return nil, err
@@ -44,14 +49,16 @@ func MustNew(options ...Option) *Manager {
 
 // Manager is the oauth manager.
 type Manager struct {
+	oauth2.Config
+	Tracer Tracer
+
+	Secret []byte
+
+	HostedDomain   string
+	AllowedDomains []string
+
 	FetchProfileDefaults []r2.Option
-	Tracer               Tracer
-	Secret               []byte
-	Scopes               []string
-	RedirectURI          string
-	HostedDomain         string
-	ClientID             string
-	ClientSecret         string
+	PublicKeyCache       *PublicKeyCache
 }
 
 // OAuthURL is the auth url for google with a given clientID.
@@ -62,21 +69,20 @@ func (m *Manager) OAuthURL(r *http.Request, stateOptions ...StateOption) (oauthU
 	if err != nil {
 		return
 	}
-
 	var opts []oauth2.AuthCodeOption
 	if len(m.HostedDomain) > 0 {
 		opts = append(opts, oauth2.SetAuthURLParam("hd", m.HostedDomain))
 	}
-	oauthURL = m.conf(r).AuthCodeURL(state, opts...)
+	oauthURL = m.AuthCodeURL(state, opts...)
 	return
 }
 
 // Finish processes the returned code, exchanging for an access token, and fetches the user profile.
 func (m *Manager) Finish(r *http.Request) (result *Result, err error) {
 	if m.Tracer != nil {
-		tf := m.Tracer.Start(r.Context(), m.conf(r))
+		tf := m.Tracer.Start(r.Context(), &m.Config)
 		if tf != nil {
-			defer func() { tf.Finish(r.Context(), m.conf(r), result, err) }()
+			defer func() { tf.Finish(r.Context(), &m.Config, result, err) }()
 		}
 	}
 
@@ -98,16 +104,24 @@ func (m *Manager) Finish(r *http.Request) (result *Result, err error) {
 		}
 		result.State = deserialized
 	}
-
 	err = m.ValidateState(result.State)
 	if err != nil {
 		return
 	}
 
 	// Handle the exchange code to initiate a transport.
-	tok, err := m.conf(r).Exchange(r.Context(), code)
+	tok, err := m.Exchange(r.Context(), code)
 	if err != nil {
 		err = ex.New(ErrFailedCodeExchange, ex.OptInner(err))
+		return
+	}
+
+	jwtClaims, err := ParseTokenJWT(tok, m.PublicKeyCache.Keyfunc(r.Context()))
+	if err != nil {
+		err = ex.New(ErrInvalidJWT, ex.OptInner(err))
+		return
+	}
+	if err = m.ValidateJWT(jwtClaims); err != nil {
 		return
 	}
 
@@ -115,6 +129,7 @@ func (m *Manager) Finish(r *http.Request) (result *Result, err error) {
 	result.Response.TokenType = tok.TokenType
 	result.Response.RefreshToken = tok.RefreshToken
 	result.Response.Expiry = tok.Expiry
+	result.Response.HostedDomain = jwtClaims.HD
 
 	var prof Profile
 	prof, err = m.FetchProfile(r.Context(), tok.AccessToken)
@@ -127,21 +142,20 @@ func (m *Manager) Finish(r *http.Request) (result *Result, err error) {
 
 // FetchProfile gets a google profile for an access token.
 func (m *Manager) FetchProfile(ctx context.Context, accessToken string) (profile Profile, err error) {
-	res, err := r2.New("https://www.googleapis.com/oauth2/v1/userinfo", append(m.FetchProfileDefaults,
+	res, err := r2.New("https://www.googleapis.com/oauth2/v1/userinfo", append([]r2.Option{
 		r2.OptGet(),
 		r2.OptContext(ctx),
 		r2.OptQueryValue("alt", "json"),
-		r2.OptQueryValue("access_token", accessToken),
-	)...).Do()
-
+		r2.OptHeaderValue(webutil.HeaderAuthorization, fmt.Sprintf("Bearer %s", accessToken)),
+	}, m.FetchProfileDefaults...)...).Do()
 	if err != nil {
 		return
 	}
-	if res.StatusCode > 299 {
+	defer res.Body.Close()
+	if code := res.StatusCode; code < 200 || code > 299 {
 		err = ex.New(ErrGoogleResponseStatus, ex.OptMessagef("status code: %d", res.StatusCode))
 		return
 	}
-	defer res.Body.Close()
 	if err = json.NewDecoder(res.Body).Decode(&profile); err != nil {
 		err = ex.New(ErrProfileJSONUnmarshal, ex.OptInner(err))
 		return
@@ -177,18 +191,28 @@ func (m *Manager) ValidateState(state State) error {
 	return nil
 }
 
-// ValidateProfile validates a profile.
-func (m *Manager) ValidateProfile(p *Profile) error {
-	if len(m.HostedDomain) == 0 {
-		return nil
+// ValidateJWT returns if the jwt is valid or not.
+func (m *Manager) ValidateJWT(jwtClaims *GoogleClaims) error {
+	if jwtClaims.Audience != m.ClientID {
+		return ex.New(ErrInvalidJWTAudience, ex.OptMessagef("audience: %s", jwtClaims.Audience))
 	}
-
-	workingDomain := m.HostedDomain
-	if !strings.HasPrefix(workingDomain, "@") {
-		workingDomain = fmt.Sprintf("@%s", workingDomain)
+	if jwtClaims.Issuer != GoogleIssuer && jwtClaims.Issuer != GoogleIssuerAlternate {
+		return ex.New(ErrInvalidJWTIssuer, ex.OptMessagef("issuer: %s", jwtClaims.Issuer))
 	}
-	if !stringutil.HasSuffixCaseless(p.Email, workingDomain) {
-		return ErrInvalidHostedDomain
+	if len(m.AllowedDomains) > 0 {
+		if strings.TrimSpace(jwtClaims.HD) == "" {
+			return ex.New(ErrInvalidJWTHostedDomain, ex.OptMessagef("hosted domain: likely gmail.com, but empty"))
+		}
+		var matchedDomain bool
+		for _, domain := range m.AllowedDomains {
+			if strings.EqualFold(domain, jwtClaims.HD) {
+				matchedDomain = true
+				break
+			}
+		}
+		if !matchedDomain {
+			return ex.New(ErrInvalidJWTHostedDomain, ex.OptMessagef("hosted domain: %s", jwtClaims.HD))
+		}
 	}
 	return nil
 }
@@ -197,30 +221,6 @@ func (m *Manager) ValidateProfile(p *Profile) error {
 // internal helpers
 // --------------------------------------------------------------------------------
 
-func (m *Manager) conf(r *http.Request) *oauth2.Config {
-	return &oauth2.Config{
-		ClientID:     m.ClientID,
-		ClientSecret: m.ClientSecret,
-		RedirectURL:  m.getRedirectURI(r),
-		Scopes:       m.Scopes,
-		Endpoint:     google.Endpoint,
-	}
-}
-
-func (m *Manager) getRedirectURI(r *http.Request) string {
-	if stringutil.HasPrefixCaseless(m.RedirectURI, "https://") ||
-		stringutil.HasPrefixCaseless(m.RedirectURI, "http://") ||
-		stringutil.HasPrefixCaseless(m.RedirectURI, "spdy://") {
-		return m.RedirectURI
-	}
-	requestURI := &url.URL{
-		Scheme: webutil.GetProto(r),
-		Host:   webutil.GetHost(r),
-		Path:   m.RedirectURI,
-	}
-	return requestURI.String()
-}
-
 func (m *Manager) hash(plaintext string) string {
 	return base64.URLEncoding.EncodeToString(m.hmac([]byte(plaintext)))
 }
@@ -228,6 +228,6 @@ func (m *Manager) hash(plaintext string) string {
 // hmac hashes data with the given key.
 func (m *Manager) hmac(plainText []byte) []byte {
 	mac := hmac.New(sha512.New, m.Secret)
-	mac.Write([]byte(plainText))
+	_, _ = mac.Write([]byte(plainText))
 	return mac.Sum(nil)
 }
