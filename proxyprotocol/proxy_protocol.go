@@ -196,8 +196,8 @@ func (p *Conn) SetWriteDeadline(t time.Time) error {
 func (p *Conn) checkPrefix() error {
 	if p.proxyHeaderTimeout != 0 {
 		readDeadLine := time.Now().Add(p.proxyHeaderTimeout)
-		p.conn.SetReadDeadline(readDeadLine)
-		defer p.conn.SetReadDeadline(time.Time{})
+		_ = p.conn.SetReadDeadline(readDeadLine)
+		defer func() { _ = p.conn.SetReadDeadline(time.Time{}) }()
 	}
 
 	// Incrementally check each byte of the prefix
@@ -231,7 +231,7 @@ func (p *Conn) checkPrefix() error {
 	parts := strings.Split(header, " ")
 	if len(parts) != 6 {
 		p.conn.Close()
-		return fmt.Errorf("Invalid header line: %s", header)
+		return fmt.Errorf("invalid header line: %s", header)
 	}
 
 	// Verify the type is known
@@ -240,19 +240,19 @@ func (p *Conn) checkPrefix() error {
 	case "TCP6":
 	default:
 		p.conn.Close()
-		return fmt.Errorf("Unhandled address type: %s", parts[1])
+		return fmt.Errorf("unhandled address type: %s", parts[1])
 	}
 
 	// Parse out the source address
 	ip := net.ParseIP(parts[2])
 	if ip == nil {
 		p.conn.Close()
-		return fmt.Errorf("Invalid source ip: %s", parts[2])
+		return fmt.Errorf("invalid source ip: %s", parts[2])
 	}
 	port, err := strconv.Atoi(parts[4])
 	if err != nil {
 		p.conn.Close()
-		return fmt.Errorf("Invalid source port: %s", parts[4])
+		return fmt.Errorf("invalid source port: %s", parts[4])
 	}
 	p.srcAddr = &net.TCPAddr{IP: ip, Port: port}
 
@@ -260,12 +260,12 @@ func (p *Conn) checkPrefix() error {
 	ip = net.ParseIP(parts[3])
 	if ip == nil {
 		p.conn.Close()
-		return fmt.Errorf("Invalid destination ip: %s", parts[3])
+		return fmt.Errorf("invalid destination ip: %s", parts[3])
 	}
 	port, err = strconv.Atoi(parts[5])
 	if err != nil {
 		p.conn.Close()
-		return fmt.Errorf("Invalid destination port: %s", parts[5])
+		return fmt.Errorf("invalid destination port: %s", parts[5])
 	}
 	p.dstAddr = &net.TCPAddr{IP: ip, Port: port}
 
