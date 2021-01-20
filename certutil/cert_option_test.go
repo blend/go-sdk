@@ -7,9 +7,15 @@ import (
 )
 
 func TestOptSubjectName(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
-	// create the ca
-	ca, err := CreateCertificateAuthority()
+
+	caKeyPair := KeyPair{
+		Cert: string(caCertLiteral),
+		Key:  string(caKeyLiteral),
+	}
+	ca, err := NewCertBundle(caKeyPair)
 	assert.Nil(err)
 
 	// create the server certs
@@ -17,5 +23,5 @@ func TestOptSubjectName(t *testing.T) {
 	assert.Nil(err)
 	names, err := server.CommonNames()
 	assert.Nil(err)
-	assert.Equal([]string{"localhost"}, names)
+	assert.Equal([]string{"localhost", "warden-ca"}, names)
 }

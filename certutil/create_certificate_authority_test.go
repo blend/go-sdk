@@ -7,6 +7,8 @@ import (
 )
 
 func TestCreateCA(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	ca, err := CreateCertificateAuthority()

@@ -8,6 +8,8 @@ import (
 )
 
 func TestKeyPairIsZero(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	assert.True(KeyPair{}.IsZero())
@@ -18,6 +20,8 @@ func TestKeyPairIsZero(t *testing.T) {
 }
 
 func TestKeyPairCertBytes(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	assert.Equal("foo", MustBytes(KeyPair{Cert: "foo"}.CertBytes()))
@@ -25,6 +29,8 @@ func TestKeyPairCertBytes(t *testing.T) {
 }
 
 func TestKeyPairKeyBytes(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	assert.Equal("foo", MustBytes(KeyPair{Key: "foo"}.KeyBytes()))
@@ -32,6 +38,8 @@ func TestKeyPairKeyBytes(t *testing.T) {
 }
 
 func TestKeyPairString(t *testing.T) {
+	t.Parallel()
+
 	assert := assert.New(t)
 
 	assert.Equal("[ cert: <literal>, key: <literal> ]", KeyPair{Cert: "bar", Key: "foo"}.String())
