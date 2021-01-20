@@ -19,10 +19,10 @@ func TestStringTokenize(t *testing.T) {
 	testCases := []tokenizeTestCase{
 		{corpus: "", expected: "", message: "should handle the empty input case"},
 		{corpus: "ff", expected: "ff", message: "should handle the (nearly) empty input case"},
-		{corpus: "foo/${bar}/baz", expected: "foo/bailey/baz", tokens: map[string]string{"bar": "bailey"}, message: "should handle escaping a single variable"},
-		{corpus: "foo/${what}/baz", expected: "foo/${what}/baz", tokens: map[string]string{"bar": "bailey"}, message: "should handle unknown variables"},
-		{corpus: "foo/${bar}/baz/${buzz}", expected: "foo/bailey/baz/dog", tokens: map[string]string{"bar": "bailey", "buzz": "dog"}, message: "should handle escaping multiple variables"},
-		{corpus: "foo/${bar${buzz}foo}/bar", expected: "foo/${bar${buzz}foo}/bar", tokens: map[string]string{"bar": "bailey", "buzz": "dog"}, message: "nesting variables should produce a weird key"},
+		{corpus: "foo/${bar}/baz", expected: "foo/example-string/baz", tokens: map[string]string{"bar": "example-string"}, message: "should handle escaping a single variable"},
+		{corpus: "foo/${what}/baz", expected: "foo/${what}/baz", tokens: map[string]string{"bar": "example-string"}, message: "should handle unknown variables"},
+		{corpus: "foo/${bar}/baz/${buzz}", expected: "foo/example-string/baz/dog", tokens: map[string]string{"bar": "example-string", "buzz": "dog"}, message: "should handle escaping multiple variables"},
+		{corpus: "foo/${bar${buzz}foo}/bar", expected: "foo/${bar${buzz}foo}/bar", tokens: map[string]string{"bar": "example-string", "buzz": "dog"}, message: "nesting variables should produce a weird key"},
 	}
 
 	for _, testCase := range testCases {
