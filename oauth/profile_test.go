@@ -16,15 +16,20 @@ func TestProfileUsername(t *testing.T) {
 		Email: "test@blend.com",
 	}
 
-	assert.Equal("test@blend.com", profile.Username())
+	assert.Equal("test", profile.Username())
 
 	profile = Profile{
 		Email: "test2@blendlabs.com",
 	}
-	assert.Equal("test2@blendlabs.com", profile.Username())
+	assert.Equal("test2", profile.Username())
 
 	profile = Profile{
 		Email: "test2+why@blendlabs.com",
 	}
-	assert.Equal("test2+why@blendlabs.com", profile.Username())
+	assert.Equal("test2+why", profile.Username())
+
+	profile = Profile{
+		Email: "obnoxious@foo@bar@baz.com",
+	}
+	assert.Equal("obnoxious", profile.Username())
 }
