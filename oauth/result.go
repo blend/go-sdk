@@ -16,5 +16,4 @@ type Response struct {
 	TokenType    string
 	RefreshToken string
 	Expiry       time.Time
-	HostedDomain string
 }

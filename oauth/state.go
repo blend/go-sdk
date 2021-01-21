@@ -24,7 +24,7 @@ type State struct {
 // DeserializeState deserializes the oauth state.
 func DeserializeState(raw string) (state State, err error) {
 	var corpus []byte
-	corpus, err = base64.RawURLEncoding.DecodeString(raw)
+	corpus, err = base64.StdEncoding.DecodeString(raw)
 	if err != nil {
 		err = ex.New(err)
 		return
@@ -38,22 +38,13 @@ func DeserializeState(raw string) (state State, err error) {
 	return
 }
 
-// MustSerializeState serializes a state value but panics if there is an error.
-func MustSerializeState(state State) string {
-	output, err := SerializeState(state)
-	if err != nil {
-		panic(err)
-	}
-	return output
-}
-
 // SerializeState serializes the oauth state.
 func SerializeState(state State) (output string, err error) {
-	buffer := new(bytes.Buffer)
+	buffer := bytes.NewBuffer(nil)
 	err = gob.NewEncoder(buffer).Encode(state)
 	if err != nil {
 		return
 	}
-	output = base64.RawURLEncoding.EncodeToString(buffer.Bytes())
+	output = base64.StdEncoding.EncodeToString(buffer.Bytes())
 	return
 }

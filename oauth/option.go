@@ -1,5 +1,7 @@
 package oauth
 
+import "github.com/blend/go-sdk/r2"
+
 // Option is an option for oauth managers.
 type Option func(*Manager) error
 
@@ -11,9 +13,8 @@ func OptConfig(cfg Config) Option {
 			return err
 		}
 		m.Secret = secret
-		m.RedirectURL = cfg.RedirectURI
+		m.RedirectURI = cfg.RedirectURI
 		m.HostedDomain = cfg.HostedDomain
-		m.AllowedDomains = cfg.AllowedDomains
 		m.Scopes = cfg.ScopesOrDefault()
 		m.ClientID = cfg.ClientID
 		m.ClientSecret = cfg.ClientSecret
@@ -48,7 +49,7 @@ func OptSecret(secret []byte) Option {
 // OptRedirectURI sets the manager redirectURI.
 func OptRedirectURI(redirectURI string) Option {
 	return func(m *Manager) error {
-		m.RedirectURL = redirectURI
+		m.RedirectURI = redirectURI
 		return nil
 	}
 }
@@ -61,18 +62,20 @@ func OptHostedDomain(hostedDomain string) Option {
 	}
 }
 
-// OptAllowedDomains sets the manager allowedDomains.
-func OptAllowedDomains(allowedDomains ...string) Option {
-	return func(m *Manager) error {
-		m.AllowedDomains = allowedDomains
-		return nil
-	}
-}
-
 // OptScopes sets the manager scopes.
 func OptScopes(scopes ...string) Option {
 	return func(m *Manager) error {
 		m.Scopes = scopes
+		return nil
+	}
+}
+
+// OptFetchProfileDefaults sets the request defaults.
+// These affect making the profile fetch call
+// to google and do not affect the token exchange.
+func OptFetchProfileDefaults(defaults ...r2.Option) Option {
+	return func(m *Manager) error {
+		m.FetchProfileDefaults = defaults
 		return nil
 	}
 }
