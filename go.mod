@@ -6,10 +6,10 @@ require (
 	github.com/DataDog/datadog-go v4.2.0+incompatible
 	github.com/blend/sentry-go v1.0.0
 	github.com/golang/protobuf v1.4.3
+	github.com/jackc/pgx/v4 v4.10.1
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/spf13/cobra v1.1.1
-	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/tinylib/msgp v1.1.2
 	golang.org/x/crypto v0.0.0-20201203163018-be400aefbc4c
 	golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb
