@@ -1,9 +1,5 @@
 package oauth
 
-import (
-	"strings"
-)
-
 // Profile is a profile with google.
 type Profile struct {
 	ID            string `json:"id"`
@@ -21,16 +17,5 @@ type Profile struct {
 // Username returns the <username>@fqdn component
 // of the email address.
 func (p Profile) Username() string {
-	if len(p.Email) == 0 {
-		return ""
-	}
-	if !strings.Contains(p.Email, "@") {
-		return p.Email
-	}
-
-	parts := strings.SplitN(p.Email, "@", 2)
-	if len(parts) == 0 {
-		return ""
-	}
-	return parts[0]
+	return p.Email
 }
