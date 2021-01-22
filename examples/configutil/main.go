@@ -57,8 +57,11 @@ var (
 
 func main() {
 	flag.Parse()
+	log := logger.All().WithPath("config")
 	config := new(Config)
-	if _, err := configutil.Read(config, configutil.OptLog(logger.All().WithPath("config"))); !configutil.IsIgnored(err) {
+	if _, err := configutil.Read(config,
+		configutil.OptLog(log),
+	); !configutil.IsIgnored(err) {
 		logger.FatalExit(err)
 	}
 	fmt.Println("target:", config.Target)

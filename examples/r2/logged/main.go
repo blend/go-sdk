@@ -10,10 +10,11 @@ import (
 
 func main() {
 	log := logger.MustNew(logger.OptAll())
+	defer log.Close()
 
 	_, err := r2.New("https://google.com/robots.txt",
 		r2.OptHeaderValue("X-Sent-By", "go-sdk/request2"),
-		r2.OptCookieValue("r2-ray-id", "baileydog01"),
+		r2.OptCookieValue("r2-ray-id", "example-stringdog01"),
 		r2.OptLogResponse(log),
 	).Discard()
 
@@ -21,5 +22,4 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
-	log.Close()
 }

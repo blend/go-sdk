@@ -45,7 +45,6 @@ func main() {
 			return
 		}
 		webutil.WriteJSON(rw, http.StatusOK, Result{1, "Foo"})
-		return
 	}))
 	defer mockServer.Close()
 

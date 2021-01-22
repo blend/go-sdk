@@ -31,9 +31,11 @@ func main() {
 			log.Infof("this is an info event")
 		case <-done:
 			fmt.Println("draining")
-			ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
-			defer cancel()
-			log.DrainContext(ctx)
+			func() {
+				ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
+				defer cancel()
+				log.DrainContext(ctx)
+			}()
 			fmt.Println("exiting")
 			os.Exit(0)
 		}
