@@ -21,7 +21,7 @@ func TestPrepare(t *testing.T) {
 	dbCfg, err := defaultDB().Config.Reparse()
 	assert.Nil(err)
 
-	dbtf := dbTracer.Prepare(context.Background(), *dbCfg, "select * from test_table limit 1")
+	dbtf := dbTracer.Prepare(context.Background(), dbCfg, "select * from test_table limit 1")
 	span := dbtf.(dbTraceFinisher).span
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal(tracing.OperationSQLPrepare, mockSpan.OperationName)
@@ -45,7 +45,7 @@ func TestPrepareWithParentSpan(t *testing.T) {
 	parentSpan := mockTracer.StartSpan("test_op")
 	ctx := opentracing.ContextWithSpan(context.Background(), parentSpan)
 
-	dbtf := dbTracer.Prepare(ctx, *dbCfg, "select * from test_table limit 1")
+	dbtf := dbTracer.Prepare(ctx, dbCfg, "select * from test_table limit 1")
 	span := dbtf.(dbTraceFinisher).span
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal(tracing.OperationSQLPrepare, mockSpan.OperationName)
@@ -66,7 +66,7 @@ func TestQuery(t *testing.T) {
 	invocation := defaultDB().Invoke()
 	invocation.Label = "test_table_exists"
 
-	dbtf := dbTracer.Query(context.Background(), *dbCfg, invocation.Label, statement)
+	dbtf := dbTracer.Query(context.Background(), dbCfg, invocation.Label, statement)
 	span := dbtf.(dbTraceFinisher).span
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal(tracing.OperationSQLQuery, mockSpan.OperationName)
@@ -95,7 +95,7 @@ func TestQueryWithParentSpan(t *testing.T) {
 	invocation := defaultDB().Invoke()
 	invocation.Label = "test_table_exists"
 
-	dbtf := dbTracer.Query(ctx, *dbCfg, invocation.Label, statement)
+	dbtf := dbTracer.Query(ctx, dbCfg, invocation.Label, statement)
 	span := dbtf.(dbTraceFinisher).span
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal(tracing.OperationSQLQuery, mockSpan.OperationName)
@@ -112,7 +112,7 @@ func TestFinishQuery(t *testing.T) {
 	dbCfg, err := defaultDB().Config.Reparse()
 	assert.Nil(err)
 
-	dbtf := dbTracer.Query(context.Background(), *dbCfg, "ok", "select 'ok1'")
+	dbtf := dbTracer.Query(context.Background(), dbCfg, "ok", "select 'ok1'")
 	dbtf.FinishQuery(context.TODO(), nil, nil)
 
 	span := dbtf.(dbTraceFinisher).span
@@ -129,7 +129,7 @@ func TestFinishPrepare(t *testing.T) {
 	dbCfg, err := defaultDB().Config.Reparse()
 	assert.Nil(err)
 
-	dbtf := dbTracer.Prepare(context.Background(), *dbCfg, "select 'ok1'")
+	dbtf := dbTracer.Prepare(context.Background(), dbCfg, "select 'ok1'")
 	dbtf.FinishPrepare(context.TODO(), nil)
 
 	span := dbtf.(dbTraceFinisher).span
@@ -147,7 +147,7 @@ func TestFinishQueryError(t *testing.T) {
 	assert.Nil(err)
 
 	ctx := context.Background()
-	dbtf := dbTracer.Query(ctx, *dbCfg, "ok", "select 'ok1'")
+	dbtf := dbTracer.Query(ctx, dbCfg, "ok", "select 'ok1'")
 	dbtf.FinishQuery(ctx, nil, fmt.Errorf("error"))
 
 	span := dbtf.(dbTraceFinisher).span
@@ -165,7 +165,7 @@ func TestFinishPrepareError(t *testing.T) {
 	assert.Nil(err)
 
 	ctx := context.Background()
-	dbtf := dbTracer.Prepare(ctx, *dbCfg, "select 'ok1'")
+	dbtf := dbTracer.Prepare(ctx, dbCfg, "select 'ok1'")
 	dbtf.FinishPrepare(ctx, fmt.Errorf("error"))
 
 	span := dbtf.(dbTraceFinisher).span
@@ -183,7 +183,7 @@ func TestFinishQueryErrorSkip(t *testing.T) {
 	assert.Nil(err)
 
 	ctx := context.Background()
-	dbtf := dbTracer.Query(ctx, *dbCfg, "ok", "select 'ok1'")
+	dbtf := dbTracer.Query(ctx, dbCfg, "ok", "select 'ok1'")
 	dbtf.FinishQuery(ctx, nil, driver.ErrSkip)
 
 	span := dbtf.(dbTraceFinisher).span
