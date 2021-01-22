@@ -27,257 +27,253 @@ type setValueTest struct {
 	StringPtr    *string                `db:"string_ptr"`
 }
 
-func TestSetValue(t *testing.T) {
-	a := assert.New(t)
+func Test_Column_SetValue(t *testing.T) {
+	its := assert.New(t)
 
 	var obj setValueTest
-	meta := CachedColumnCollectionFromInstance(obj)
+	meta := Columns(obj)
 	col := meta.Lookup()["int64"]
-	a.NotNil(col)
+	its.NotNil(col)
 
 	var value int64 = 10
-	a.Zero(obj.Int64)
-	a.Nil(col.SetValue(&obj, value))
-	a.Equal(10, obj.Int64)
+	its.Zero(obj.Int64)
+	its.Nil(col.SetValue(&obj, value))
+	its.Equal(10, obj.Int64)
 }
 
-func TestSetValueConverted(t *testing.T) {
-	a := assert.New(t)
+func Test_Column_SetValueConverted(t *testing.T) {
+	its := assert.New(t)
 
 	obj := setValueTest{InferredName: "Hello."}
-	meta := CachedColumnCollectionFromInstance(obj)
+	meta := Columns(obj)
 	col := meta.Lookup()["int64"]
-	a.NotNil(col)
+	its.NotNil(col)
 
 	value := int(21)
 	err := col.SetValue(&obj, value)
-	a.Nil(err)
-	a.Equal(21, obj.Int64)
+	its.Nil(err)
+	its.Equal(21, obj.Int64)
 }
 
-func TestSetValuePtrAddr(t *testing.T) {
-	/*
-		Setting a value to an invalid value source shouldn't panic.
-	*/
-	t.Skip()
-	a := assert.New(t)
+func Test_Column_SetValuePtrAddr(t *testing.T) {
+	its := assert.New(t)
 
 	var obj setValueTest
-	meta := CachedColumnCollectionFromInstance(obj)
+	meta := Columns(obj)
 	col := meta.Lookup()["string_ptr"]
-	a.NotNil(col)
+	its.NotNil(col)
 
 	value := "foobar"
 	err := col.SetValue(&obj, value)
-	a.NotNil(err)
-	a.Nil(obj.StringPtr)
+	its.NotNil(err)
+	its.Nil(obj.StringPtr)
 }
 
-func TestSetValueStringPtr(t *testing.T) {
-	a := assert.New(t)
+func Test_Column_SetValueStringPtr(t *testing.T) {
+	its := assert.New(t)
 
 	var obj setValueTest
-	meta := CachedColumnCollectionFromInstance(obj)
+	meta := Columns(obj)
 	col := meta.Lookup()["string_ptr"]
-	a.NotNil(col)
+	its.NotNil(col)
 
 	value := "foobar"
 	err := col.SetValue(&obj, &value)
-	a.Nil(err)
-	a.NotNil(obj.StringPtr)
-	a.Equal("foobar", *obj.StringPtr)
+	its.Nil(err)
+	its.NotNil(obj.StringPtr)
+	its.Equal("foobar", *obj.StringPtr)
 }
 
-func TestSetValueInt64Ptr(t *testing.T) {
-	a := assert.New(t)
+func Test_Column_SetValueInt64Ptr(t *testing.T) {
+	its := assert.New(t)
 
 	var obj setValueTest
-	meta := CachedColumnCollectionFromInstance(obj)
+	meta := Columns(obj)
 
 	col := meta.Lookup()["int64_ptr"]
-	a.NotNil(col)
+	its.NotNil(col)
 	myValue := int64(21)
 	err := col.SetValue(&obj, &myValue)
-	a.Nil(err)
+	its.Nil(err)
 
-	a.NotNil(obj.Int64Ptr)
-	a.Equal(21, *obj.Int64Ptr)
+	its.NotNil(obj.Int64Ptr)
+	its.Equal(21, *obj.Int64Ptr)
 }
 
-func TestSetValueJSONNullString(t *testing.T) {
-	a := assert.New(t)
+func Test_Column_SetValueJSONNullString(t *testing.T) {
+	its := assert.New(t)
 
 	var obj setValueTest
-	meta := CachedColumnCollectionFromInstance(obj)
+	meta := Columns(obj)
 
 	col := meta.Lookup()["json_col"]
-	a.NotNil(col)
+	its.NotNil(col)
 	err := col.SetValue(&obj,
 		sql.NullString{String: `{"foo":"bar"}`, Valid: true},
 	)
-	a.Nil(err)
-	a.Equal("bar", obj.JSON["foo"])
+	its.Nil(err)
+	its.Equal("bar", obj.JSON["foo"])
 }
 
-func TestSetValueJSONNullStringUnset(t *testing.T) {
-	a := assert.New(t)
+func Test_Column_SetValueJSONNullStringUnset(t *testing.T) {
+	its := assert.New(t)
 
 	var obj setValueTest
-	meta := CachedColumnCollectionFromInstance(obj)
+	meta := Columns(obj)
 
 	col := meta.Lookup()["json_col"]
-	a.NotNil(col)
+	its.NotNil(col)
 	err := col.SetValue(&obj,
 		sql.NullString{},
 	)
-	a.Nil(err)
-	a.Nil(obj.JSON)
+	its.Nil(err)
+	its.Nil(obj.JSON)
 }
 
-func TestSetValueJSONNullStringPtr(t *testing.T) {
-	a := assert.New(t)
+func Test_Column_SetValueJSONNullStringPtr(t *testing.T) {
+	its := assert.New(t)
 
 	var obj setValueTest
-	meta := CachedColumnCollectionFromInstance(obj)
+	meta := Columns(obj)
 
 	col := meta.Lookup()["json_col"]
-	a.NotNil(col)
+	its.NotNil(col)
 	err := col.SetValue(&obj,
 		&sql.NullString{String: `{"foo":"bar"}`, Valid: true},
 	)
-	a.Nil(err)
-	a.Equal("bar", obj.JSON["foo"])
+	its.Nil(err)
+	its.Equal("bar", obj.JSON["foo"])
 }
 
-func TestSetValueJSONNullStringPtrObjectPtr(t *testing.T) {
-	a := assert.New(t)
+func Test_Column_SetValueJSONNullStringPtrObjectPtr(t *testing.T) {
+	its := assert.New(t)
 
 	var obj setValueTest
-	meta := CachedColumnCollectionFromInstance(obj)
+	meta := Columns(obj)
 
 	col := meta.Lookup()["json_ptr"]
-	a.NotNil(col)
+	its.NotNil(col)
 	err := col.SetValue(&obj,
 		&sql.NullString{String: `{"label":"foo", "value":"bar"}`, Valid: true},
 	)
-	a.Nil(err)
-	a.Equal("foo", obj.JSONPtr.Label)
-	a.Equal("bar", obj.JSONPtr.Value)
+	its.Nil(err)
+	its.Equal("foo", obj.JSONPtr.Label)
+	its.Equal("bar", obj.JSONPtr.Value)
 }
 
-func TestSetValueJSONNullStringPtrUnset(t *testing.T) {
-	a := assert.New(t)
+func Test_Column_SetValueJSONNullStringPtrUnset(t *testing.T) {
+	its := assert.New(t)
 
 	var obj setValueTest
-	meta := CachedColumnCollectionFromInstance(obj)
+	meta := Columns(obj)
 
 	col := meta.Lookup()["json_col"]
-	a.NotNil(col)
+	its.NotNil(col)
 	err := col.SetValue(&obj,
 		&sql.NullString{},
 	)
-	a.Nil(err)
-	a.Nil(obj.JSON)
+	its.Nil(err)
+	its.Nil(obj.JSON)
 }
 
-func TestSetValueJSONString(t *testing.T) {
-	a := assert.New(t)
+func Test_Column_SetValueJSONString(t *testing.T) {
+	its := assert.New(t)
 
 	var obj setValueTest
-	meta := CachedColumnCollectionFromInstance(obj)
+	meta := Columns(obj)
 
 	col := meta.Lookup()["json_col"]
-	a.NotNil(col)
+	its.NotNil(col)
 	err := col.SetValue(&obj,
 		`{"foo":"bar"}`,
 	)
-	a.Nil(err)
-	a.Equal("bar", obj.JSON["foo"])
+	its.Nil(err)
+	its.Equal("bar", obj.JSON["foo"])
 }
 
-func TestSetValueJSONStringPtr(t *testing.T) {
-	a := assert.New(t)
+func Test_Column_SetValueJSONStringPtr(t *testing.T) {
+	its := assert.New(t)
 
 	var obj setValueTest
-	meta := CachedColumnCollectionFromInstance(obj)
+	meta := Columns(obj)
 
 	col := meta.Lookup()["json_col"]
-	a.NotNil(col)
+	its.NotNil(col)
 	value := `{"foo":"bar"}`
 	err := col.SetValue(&obj,
 		&value,
 	)
-	a.Nil(err)
-	a.Equal("bar", obj.JSON["foo"])
+	its.Nil(err)
+	its.Equal("bar", obj.JSON["foo"])
 }
 
-func TestSetValueJSONBytes(t *testing.T) {
-	a := assert.New(t)
+func Test_Column_SetValueJSONBytes(t *testing.T) {
+	its := assert.New(t)
 
 	var obj setValueTest
-	meta := CachedColumnCollectionFromInstance(obj)
+	meta := Columns(obj)
 
 	col := meta.Lookup()["json_col"]
-	a.NotNil(col)
+	its.NotNil(col)
 	value := []byte(`{"foo":"bar"}`)
 	err := col.SetValue(&obj,
 		value,
 	)
-	a.Nil(err)
-	a.Equal("bar", obj.JSON["foo"])
+	its.Nil(err)
+	its.Equal("bar", obj.JSON["foo"])
 }
 
-func TestSetValueJSONBytesPtr(t *testing.T) {
-	a := assert.New(t)
+func Test_Column_SetValueJSONBytesPtr(t *testing.T) {
+	its := assert.New(t)
 
 	var obj setValueTest
-	meta := CachedColumnCollectionFromInstance(obj)
+	meta := Columns(obj)
 
 	col := meta.Lookup()["json_col"]
-	a.NotNil(col)
+	its.NotNil(col)
 	value := []byte(`{"foo":"bar"}`)
 	err := col.SetValue(&obj,
 		&value,
 	)
-	a.Nil(err)
-	a.Equal("bar", obj.JSON["foo"])
+	its.Nil(err)
+	its.Equal("bar", obj.JSON["foo"])
 }
 
-func TestSetValueResetsNil(t *testing.T) {
-	a := assert.New(t)
+func Test_Column_SetValueResetsNil(t *testing.T) {
+	its := assert.New(t)
 
 	obj := setValueTest{Int64Ptr: ref.Int64(1234)}
-	meta := CachedColumnCollectionFromInstance(obj)
+	meta := Columns(obj)
 
 	col := meta.Lookup()["int64_ptr"]
-	a.NotNil(col)
+	its.NotNil(col)
 	err := col.SetValue(&obj, nil)
-	a.Nil(err)
-	a.Nil(obj.Int64Ptr)
+	its.Nil(err)
+	its.Nil(obj.Int64Ptr)
 }
 
-func TestSetValueResetsNilUnset(t *testing.T) {
-	a := assert.New(t)
+func Test_Column_SetValueResetsNilUnset(t *testing.T) {
+	its := assert.New(t)
 
 	obj := setValueTest{Int64Ptr: ref.Int64(1234)}
-	meta := CachedColumnCollectionFromInstance(obj)
+	meta := Columns(obj)
 
 	col := meta.Lookup()["int64_ptr"]
-	a.NotNil(col)
+	its.NotNil(col)
 
 	var myValue *int
 	err := col.SetValue(&obj, myValue)
-	a.Nil(err)
-	a.Nil(obj.Int64Ptr)
+	its.Nil(err)
+	its.Nil(obj.Int64Ptr)
 }
 
-func TestGetValue(t *testing.T) {
-	a := assert.New(t)
+func Test_Column_GetValue(t *testing.T) {
+	its := assert.New(t)
 	obj := myStruct{EmbeddedMeta: EmbeddedMeta{PrimaryKeyCol: 5}, InferredName: "Hello."}
-	meta := CachedColumnCollectionFromInstance(obj)
+	meta := Columns(obj)
 	pk := meta.PrimaryKeys().FirstOrDefault()
-	a.NotNil(pk)
+	its.NotNil(pk)
 	value := pk.GetValue(&obj)
-	a.NotNil(value)
-	a.Equal(5, value)
+	its.NotNil(value)
+	its.Equal(5, value)
 }

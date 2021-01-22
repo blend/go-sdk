@@ -17,11 +17,6 @@ func NewGroup(options ...GroupOption) *Group {
 	return &g
 }
 
-// NewGroupWithActions is a helper for "migrations.NewGroup(migrations.OptActions(actions ...migration.Actionable))"
-func NewGroupWithActions(actions ...Actionable) *Group {
-	return NewGroup(OptGroupActions(actions...))
-}
-
 // NewGroupWithAction returns a new group with a single action.
 func NewGroupWithAction(guard GuardFunc, action Action, options ...GroupOption) *Group {
 	return NewGroup(

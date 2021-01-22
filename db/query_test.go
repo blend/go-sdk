@@ -13,7 +13,7 @@ func TestQueryExecute(t *testing.T) {
 	a := assert.New(t)
 	tx, err := defaultDB().Begin()
 	a.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	seedErr := seedObjects(10, tx)
 	a.Nil(seedErr)
@@ -29,7 +29,7 @@ func TestQueryEach(t *testing.T) {
 	a := assert.New(t)
 	tx, err := defaultDB().Begin()
 	a.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	seedErr := seedObjects(10, tx)
 	a.Nil(seedErr)
@@ -53,7 +53,7 @@ func TestQueryAny(t *testing.T) {
 	a := assert.New(t)
 	tx, err := defaultDB().Begin()
 	a.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	err = seedObjects(10, tx)
 	a.Nil(err)
@@ -78,7 +78,7 @@ func TestQueryNone(t *testing.T) {
 	a := assert.New(t)
 	tx, err := defaultDB().Begin()
 	a.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	seedErr := seedObjects(10, tx)
 	a.Nil(seedErr)
@@ -103,7 +103,7 @@ func TestQueryPanicHandling(t *testing.T) {
 	a := assert.New(t)
 	tx, err := defaultDB().Begin()
 	a.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	err = seedObjects(10, tx)
 	a.Nil(err)
@@ -124,7 +124,7 @@ func TestMultipleQueriesPerTransaction(t *testing.T) {
 	a := assert.New(t)
 	tx, err := defaultDB().Begin()
 	a.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	wg := sync.WaitGroup{}
 	wg.Add(3)
@@ -171,7 +171,7 @@ func TestMultipleQueriesPerTransactionWithFailure(t *testing.T) {
 	a := assert.New(t)
 	tx, err := defaultDB().Begin()
 	a.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	wg := sync.WaitGroup{}
 	wg.Add(3)
@@ -210,16 +210,18 @@ func TestQueryFirst(t *testing.T) {
 	a := assert.New(t)
 	tx, err := defaultDB().Begin()
 	a.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	seedErr := seedObjects(10, tx)
 	a.Nil(seedErr)
 
 	var first benchObj
-	err = defaultDB().Invoke(OptTx(tx)).Query("select * from bench_object").First(func(r Rows) error {
+	var found bool
+	found, err = defaultDB().Invoke(OptTx(tx)).Query("select * from bench_object").First(func(r Rows) error {
 		return first.Populate(r)
 	})
 	a.Nil(err)
+	a.True(found)
 	a.Equal(1, first.ID)
 }
 
@@ -227,13 +229,13 @@ func TestQueryScan(t *testing.T) {
 	a := assert.New(t)
 	tx, err := defaultDB().Begin()
 	a.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	seedErr := seedObjects(10, tx)
 	a.Nil(seedErr)
 
 	var first benchObj
-	err = defaultDB().Invoke(OptTx(tx)).Query("select * from bench_object").First(func(r Rows) error {
+	_, err = defaultDB().Invoke(OptTx(tx)).Query("select * from bench_object").First(func(r Rows) error {
 		return first.Populate(r)
 	})
 	a.Nil(err)
@@ -244,10 +246,10 @@ func TestQueryExists(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var first benchObj
-	err = defaultDB().Invoke(OptTx(tx)).Query("select * from bench_object").First(func(r Rows) error {
+	_, err = defaultDB().Invoke(OptTx(tx)).Query("select * from bench_object").First(func(r Rows) error {
 		return first.Populate(r)
 	})
 	assert.Nil(err)
@@ -267,11 +269,11 @@ func TestQueryQueryPopulateByname(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var first benchObj
 	cols := Columns(first)
-	err = defaultDB().Invoke(OptTx(tx)).Query("select * from bench_object").First(func(r Rows) error {
+	_, err = defaultDB().Invoke(OptTx(tx)).Query("select * from bench_object").First(func(r Rows) error {
 		return PopulateByName(&first, r, cols)
 	})
 	assert.Nil(err)
@@ -296,7 +298,7 @@ func TestOutWithDirtyStructs(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	err = createTable(tx)
 	assert.Nil(err)
@@ -331,7 +333,7 @@ func TestIntoWithDirtyStructs(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	err = createTable(tx)
 	assert.Nil(err)

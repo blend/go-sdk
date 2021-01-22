@@ -36,7 +36,7 @@ func NewQueryEvent(body string, elapsed time.Duration, options ...QueryEventOpti
 	return qe
 }
 
-// NewQueryEventListener returns a new listener for spiffy events.
+// NewQueryEventListener returns a new listener for query events.
 func NewQueryEventListener(listener func(context.Context, QueryEvent)) logger.Listener {
 	return func(ctx context.Context, e logger.Event) {
 		if typed, isTyped := e.(QueryEvent); isTyped {
@@ -45,41 +45,51 @@ func NewQueryEventListener(listener func(context.Context, QueryEvent)) logger.Li
 	}
 }
 
+// NewQueryEventFilter returns a new query event filter.
+func NewQueryEventFilter(filter func(context.Context, QueryEvent) (QueryEvent, bool)) logger.Filter {
+	return func(ctx context.Context, e logger.Event) (logger.Event, bool) {
+		if typed, isTyped := e.(QueryEvent); isTyped {
+			return filter(ctx, typed)
+		}
+		return e, false
+	}
+}
+
 // QueryEventOption mutates a query event.
 type QueryEventOption func(*QueryEvent)
 
-// OptQueryBody sets a field on the query event.
-func OptQueryBody(value string) QueryEventOption {
+// OptQueryEventBody sets a field on the query event.
+func OptQueryEventBody(value string) QueryEventOption {
 	return func(e *QueryEvent) { e.Body = value }
 }
 
-// OptQueryDatabase sets a field on the query event.
-func OptQueryDatabase(value string) QueryEventOption {
+// OptQueryEventDatabase sets a field on the query event.
+func OptQueryEventDatabase(value string) QueryEventOption {
 	return func(e *QueryEvent) { e.Database = value }
 }
 
-// OptQueryEngine sets a field on the query event.
-func OptQueryEngine(value string) QueryEventOption {
+// OptQueryEventEngine sets a field on the query event.
+func OptQueryEventEngine(value string) QueryEventOption {
 	return func(e *QueryEvent) { e.Engine = value }
 }
 
-// OptQueryUsername sets a field on the query event.
-func OptQueryUsername(value string) QueryEventOption {
+// OptQueryEventUsername sets a field on the query event.
+func OptQueryEventUsername(value string) QueryEventOption {
 	return func(e *QueryEvent) { e.Username = value }
 }
 
-// OptQueryLabel sets a field on the query event.
-func OptQueryLabel(label string) QueryEventOption {
+// OptQueryEventLabel sets a field on the query event.
+func OptQueryEventLabel(label string) QueryEventOption {
 	return func(e *QueryEvent) { e.Label = label }
 }
 
-// OptQueryElapsed sets a field on the query event.
-func OptQueryElapsed(value time.Duration) QueryEventOption {
+// OptQueryEventElapsed sets a field on the query event.
+func OptQueryEventElapsed(value time.Duration) QueryEventOption {
 	return func(e *QueryEvent) { e.Elapsed = value }
 }
 
-// OptQueryErr sets a field on the query event.
-func OptQueryErr(value error) QueryEventOption {
+// OptQueryEventErr sets a field on the query event.
+func OptQueryEventErr(value error) QueryEventOption {
 	return func(e *QueryEvent) { e.Err = value }
 }
 
@@ -99,34 +109,34 @@ func (e QueryEvent) GetFlag() string { return QueryFlag }
 
 // WriteText writes the event text to the output.
 func (e QueryEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
-	io.WriteString(wr, "[")
+	fmt.Fprint(wr, "[")
 	if len(e.Engine) > 0 {
-		io.WriteString(wr, tf.Colorize(e.Engine, ansi.ColorLightWhite))
-		io.WriteString(wr, logger.Space)
+		fmt.Fprint(wr, tf.Colorize(e.Engine, ansi.ColorLightWhite))
+		fmt.Fprint(wr, logger.Space)
 	}
 	if len(e.Username) > 0 {
-		io.WriteString(wr, tf.Colorize(e.Username, ansi.ColorLightWhite))
-		io.WriteString(wr, "@")
+		fmt.Fprint(wr, tf.Colorize(e.Username, ansi.ColorLightWhite))
+		fmt.Fprint(wr, "@")
 	}
-	io.WriteString(wr, tf.Colorize(e.Database, ansi.ColorLightWhite))
-	io.WriteString(wr, "]")
+	fmt.Fprint(wr, tf.Colorize(e.Database, ansi.ColorLightWhite))
+	fmt.Fprint(wr, "]")
 
 	if len(e.Label) > 0 {
-		io.WriteString(wr, logger.Space)
-		io.WriteString(wr, fmt.Sprintf("[%s]", tf.Colorize(e.Label, ansi.ColorLightWhite)))
+		fmt.Fprint(wr, logger.Space)
+		fmt.Fprintf(wr, "[%s]", tf.Colorize(e.Label, ansi.ColorLightWhite))
 	}
 
-	io.WriteString(wr, logger.Space)
-	io.WriteString(wr, e.Elapsed.String())
+	fmt.Fprint(wr, logger.Space)
+	fmt.Fprint(wr, e.Elapsed.String())
 
 	if e.Err != nil {
-		io.WriteString(wr, logger.Space)
-		io.WriteString(wr, tf.Colorize("failed", ansi.ColorRed))
+		fmt.Fprint(wr, logger.Space)
+		fmt.Fprint(wr, tf.Colorize("failed", ansi.ColorRed))
 	}
 
 	if len(e.Body) > 0 {
-		io.WriteString(wr, logger.Space)
-		io.WriteString(wr, stringutil.CompressSpace(e.Body))
+		fmt.Fprint(wr, logger.Space)
+		fmt.Fprint(wr, stringutil.CompressSpace(e.Body))
 	}
 }
 

@@ -8,9 +8,6 @@ import (
 	"testing"
 	"time"
 
-	// tests uses postgres
-	_ "github.com/lib/pq"
-
 	"github.com/blend/go-sdk/uuid"
 )
 
@@ -20,17 +17,12 @@ import (
 
 // TestMain is the testing entrypoint.
 func TestMain(m *testing.M) {
-	conn, err := New(OptConfigFromEnv())
+	conn, err := OpenTestConnection()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%+v", err)
+		fmt.Fprintf(os.Stderr, "%+v\n", err)
 		os.Exit(1)
 	}
-	err = openDefaultDB(conn)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%+v", err)
-		os.Exit(1)
-	}
-
+	setDefaultDB(conn)
 	os.Exit(m.Run())
 }
 
@@ -95,6 +87,14 @@ func BenchmarkMain(b *testing.B) {
 	}
 
 	b.Logf("Benchmark Test Results:\nManual: %v \nOrm: %v\nOrm (Cached Plan): %v\n", manual, orm, ormCached)
+}
+
+// OpenTestConnection opens a test connection from the environment, disabling ssl.
+//
+// You should not use this function in production like settings, this is why it is kept in the _test.go file.
+func OpenTestConnection(opts ...Option) (*Connection, error) {
+	defaultOptions := []Option{OptConfigFromEnv(), OptSSLMode(SSLModeDisable)}
+	return Open(New(append(defaultOptions, opts...)...))
 }
 
 //------------------------------------------------------------------------------------------------
@@ -203,7 +203,7 @@ func readManual(tx *sql.Tx) ([]benchObj, error) {
 	defer readStmt.Close()
 
 	rows, err := readStmt.Query()
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	if err != nil {
 		return nil, err
 	}
@@ -242,15 +242,6 @@ func setDefaultDB(conn *Connection) {
 
 func defaultDB() *Connection {
 	return defaultConnection
-}
-
-func openDefaultDB(conn *Connection) error {
-	err := conn.Open()
-	if err != nil {
-		return err
-	}
-	setDefaultDB(conn)
-	return nil
 }
 
 type mockTracer struct {

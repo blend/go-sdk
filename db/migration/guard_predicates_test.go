@@ -13,7 +13,7 @@ func TestGuardPredicatesReal(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	tName := "table_test_foo"
 	cName := "constraint_foo"
@@ -107,7 +107,7 @@ func TestGuardPredicatsRealSchema(t *testing.T) {
 	assert := assert.New(t)
 	tx, err := defaultDB().Begin()
 	assert.Nil(err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	sName := "schema_test_bar"
 	colName := "created_bar"
