@@ -128,7 +128,7 @@ func (q *Query) Each(consumer RowsConsumer) (err error) {
 
 // First executes the consumer for the first result of a query.
 // It returns `ErrTooManyRows` if more than one result is returned.
-func (q *Query) First(consumer RowsConsumer) (err error) {
+func (q *Query) First(consumer RowsConsumer) (found bool, err error) {
 	var rows *sql.Rows
 	defer func() {
 		err = q.finish(recover(), err)
@@ -138,7 +138,7 @@ func (q *Query) First(consumer RowsConsumer) (err error) {
 	if err != nil {
 		return
 	}
-	err = First(rows, consumer)
+	found, err = First(rows, consumer)
 	return
 }
 
@@ -165,7 +165,7 @@ func (q *Query) query() (rows *sql.Rows, err error) {
 }
 
 func (q *Query) finish(r interface{}, err error) error {
-	return q.Invocation.Finish(q.Statement, r, nil, err)
+	return q.Invocation.finish(q.Statement, r, nil, err)
 }
 
 // Out reads a given rows set out into an object reference.
@@ -175,7 +175,7 @@ func Out(rows *sql.Rows, object interface{}) (found bool, err error) {
 		err = Error(ErrDestinationNotStruct)
 		return
 	}
-	columnMeta := CachedColumnCollectionFromInstance(object)
+	columnMeta := Columns(object)
 	if rows.Next() {
 		found = true
 		if populatable, ok := object.(Populatable); ok {
@@ -206,7 +206,7 @@ func OutMany(rows *sql.Rows, collection interface{}) (err error) {
 	sliceInnerType := ReflectSliceType(collection)
 	collectionValue := ReflectValue(collection)
 	v := makeNew(sliceInnerType)
-	meta := CachedColumnCollectionFromType(newColumnCacheKey(sliceInnerType), sliceInnerType)
+	meta := ColumnsFromType(newColumnCacheKey(sliceInnerType), sliceInnerType)
 
 	isPopulatable := IsPopulatable(v)
 
@@ -247,8 +247,8 @@ func Each(rows *sql.Rows, consumer RowsConsumer) (err error) {
 
 // First returns the first result of a result set to a consumer.
 // If there are more than one row in the result, they are ignored.
-func First(rows *sql.Rows, consumer RowsConsumer) (err error) {
-	if rows.Next() {
+func First(rows *sql.Rows, consumer RowsConsumer) (found bool, err error) {
+	if found = rows.Next(); found {
 		if err = consumer(rows); err != nil {
 			return
 		}

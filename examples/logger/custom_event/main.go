@@ -67,7 +67,7 @@ func main() {
 
 	ctx := context.Background()
 
-	event := NewCustomEvent("bailey", "session0", "Console Demo")
+	event := NewCustomEvent("example-string", "session0", "Console Demo")
 
 	text.TriggerContext(ctx, event)
 	text.Write(ctx, event)

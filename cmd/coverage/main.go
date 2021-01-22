@@ -32,7 +32,7 @@ var covermode = flag.String("covermode", "atomic", "the go test covermode.")
 var coverprofile = flag.String("coverprofile", "coverage.cov", "the intermediate cover profile.")
 var keepCoverageOut = flag.Bool("keep-coverage-out", false, "if we should keep coverage.out")
 var v = flag.Bool("v", false, "show verbose output")
-var exitOnFirstCoverageFailure = flag.Bool("exit-first", true, "exit on first coverage failure; when disabled this will produce full coverage reports even on coverage failures")
+var exitFirst = flag.Bool("exit-first", true, "exit on first coverage failure; when disabled this will produce full coverage reports even on coverage failures")
 
 var (
 	includes Paths
@@ -124,9 +124,8 @@ func walkPath(walkedPath string, fullCoverageData *os.File) []error {
 
 	maybeFatal(filepath.Walk(rootPath, func(currentPath string, info os.FileInfo, fileErr error) error {
 		packageCoverReport, err := getPackageCoverage(currentPath, info, fileErr)
-
 		if err != nil {
-			if *exitOnFirstCoverageFailure || len(packageCoverReport) == 0 {
+			if (exitFirst != nil && *exitFirst) || len(packageCoverReport) == 0 {
 				return err
 			}
 			coverageErrors = append(coverageErrors, err)

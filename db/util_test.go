@@ -1,52 +1,22 @@
 package db
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
 )
 
-func TestMakeCsvTokens(t *testing.T) {
-	a := assert.New(t)
+func Test_ParamTokensCSV(t *testing.T) {
+	its := assert.New(t)
 
 	one := ParamTokensCSV(1)
 	two := ParamTokensCSV(2)
 	three := ParamTokensCSV(3)
 
-	a.Equal("$1", one)
-	a.Equal("$1,$2", two)
-	a.Equal("$1,$2,$3", three)
-}
-
-func TestReflectSliceType(t *testing.T) {
-	assert := assert.New(t)
-
-	objects := []benchObj{
-		{}, {}, {},
-	}
-
-	ot := ReflectSliceType(objects)
-	assert.Equal("benchObj", ot.Name())
-}
-
-func TestMakeSliceOfType(t *testing.T) {
-	a := assert.New(t)
-	tx, txErr := defaultDB().Begin()
-	a.Nil(txErr)
-	defer func() {
-		a.Nil(tx.Rollback())
-	}()
-
-	seedErr := seedObjects(10, tx)
-	a.Nil(seedErr)
-
-	myType := ReflectType(benchObj{})
-	sliceOfT, castOk := makeSliceOfType(myType).(*[]benchObj)
-	a.True(castOk)
-
-	allErr := defaultDB().Invoke(OptTx(tx)).All(sliceOfT)
-	a.Nil(allErr)
-	a.NotEmpty(*sliceOfT)
+	its.Equal("$1", one)
+	its.Equal("$1,$2", two)
+	its.Equal("$1,$2,$3", three)
 }
 
 type SimpleType struct {
@@ -76,14 +46,37 @@ func (est EmbeddedSimpleType) TableName() string {
 	return "embedded_simple_type"
 }
 
-func TestTableName(t *testing.T) {
-	assert := assert.New(t)
+func Test_TableName(t *testing.T) {
+	its := assert.New(t)
 
-	assert.Equal("simpletype", TableName(SimpleType{}))
-	assert.Equal("simpletype", TableName(&SimpleType{}))
-	assert.Equal("not_simple_type_with_name", TableName(SimpleTypeWithName{}))
-	assert.Equal("not_simple_type_with_name", TableName(&SimpleTypeWithName{}))
+	its.Equal("SimpleType", TableName(SimpleType{}))
+	its.Equal("SimpleType", TableName(new(SimpleType)))
 
-	assert.Equal("embedded_simple_type", TableName(EmbeddedSimpleType{}))
-	assert.Equal("embedded_simple_type", TableName(&EmbeddedSimpleType{}))
+	its.Equal("not_simple_type_with_name", TableName(SimpleTypeWithName{}))
+	its.Equal("not_simple_type_with_name", TableName(new(SimpleTypeWithName)))
+
+	its.Equal("embedded_simple_type", TableName(EmbeddedSimpleType{}))
+	its.Equal("embedded_simple_type", TableName(new(EmbeddedSimpleType)))
+}
+
+func Test_TableNameByType(t *testing.T) {
+	its := assert.New(t)
+
+	tt := reflect.TypeOf(SimpleType{})
+	its.Equal("SimpleType", TableNameByType(tt))
+
+	tt = reflect.TypeOf(new(SimpleType))
+	its.Equal("SimpleType", TableNameByType(tt))
+
+	tt = reflect.TypeOf(SimpleTypeWithName{})
+	its.Equal("not_simple_type_with_name", TableNameByType(tt))
+
+	tt = reflect.TypeOf(new(SimpleTypeWithName))
+	its.Equal("not_simple_type_with_name", TableNameByType(tt))
+
+	tt = reflect.TypeOf(EmbeddedSimpleType{})
+	its.Equal("embedded_simple_type", TableNameByType(tt))
+
+	tt = reflect.TypeOf(new(EmbeddedSimpleType))
+	its.Equal("embedded_simple_type", TableNameByType(tt))
 }

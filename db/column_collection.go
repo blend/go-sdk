@@ -1,8 +1,6 @@
 package db
 
 import (
-	"encoding/json"
-	"fmt"
 	"reflect"
 	"strings"
 	"sync"
@@ -11,9 +9,44 @@ import (
 )
 
 var (
-	metaCacheLock sync.Mutex
-	metaCache     map[string]*ColumnCollection
+	metaCacheMu sync.RWMutex
+	metaCache   = make(map[string]*ColumnCollection)
 )
+
+// --------------------------------------------------------------------------------
+// Common helpers
+// --------------------------------------------------------------------------------
+
+// Columns returns the cached column metadata for an object.
+func Columns(object DatabaseMapped) *ColumnCollection {
+	objectType := reflect.TypeOf(object)
+	return ColumnsFromType(newColumnCacheKey(objectType), objectType)
+}
+
+// ColumnsFromType reflects a reflect.Type into a column collection.
+// The results of this are cached for speed.
+func ColumnsFromType(identifier string, t reflect.Type) *ColumnCollection {
+	// check with read lock ...
+	metaCacheMu.RLock()
+	if value, ok := metaCache[identifier]; ok {
+		metaCacheMu.RUnlock()
+		return value
+	}
+	metaCacheMu.RUnlock()
+
+	// grab write lock ...
+	metaCacheMu.Lock()
+	defer metaCacheMu.Unlock()
+
+	// double checked lock
+	if value, ok := metaCache[identifier]; ok {
+		return value
+	}
+
+	metadata := NewColumnCollection(generateColumnsForType(nil, t)...)
+	metaCache[identifier] = metadata
+	return metadata
+}
 
 // --------------------------------------------------------------------------------
 // Utility
@@ -21,12 +54,7 @@ var (
 
 // ColumnNamesCSV returns a csv of column names.
 func ColumnNamesCSV(object DatabaseMapped) string {
-	return CachedColumnCollectionFromInstance(object).ColumnNamesCSV()
-}
-
-// Columns returns the cached column metadata for an object.
-func Columns(object DatabaseMapped) *ColumnCollection {
-	return CachedColumnCollectionFromInstance(object)
+	return Columns(object).ColumnNamesCSV()
 }
 
 // --------------------------------------------------------------------------------
@@ -34,11 +62,32 @@ func Columns(object DatabaseMapped) *ColumnCollection {
 // --------------------------------------------------------------------------------
 
 // NewColumnCollection returns a new empty column collection.
-func NewColumnCollection() *ColumnCollection { return &ColumnCollection{lookup: map[string]*Column{}} }
+func NewColumnCollection(columns ...Column) *ColumnCollection {
+	cc := ColumnCollection{
+		columns: columns,
+	}
+	lookup := make(map[string]*Column)
+	for i := 0; i < len(columns); i++ {
+		col := &columns[i]
+		lookup[col.ColumnName] = col
+	}
+	cc.lookup = lookup
+	return &cc
+}
 
 // NewColumnCollectionWithPrefix makes a new column collection with a column prefix.
-func NewColumnCollectionWithPrefix(columnPrefix string) *ColumnCollection {
-	return &ColumnCollection{lookup: map[string]*Column{}, columnPrefix: columnPrefix}
+func NewColumnCollectionWithPrefix(columnPrefix string, columns ...Column) *ColumnCollection {
+	cc := ColumnCollection{
+		columns: columns,
+	}
+	lookup := make(map[string]*Column)
+	for i := 0; i < len(columns); i++ {
+		col := &columns[i]
+		lookup[col.ColumnName] = col
+	}
+	cc.lookup = lookup
+	cc.columnPrefix = columnPrefix
+	return &cc
 }
 
 // ColumnCollection represents the column metadata for a given struct.
@@ -93,12 +142,12 @@ func (cc *ColumnCollection) HasColumn(columnName string) bool {
 
 // Copy creates a new column collection instance and carries over an existing column prefix.
 func (cc ColumnCollection) Copy() *ColumnCollection {
-	return newColumnCollectionWithPrefixFromColumns(cc.columnPrefix, cc.columns)
+	return NewColumnCollectionWithPrefix(cc.columnPrefix, cc.columns...)
 }
 
 // CopyWithColumnPrefix applies a column prefix to column names and returns a new column collection.
 func (cc ColumnCollection) CopyWithColumnPrefix(prefix string) *ColumnCollection {
-	return newColumnCollectionWithPrefixFromColumns(prefix, cc.columns)
+	return NewColumnCollectionWithPrefix(prefix, cc.columns...)
 }
 
 // InsertColumns are non-auto, non-readonly columns.
@@ -257,6 +306,34 @@ func (cc *ColumnCollection) NotReadOnly() *ColumnCollection {
 	return cc.notReadOnly
 }
 
+// Zero returns unset fields on an instance that correspond to fields in the column collection.
+func (cc *ColumnCollection) Zero(instance interface{}) *ColumnCollection {
+	objValue := ReflectValue(instance)
+	newCC := NewColumnCollectionWithPrefix(cc.columnPrefix)
+	var fieldValue reflect.Value
+	for _, c := range cc.columns {
+		fieldValue = objValue.Field(c.Index)
+		if fieldValue.IsZero() {
+			newCC.Add(c)
+		}
+	}
+	return newCC
+}
+
+// NotZero returns set fields on an instance that correspond to fields in the column collection.
+func (cc *ColumnCollection) NotZero(instance interface{}) *ColumnCollection {
+	objValue := ReflectValue(instance)
+	newCC := NewColumnCollectionWithPrefix(cc.columnPrefix)
+	var fieldValue reflect.Value
+	for _, c := range cc.columns {
+		fieldValue = objValue.Field(c.Index)
+		if !fieldValue.IsZero() {
+			newCC.Add(c)
+		}
+	}
+	return newCC
+}
+
 // ColumnNames returns the string names for all the columns in the collection.
 func (cc *ColumnCollection) ColumnNames() []string {
 	if cc == nil {
@@ -266,7 +343,7 @@ func (cc *ColumnCollection) ColumnNames() []string {
 	for x := 0; x < len(cc.columns); x++ {
 		c := cc.columns[x]
 		if len(cc.columnPrefix) != 0 {
-			names[x] = fmt.Sprintf("%s%s", cc.columnPrefix, c.ColumnName)
+			names[x] = cc.columnPrefix + c.ColumnName
 		} else {
 			names[x] = c.ColumnName
 		}
@@ -284,7 +361,7 @@ func (cc *ColumnCollection) Lookup() map[string]*Column {
 	if len(cc.columnPrefix) != 0 {
 		lookup := map[string]*Column{}
 		for key, value := range cc.lookup {
-			lookup[fmt.Sprintf("%s%s", cc.columnPrefix, key)] = value
+			lookup[cc.columnPrefix+key] = value
 		}
 		return lookup
 	}
@@ -296,10 +373,10 @@ func (cc *ColumnCollection) ColumnNamesFromAlias(tableAlias string) []string {
 	names := make([]string, len(cc.columns))
 	for x := 0; x < len(cc.columns); x++ {
 		c := cc.columns[x]
-		if len(cc.columnPrefix) != 0 {
-			names[x] = fmt.Sprintf("%s.%s as %s%s", tableAlias, c.ColumnName, cc.columnPrefix, c.ColumnName)
+		if cc.columnPrefix != "" {
+			names[x] = tableAlias + "." + c.ColumnName + " as " + cc.columnPrefix + c.ColumnName
 		} else {
-			names[x] = fmt.Sprintf("%s.%s", tableAlias, c.ColumnName)
+			names[x] = tableAlias + "." + c.ColumnName
 		}
 	}
 	return names
@@ -307,16 +384,7 @@ func (cc *ColumnCollection) ColumnNamesFromAlias(tableAlias string) []string {
 
 // ColumnNamesCSVFromAlias returns the string names for all the columns in the collection.
 func (cc *ColumnCollection) ColumnNamesCSVFromAlias(tableAlias string) string {
-	names := make([]string, len(cc.columns))
-	for x := 0; x < len(cc.columns); x++ {
-		c := cc.columns[x]
-		if len(cc.columnPrefix) != 0 {
-			names[x] = fmt.Sprintf("%s.%s as %s%s", tableAlias, c.ColumnName, cc.columnPrefix, c.ColumnName)
-		} else {
-			names[x] = fmt.Sprintf("%s.%s", tableAlias, c.ColumnName)
-		}
-	}
-	return stringutil.CSV(names)
+	return stringutil.CSV(cc.ColumnNamesFromAlias(tableAlias))
 }
 
 // ColumnValues returns the reflected value for all the columns on a given instance.
@@ -328,12 +396,7 @@ func (cc *ColumnCollection) ColumnValues(instance interface{}) []interface{} {
 		c := cc.columns[x]
 		valueField := value.FieldByName(c.FieldName)
 		if c.IsJSON {
-			jsonBytes, _ := json.Marshal(valueField.Interface())
-			if result := string(jsonBytes); result != "null" { // explicitly bad.
-				values[x] = result
-			} else {
-				values[x] = nil
-			}
+			values[x] = JSON(valueField.Interface())
 		} else {
 			values[x] = valueField.Interface()
 		}
@@ -359,7 +422,7 @@ func (cc *ColumnCollection) ConcatWith(other *ColumnCollection) *ColumnCollectio
 	for y := 0; y < len(other.columns); y++ {
 		total[x+y] = other.columns[y]
 	}
-	return newColumnCollectionFromColumns(total)
+	return NewColumnCollection(total...)
 }
 
 func (cc *ColumnCollection) String() string {
@@ -375,30 +438,6 @@ func (cc *ColumnCollection) ColumnNamesCSV() string {
 // helpers
 //
 
-// newColumnCollectionFromColumns creates a column lookup for a slice of columns.
-func newColumnCollectionFromColumns(columns []Column) *ColumnCollection {
-	cc := ColumnCollection{columns: columns}
-	lookup := make(map[string]*Column)
-	for i := 0; i < len(columns); i++ {
-		col := &columns[i]
-		lookup[col.ColumnName] = col
-	}
-	cc.lookup = lookup
-	return &cc
-}
-
-// newColumnCollectionWithPrefixFromColumns creates a column lookup for a slice of columns.
-func newColumnCollectionWithPrefixFromColumns(prefix string, columns []Column) *ColumnCollection {
-	cc := ColumnCollection{columns: columns, columnPrefix: prefix}
-	lookup := make(map[string]*Column)
-	for i := 0; i < len(columns); i++ {
-		col := &columns[i]
-		lookup[col.ColumnName] = col
-	}
-	cc.lookup = lookup
-	return &cc
-}
-
 // newColumnCacheKey creates a cache key for a type.
 func newColumnCacheKey(objectType reflect.Type) string {
 	typeName := objectType.String()
@@ -410,31 +449,6 @@ func newColumnCacheKey(objectType reflect.Type) string {
 		return typeName + "_" + typed.TableName()
 	}
 	return typeName
-}
-
-// CachedColumnCollectionFromInstance reflects an object instance into a new column collection.
-func CachedColumnCollectionFromInstance(object interface{}) *ColumnCollection {
-	objectType := reflect.TypeOf(object)
-	return CachedColumnCollectionFromType(newColumnCacheKey(objectType), objectType)
-}
-
-// CachedColumnCollectionFromType reflects a reflect.Type into a column collection.
-// The results of this are cached for speed.
-func CachedColumnCollectionFromType(identifier string, t reflect.Type) *ColumnCollection {
-	metaCacheLock.Lock()
-	defer metaCacheLock.Unlock()
-
-	if metaCache == nil {
-		metaCache = map[string]*ColumnCollection{}
-	}
-
-	cachedMeta, ok := metaCache[identifier]
-	if !ok {
-		metadata := newColumnCollectionFromColumns(generateColumnsForType(nil, t))
-		metaCache[identifier] = metadata
-		return metadata
-	}
-	return cachedMeta
 }
 
 // generateColumnsForType generates a column list for a given type.

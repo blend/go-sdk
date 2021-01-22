@@ -32,8 +32,8 @@ func main() {
 	app.ServeStatic("/static_unauthed", []string{"_static"})
 
 	app.Auth.ValidateHandler = func(_ context.Context, session *web.Session) error {
-		if session.UserID == "bailey" {
-			return fmt.Errorf("bailey isn't allowed here")
+		if session.UserID == "example-string" {
+			return fmt.Errorf("example-string isn't allowed here")
 		}
 		return nil
 	}

@@ -6,7 +6,7 @@ import (
 
 const (
 	// DefaultEngine is the default database engine.
-	DefaultEngine = "postgres"
+	DefaultEngine = "pgx" // "postgres"
 
 	// EnvVarDatabaseURL is an environment variable.
 	EnvVarDatabaseURL = "DATABASE_URL"
@@ -29,9 +29,6 @@ const (
 	// DefaultSchema is the default schema to connect to
 	DefaultSchema = "public"
 
-	// DefaultConnectTimeout is the default connect timeout.
-	DefaultConnectTimeout = 5
-
 	// SSLModeDisable is an ssl mode.
 	// Postgres Docs: "I don't care about security, and I don't want to pay the overhead of encryption."
 	SSLModeDisable = "disable"
@@ -50,6 +47,9 @@ const (
 	// SSLModeVerifyFull is an ssl mode.
 	// Postgres Docs: "I want my data encrypted, and I accept the overhead. I want to be sure that I connect to a server I trust, and that it's the one I specify."
 	SSLModeVerifyFull = "verify-full"
+
+	// DefaultConnectTimeout is the default connect timeout.
+	DefaultConnectTimeout = 5 * time.Second
 
 	// DefaultIdleConnections is the default number of idle connections.
 	DefaultIdleConnections = 16

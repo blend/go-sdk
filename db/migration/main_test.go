@@ -1,11 +1,10 @@
 package migration
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
-
-	_ "github.com/lib/pq"
 
 	"github.com/blend/go-sdk/db"
 	"github.com/blend/go-sdk/logger"
@@ -13,7 +12,10 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	conn, err := db.New(db.OptConfigFromEnv())
+	conn, err := db.New(
+		db.OptConfigFromEnv(),
+		db.OptSSLMode(db.SSLModeDisable),
+	)
 	if err != nil {
 		logger.FatalExit(err)
 	}
@@ -48,4 +50,8 @@ func openDefaultDB(conn *db.Connection) error {
 
 func buildTestSchemaName() string {
 	return fmt.Sprintf("test_sch_%s", stringutil.Random(stringutil.LowerLetters, 10))
+}
+
+func todo() context.Context {
+	return context.TODO()
 }

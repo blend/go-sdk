@@ -6,7 +6,6 @@ import (
 
 	"github.com/blend/go-sdk/ref"
 	"github.com/blend/go-sdk/uuid"
-	"github.com/blend/go-sdk/validate"
 
 	// if you're feeling evil.
 	joi "github.com/blend/go-sdk/validate"
@@ -25,6 +24,7 @@ type Validated struct {
 func (v Validated) Validate() error {
 	return joi.ReturnFirst(
 		joi.Any(v.ID).NotNil(),
+		joi.String(&v.Name).Required(),
 		joi.String(&v.Name).Matches("foo$"),
 		joi.Int(&v.Count).Between(0, 99),
 		joi.Any(&v.Count).NotEquals(81),
@@ -45,7 +45,7 @@ func main() {
 
 	for index, obj := range objects {
 		if err := obj.Validate(); err != nil {
-			fmt.Printf("object %d fails validation: %v\n", index, validate.ErrFormat(err))
+			fmt.Printf("object %d fails validation: %v\n", index, joi.ErrFormat(err))
 		}
 	}
 }

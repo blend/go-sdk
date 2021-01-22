@@ -19,7 +19,7 @@ func NewColumnFromFieldTag(field reflect.StructField) *Column {
 	if db != "-" {
 		col := Column{}
 		col.FieldName = field.Name
-		col.ColumnName = strings.ToLower(field.Name)
+		col.ColumnName = field.Name
 		col.FieldType = field.Type
 		if db != "" {
 			pieces := strings.Split(db, ",")
@@ -165,16 +165,6 @@ func (c Column) SetValueReflected(objectValue reflect.Value, value interface{}) 
 	}
 
 	return ex.New("set value; ran out of ways to set the field").WithMessagef("field: %s, value: %#v", c.FieldName, value)
-}
-
-// haveSameUnderlyingTypes returns if T and V are such that V is *T or V is **T etc.
-// It handles the cases where we're assigning T = convert(**T) which can happen when we're setting up
-// scan output array.
-// Convert can smush T and **T together somehow.
-func haveSameUnderlyingTypes(t, v reflect.Value) bool {
-	tt := t.Type()
-	tv := ReflectType(v)
-	return tv.AssignableTo(tt) || tv.ConvertibleTo(tt)
 }
 
 // GetValue returns the value for a column on a given database mapped object.

@@ -38,8 +38,8 @@ type Invocation struct {
 
 // Exec executes a sql statement with a given set of arguments and returns the rows affected.
 func (i *Invocation) Exec(statement string, args ...interface{}) (res sql.Result, err error) {
-	statement = i.Start(statement)
-	defer func() { err = i.Finish(statement, recover(), res, err) }()
+	statement = i.start(statement)
+	defer func() { err = i.finish(statement, recover(), res, err) }()
 
 	res, err = i.DB.ExecContext(i.Context, statement, args...)
 	if err != nil {
@@ -53,7 +53,7 @@ func (i *Invocation) Exec(statement string, args ...interface{}) (res sql.Result
 func (i *Invocation) Query(statement string, args ...interface{}) *Query {
 	return &Query{
 		Invocation: i,
-		Statement:  i.Start(statement),
+		Statement:  i.start(statement),
 		Args:       args,
 	}
 }
@@ -85,11 +85,11 @@ func (i *Invocation) Create(object DatabaseMapped) (err error) {
 	var queryBody string
 	var insertCols, autos *ColumnCollection
 	var res sql.Result
-	defer func() { err = i.Finish(queryBody, recover(), res, err) }()
+	defer func() { err = i.finish(queryBody, recover(), res, err) }()
 
 	i.Label, queryBody, insertCols, autos = i.generateCreate(object)
 
-	queryBody = i.Start(queryBody)
+	queryBody = i.start(queryBody)
 	if autos.Len() == 0 {
 		if res, err = i.DB.ExecContext(i.Context, queryBody, insertCols.ColumnValues(object)...); err != nil {
 			err = Error(err)
@@ -98,12 +98,12 @@ func (i *Invocation) Create(object DatabaseMapped) (err error) {
 		return
 	}
 
-	autoValues := i.AutoValues(autos)
+	autoValues := i.autoValues(autos)
 	if err = i.DB.QueryRowContext(i.Context, queryBody, insertCols.ColumnValues(object)...).Scan(autoValues...); err != nil {
 		err = Error(err)
 		return
 	}
-	if err = i.SetAutos(object, autos, autoValues); err != nil {
+	if err = i.setAutos(object, autos, autoValues); err != nil {
 		err = Error(err)
 		return
 	}
@@ -118,11 +118,11 @@ func (i *Invocation) CreateIfNotExists(object DatabaseMapped) (err error) {
 	var queryBody string
 	var insertCols *ColumnCollection
 	var res sql.Result
-	defer func() { err = i.Finish(queryBody, recover(), res, err) }()
+	defer func() { err = i.finish(queryBody, recover(), res, err) }()
 
 	i.Label, queryBody, insertCols = i.generateCreateIfNotExists(object)
 
-	queryBody = i.Start(queryBody)
+	queryBody = i.start(queryBody)
 	if res, err = i.DB.ExecContext(i.Context, queryBody, insertCols.ColumnValues(object)...); err != nil {
 		err = Error(err)
 	}
@@ -135,7 +135,7 @@ func (i *Invocation) CreateMany(objects interface{}) (err error) {
 	var insertCols *ColumnCollection
 	var sliceValue reflect.Value
 	var res sql.Result
-	defer func() { err = i.Finish(queryBody, recover(), res, err) }()
+	defer func() { err = i.finish(queryBody, recover(), res, err) }()
 
 	queryBody, insertCols, sliceValue = i.generateCreateMany(objects)
 	if sliceValue.Len() == 0 {
@@ -143,7 +143,7 @@ func (i *Invocation) CreateMany(objects interface{}) (err error) {
 		return
 	}
 
-	queryBody = i.Start(queryBody)
+	queryBody = i.start(queryBody)
 	var colValues []interface{}
 	for row := 0; row < sliceValue.Len(); row++ {
 		colValues = append(colValues, insertCols.ColumnValues(sliceValue.Index(row).Interface())...)
@@ -165,11 +165,11 @@ func (i *Invocation) Update(object DatabaseMapped) (updated bool, err error) {
 	var queryBody string
 	var pks, updateCols *ColumnCollection
 	var res sql.Result
-	defer func() { err = i.Finish(queryBody, recover(), res, err) }()
+	defer func() { err = i.finish(queryBody, recover(), res, err) }()
 
 	i.Label, queryBody, pks, updateCols = i.generateUpdate(object)
 
-	queryBody = i.Start(queryBody)
+	queryBody = i.start(queryBody)
 	res, err = i.DB.ExecContext(
 		i.Context,
 		queryBody,
@@ -180,9 +180,12 @@ func (i *Invocation) Update(object DatabaseMapped) (updated bool, err error) {
 		return
 	}
 
-	// The error here is intentionally ignored. Postgres supports this.
-	// We'd need to revisit swallowing this error for other drivers.
-	rowCount, _ := res.RowsAffected()
+	var rowCount int64
+	rowCount, err = res.RowsAffected()
+	if err != nil {
+		err = Error(err)
+		return
+	}
 	if rowCount > 0 {
 		updated = true
 	}
@@ -192,15 +195,16 @@ func (i *Invocation) Update(object DatabaseMapped) (updated bool, err error) {
 	return
 }
 
-// Upsert inserts the object if it doesn't exist already (as defined by its primary keys) or updates it wrapped in a transaction.
+// Upsert inserts the object if it doesn't exist already (as defined by its primary keys) or updates it atomically.
+// It returns `found` as true if the effect was an upsert, i.e. the pk was found.
 func (i *Invocation) Upsert(object DatabaseMapped) (err error) {
 	var queryBody string
 	var autos, upsertCols *ColumnCollection
-	defer func() { err = i.Finish(queryBody, recover(), nil, err) }()
+	defer func() { err = i.finish(queryBody, recover(), nil, err) }()
 
 	i.Label, queryBody, autos, upsertCols = i.generateUpsert(object)
 
-	queryBody = i.Start(queryBody)
+	queryBody = i.start(queryBody)
 	if autos.Len() == 0 {
 		if _, err = i.Exec(queryBody, upsertCols.ColumnValues(object)...); err != nil {
 			return
@@ -208,16 +212,15 @@ func (i *Invocation) Upsert(object DatabaseMapped) (err error) {
 		return
 	}
 
-	autoValues := i.AutoValues(autos)
+	autoValues := i.autoValues(autos)
 	if err = i.DB.QueryRowContext(i.Context, queryBody, upsertCols.ColumnValues(object)...).Scan(autoValues...); err != nil {
 		err = Error(err)
 		return
 	}
-	if err = i.SetAutos(object, autos, autoValues); err != nil {
+	if err = i.setAutos(object, autos, autoValues); err != nil {
 		err = Error(err)
 		return
 	}
-
 	return
 }
 
@@ -225,13 +228,13 @@ func (i *Invocation) Upsert(object DatabaseMapped) (err error) {
 func (i *Invocation) Exists(object DatabaseMapped) (exists bool, err error) {
 	var queryBody string
 	var pks *ColumnCollection
-	defer func() { err = i.Finish(queryBody, recover(), nil, err) }()
+	defer func() { err = i.finish(queryBody, recover(), nil, err) }()
 
 	if i.Label, queryBody, pks, err = i.generateExists(object); err != nil {
 		err = Error(err)
 		return
 	}
-	queryBody = i.Start(queryBody)
+	queryBody = i.start(queryBody)
 	var value int
 	if queryErr := i.DB.QueryRowContext(i.Context, queryBody, pks.ColumnValues(object)...).Scan(&value); queryErr != nil && !ex.Is(queryErr, sql.ErrNoRows) {
 		err = Error(queryErr)
@@ -249,25 +252,29 @@ func (i *Invocation) Delete(object DatabaseMapped) (deleted bool, err error) {
 	var queryBody string
 	var pks *ColumnCollection
 	var res sql.Result
-	defer func() { err = i.Finish(queryBody, recover(), res, err) }()
+	defer func() { err = i.finish(queryBody, recover(), res, err) }()
 
 	if i.Label, queryBody, pks, err = i.generateDelete(object); err != nil {
 		return
 	}
 
-	queryBody = i.Start(queryBody)
+	queryBody = i.start(queryBody)
 	res, err = i.DB.ExecContext(i.Context, queryBody, pks.ColumnValues(object)...)
 	if err != nil {
 		err = Error(err)
 		return
 	}
-	// The error here is intentionally ignored. Postgres supports this. We'd need to revisit swallowing this error
-	// for other drivers
-	ra64, _ := res.RowsAffected()
-	if ra64 > 0 {
+
+	var rowCount int64
+	rowCount, err = res.RowsAffected()
+	if err != nil {
+		err = Error(err)
+		return
+	}
+	if rowCount > 0 {
 		deleted = true
 	}
-	if ra64 > 1 {
+	if rowCount > 1 {
 		err = Error(ErrTooManyRows)
 	}
 	return
@@ -280,7 +287,7 @@ func (i *Invocation) Delete(object DatabaseMapped) (deleted bool, err error) {
 func (i *Invocation) generateGet(object DatabaseMapped) (cachePlan, queryBody string, err error) {
 	tableName := TableName(object)
 
-	cols := CachedColumnCollectionFromInstance(object).NotReadOnly()
+	cols := Columns(object).NotReadOnly()
 	pks := cols.PrimaryKeys()
 	if pks.Len() == 0 {
 		err = Error(ErrNoPrimaryKey)
@@ -321,7 +328,7 @@ func (i *Invocation) generateGetAll(collection interface{}) (statementLabel, que
 	collectionType := ReflectSliceType(collection)
 	tableName := TableNameByType(collectionType)
 
-	cols := CachedColumnCollectionFromType(tableName, ReflectSliceType(collection)).NotReadOnly()
+	cols := ColumnsFromType(tableName, ReflectSliceType(collection)).NotReadOnly()
 
 	queryBodyBuffer := i.BufferPool.Get()
 	defer i.BufferPool.Put(queryBodyBuffer)
@@ -344,8 +351,8 @@ func (i *Invocation) generateGetAll(collection interface{}) (statementLabel, que
 func (i *Invocation) generateCreate(object DatabaseMapped) (statementLabel, queryBody string, insertCols, autos *ColumnCollection) {
 	tableName := TableName(object)
 
-	cols := CachedColumnCollectionFromInstance(object)
-	insertCols = cols.InsertColumns()
+	cols := Columns(object)
+	insertCols = cols.InsertColumns().ConcatWith(cols.Autos().NotZero(object))
 	autos = cols.Autos()
 
 	queryBodyBuffer := i.BufferPool.Get()
@@ -380,9 +387,9 @@ func (i *Invocation) generateCreate(object DatabaseMapped) (statementLabel, quer
 }
 
 func (i *Invocation) generateCreateIfNotExists(object DatabaseMapped) (statementLabel, queryBody string, insertCols *ColumnCollection) {
-	cols := CachedColumnCollectionFromInstance(object)
+	cols := Columns(object)
 
-	insertCols = cols.InsertColumns()
+	insertCols = cols.InsertColumns().ConcatWith(cols.Autos().NotZero(object))
 
 	pks := cols.PrimaryKeys()
 	tableName := TableName(object)
@@ -430,7 +437,7 @@ func (i *Invocation) generateCreateMany(objects interface{}) (queryBody string, 
 	sliceType := ReflectSliceType(objects)
 	tableName := TableNameByType(sliceType)
 
-	cols := CachedColumnCollectionFromType(tableName, sliceType)
+	cols := ColumnsFromType(tableName, sliceType)
 	insertCols = cols.InsertColumns()
 
 	queryBodyBuffer := i.BufferPool.Get()
@@ -471,7 +478,7 @@ func (i *Invocation) generateCreateMany(objects interface{}) (queryBody string, 
 func (i *Invocation) generateUpdate(object DatabaseMapped) (statementLabel, queryBody string, pks, updateCols *ColumnCollection) {
 	tableName := TableName(object)
 
-	cols := CachedColumnCollectionFromInstance(object)
+	cols := Columns(object)
 
 	pks = cols.PrimaryKeys()
 	updateCols = cols.UpdateColumns()
@@ -512,14 +519,17 @@ func (i *Invocation) generateUpdate(object DatabaseMapped) (statementLabel, quer
 
 func (i *Invocation) generateUpsert(object DatabaseMapped) (statementLabel, queryBody string, autos, insertCols *ColumnCollection) {
 	tableName := TableName(object)
-	cols := CachedColumnCollectionFromInstance(object)
+	cols := Columns(object)
 	updates := cols.UpdateColumns()
 	updateCols := updates.Columns()
 
-	insertCols = cols.InsertColumns()
+	// these should be not auto columns, and columns that are auto and are set
+	insertCols = cols.InsertColumns().ConcatWith(cols.Autos().NotZero(object))
+
 	insertColNames := insertCols.ColumnNames()
 
-	autos = cols.Autos() // autos are read out on insert
+	// autos are read out on insert (but only if unset)
+	autos = cols.Autos().Zero(object)
 	pks := cols.PrimaryKeys()
 	pkNames := pks.ColumnNames()
 
@@ -535,6 +545,7 @@ func (i *Invocation) generateUpsert(object DatabaseMapped) (statementLabel, quer
 			queryBodyBuffer.WriteRune(',')
 		}
 	}
+
 	queryBodyBuffer.WriteString(") VALUES (")
 
 	for x := 0; x < insertCols.Len(); x++ {
@@ -581,7 +592,7 @@ func (i *Invocation) generateUpsert(object DatabaseMapped) (statementLabel, quer
 
 func (i *Invocation) generateExists(object DatabaseMapped) (statementLabel, queryBody string, pks *ColumnCollection, err error) {
 	tableName := TableName(object)
-	pks = CachedColumnCollectionFromInstance(object).PrimaryKeys()
+	pks = Columns(object).PrimaryKeys()
 	if pks.Len() == 0 {
 		err = Error(ErrNoPrimaryKey)
 		return
@@ -608,7 +619,7 @@ func (i *Invocation) generateExists(object DatabaseMapped) (statementLabel, quer
 
 func (i *Invocation) generateDelete(object DatabaseMapped) (statementLabel, queryBody string, pks *ColumnCollection, err error) {
 	tableName := TableName(object)
-	pks = CachedColumnCollectionFromInstance(object).PrimaryKeys()
+	pks = Columns(object).PrimaryKeys()
 	if len(pks.Columns()) == 0 {
 		err = Error(ErrNoPrimaryKey)
 		return
@@ -637,8 +648,8 @@ func (i *Invocation) generateDelete(object DatabaseMapped) (statementLabel, quer
 // helpers
 // --------------------------------------------------------------------------------
 
-// AutoValues returns references to the auto updatd fields for a given column collection.
-func (i *Invocation) AutoValues(autos *ColumnCollection) []interface{} {
+// autoValues returns references to the auto updatd fields for a given column collection.
+func (i *Invocation) autoValues(autos *ColumnCollection) []interface{} {
 	autoValues := make([]interface{}, autos.Len())
 	for i, autoCol := range autos.Columns() {
 		autoValues[i] = reflect.New(reflect.PtrTo(autoCol.FieldType)).Interface()
@@ -646,8 +657,8 @@ func (i *Invocation) AutoValues(autos *ColumnCollection) []interface{} {
 	return autoValues
 }
 
-// SetAutos sets the automatic values for a given object.
-func (i *Invocation) SetAutos(object DatabaseMapped, autos *ColumnCollection, autoValues []interface{}) (err error) {
+// setAutos sets the automatic values for a given object.
+func (i *Invocation) setAutos(object DatabaseMapped, autos *ColumnCollection, autoValues []interface{}) (err error) {
 	for index := 0; index < len(autoValues); index++ {
 		err = autos.Columns()[index].SetValue(object, autoValues[index])
 		if err != nil {
@@ -658,8 +669,8 @@ func (i *Invocation) SetAutos(object DatabaseMapped, autos *ColumnCollection, au
 	return
 }
 
-// Start runs on start steps.
-func (i *Invocation) Start(statement string) string {
+// start runs on start steps.
+func (i *Invocation) start(statement string) string {
 	i.StartTime = time.Now()
 	if i.StatementInterceptor != nil {
 		statement = i.StatementInterceptor(i.Label, statement)
@@ -670,8 +681,8 @@ func (i *Invocation) Start(statement string) string {
 	return statement
 }
 
-// Finish runs on complete steps.
-func (i *Invocation) Finish(statement string, r interface{}, res sql.Result, err error) error {
+// finish runs on complete steps.
+func (i *Invocation) finish(statement string, r interface{}, res sql.Result, err error) error {
 	if i.Cancel != nil {
 		i.Cancel()
 	}

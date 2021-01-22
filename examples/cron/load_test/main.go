@@ -47,7 +47,6 @@ var (
 type loadTestJob struct {
 	id      int
 	running bool
-	started time.Time
 }
 
 func (j *loadTestJob) Name() string {

@@ -9,10 +9,7 @@ import (
 func main() {
 	log := logger.MustNew(logger.OptConfigFromEnv())
 	tick := time.Tick(time.Second)
-	for {
-		select {
-		case <-tick:
-			log.Infof("it's %s", time.Now().Format(time.RFC3339))
-		}
+	for range tick {
+		log.Infof("it's %s", time.Now().Format(time.RFC3339))
 	}
 }

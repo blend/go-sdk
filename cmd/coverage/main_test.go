@@ -37,9 +37,9 @@ func TestJoinCoverPath(t *testing.T) {
 			"/users/foo/bar/baz.go",
 		},
 		{
-			"/users/bailey/workspace/go/src/github.com/blend/go-sdk/",
+			"/users/example-string/workspace/go/src/github.com/blend/go-sdk/",
 			"github.com/blend/go-sdk/assert/assert.go",
-			"/users/bailey/workspace/go/src/github.com/blend/go-sdk/assert/assert.go",
+			"/users/example-string/workspace/go/src/github.com/blend/go-sdk/assert/assert.go",
 		},
 		{
 			"/go/src/git.blendlabs.com/blend/fees",
