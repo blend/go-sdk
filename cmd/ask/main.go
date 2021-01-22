@@ -13,15 +13,6 @@ import (
 	"github.com/blend/go-sdk/sh"
 )
 
-// linker metadata block
-// this block must be present
-// it is used by goreleaser
-var (
-	version = "dev"
-	commit  = "none"
-	date    = "unknown"
-)
-
 type configVar struct {
 	Field   string
 	Default string
