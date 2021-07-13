@@ -21,4 +21,5 @@ require (
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/DataDog/dd-trace-go.v1 v1.27.1
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
+	lukechampine.com/blake3 v1.1.5
 )

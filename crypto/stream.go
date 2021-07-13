@@ -12,11 +12,11 @@ import (
 	"crypto/cipher"
 	"crypto/hmac"
 	"crypto/rand"
-	"crypto/sha256"
 	"hash"
 	"io"
 
 	"github.com/blend/go-sdk/ex"
+	"lukechampine.com/blake3"
 )
 
 // NewStreamEncrypter creates a new stream encrypter
@@ -31,7 +31,7 @@ func NewStreamEncrypter(key []byte, plainText io.Reader) (*StreamEncrypter, erro
 		return nil, ex.New(err)
 	}
 	stream := cipher.NewCTR(block, iv)
-	mac := hmac.New(sha256.New, key)
+	mac := blake3.New(32, key)
 	return &StreamEncrypter{
 		Source: plainText,
 		Block:  block,
@@ -48,7 +48,7 @@ func NewStreamDecrypter(key []byte, meta StreamMeta, cipherText io.Reader) (*Str
 		return nil, ex.New(err)
 	}
 	stream := cipher.NewCTR(block, meta.IV)
-	mac := hmac.New(sha256.New, key)
+	mac := blake3.New(32, key)
 	return &StreamDecrypter{
 		Source: cipherText,
 		Block:  block,
@@ -63,7 +63,7 @@ type StreamEncrypter struct {
 	Source io.Reader
 	Block  cipher.Block
 	Stream cipher.Stream
-	Mac    hash.Hash
+	Mac    *blake3.Hasher
 	IV     []byte
 }
 
@@ -72,7 +72,7 @@ type StreamDecrypter struct {
 	Source io.Reader
 	Block  cipher.Block
 	Stream cipher.Stream
-	Mac    hash.Hash
+	Mac    *blake3.Hasher
 	Meta   StreamMeta
 }
 
