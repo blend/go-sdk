@@ -82,12 +82,16 @@ func (m LocalTransit) Encrypt(dst io.Writer, src io.Reader) error {
 	if m.ContextProvider != nil {
 		currentContext = m.ContextProvider()
 	}
-	key, err := m.GetKey(currentContext)
+	encKey, err := m.GetKey(currentContext)
+	if err != nil {
+		return ex.New(err)
+	}
+	macKey, err := m.GetKey(currentContext)
 	if err != nil {
 		return ex.New(err)
 	}
 
-	wr, err := NewStreamEncrypter(key, src)
+	wr, err := NewStreamEncrypter(encKey, macKey, src)
 	if err != nil {
 		return ex.New(err)
 	}
@@ -124,7 +128,11 @@ func (m LocalTransit) Decrypt(dst io.Writer, src io.Reader) error {
 		return ex.New(err)
 	}
 
-	key, err := m.GetKey(keyVersion)
+	encKey, err := m.GetKey(keyVersion)
+	if err != nil {
+		return ex.New(err)
+	}
+	macKey, err := m.GetKey(keyVersion)
 	if err != nil {
 		return ex.New(err)
 	}
@@ -134,7 +142,7 @@ func (m LocalTransit) Decrypt(dst io.Writer, src io.Reader) error {
 		return ex.New(err)
 	}
 
-	r, err := NewStreamDecrypter(key, StreamMeta{IV: iv, Hash: hash}, src)
+	r, err := NewStreamDecrypter(encKey, macKey, StreamMeta{IV: iv, Hash: hash}, src)
 	if err != nil {
 		return ex.New(err)
 	}
