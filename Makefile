@@ -121,6 +121,10 @@ copyright:
 
 test:
 	@echo "$(VERSION)/$(GIT_REF) >> tests"
+	@go test $(PKGS) -timeout 15s
+
+test-race:
+	@echo "$(VERSION)/$(GIT_REF) >> tests"
 	@go test $(PKGS) -timeout 15s -race
 
 test-verbose:
