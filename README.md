@@ -10,7 +10,7 @@ The general philosophy is to provide loosely coupled libraries that can be compo
 
 # Requirements
 
-This repository requires golang version 1.13+ to be installed.
+This repository requires golang version 1.16+ to be installed.
 
 To run tests, it is required that you have Docker installed, with docker-compose, or have postgres running locally.
 
@@ -35,11 +35,7 @@ We also provide the following CLI tools to help with development that leverage s
 
 # Contributing
 
-One (or more) of the core team members are required to review any PR (please make sure to tag them on the PR).
-
-Blend employees (members of the `Blend` organization) feel free to use branches to create PRs.
-
-Non-Blend employees feel free to fork the repo and open PRs with changes. Forked repos present some difficulty pre-go mod because of the path reference being changed (i.e. `github.com/blend/go-sdk` turns into `github.com/<FORKING USER>/go-sdk`), so it's recommended to check the fork out to `$GOPATH/src/github.com/blend/go-sdk` on disk to preserve the project paths.
+We currently don't accept PRs as this repository at this time, but feel free to log issues and we'll address when we can.
 
 # Code Style Notes
 
