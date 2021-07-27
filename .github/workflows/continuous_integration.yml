@@ -1,0 +1,47 @@
+name: "Continuous Integration"
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+
+  ci_full:
+    name: "Continuous Integration"
+
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: unit-tests
+          POSTGRES_DB: ci_db_test
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    env:
+      GOOS: "linux"
+      GOARCH: "amd64"
+      GO111MODULE: "on"
+      CGO_ENABLED: "0"
+      GHE_TOKEN: "${{ secrets.REPO_CHECKOUT_TOKEN }}"
+      DB_HOST: "localhost"
+      DB_PORT: "5432"
+      DB_USER: "postgres"
+      DB_PASSWORD: "unit-tests"
+      DB_NAME: "ci_db_test"
+      DB_SSLMODE: "disable"
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go 1.16.x
+      uses: actions/setup-go@main
+      with:
+        go-version: ^1.16
+      id: go
+
+    - name: CI
+      run: make ci

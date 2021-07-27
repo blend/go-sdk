@@ -2,14 +2,10 @@
 # Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
 # Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 #
-# 
-# Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
-# Use of this source code is governed by a MIT license that can be found in the LICENSE file.
-# 
-project_name: bindata
+project_name: copyright
 builds:
-- main: "./cmd/bindata/main.go"
-  binary: bindata
+- main: "./cmd/copyright/main.go"
+  binary: copyright
   env:
   - CGO_ENABLED=0
   goos:
@@ -31,7 +27,7 @@ archive:
   - none*
 
 brew:
-  name: bindata
+  name: copyright
   github:
     owner: blend
     name: homebrew-tap
@@ -39,10 +35,10 @@ brew:
   commit_author:
     name: baileydog
     email: baileydog@blend.com
-  homepage: "https://github.com/blend/go-sdk/tree/master/cmd/bindata/README.md"
-  description: "Generate a static assets bundle as a go file from a directory."
+  homepage: "https://github.com/blend/go-sdk/tree/master/cmd/copyright/README.md"
+  description: "Coordinate copyright enforcement for golang repos."
 
-dist: dist/bindata
+dist: dist/copyright
 
 checksum:
   name_template: '{{ .ProjectName }}_checksums.txt'

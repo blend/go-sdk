@@ -1,18 +1,18 @@
-PREFIX			?= $(shell pwd)
-PKGS 			:= $(shell go list ./... | grep -v /vendor/)
+PREFIX				?= $(shell pwd)
+PKGS 					:= $(shell go list ./... | grep -v /vendor/)
 SHASUMCMD 		:= $(shell command -v sha1sum || command -v shasum; 2> /dev/null)
-TARCMD 			:= $(shell command -v tar || command -v tar; 2> /dev/null)
-GIT_REF 		:= $(shell git log --pretty=format:'%h' -n 1)
+TARCMD 				:= $(shell command -v tar || command -v tar; 2> /dev/null)
+GIT_REF 			:= $(shell git log --pretty=format:'%h' -n 1)
 CURRENT_USER 	:= $(shell whoami)
-VERSION 		:= $(shell cat ./VERSION)
+VERSION 			:= $(shell cat ./VERSION)
 
 # this is to allow local go-sdk/db tests to pass
-DB_PORT 		?= 5432
+DB_PORT 			?= 5432
 DB_SSLMODE		?= disable
 
 # coverage stuff
 CIRCLE_ARTIFACTS 	?= "."
-COVERAGE_OUT 		:= "$(CIRCLE_ARTIFACTS)/coverage.html"
+COVERAGE_OUT 			:= "$(CIRCLE_ARTIFACTS)/coverage.html"
 
 export GIT_REF
 export VERSION
