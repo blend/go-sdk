@@ -59,34 +59,8 @@ install-shamir:
 install-template:
 	@go install github.com/blend/go-sdk/cmd/template
 
-release-binaries: release-ask release-copyright release-coverage release-profanity release-reverseproxy release-recover release-semver release-shamir release-template
-
-release-ask:
-	@goreleaser ./.goreleaser/ask.yml
-
-release-copyright:
-	@goreleaser ./.goreleaser/copyright.yml
-
-release-coverage:
-	@goreleaser ./.goreleaser/coverage.yml
-
-release-profanity:
-	@goreleaser ./.goreleaser/profanity.yml
-
-release-reverseproxy:
-	@goreleaser ./.goreleaser/reverseproxy.yml
-
-release-recover:
-	@goreleaser ./.goreleaser/recover.yml
-
-release-semver:
-	@goreleaser ./.goreleaser/semver.yml
-
-release-shamir:
-	@goreleaser ./.goreleaser/shamir.yml
-
-release-template:
-	@goreleaser ./.goreleaser/template.yml
+release-binaries:
+	@goreleaser ./goreleaser.yml
 
 format:
 	@echo "$(VERSION)/$(GIT_REF) >> formatting code"
@@ -155,6 +129,14 @@ push:
 	@echo "Tagging $(VERSION)"
 	@git add .
 	@git commit -am 'Updates from Blend'
+	@git tag -f $(VERSION)
+	@git push -f origin $(VERSION)
+	@git push -f origin HEAD
+
+push-verified: 
+	@echo "Tagging $(VERSION)"
+	@git add .
+	@git commit -S -am 'Updates from Blend'
 	@git tag -f $(VERSION)
 	@git push -f origin $(VERSION)
 	@git push -f origin HEAD

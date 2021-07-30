@@ -28,6 +28,11 @@ func (m MockTransitClient) Encrypt(ctx context.Context, key string, context, dat
 	return base64.StdEncoding.EncodeToString(data), nil
 }
 
+// TransitHMAC just returns the input
+func (m MockTransitClient) TransitHMAC(ctx context.Context, key string, input []byte) ([]byte, error) {
+	return input, nil
+}
+
 // Decrypt just returns the input in the mock
 func (m MockTransitClient) Decrypt(ctx context.Context, key string, context []byte, ciphertext string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(ciphertext)

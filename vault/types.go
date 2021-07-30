@@ -242,6 +242,13 @@ type TransitResult struct {
 	} `json:"data"`
 }
 
+// TransitHmacResult is the structure returned by vault for transit hmac requests
+type TransitHmacResult struct {
+	Data struct {
+		Hmac string `json:"hmac"`
+	} `json:"data"`
+}
+
 // CreateTransitKeyConfig is the configuration data for creating a TransitKey
 type CreateTransitKeyConfig struct {
 	// Convergent - If enabled, the key will support convergent encryption, where the same plaintext creates the same

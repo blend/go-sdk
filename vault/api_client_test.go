@@ -516,3 +516,57 @@ func TestVaultBatchDecrypt_Error(t *testing.T) {
 	assert.Equal(ErrBatchTransitDecryptError, err.Error())
 	assert.Nil(plaintextResults)
 }
+
+func TestVaultHmac(t *testing.T) {
+	assert := assert.New(t)
+	todo := context.TODO()
+
+	client, err := New()
+	assert.Nil(err)
+
+	key := "key"
+	input := []byte("hmac!")
+	result := fmt.Sprintf(`{"data": {"hmac": "%s"}}`, base64.StdEncoding.EncodeToString(input))
+
+	m := NewMockHTTPClient().
+		With(
+			"POST",
+			mustURLf("%s/v1/transit/hmac/%s/sha2-256", client.Remote.String(), key),
+			&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewBuffer([]byte(result))),
+			},
+		)
+	client.Client = m
+
+	res, err := client.TransitHMAC(todo, "key", input)
+	assert.Nil(err)
+	assert.Equal(input, res)
+}
+
+func TestVaultHmacError(t *testing.T) {
+	assert := assert.New(t)
+	todo := context.TODO()
+
+	client, err := New()
+	assert.Nil(err)
+
+	key := "key"
+	input := []byte("hmac!")
+	result := `bad payload`
+
+	m := NewMockHTTPClient().
+		With(
+			"POST",
+			mustURLf("%s/v1/transit/hmac/%s/sha2-256", client.Remote.String(), key),
+			&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewBuffer([]byte(result))),
+			},
+		)
+	client.Client = m
+
+	res, err := client.TransitHMAC(todo, "key", input)
+	assert.NotNil(err)
+	assert.Nil(res)
+}

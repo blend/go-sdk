@@ -407,3 +407,17 @@ func TestLoggerProd(t *testing.T) {
 	assert.True(p.Flags.IsEnabled("example-string"))
 	assert.True(p.Formatter.(*TextOutputFormatter).NoColor)
 }
+
+func TestLoggerClose(t *testing.T) {
+	assert := assert.New(t)
+
+	buf0 := new(bytes.Buffer)
+	l0 := Memory(buf0)
+	buf1 := new(bytes.Buffer)
+	l1 := Memory(buf1)
+
+	l0.Close()
+	l1.Infof("this is a test")
+	assert.Empty(buf0.String())
+	assert.NotEmpty(buf1.String())
+}

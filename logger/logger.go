@@ -19,7 +19,7 @@ import (
 func New(options ...Option) (*Logger, error) {
 	l := &Logger{
 		Formatter:      NewTextOutputFormatter(),
-		Output:         NewInterlockedWriter(os.Stdout),
+		Output:         NopCloserWriter{NewInterlockedWriter(os.Stdout)},
 		RecoverPanics:  DefaultRecoverPanics,
 		Flags:          NewFlags(DefaultFlags...),
 		Writable:       FlagsAll(),

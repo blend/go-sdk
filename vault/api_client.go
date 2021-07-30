@@ -190,6 +190,11 @@ func (c *APIClient) Decrypt(ctx context.Context, key string, context []byte, cip
 	return c.Transit.Decrypt(ctx, key, context, ciphertext)
 }
 
+// TransitHMAC decrypts a given set of data.
+func (c *APIClient) TransitHMAC(ctx context.Context, key string, input []byte) ([]byte, error) {
+	return c.Transit.TransitHMAC(ctx, key, input)
+}
+
 // BatchEncrypt batch encrypts a given set of data.
 func (c *APIClient) BatchEncrypt(ctx context.Context, key string, batchInput BatchTransitInput) ([]string, error) {
 	return c.Transit.BatchEncrypt(ctx, key, batchInput)

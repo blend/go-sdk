@@ -177,6 +177,36 @@ func (vt Transit) Decrypt(ctx context.Context, key string, context []byte, ciphe
 	return base64.StdEncoding.DecodeString(decryptionResult.Data.Plaintext)
 }
 
+// TransitHMAC batch encrypts a given set of data
+// It is required to create the transit key *before* you use it to encrypt or decrypt data.
+func (vt Transit) TransitHMAC(ctx context.Context, key string, input []byte) ([]byte, error) {
+	req := vt.Client.createRequest(MethodPost, filepath.Join("/v1/transit/hmac/", key, "sha2-256")).WithContext(ctx)
+
+	body, err := vt.Client.jsonBody(
+		map[string]interface{}{
+			"input": input,
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	req.Body = body
+
+	res, err := vt.Client.send(req, OptTraceVaultOperation("transit.hmac"), OptTraceKeyName(key))
+	if err != nil {
+		return nil, err
+	}
+	defer res.Close()
+
+	var decryptionResult TransitHmacResult
+	if err = json.NewDecoder(res).Decode(&decryptionResult); err != nil {
+		return nil, err
+	}
+
+	return base64.StdEncoding.DecodeString(decryptionResult.Data.Hmac)
+}
+
 // BatchEncrypt batch encrypts a given set of data
 // It is required to create the transit key *before* you use it to encrypt or decrypt data.
 func (vt Transit) BatchEncrypt(ctx context.Context, key string, batchInput BatchTransitInput) ([]string, error) {

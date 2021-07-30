@@ -21,6 +21,8 @@ type TransitClient interface {
 	Encrypt(ctx context.Context, key string, context, data []byte) (string, error)
 	Decrypt(ctx context.Context, key string, context []byte, ciphertext string) ([]byte, error)
 
+	TransitHMAC(ctx context.Context, key string, input []byte) ([]byte, error)
+
 	BatchEncrypt(ctx context.Context, key string, batchInput BatchTransitInput) ([]string, error)
 	BatchDecrypt(ctx context.Context, key string, batchInput BatchTransitInput) ([][]byte, error)
 }
