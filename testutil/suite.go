@@ -9,6 +9,7 @@ package testutil
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 
@@ -59,20 +60,38 @@ func (s Suite) Run() {
 	}
 	var err error
 	for _, before := range s.Before {
+		code = SuiteFailureBefore
+		defer recoverHookPanicAndExitWithCode(code)
 		if err = before(ctx); err != nil {
 			logger.MaybeFatalf(s.Log, "error during setup steps: %+v", err)
-			code = SuiteFailureBefore
 			return
 		}
 	}
 	defer func() {
 		for _, after := range s.After {
+			code = SuiteFailureAfter
+			defer recoverHookPanicAndExitWithCode(code)
 			if err = after(ctx); err != nil {
 				logger.MaybeFatalf(s.Log, "error during cleanup steps: %+v", err)
-				code = SuiteFailureAfter
 				return
 			}
 		}
 	}()
 	code = s.M.Run()
+}
+
+// recovers and exits with the given code.
+// meant specifically for panics in an OptBefore or OptAfter hook
+func recoverHookPanicAndExitWithCode(code int) {
+	var hookPhase string
+	if code == SuiteFailureBefore {
+		hookPhase = "before"
+	}
+	if code == SuiteFailureAfter {
+		hookPhase = "after"
+	}
+	if r := recover(); r != nil {
+		fmt.Printf("a panic occured in one of the %s hooks: %+v\n", hookPhase, r)
+		os.Exit(code)
+	}
 }
