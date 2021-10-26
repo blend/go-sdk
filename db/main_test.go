@@ -149,6 +149,26 @@ func createUpsertNoAutosObjectTable(tx *sql.Tx) error {
 	return IgnoreExecResult(defaultDB().Invoke(OptTx(tx)).Exec(createSQL))
 }
 
+type upsertReadOnlyAuto struct {
+	UUID      uuid.UUID `db:"uuid,pk"`
+	Timestamp time.Time `db:"timestamp_utc,auto,readonly"`
+	Category  string    `db:"category"`
+}
+
+func (ur upsertReadOnlyAuto) TableName() string {
+	return "upsery_readonly_auto"
+}
+
+func createUpsertReadOnlyAutoObjectTable(tx *sql.Tx) error {
+	createSQL := `CREATE TABLE IF NOT EXISTS upsert_readonly_auto (uuid varchar(255) primary key, timestamp_utc timestamp default (clock_timestamp() at time zone 'utc'), category varchar(255));`
+	return IgnoreExecResult(defaultDB().Invoke(OptTx(tx)).Exec(createSQL))
+}
+
+func dropUpsertReadOnlyAutoTable(tx *sql.Tx) error {
+	_, err := defaultDB().Invoke(OptTx(tx)).Exec("DROP TABLE upsert_readonly_auto")
+	return err
+}
+
 //------------------------------------------------------------------------------------------------
 // Benchmarking
 //------------------------------------------------------------------------------------------------

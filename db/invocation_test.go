@@ -817,6 +817,62 @@ func Test_Invocation_Upsert_withSerialPKAndOtherAutos(t *testing.T) {
 	its.Equal(newTime.Unix(), verify.UpdatedAt.Unix())
 }
 
+func Test_Invocation_Upsert_withReadOnlyAuto(t *testing.T) {
+	its := assert.New(t)
+	tx, err := defaultDB().Begin()
+	its.Nil(err)
+	defer func() { _ = tx.Rollback() }()
+
+	err = createUpsertReadOnlyAutoObjectTable(tx)
+	its.Nil(err)
+	defer func() { _ = dropUpsertReadOnlyAutoTable(tx) }()
+
+	// create initial value but let UUID and timestamp be set by the default
+	value := upsertReadOnlyAuto{
+		Category: "Category",
+	}
+
+	its.Zero(value.UUID)
+	its.Zero(value.Timestamp)
+
+	err = defaultDB().Invoke(OptTx(tx)).Upsert(&value)
+	its.Nil(err)
+	its.NotZero(value.UUID)
+	its.NotZero(value.Timestamp)
+
+	insertID := value.UUID
+	insertTimestamp := value.Timestamp
+
+	var verify upsertReadOnlyAuto
+	var found bool
+	found, err = defaultDB().Invoke(OptTx(tx)).Get(&verify, insertID)
+	its.Nil(err)
+	its.True(found)
+
+	its.Equal(value.UUID, verify.UUID)
+	its.Equal(value.Category, verify.Category)
+	its.Equal(value.Timestamp.Unix(), verify.Timestamp.Unix())
+
+	// create a new object to upsert with same props but no readonly field
+	valueUpdate := upsertReadOnlyAuto{
+		UUID:     insertID,
+		Category: "New Category",
+	}
+
+	err = defaultDB().Invoke(OptTx(tx)).Upsert(&valueUpdate)
+	its.Nil(err)
+	its.NotZero(valueUpdate.UUID)
+	its.NotZero(valueUpdate.Timestamp)
+	its.Equal(insertID, valueUpdate.UUID)
+	// make sure the timestamp did not change since it's a readonly field
+	// but got loaded in because it's also an auto field
+	its.Equal(insertTimestamp.Unix(), valueUpdate.Timestamp.Unix())
+
+	found, err = defaultDB().Invoke(OptTx(tx)).Get(&verify, insertID)
+	its.Nil(err)
+	its.True(found)
+}
+
 func Test_Invocation_CreateMany(t *testing.T) {
 	its := assert.New(t)
 	tx, err := defaultDB().Begin()
