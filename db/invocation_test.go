@@ -832,13 +832,13 @@ func Test_Invocation_Upsert_withReadOnlyAuto(t *testing.T) {
 		Category: "Category",
 	}
 
-	its.Zero(value.UUID)
-	its.Zero(value.Timestamp)
+	its.True(value.UUID.IsZero())
+	its.True(value.Timestamp.IsZero())
 
 	err = defaultDB().Invoke(OptTx(tx)).Upsert(&value)
 	its.Nil(err)
-	its.NotZero(value.UUID)
-	its.NotZero(value.Timestamp)
+	its.False(value.UUID.IsZero())
+	its.False(value.Timestamp.IsZero())
 
 	insertID := value.UUID
 	insertTimestamp := value.Timestamp
@@ -861,8 +861,8 @@ func Test_Invocation_Upsert_withReadOnlyAuto(t *testing.T) {
 
 	err = defaultDB().Invoke(OptTx(tx)).Upsert(&valueUpdate)
 	its.Nil(err)
-	its.NotZero(valueUpdate.UUID)
-	its.NotZero(valueUpdate.Timestamp)
+	its.False(valueUpdate.UUID.IsZero())
+	its.False(valueUpdate.Timestamp.IsZero())
 	its.Equal(insertID, valueUpdate.UUID)
 	// make sure the timestamp did not change since it's a readonly field
 	// but got loaded in because it's also an auto field
