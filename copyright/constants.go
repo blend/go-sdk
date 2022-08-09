@@ -101,6 +101,7 @@ var (
 		"vendor/*",
 		"venv/*",
 		"*/venv/*",
+		"*.vault.yml",
 	}
 
 	// DefaultIncludeFiles is the default included files list.
