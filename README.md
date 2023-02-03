@@ -92,10 +92,13 @@ Please use the [issues page](https://github.com/blend/go-sdk/issues) to report a
 
 # Maintainers
 
-This repo is maintained by a core group of [Blend](https://blend.com) employees.
+This repo is maintained by a core group of [Blend](https://github.com/blend) employees, including:
+- [Addie Bendory](https://github.com/addie)
+- [Alex Kaplan](https://github.com/KaplanAlex)
+- [Chinmaya Sharma](https://github.com/chinmayasharma)
+- [Igor Morozov](https://github.com/igmor)
+- [Justin Fan](https://github.com/Justinfan827)
+- [Kevin Wang](https://github.com/xorkevin)
+- [Michael Turner](https://github.com/mat285)
 
-This list includes (ordered alpha by username):
-- [@akarimcheese](https://github.com/akarimcheese)
-- [@alee101](https://github.co/alee101)
-- [@gcarling](https://github.com/gcarling)
-- [@mat285](https://github.com/mat285)
+
