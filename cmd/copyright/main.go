@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,31 +21,31 @@ import (
 )
 
 var (
-	flagFallbackNoticeTemplate   string
-	flagExtensionNoticeTemplates flagStrings
-	flagNoticeBodyTemplate       string
-	flagCompany                  string
-	flagYear                     int
-	flagLicense                  string
+	flagFallbackNoticeTemplate	string
+	flagExtensionNoticeTemplates	flagStrings
+	flagNoticeBodyTemplate		string
+	flagCompany			string
+	flagYear			int
+	flagLicense			string
 
-	flagRestrictions           string
-	flagRestrictionsOpenSource bool
-	flagRestrictionsInternal   bool
+	flagRestrictions		string
+	flagRestrictionsOpenSource	bool
+	flagRestrictionsInternal	bool
 
-	flagVerify bool
-	flagInject bool
-	flagRemove bool
+	flagVerify	bool
+	flagInject	bool
+	flagRemove	bool
 
-	flagExcludes        flagStrings
-	flagExcludesFrom    flagStrings
-	flagExcludeDefaults bool
-	flagIncludeFiles    flagStrings
+	flagExcludes		flagStrings
+	flagExcludesFrom	flagStrings
+	flagExcludeDefaults	bool
+	flagIncludeFiles	flagStrings
 
-	flagExitFirst bool
-	flagQuiet     bool
-	flagVerbose   bool
-	flagDebug     bool
-	flagShowDiff  bool
+	flagExitFirst	bool
+	flagQuiet	bool
+	flagVerbose	bool
+	flagDebug	bool
+	flagShowDiff	bool
 )
 
 func init() {
@@ -146,6 +146,10 @@ func main() {
 	if flagExcludeDefaults {
 		flagExcludes = append(flagExcludes, flagStrings(copyright.DefaultExcludes)...)
 	}
+	if _, err := os.Stat(copyright.DefaultImplicitConfigFile); err == nil {
+		fmt.Fprintf(os.Stdout, "Including implicit glob exclusion file: %q\n", copyright.DefaultImplicitConfigFile)
+		flagExcludesFrom = append(flagExcludesFrom, copyright.DefaultImplicitConfigFile)
+	}
 	for _, excludesFrom := range flagExcludesFrom {
 		excludes, err := readExcludesFile(excludesFrom)
 		if err != nil {
@@ -180,20 +184,20 @@ func main() {
 
 	engine := copyright.Copyright{
 		Config: copyright.Config{
-			FallbackNoticeTemplate:   tryReadFile(flagFallbackNoticeTemplate),
-			NoticeBodyTemplate:       tryReadFile(flagNoticeBodyTemplate),
-			Company:                  flagCompany,
-			Restrictions:             restrictions,
-			Year:                     flagYear,
-			License:                  flagLicense,
-			ExtensionNoticeTemplates: extensionNoticeTemplates,
-			Excludes:                 flagExcludes,
-			IncludeFiles:             flagIncludeFiles,
-			ExitFirst:                &flagExitFirst,
-			Quiet:                    &flagQuiet,
-			Verbose:                  &flagVerbose,
-			Debug:                    &flagDebug,
-			ShowDiff:                 &flagShowDiff,
+			FallbackNoticeTemplate:		tryReadFile(flagFallbackNoticeTemplate),
+			NoticeBodyTemplate:		tryReadFile(flagNoticeBodyTemplate),
+			Company:			flagCompany,
+			Restrictions:			restrictions,
+			Year:				flagYear,
+			License:			flagLicense,
+			ExtensionNoticeTemplates:	extensionNoticeTemplates,
+			Excludes:			flagExcludes,
+			IncludeFiles:			flagIncludeFiles,
+			ExitFirst:			&flagExitFirst,
+			Quiet:				&flagQuiet,
+			Verbose:			&flagVerbose,
+			Debug:				&flagDebug,
+			ShowDiff:			&flagShowDiff,
 		},
 	}
 

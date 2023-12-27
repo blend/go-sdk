@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -14,26 +14,26 @@ import (
 )
 
 var (
-	_ http.ResponseWriter = (*MockResponseWriter)(nil)
-	_ http.Flusher        = (*MockResponseWriter)(nil)
+	_	http.ResponseWriter	= (*MockResponseWriter)(nil)
+	_	http.Flusher		= (*MockResponseWriter)(nil)
 )
 
 // NewMockResponse returns a mocked response writer.
 func NewMockResponse(buffer io.Writer) *MockResponseWriter {
 	return &MockResponseWriter{
-		innerWriter: buffer,
-		contents:    new(bytes.Buffer),
-		headers:     http.Header{},
+		innerWriter:	buffer,
+		contents:	new(bytes.Buffer),
+		headers:	http.Header{},
 	}
 }
 
 // MockResponseWriter is an object that satisfies response writer but uses an internal buffer.
 type MockResponseWriter struct {
-	innerWriter   io.Writer
-	contents      *bytes.Buffer
-	statusCode    int
-	contentLength int
-	headers       http.Header
+	innerWriter	io.Writer
+	contents	*bytes.Buffer
+	statusCode	int
+	contentLength	int
+	headers		http.Header
 }
 
 // Write writes data and adds to ContentLength.
@@ -77,7 +77,7 @@ func (res *MockResponseWriter) Bytes() []byte {
 }
 
 // Flush is a no-op.
-func (res *MockResponseWriter) Flush() {}
+func (res *MockResponseWriter) Flush()	{}
 
 // Close is a no-op.
 func (res *MockResponseWriter) Close() error {

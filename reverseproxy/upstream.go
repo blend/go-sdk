@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -24,8 +24,8 @@ import (
 func NewUpstream(target *url.URL, opts ...UpstreamOption) *Upstream {
 	rp := httputil.NewSingleHostReverseProxy(target)
 	u := &Upstream{
-		URL:          target,
-		ReverseProxy: rp,
+		URL:		target,
+		ReverseProxy:	rp,
 	}
 	// NOTE: This creates a reference cycle `u -> rp -> u`.
 	rp.ErrorHandler = u.errorHandler
@@ -35,13 +35,13 @@ func NewUpstream(target *url.URL, opts ...UpstreamOption) *Upstream {
 // Upstream represents a proxyable server.
 type Upstream struct {
 	// Name is the name of the upstream.
-	Name string
+	Name	string
 	// Log is a logger agent.
-	Log logger.Log
+	Log	logger.Log
 	// URL represents the target of the upstream.
-	URL *url.URL
+	URL	*url.URL
 	// ReverseProxy is what actually forwards requests.
-	ReverseProxy *httputil.ReverseProxy
+	ReverseProxy	*httputil.ReverseProxy
 }
 
 // UseHTTP2 sets the upstream to use http2.

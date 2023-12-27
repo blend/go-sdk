@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -37,12 +37,12 @@ In order to start a `stopped` latch, you must call `.Reset()` first to initializ
 type Latch struct {
 	sync.Mutex
 
-	state int32
+	state	int32
 
-	starting chan struct{}
-	started  chan struct{}
-	stopping chan struct{}
-	stopped  chan struct{}
+	starting	chan struct{}
+	started		chan struct{}
+	stopping	chan struct{}
+	stopped		chan struct{}
 }
 
 // Reset resets the latch.

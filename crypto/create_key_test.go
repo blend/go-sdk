@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -28,4 +28,24 @@ func Test_CreateKey(t *testing.T) {
 	its.Len(key2, 32)
 
 	its.False(hmac.Equal(key, key2))
+}
+
+func Test_CreateIntKey(t *testing.T) {
+	t.Parallel()
+
+	its := assert.New(t)
+
+	key, err := CreateIntKey(6)
+	its.Nil(err)
+	its.Len(key, 6)
+}
+
+func Test_CreateIntKeyError(t *testing.T) {
+	t.Parallel()
+
+	its := assert.New(t)
+
+	key, err := CreateIntKey(0)
+	its.NotNil(err)
+	its.Empty(key)
 }

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -14,10 +14,10 @@ import (
 
 // CreateListenerOptions are the options for creating listeners.
 type CreateListenerOptions struct {
-	TLSConfig        *tls.Config
-	UseProxyProtocol bool
-	KeepAlive        bool
-	KeepAlivePeriod  time.Duration
+	TLSConfig		*tls.Config
+	UseProxyProtocol	bool
+	KeepAlive		bool
+	KeepAlivePeriod		time.Duration
 }
 
 // CreateListenerOption is a mutator for the options used when creating a listener.

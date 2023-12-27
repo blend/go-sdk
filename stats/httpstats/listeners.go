@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -52,6 +52,7 @@ func AddListeners(log logger.FilterListenable, collector stats.Collector, opts .
 				proto, route, method, status,
 			}
 			tags = append(tags, options.GetLoggerLabelsAsTags(ctx)...)
+			tags = append(tags, options.GetDefaultsAsTags()...)
 
 			_ = collector.Increment(MetricNameHTTPRequest, tags...)
 			_ = collector.Gauge(MetricNameHTTPRequestSize, float64(wre.ContentLength), tags...)

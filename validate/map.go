@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -16,8 +16,8 @@ import (
 
 // Errors
 const (
-	ErrInstanceNotMap ex.Class = "validated reference is not a map"
-	ErrMapKeys        ex.Class = "map should have keys"
+	ErrInstanceNotMap	ex.Class	= "validated reference is not a map"
+	ErrMapKeys		ex.Class	= "map should have keys"
 )
 
 // Map returns validators for a map type reference.

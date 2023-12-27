@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -15,8 +15,8 @@ import (
 // NewDialer returns a new proxy protocol dialer.
 func NewDialer(opts ...DialerOption) *Dialer {
 	d := &Dialer{
-		Dialer:         new(net.Dialer),
-		HeaderProvider: func(_ context.Context, _ net.Conn) *Header { return nil },
+		Dialer:		new(net.Dialer),
+		HeaderProvider:	func(_ context.Context, _ net.Conn) *Header { return nil },
 	}
 	for _, opt := range opts {
 		opt(d)
@@ -36,11 +36,11 @@ func OptDialerConstSourceAdddr(addr net.Addr) DialerOption {
 	return func(d *Dialer) {
 		d.HeaderProvider = func(_ context.Context, conn net.Conn) *Header {
 			return &Header{
-				Version:           1,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolTCPv4,
-				SourceAddr:        addr,
-				DestinationAddr:   conn.RemoteAddr(),
+				Version:		1,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolTCPv4,
+				SourceAddr:		addr,
+				DestinationAddr:	conn.RemoteAddr(),
 			}
 		}
 	}
@@ -52,7 +52,7 @@ type DialerOption func(*Dialer)
 // Dialer wraps a dialer with proxy protocol header injection.
 type Dialer struct {
 	*net.Dialer
-	HeaderProvider func(context.Context, net.Conn) *Header
+	HeaderProvider	func(context.Context, net.Conn) *Header
 }
 
 // Dial implements the dialer, calling `HeaderProvider` for a the context passed to it.

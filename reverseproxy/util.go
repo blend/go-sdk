@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -27,7 +27,7 @@ func MustParseURL(rawURL string) *url.URL {
 // RequestCopy does a shallow copy of a request.
 func RequestCopy(req *http.Request) *http.Request {
 	outreq := new(http.Request)
-	*outreq = *req // includes shallow copies of maps, but okay
+	*outreq = *req	// includes shallow copies of maps, but okay
 	if req.ContentLength == 0 {
 		outreq.Body = nil
 	}

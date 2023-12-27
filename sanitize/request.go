@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -20,10 +20,10 @@ func Request(r *http.Request, opts ...RequestOption) *http.Request {
 // NewRequestSanitizer creates a new request sanitizer.
 func NewRequestSanitizer(opts ...RequestOption) RequestSanitizer {
 	r := RequestSanitizer{
-		DisallowedHeaders:     DefaultSanitizationDisallowedHeaders,
-		DisallowedQueryParams: DefaultSanitizationDisallowedQueryParams,
-		KeyValuesSanitizer:    KeyValuesSanitizerFunc(DefaultKeyValuesSanitizerFunc),
-		PathSanitizer:         PathSanitizerFunc(DefaultPathSanitizerFunc),
+		DisallowedHeaders:	DefaultSanitizationDisallowedHeaders,
+		DisallowedQueryParams:	DefaultSanitizationDisallowedQueryParams,
+		KeyValuesSanitizer:	KeyValuesSanitizerFunc(DefaultKeyValuesSanitizerFunc),
+		PathSanitizer:		PathSanitizerFunc(DefaultPathSanitizerFunc),
 	}
 	for _, opt := range opts {
 		opt(&r)
@@ -78,10 +78,10 @@ func OptRequestPathSanitizer(pathSanitizer PathSanitizer) RequestOption {
 
 // RequestSanitizer are options for sanitization of http requests.
 type RequestSanitizer struct {
-	DisallowedHeaders     []string
-	DisallowedQueryParams []string
-	KeyValuesSanitizer    KeyValuesSanitizer
-	PathSanitizer         PathSanitizer
+	DisallowedHeaders	[]string
+	DisallowedQueryParams	[]string
+	KeyValuesSanitizer	KeyValuesSanitizer
+	PathSanitizer		PathSanitizer
 }
 
 // Sanitize applies sanitization options to a given request.

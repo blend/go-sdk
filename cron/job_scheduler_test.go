@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -99,9 +99,9 @@ func Test_JobScheduler_Labels(t *testing.T) {
 	its.Equal("test", labels["name"])
 
 	job.JobConfig.Labels = map[string]string{
-		"name": "not-test",
-		"foo":  "bar",
-		"fuzz": "wuzz",
+		"name":	"not-test",
+		"foo":	"bar",
+		"fuzz":	"wuzz",
 	}
 
 	labels = js.Labels()
@@ -130,9 +130,9 @@ func Test_JobScheduler_JobParameterValues(t *testing.T) {
 	)
 
 	testParameters := JobParameters{
-		"foo":            "bar",
-		"moo":            "loo",
-		"example-string": "dog",
+		"foo":			"bar",
+		"moo":			"loo",
+		"example-string":	"dog",
 	}
 
 	ji, done, err := js.RunAsyncContext(WithJobParameterValues(context.Background(), testParameters))
@@ -149,8 +149,8 @@ func Test_JobScheduler_JobParameterValuesDefault(t *testing.T) {
 	var contextParameters JobParameters
 
 	defaultParameters := JobParameters{
-		"example-string": "woof",
-		"default":        "value",
+		"example-string":	"woof",
+		"default":		"value",
 	}
 
 	js := NewJobScheduler(
@@ -168,9 +168,9 @@ func Test_JobScheduler_JobParameterValuesDefault(t *testing.T) {
 	its.Equal("woof", js.Config().ParameterValues["example-string"])
 
 	runParameters := JobParameters{
-		"foo":            "bar",
-		"moo":            "loo",
-		"example-string": "dog",
+		"foo":			"bar",
+		"moo":			"loo",
+		"example-string":	"dog",
 	}
 
 	ji, done, err := js.RunAsyncContext(WithJobParameterValues(context.Background(), runParameters))

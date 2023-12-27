@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -11,15 +11,15 @@ import "github.com/blend/go-sdk/webutil"
 
 // HTTP stats constants
 const (
-	MetricNameHTTPRequest            string = string(webutil.FlagHTTPRequest)
-	MetricNameHTTPRequestSize        string = MetricNameHTTPRequest + ".size"
-	MetricNameHTTPRequestElapsed     string = MetricNameHTTPRequest + ".elapsed"
-	MetricNameHTTPRequestElapsedLast string = MetricNameHTTPRequestElapsed + ".last"
+	MetricNameHTTPRequest			string	= string(webutil.FlagHTTPRequest)
+	MetricNameHTTPRequestSize		string	= MetricNameHTTPRequest + ".size"
+	MetricNameHTTPRequestElapsed		string	= MetricNameHTTPRequest + ".elapsed"
+	MetricNameHTTPRequestElapsedLast	string	= MetricNameHTTPRequestElapsed + ".last"
 
-	TagRoute  string = "route"
-	TagProto  string = "proto"
-	TagMethod string = "method"
-	TagStatus string = "status"
+	TagRoute	string	= "route"
+	TagProto	string	= "proto"
+	TagMethod	string	= "method"
+	TagStatus	string	= "status"
 
-	RouteNotFound string = "not_found"
+	RouteNotFound	string	= "not_found"
 )

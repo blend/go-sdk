@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -15,8 +15,8 @@ import (
 
 // Source is a set of ownership entries.
 type Source struct {
-	Source string
-	Paths  []Path
+	Source	string
+	Paths	[]Path
 }
 
 // WriteTo writes the owners to a given file.

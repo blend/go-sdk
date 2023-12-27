@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -14,14 +14,15 @@ import (
 	"time"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	opentracingExt "github.com/opentracing/opentracing-go/ext"
 
 	"github.com/blend/go-sdk/tracing"
 	"github.com/blend/go-sdk/webutil"
 )
 
 var (
-	_ webutil.HTTPTracer        = (*httpTracer)(nil)
-	_ webutil.HTTPTraceFinisher = (*httpTraceFinisher)(nil)
+	_	webutil.HTTPTracer		= (*httpTracer)(nil)
+	_	webutil.HTTPTraceFinisher	= (*httpTraceFinisher)(nil)
 )
 
 // Tracer returns an HTTP tracer.
@@ -38,6 +39,7 @@ type httpTracer struct {
 func StartHTTPSpan(ctx context.Context, tracer opentracing.Tracer, req *http.Request, resource string, startTime time.Time, extra ...opentracing.StartSpanOption) (opentracing.Span, *http.Request) {
 	// set up basic start options (these are mostly tags).
 	startOptions := []opentracing.StartSpanOption{
+		opentracingExt.SpanKindRPCServer,
 		opentracing.Tag{Key: tracing.TagKeyResourceName, Value: fmt.Sprintf("%s %s", req.Method, resource)},
 		opentracing.Tag{Key: tracing.TagKeySpanType, Value: tracing.SpanTypeWeb},
 		opentracing.Tag{Key: tracing.TagKeyHTTPMethod, Value: req.Method},

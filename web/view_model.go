@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -13,18 +13,18 @@ import (
 
 // ViewModel is a wrapping viewmodel.
 type ViewModel struct {
-	Env       env.Vars
-	Status    ViewStatus
-	Ctx       *Ctx
-	ViewModel interface{}
+	Env		env.Vars
+	Status		ViewStatus
+	Ctx		*Ctx
+	ViewModel	interface{}
 }
 
 // Wrap returns a ViewModel that wraps a new object.
 func (vm ViewModel) Wrap(other interface{}) ViewModel {
 	return ViewModel{
-		Env:       vm.Env,
-		Ctx:       vm.Ctx,
-		ViewModel: other,
+		Env:		vm.Env,
+		Ctx:		vm.Ctx,
+		ViewModel:	other,
 	}
 }
 

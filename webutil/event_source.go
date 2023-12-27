@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -31,7 +31,7 @@ func NewEventSource(output http.ResponseWriter) *EventSource {
 // EventSource is a helper for writing event source info.
 type EventSource struct {
 	sync.Mutex
-	output http.ResponseWriter
+	output	http.ResponseWriter
 }
 
 // StartSession starts an event source session.

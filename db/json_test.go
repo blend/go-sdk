@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -26,11 +26,11 @@ func Test_JSON(t *testing.T) {
 	its.Nil(JSON(foo))
 
 	valid := struct {
-		Foo string `json:"foo"`
-		Bar string `json:"bar"`
+		Foo	string	`json:"foo"`
+		Bar	string	`json:"bar"`
 	}{
-		Foo: "not-foo",
-		Bar: "not-bar",
+		Foo:	"not-foo",
+		Bar:	"not-bar",
 	}
 
 	output := JSON(valid)

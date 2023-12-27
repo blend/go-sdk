@@ -1,13 +1,46 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
 package ref
 
 import "time"
+
+// Ref returns a reference.
+func Ref[T any](v T) *T {
+	return &v
+}
+
+// Deref returns a dereferenced value. For certain types, this could still return nil.
+func Deref[T comparable](p *T) T {
+	if p == nil {
+		var v T
+		return v
+	}
+
+	return *p
+}
+
+// Refs returns a slice of references.
+func Refs[T any](values ...T) []*T {
+	output := make([]*T, len(values))
+	for index := range values {
+		output[index] = &values[index]
+	}
+	return output
+}
+
+// Derefs returns a slice of dereferenced values. For certain types, this could still return nil.
+func Derefs[T comparable](pointers ...*T) []T {
+	output := make([]T, len(pointers))
+	for index := range pointers {
+		output[index] = Deref(pointers[index])
+	}
+	return output
+}
 
 // String returns a reference.
 func String(v string) *string {

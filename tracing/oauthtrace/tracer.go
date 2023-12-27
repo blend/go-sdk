@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -12,6 +12,8 @@ import (
 	"time"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	opentracingExt "github.com/opentracing/opentracing-go/ext"
+
 	"golang.org/x/oauth2"
 
 	"github.com/blend/go-sdk/oauth"
@@ -19,8 +21,8 @@ import (
 )
 
 var (
-	_ oauth.Tracer        = (*oauthTracer)(nil)
-	_ oauth.TraceFinisher = (*oauthTraceFinisher)(nil)
+	_	oauth.Tracer		= (*oauthTracer)(nil)
+	_	oauth.TraceFinisher	= (*oauthTraceFinisher)(nil)
 )
 
 // Tracer returns a request tracer that also injects span context into outgoing headers.
@@ -34,11 +36,12 @@ type oauthTracer struct {
 
 func (t oauthTracer) Start(ctx context.Context, config *oauth2.Config) oauth.TraceFinisher {
 	startOptions := []opentracing.StartSpanOption{
+		opentracingExt.SpanKindRPCClient,
 		opentracing.Tag{Key: tracing.TagKeySpanType, Value: tracing.SpanTypeHTTP},
 		tracing.TagMeasured(),
 		opentracing.StartTime(time.Now().UTC()),
 	}
-	span, _ := tracing.StartSpanFromContext(ctx, t.tracer, tracing.OperationHTTPRequest, startOptions...)
+	span, _ := tracing.StartSpanFromContext(ctx, t.tracer, tracing.OperationHTTPRequestOutgoing, startOptions...)
 	return oauthTraceFinisher{span: span}
 }
 

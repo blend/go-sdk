@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,9 +21,9 @@ func TestOptConfig(t *testing.T) {
 
 	log := None()
 	assert.Nil(OptConfig(Config{
-		Flags:    []string{"foo", "bar"},
-		Writable: []string{"foo"},
-		Format:   FormatJSON,
+		Flags:		[]string{"foo", "bar"},
+		Writable:	[]string{"foo"},
+		Format:		FormatJSON,
 	})(log))
 
 	assert.Any(log.Flags.Flags(), func(v interface{}) bool { return v.(string) == "foo" })

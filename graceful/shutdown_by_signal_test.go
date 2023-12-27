@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -17,15 +17,15 @@ import (
 
 func newHosted() *hosted {
 	return &hosted{
-		started: make(chan struct{}),
-		stopped: make(chan struct{}),
+		started:	make(chan struct{}),
+		stopped:	make(chan struct{}),
 	}
 }
 
 type hosted struct {
-	state   int32
-	started chan struct{}
-	stopped chan struct{}
+	state	int32
+	started	chan struct{}
+	stopped	chan struct{}
 }
 
 func (h *hosted) Start() error {

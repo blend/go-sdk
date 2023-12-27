@@ -3,8 +3,8 @@
 
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -81,8 +81,8 @@ func mustOpen(t *testing.T, name string) *os.File {
 }
 
 const (
-	quiescent            = 10 * time.Millisecond
-	probablyStillBlocked = 10 * time.Second
+	quiescent		= 10 * time.Millisecond
+	probablyStillBlocked	= 10 * time.Second
 )
 
 func mustBlock(t *testing.T, op string, f *os.File) (wait func(*testing.T)) {

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -24,8 +24,9 @@ func NewAddListenerOptions(opts ...AddListenerOption) AddListenerOptions {
 
 // AddListenerOptions are options for adding listeners.
 type AddListenerOptions struct {
-	IncludeLoggerLabelsAsTags bool
-	RequestSanitizeDefaults   []sanitize.RequestOption
+	IncludeLoggerLabelsAsTags	bool
+	RequestSanitizeDefaults		[]sanitize.RequestOption
+	DefaultTags			map[string]string
 }
 
 // GetLoggerLabelsAsTags gets the logger tags from a context if they're set to be included.
@@ -44,6 +45,19 @@ func OptIncludeLoggerLabelsAsTags(include bool) AddListenerOption {
 // OptRequestSanitizeDefaults includes logger labels as tags.
 func OptRequestSanitizeDefaults(opts ...sanitize.RequestOption) AddListenerOption {
 	return func(a *AddListenerOptions) { a.RequestSanitizeDefaults = opts }
+}
+
+// GetDefaultsAsTags gets a set of constant tags at collector initialization to be included.
+func (options AddListenerOptions) GetDefaultsAsTags() (tags []string) {
+	if len(options.DefaultTags) > 0 {
+		tags = GetDefaultsAsTags(options.DefaultTags)
+	}
+	return
+}
+
+// OptRequestIncludeConstantsAsTags includes fixed tags.
+func OptRequestIncludeConstantsAsTags(opts map[string]string) AddListenerOption {
+	return func(a *AddListenerOptions) { a.DefaultTags = opts }
 }
 
 // AddListenerOption mutates AddListenerOptions

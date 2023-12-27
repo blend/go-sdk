@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -19,12 +19,12 @@ import (
 // The inner error will the cause of the validation vault.
 func Error(cause error, value interface{}, messageArgs ...interface{}) error {
 	return &ex.Ex{
-		Class:      ErrValidation,
-		StackTrace: ex.Callers(ex.DefaultNewStartDepth + 1),
+		Class:		ErrValidation,
+		StackTrace:	ex.Callers(ex.DefaultNewStartDepth + 1),
 		Inner: &ValidationError{
-			Cause:   cause,
-			Value:   value,
-			Message: fmt.Sprint(messageArgs...),
+			Cause:		cause,
+			Value:		value,
+			Message:	fmt.Sprint(messageArgs...),
 		},
 	}
 }

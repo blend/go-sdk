@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -15,8 +15,8 @@ import (
 // Await returns a new future.
 func Await(ctx context.Context, action ContextAction) *Future {
 	f := &Future{
-		action:   action,
-		finished: make(chan error),
+		action:		action,
+		finished:	make(chan error),
 	}
 	ctx, f.cancel = context.WithCancel(ctx)
 	go f.do(ctx)
@@ -25,10 +25,10 @@ func Await(ctx context.Context, action ContextAction) *Future {
 
 // Future is a deferred action.
 type Future struct {
-	mu       sync.Mutex
-	action   ContextAction
-	cancel   func()
-	finished chan error
+	mu		sync.Mutex
+	action		ContextAction
+	cancel		func()
+	finished	chan error
 }
 
 // Cancel quits the future.

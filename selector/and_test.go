@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -17,12 +17,12 @@ func TestAnd(t *testing.T) {
 	assert := assert.New(t)
 
 	valid := Labels{
-		"foo": "far",
-		"moo": "lar",
+		"foo":	"far",
+		"moo":	"lar",
 	}
 	invalid := Labels{
-		"foo": "far",
-		"moo": "bar",
+		"foo":	"far",
+		"moo":	"bar",
 	}
 
 	selector := And([]Selector{Equals{Key: "foo", Value: "far"}, Equals{Key: "moo", Value: "lar"}})

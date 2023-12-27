@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -18,22 +18,22 @@ type FreeformResult map[string]bool
 
 // TrackedActionsResult are tracked actions details.
 type TrackedActionsResult struct {
-	Status     Signal          `json:"status"`
-	SubSystems map[string]Info `json:"subsystems"`
+	Status		Signal		`json:"status"`
+	SubSystems	map[string]Info	`json:"subsystems"`
 }
 
 // Info wraps tracked details.
 type Info struct {
-	Name    string  `json:"name"`
-	Status  Signal  `json:"status"`
-	Details Details `json:"details"`
+	Name	string	`json:"name"`
+	Status	Signal	`json:"status"`
+	Details	Details	`json:"details"`
 }
 
 // Details holds the details about the status results.
 type Details struct {
-	ErrorCount     int            `json:"errorCount"`
-	RequestCount   int            `json:"requestCount"`
-	ErrorBreakdown map[string]int `json:"errorBreakdown"`
+	ErrorCount	int		`json:"errorCount"`
+	RequestCount	int		`json:"requestCount"`
+	ErrorBreakdown	map[string]int	`json:"errorBreakdown"`
 }
 
 //
@@ -48,12 +48,12 @@ type RequestInfo struct {
 // ErrorInfo is a type.
 type ErrorInfo struct {
 	RequestInfo
-	Args interface{}
+	Args	interface{}
 }
 
 // freeformCheckResult is a result from a freeform check status.
 type freeformCheckResult struct {
-	ServiceName string
-	Ok          bool
-	Err         error
+	ServiceName	string
+	Ok		bool
+	Err		error
 }

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -31,10 +31,14 @@ func Parse(s string) (Vars, error) {
 // We define the grammar as such (in BNF notation):
 // <expr> ::= (<pair> <sep>)* <pair>
 // <sep> ::= ';'
-//        |  ','
+//
+//	|  ','
+//
 // <pair> ::= <term> = <term>
 // <term> ::= <literal>
-//         |  "[<literal>|<space>|<escape_quote>]*"
+//
+//	|  "[<literal>|<space>|<escape_quote>]*"
+//
 // <literal> ::= [-A-Za-z_0-9]+
 // <space> ::= ' '
 // <escape_quote> ::= '\"'
@@ -158,16 +162,16 @@ func ParsePairDelimiter(s string, pairDelimiter PairDelimiter) (Vars, error) {
 const (
 	// valueDelimiter ("=") is the delimiter between a key and a value for an
 	// environment variable.
-	valueDelimiter rune = '='
+	valueDelimiter	rune	= '='
 
 	// quoteDelimiter (`"`) is a delimiter indicating a string literal. This
 	// gives the user the option to have spaces, for example, in their
 	// environment variable values.
-	quoteDelimiter rune = '"'
+	quoteDelimiter	rune	= '"'
 
 	// escapeDelimiter ("\") is used to escape the next character so it is
 	// accepted as a part of the input value.
-	escapeDelimiter rune = '\\'
+	escapeDelimiter	rune	= '\\'
 )
 
 // dfaState is a wrapper type for the standard enum integer type, representing
@@ -179,27 +183,27 @@ type dfaState int
 const (
 	// rootState is the "default" starting state state. It processes text
 	// normally, performing actions on tokens and excluding whitespace.
-	rootState dfaState = iota
+	rootState	dfaState	= iota
 
 	// escapeState represents the state encountered after the parser processes
 	// the escape delimiter. The next character will be stored in the buffer no
 	// matter what, and no actions will be dispatched, even if the next
 	// character is a token.
-	escapeState dfaState = iota
+	escapeState	dfaState	= iota
 
 	// valueState is the state encountered after encountering the value
 	// delimiter ('='). Being in this state indicates that buffer is no longer
 	// storing values for the key.
-	valueState dfaState = iota
+	valueState	dfaState	= iota
 
 	// quotedState is the state encountered after the parser encounters a
 	// quote. This means that all characters except for the literal escape
 	// value will be input into the buffer.
-	quotedState dfaState = iota
+	quotedState	dfaState	= iota
 
 	// quotedLiteralState is invoked after the parser encounters
 	// a `quoteDelimiter` from `quotedState`.
-	quotedLiteralState dfaState = iota
+	quotedLiteralState	dfaState	= iota
 )
 
 // PairDelimiter is a type of delimiter that separates different env var key-value pairs
@@ -207,10 +211,10 @@ type PairDelimiter = rune
 
 const (
 	// PairDelimiterSemicolon (";") is a delimiter between key-value pairs
-	PairDelimiterSemicolon PairDelimiter = ';'
+	PairDelimiterSemicolon	PairDelimiter	= ';'
 
 	// PairDelimiterComma  (",") is a delimiter betewen key-value pairs
-	PairDelimiterComma PairDelimiter = ','
+	PairDelimiterComma	PairDelimiter	= ','
 )
 
 // DelimitedString converts environment variables to a particular string

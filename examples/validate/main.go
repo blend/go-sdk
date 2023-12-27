@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -20,11 +20,11 @@ import (
 
 // Validated is a validated object.
 type Validated struct {
-	ID       uuid.UUID
-	Name     string
-	Count    int
-	Created  time.Time
-	Optional *string
+	ID		uuid.UUID
+	Name		string
+	Count		int
+	Created		time.Time
+	Optional	*string
 }
 
 // Validate implements validated.
@@ -38,8 +38,8 @@ func (v Validated) Validate() error {
 		joi.Time(&v.Created).BeforeNowUTC(),
 		joi.WhenElse(
 			func() bool { return v.ID != nil && v.ID.IsV4() },
-			joi.String(v.Optional).IsURI(), // not sure why
-			joi.String(v.Optional).IsIP(),  // still not sure why
+			joi.String(v.Optional).IsURI(),	// not sure why
+			joi.String(v.Optional).IsIP(),	// still not sure why
 		),
 	)
 }

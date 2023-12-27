@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -14,25 +14,25 @@ import (
 )
 
 const (
-	spiffePrefix = "spiffe://"
+	spiffePrefix	= "spiffe://"
 
 	// ErrInvalidURI is the class of error returned when parsing SPIFFE URI fails
-	ErrInvalidURI = ex.Class("Invalid SPIFFE URI")
+	ErrInvalidURI	= ex.Class("Invalid SPIFFE URI")
 	// ErrNonKubernetesWorkload is class of error returned when parsing a SPIFFE
 	// Kubernetes workload identifier fails.
-	ErrNonKubernetesWorkload = ex.Class("Workload ID not in Kubernetes format")
+	ErrNonKubernetesWorkload	= ex.Class("Workload ID not in Kubernetes format")
 )
 
 // ParsedURI represents a SPIFFE URI that has been parsed via `Parse()`.
 type ParsedURI struct {
-	TrustDomain string
-	WorkloadID  string
+	TrustDomain	string
+	WorkloadID	string
 }
 
 // KubernetesWorkload describes a Kubernetes workload identifier.
 type KubernetesWorkload struct {
-	Namespace      string
-	ServiceAccount string
+	Namespace	string
+	ServiceAccount	string
 }
 
 // Parse consumes a SPIFFE URI and splits out the trust domain and workload

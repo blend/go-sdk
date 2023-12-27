@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -17,18 +17,18 @@ import (
 )
 
 type book struct {
-	ID   int    `db:"id,pk,auto"`
-	Name string `db:"name"`
+	ID	int	`db:"id,pk,auto"`
+	Name	string	`db:"name"`
 }
 
 type person struct {
-	ID   int    `db:"id,pk,auto"`
-	Name string `db:"name"`
+	ID	int	`db:"id,pk,auto"`
+	Name	string	`db:"name"`
 }
 
 type ledger struct {
-	BookID   int `db:"book_id,pk"`
-	PersonID int `db:"person_id,pk"`
+	BookID		int	`db:"book_id,pk"`
+	PersonID	int	`db:"person_id,pk"`
 }
 
 func createSchema(log logger.Log, conn *db.Connection) error {
@@ -147,8 +147,8 @@ func dropSchema(log logger.Log, conn *db.Connection) error {
 
 func main() {
 	cfg := db.Config{
-		Database: "postgres",
-		SSLMode:  db.SSLModeDisable,
+		Database:	"postgres",
+		SSLMode:	db.SSLModeDisable,
 	}
 	conn, err := db.New(db.OptConfig(cfg))
 	if err != nil {

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	_ Schedule     = (*DailySchedule)(nil)
-	_ fmt.Stringer = (*DailySchedule)(nil)
+	_	Schedule	= (*DailySchedule)(nil)
+	_	fmt.Stringer	= (*DailySchedule)(nil)
 )
 
 // WeeklyAtUTC returns a schedule that fires on every of the given days at the given time by hour, minute and second in UTC.
@@ -45,8 +45,8 @@ func WeekendsAtUTC(hour, minute, second int) Schedule {
 
 // DailySchedule is a schedule that fires every day that satisfies the DayOfWeekMask at the given TimeOfDayUTC.
 type DailySchedule struct {
-	DayOfWeekMask uint
-	TimeOfDayUTC  time.Time
+	DayOfWeekMask	uint
+	TimeOfDayUTC	time.Time
 }
 
 func (ds DailySchedule) String() string {
@@ -76,9 +76,9 @@ func (ds DailySchedule) Next(after time.Time) time.Time {
 
 	todayInstance := time.Date(after.Year(), after.Month(), after.Day(), ds.TimeOfDayUTC.Hour(), ds.TimeOfDayUTC.Minute(), ds.TimeOfDayUTC.Second(), 0, time.UTC)
 	for day := 0; day < 8; day++ {
-		next := todayInstance.AddDate(0, 0, day) //the first run here it should be adding nothing, i.e. returning todayInstance ...
+		next := todayInstance.AddDate(0, 0, day)	//the first run here it should be adding nothing, i.e. returning todayInstance ...
 
-		if ds.checkDayOfWeekMask(next.Weekday()) && next.After(after) { //we're on a day ...
+		if ds.checkDayOfWeekMask(next.Weekday()) && next.After(after) {	//we're on a day ...
 			return next
 		}
 	}

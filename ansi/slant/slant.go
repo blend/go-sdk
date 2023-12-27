@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -9,10 +9,10 @@ package slant
 
 // Slant is the default font.
 var Slant = Font{
-	Height:    6,  // the nominal letter height in rows.
-	Baseline:  5,  // the baseline does something cool with font alightment but ???.
-	Width:     16, // this is mostly unused, but kept for legacy reasons.
-	Hardblank: '$',
+	Height:		6,	// the nominal letter height in rows.
+	Baseline:	5,	// the baseline does something cool with font alightment but ???.
+	Width:		16,	// this is mostly unused, but kept for legacy reasons.
+	Hardblank:	'$',
 	Letters: [][]string{
 		{
 			"     $$",

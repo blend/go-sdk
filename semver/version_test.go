@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -19,8 +19,8 @@ func TestNewVersion(t *testing.T) {
 	assert := assert.New(t)
 
 	cases := []struct {
-		version string
-		err     bool
+		version	string
+		err	bool
 	}{
 		{"1.2.3", false},
 		{"1.0", false},
@@ -56,9 +56,9 @@ func TestVersionCompare(t *testing.T) {
 	assert := assert.New(t)
 
 	cases := []struct {
-		v1       string
-		v2       string
-		expected int
+		v1		string
+		v2		string
+		expected	int
 	}{
 		{"1.2.3", "1.4.5", -1},
 		{"1.2-beta", "1.2-beta", 0},
@@ -96,9 +96,9 @@ func TestComparePreReleases(t *testing.T) {
 	assert := assert.New(t)
 
 	cases := []struct {
-		v1       string
-		v2       string
-		expected int
+		v1		string
+		v2		string
+		expected	int
 	}{
 		{"1.2-beta.2", "1.2-beta.2", 0},
 		{"1.2-beta.1", "1.2-beta.2", -1},
@@ -136,8 +136,8 @@ func TestVersionMetadata(t *testing.T) {
 	assert := assert.New(t)
 
 	cases := []struct {
-		version  string
-		expected string
+		version		string
+		expected	string
 	}{
 		{"1.2.3", ""},
 		{"1.2-beta", ""},
@@ -160,8 +160,8 @@ func TestVersionPrerelease(t *testing.T) {
 	assert := assert.New(t)
 
 	cases := []struct {
-		version  string
-		expected string
+		version		string
+		expected	string
 	}{
 		{"1.2.3", ""},
 		{"1.2-beta", "beta"},
@@ -184,8 +184,8 @@ func TestVersionSegments(t *testing.T) {
 	assert := assert.New(t)
 
 	cases := []struct {
-		version  string
-		expected []int
+		version		string
+		expected	[]int
 	}{
 		{"1.2.3", []int{1, 2, 3}},
 		{"1.2-beta", []int{1, 2, 0}},
@@ -208,8 +208,8 @@ func TestVersionSegments64(t *testing.T) {
 	assert := assert.New(t)
 
 	cases := []struct {
-		version  string
-		expected []int64
+		version		string
+		expected	[]int64
 	}{
 		{"1.2.3", []int64{1, 2, 3}},
 		{"1.2-beta", []int64{1, 2, 0}},

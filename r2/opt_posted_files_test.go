@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -19,14 +19,14 @@ func TestOptPostedFiles(t *testing.T) {
 
 	r := New(TestURL, OptPostedFiles(
 		webutil.PostedFile{
-			Key:      "form-key",
-			FileName: "file.txt",
-			Contents: []byte("this is a test"),
+			Key:		"form-key",
+			FileName:	"file.txt",
+			Contents:	[]byte("this is a test"),
 		},
 		webutil.PostedFile{
-			Key:      "form-key-2",
-			FileName: "file2.txt",
-			Contents: []byte("this is a test2"),
+			Key:		"form-key-2",
+			FileName:	"file2.txt",
+			Contents:	[]byte("this is a test2"),
 		},
 	))
 	its.NotNil(r.Request.Body)

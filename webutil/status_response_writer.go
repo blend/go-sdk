@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -17,10 +17,10 @@ import (
 )
 
 var (
-	_ ResponseWriter      = (*StatusResponseWriter)(nil)
-	_ http.ResponseWriter = (*StatusResponseWriter)(nil)
-	_ http.Flusher        = (*StatusResponseWriter)(nil)
-	_ io.Closer           = (*StatusResponseWriter)(nil)
+	_	ResponseWriter		= (*StatusResponseWriter)(nil)
+	_	http.ResponseWriter	= (*StatusResponseWriter)(nil)
+	_	http.Flusher		= (*StatusResponseWriter)(nil)
+	_	io.Closer		= (*StatusResponseWriter)(nil)
 )
 
 // NewStatusResponseWriter creates a new response writer.
@@ -40,9 +40,9 @@ func NewStatusResponseWriter(w http.ResponseWriter) *StatusResponseWriter {
 
 // StatusResponseWriter a better response writer
 type StatusResponseWriter struct {
-	innerResponse http.ResponseWriter
-	statusCode    int
-	contentLength int
+	innerResponse	http.ResponseWriter
+	statusCode	int
+	contentLength	int
 }
 
 // Write writes the data to the response.

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -11,10 +11,10 @@ import "github.com/blend/go-sdk/ex"
 
 // Uint64 errors
 const (
-	ErrUint64Min     ex.Class = "uint64 should be above a minimum value"
-	ErrUint64Max     ex.Class = "uint64 should be below a maximum value"
-	ErrUint64Zero    ex.Class = "uint64 should be zero"
-	ErrUint64NotZero ex.Class = "uint64 should not be zero"
+	ErrUint64Min		ex.Class	= "uint64 should be above a minimum value"
+	ErrUint64Max		ex.Class	= "uint64 should be below a maximum value"
+	ErrUint64Zero		ex.Class	= "uint64 should be zero"
+	ErrUint64NotZero	ex.Class	= "uint64 should not be zero"
 )
 
 // Uint64 returns validators for uint64s.

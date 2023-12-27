@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -29,9 +29,9 @@ var (
 // NewCtx returns a new ctx.
 func NewCtx(w ResponseWriter, r *http.Request, options ...CtxOption) *Ctx {
 	ctx := Ctx{
-		Response: w,
-		Request:  r,
-		State:    new(SyncState),
+		Response:	w,
+		Request:	r,
+		State:		new(SyncState),
 	}
 	for _, option := range options {
 		option(&ctx)
@@ -42,45 +42,45 @@ func NewCtx(w ResponseWriter, r *http.Request, options ...CtxOption) *Ctx {
 // Ctx is the struct that represents the context for an hc request.
 type Ctx struct {
 	// App is a reference back to the parent application.
-	App *App
+	App	*App
 	// Auth is a reference to the app default auth manager, but
 	// can be overwritten by middleware.
-	Auth AuthManager
+	Auth	AuthManager
 	// DefaultProvider is the app default result provider by default
 	// but can be overwritten by middleware.
-	DefaultProvider ResultProvider
+	DefaultProvider	ResultProvider
 	// Views is the app view cache by default but can be
 	// overwritten by middleware.
-	Views *ViewCache
+	Views	*ViewCache
 	// Response is the response writer for the request.
-	Response ResponseWriter
+	Response	ResponseWriter
 	// Request is the inbound request metadata.
-	Request *http.Request
+	Request	*http.Request
 	// Body is a cached copy of the post body of a request.
 	// It is typically set by calling `.PostBody()` on this context.
 	// If you're expecting a large post body, do not use
 	// the `.PostBody()` function, instead read directly from `.Request.Body` with
 	// a stream reader or similar.
-	Body []byte
+	Body	[]byte
 	// Form is a cache of parsed url form values from the post body.
-	Form url.Values
+	Form	url.Values
 	// State is a mutable bag of state, it contains by default
 	// state set on the application.
-	State State
+	State	State
 	// Session is the current auth session
-	Session *Session
+	Session	*Session
 	// Route is the matching route for the request if relevant.
-	Route *Route
+	Route	*Route
 	// RouteParams is a cache of parameters or variables
 	// within the route and their values.
-	RouteParams RouteParameters
+	RouteParams	RouteParameters
 	// Log is the request specific logger.
-	Log logger.Log
+	Log	logger.Log
 	// Tracer is the app tracer by default if one is set.
 	// It can be overwritten by middleware.
-	Tracer Tracer
+	Tracer	Tracer
 	// RequestStarted is the time the request was received.
-	RequestStarted time.Time
+	RequestStarted	time.Time
 }
 
 // Close closes the context.
@@ -376,9 +376,9 @@ func (rc *Ctx) EnsureForm() error {
 		return err
 	}
 	r := &http.Request{
-		Method: rc.Request.Method,
-		Header: rc.Request.Header,
-		Body:   io.NopCloser(bytes.NewBuffer(body)),
+		Method:	rc.Request.Method,
+		Header:	rc.Request.Header,
+		Body:	io.NopCloser(bytes.NewBuffer(body)),
 	}
 	if err := r.ParseForm(); err != nil {
 		return err

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -14,10 +14,10 @@ import (
 )
 
 type tokenizeTestCase struct {
-	corpus   string
-	tokens   map[string]string
-	expected string
-	message  string
+	corpus		string
+	tokens		map[string]string
+	expected	string
+	message		string
 }
 
 func TestStringTokenize(t *testing.T) {

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -13,6 +13,7 @@ import (
 	"flag"
 	"fmt"
 	"go/build"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -24,9 +25,9 @@ import (
 )
 
 const (
-	star             = "*"
-	defaultFileFlags = 0644
-	expand           = "/..."
+	star			= "*"
+	defaultFileFlags	= 0644
+	expand			= "/..."
 )
 
 var reportOutputPath = flag.String("output", "coverage.html", "the path to write the full html coverage report")
@@ -41,8 +42,8 @@ var v = flag.Bool("v", false, "show verbose output")
 var exitFirst = flag.Bool("exit-first", true, "exit on first coverage failure; when disabled this will produce full coverage reports even on coverage failures")
 
 var (
-	includes Paths
-	excludes Paths
+	includes	Paths
+	excludes	Paths
 )
 
 func main() {
@@ -100,6 +101,9 @@ func main() {
 	covered, total, err := parseFullCoverProfile(pwd, *coverprofile)
 	maybeFatal(err)
 	finalCoverage := (float64(covered) / float64(total)) * 100
+	if math.IsNaN(finalCoverage) {
+		finalCoverage = 0
+	}
 	maybeFatal(writeCoverage(pwd, formatCoverage(finalCoverage)))
 
 	fmt.Fprintf(os.Stdout, "final coverage: %s%%\n", colorCoverage(finalCoverage))
@@ -188,7 +192,7 @@ func getPackageCoverage(currentPath string, info os.FileInfo, err error) (string
 	}
 
 	for _, include := range includes {
-		if matches := glob(include, currentPath); !matches { // note the !
+		if matches := glob(include, currentPath); !matches {	// note the !
 			vf("%q skipping dir; include no match: %s", currentPath, include)
 			return "", nil
 		}
@@ -215,8 +219,14 @@ func getPackageCoverage(currentPath string, info os.FileInfo, err error) (string
 		return "", err
 	}
 
-	coverage := extractCoverage(string(output))
-	fmt.Fprintf(os.Stdout, "%s: %v%%\n", currentPath, colorCoverage(parseCoverage(coverage)))
+	coverageStr := extractCoverage(string(output))
+	coverage, err := parseCoverage(coverageStr)
+	if err != nil {
+		verrf("coverage run emitted invalid coverage")
+		fmt.Fprintln(os.Stderr, fmt.Sprintf("%v", err))
+		return "", err
+	}
+	fmt.Fprintf(os.Stdout, "%s: %v%%\n", currentPath, colorCoverage(coverage))
 
 	if enforce != nil && *enforce {
 		vf("enforcing coverage minimums")
@@ -228,7 +238,7 @@ func getPackageCoverage(currentPath string, info os.FileInfo, err error) (string
 
 	if update != nil && *update {
 		fmt.Fprintf(os.Stdout, "%q updating coverage\n", currentPath)
-		err = writeCoverage(currentPath, coverage)
+		err = writeCoverage(currentPath, formatCoverage(coverage))
 		if err != nil {
 			return "", err
 		}
@@ -315,17 +325,12 @@ func glob(pattern, subj string) bool {
 	return trailingGlob || strings.HasSuffix(subj, parts[end])
 }
 
-func enforceCoverage(path, actualCoverage string) error {
-	actual, err := strconv.ParseFloat(actualCoverage, 64)
-	if err != nil {
-		return err
-	}
-
+func enforceCoverage(path string, actual float64) error {
 	contents, err := os.ReadFile(filepath.Join(path, "COVERAGE"))
 	if err != nil {
 		return err
 	}
-	expected, err := strconv.ParseFloat(strings.TrimSpace(string(contents)), 64)
+	expected, err := parseCoverage(string(contents))
 	if err != nil {
 		return err
 	}
@@ -355,7 +360,7 @@ func extractCoverage(corpus string) string {
 }
 
 func writeCoverage(path, coverage string) error {
-	return os.WriteFile(filepath.Join(path, "COVERAGE"), []byte(strings.TrimSpace(coverage)), defaultFileFlags)
+	return os.WriteFile(filepath.Join(path, "COVERAGE"), []byte(strings.TrimSpace(coverage)+"\n"), defaultFileFlags)
 }
 
 func dirHasGlob(path, glob string) bool {
@@ -531,22 +536,28 @@ func (acc ansiColor) Apply(text string) string {
 
 const (
 	// ColorGray is the posix escape code fragment for black.
-	colorGray ansiColor = "90m"
+	colorGray	ansiColor	= "90m"
 	// ColorRed is the posix escape code fragment for red.
-	colorRed ansiColor = "31m"
+	colorRed	ansiColor	= "31m"
 	// ColorYellow is the posix escape code fragment for yellow.
-	colorYellow ansiColor = "33m"
+	colorYellow	ansiColor	= "33m"
 	// ColorGreen is the posix escape code fragment for green.
-	colorGreen ansiColor = "32m"
+	colorGreen	ansiColor	= "32m"
 	// ColorReset is the posix escape code fragment to reset all formatting.
-	colorReset ansiColor = "0m"
+	colorReset	ansiColor	= "0m"
 )
 
-func parseCoverage(coverage string) float64 {
+func parseCoverage(coverage string) (float64, error) {
 	coverage = strings.TrimSpace(coverage)
 	coverage = strings.TrimSuffix(coverage, "%")
-	value, _ := strconv.ParseFloat(coverage, 64)
-	return value
+	value, err := strconv.ParseFloat(coverage, 64)
+	if err != nil {
+		return math.NaN(), err
+	}
+	if math.IsNaN(value) || math.IsInf(value, 0) {
+		return math.NaN(), fmt.Errorf("%q parses to an invalid coverage value: %f", coverage, value)
+	}
+	return value, nil
 }
 
 func colorCoverage(coverage float64) string {

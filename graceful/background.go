@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -33,17 +33,17 @@ type BackgroundOption func(*BackgroundOptions)
 
 // BackgroundOptions are options for the background context.
 type BackgroundOptions struct {
-	Signals          []os.Signal
-	Log              Logger
-	SkipStopOnSignal bool
+	Signals			[]os.Signal
+	Log			Logger
+	SkipStopOnSignal	bool
 }
 
 // Background yields a context that will signal `<-ctx.Done()` when
 // a signal is sent to the process (as specified in `DefaultShutdownSignals`).
 func Background(opts ...BackgroundOption) context.Context {
 	options := BackgroundOptions{
-		Signals:          DefaultShutdownSignals,
-		SkipStopOnSignal: false,
+		Signals:		DefaultShutdownSignals,
+		SkipStopOnSignal:	false,
 	}
 	for _, opt := range opts {
 		opt(&options)

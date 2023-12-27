@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -28,8 +28,8 @@ func TestXMLResultRender(t *testing.T) {
 	r := NewCtx(w, webutil.NewMockRequest("GET", "/"))
 
 	xr := &XMLResult{
-		StatusCode: http.StatusOK,
-		Response:   xmltest{Foo: "bar"},
+		StatusCode:	http.StatusOK,
+		Response:	xmltest{Foo: "bar"},
 	}
 
 	assert.Nil(xr.Render(r))
@@ -45,8 +45,8 @@ func TestXMLResultRenderStatusCode(t *testing.T) {
 	r := NewCtx(w, webutil.NewMockRequest("GET", "/"))
 
 	xr := &XMLResult{
-		StatusCode: http.StatusBadRequest,
-		Response:   xmltest{Foo: "bar"},
+		StatusCode:	http.StatusBadRequest,
+		Response:	xmltest{Foo: "bar"},
 	}
 
 	assert.Nil(xr.Render(r))

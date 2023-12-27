@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -97,8 +97,8 @@ func LoggedClientStream(log logger.Triggerable) grpc.StreamClientInterceptor {
 
 type instrumentedServerStream struct {
 	grpc.ServerStream
-	Method string
-	Log    logger.Triggerable
+	Method	string
+	Log	logger.Triggerable
 }
 
 // RecvMessage overrides the underlying RecvMsg method.

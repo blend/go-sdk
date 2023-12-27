@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -24,11 +24,11 @@ func NewBuffer(contents []byte) *Buffer {
 type Buffer struct {
 	sync.RWMutex
 	// Size is the size of all bytes written to the buffer.
-	Size int64
+	Size	int64
 	// Lines are the string lines broken up by newlines with associated timestamps
-	Chunks []BufferChunk `json:"chunks"`
+	Chunks	[]BufferChunk	`json:"chunks"`
 	// Handler is an optional listener for new line events.
-	Handler BufferChunkHandler `json:"-"`
+	Handler	BufferChunkHandler	`json:"-"`
 }
 
 // Write writes the contents to the output buffer.

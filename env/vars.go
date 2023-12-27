@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -61,7 +61,7 @@ func (ev Vars) Delete(key string) {
 	delete(ev, key)
 }
 
-// String returns a string value for a given key, with an optional default vaule.
+// String returns a string value for a given key, with an optional default value.
 func (ev Vars) String(envVar string, defaults ...string) string {
 	if value, hasValue := ev[envVar]; hasValue {
 		return value
@@ -72,6 +72,18 @@ func (ev Vars) String(envVar string, defaults ...string) string {
 		}
 	}
 	return ""
+}
+
+// GetString returns a string value for a given key or returns a default value.
+// If no default is provided and the key is not found, it returns an error.
+func (ev Vars) GetString(envVar string, defaults ...string) (string, error) {
+	if value, hasValue := ev[envVar]; hasValue {
+		return value, nil
+	}
+	if len(defaults) > 0 && defaults[0] != "" {
+		return defaults[0], nil
+	}
+	return "", ErrNotFound{Key: envVar}
 }
 
 // CSV returns a string array for a given string var.
@@ -293,7 +305,7 @@ func (ev Vars) Duration(envVar string, defaults ...time.Duration) (time.Duration
 	return 0, nil
 }
 
-// MustDuration returnss a duration value for a given key and panics if malformed.
+// MustDuration returns a duration value for a given key and panics if malformed.
 func (ev Vars) MustDuration(envVar string, defaults ...time.Duration) time.Duration {
 	value, err := ev.Duration(envVar, defaults...)
 	if err != nil {
@@ -474,4 +486,9 @@ func (ev Vars) Hostname(defaults ...string) string {
 // Version is a common environment variable for the service version.
 func (ev Vars) Version(defaults ...string) string {
 	return ev.String(VarVersion, defaults...)
+}
+
+// ClusterName returns a environment variable for the cluster name.
+func (ev Vars) ClusterName(defaults ...string) string {
+	return ev.String(VarClusterName, defaults...)
 }

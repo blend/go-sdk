@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -22,20 +22,20 @@ const (
 	// DefaultFixtureDirectory is the default directory where test fixture
 	// files will be retrieved. Since `go test` sets the present working directory
 	// to the current directory under test, this is a relative path.
-	DefaultFixtureDirectory = "./testdata"
+	DefaultFixtureDirectory	= "./testdata"
 	// DefaultGoldenFilePrefix is the prefix that will be prepended to suffixes
 	// for golden filenames.
-	DefaultGoldenFilePrefix = "golden."
+	DefaultGoldenFilePrefix	= "golden."
 	// DefaultUpdateGoldenFlag is the flag that this package will use to check
 	// if golden files should be updated.
-	DefaultUpdateGoldenFlag = "update-golden"
+	DefaultUpdateGoldenFlag	= "update-golden"
 
-	defaultNewFilePermissions = 0644
+	defaultNewFilePermissions	= 0644
 )
 
 var (
-	goldenFileFlags     = map[string]*bool{}
-	goldenFileFlagsLock = sync.Mutex{}
+	goldenFileFlags		= map[string]*bool{}
+	goldenFileFlagsLock	= sync.Mutex{}
 )
 
 // GetTestFixture opens a file in the test fixtures directory. This
@@ -100,8 +100,9 @@ func MarkUpdateGoldenFlag(opts ...FixtureOption) {
 // golden files should be updated.
 //
 // NOTE: This function is careful not to re-define a flag that has already
-//       been set. This can also be checked in `flag.CommandLine.`
-//       See: https://github.com/golang/go/blob/go1.17.1/src/flag/flag.go#L879
+//
+//	been set. This can also be checked in `flag.CommandLine.`
+//	See: https://github.com/golang/go/blob/go1.17.1/src/flag/flag.go#L879
 func getUpdateGoldenFlag(it *assert.Assertions, name string) bool {
 	goldenFileFlagsLock.Lock()
 	defer goldenFileFlagsLock.Unlock()
@@ -121,17 +122,17 @@ func getUpdateGoldenFlag(it *assert.Assertions, name string) bool {
 
 // FixtureConfig represents defaults used for working with test fixtures.
 type FixtureConfig struct {
-	Directory        string
-	GoldenFilePrefix string
-	UpdateGoldenFlag string
+	Directory		string
+	GoldenFilePrefix	string
+	UpdateGoldenFlag	string
 }
 
 // NewFixtureConfig returns a new `FixtureConfig` and applies options.
 func NewFixtureConfig(opts ...FixtureOption) FixtureConfig {
 	fc := FixtureConfig{
-		Directory:        DefaultFixtureDirectory,
-		GoldenFilePrefix: DefaultGoldenFilePrefix,
-		UpdateGoldenFlag: DefaultUpdateGoldenFlag,
+		Directory:		DefaultFixtureDirectory,
+		GoldenFilePrefix:	DefaultGoldenFilePrefix,
+		UpdateGoldenFlag:	DefaultUpdateGoldenFlag,
 	}
 	for _, opt := range opts {
 		opt(&fc)

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -58,7 +58,7 @@ func main() {
 		}
 
 		userID, _ := r.Param("userID")
-		if !strings.HasSuffix(userID, "_valid") { //maximum security
+		if !strings.HasSuffix(userID, "_valid") {	//maximum security
 			return web.Text.NotAuthorized()
 		}
 		_, err := r.Auth.Login(userID, r)

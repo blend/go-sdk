@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -22,8 +22,8 @@ type Any = interface{}
 
 // APIController implements a simple controller.
 type APIController struct {
-	db     map[string]Any
-	dbLock sync.Mutex
+	db	map[string]Any
+	dbLock	sync.Mutex
 }
 
 // Register adds routes for the controller to the app.

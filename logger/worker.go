@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -17,18 +17,18 @@ import (
 // NewWorker returns a new worker.
 func NewWorker(listener Listener) *Worker {
 	return &Worker{
-		Latch:    async.NewLatch(),
-		Listener: listener,
-		Work:     make(chan EventWithContext, DefaultWorkerQueueDepth),
+		Latch:		async.NewLatch(),
+		Listener:	listener,
+		Work:		make(chan EventWithContext, DefaultWorkerQueueDepth),
 	}
 }
 
 // Worker is an agent that processes a listener.
 type Worker struct {
 	*async.Latch
-	Errors   chan error
-	Listener Listener
-	Work     chan EventWithContext
+	Errors		chan error
+	Listener	Listener
+	Work		chan EventWithContext
 }
 
 // Start starts the worker.

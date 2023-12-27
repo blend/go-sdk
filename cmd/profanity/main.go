@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,13 +21,13 @@ import (
 )
 
 var (
-	flagRulesFile                      *string
-	flagRulesInclude, flagRulesExclude *[]string
-	flagFilesInclude, flagFilesExclude *[]string
-	flagDirsInclude, flagDirsExclude   *[]string
-	flagVerbose                        *bool
-	flagDebug                          *bool
-	flagExitFirst                      *bool
+	flagRulesFile				*string
+	flagRulesInclude, flagRulesExclude	*[]string
+	flagFilesInclude, flagFilesExclude	*[]string
+	flagDirsInclude, flagDirsExclude	*[]string
+	flagVerbose				*bool
+	flagDebug				*bool
+	flagExitFirst				*bool
 )
 
 var (
@@ -70,9 +70,9 @@ IMPORTS_EXAMPLE: # you can assert a go AST doesnt contains a given import by glo
 
 func command() *cobra.Command {
 	root := &cobra.Command{
-		Use:   "profanity",
-		Short: "Enforce profanity rules in a directory tree.",
-		Long:  "Enforce profanity rules in a directory tree with inherited rules for each child directory.",
+		Use:	"profanity",
+		Short:	"Enforce profanity rules in a directory tree.",
+		Long:	"Enforce profanity rules in a directory tree with inherited rules for each child directory.",
 		Example: fmt.Sprintf(`
 # Run a basic rules set
 profanity --rules=.profanity.yml 

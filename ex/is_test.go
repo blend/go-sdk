@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -16,30 +16,93 @@ import (
 )
 
 func TestIs(t *testing.T) {
-	it := assert.New(t)
-
 	stdLibErr := errors.New("sentinel")
-
 	testCases := []struct {
-		Err      interface{}
-		Cause    error
-		Expected bool
+		Name		string
+		Err		interface{}
+		Cause		error
+		Expected	bool
 	}{
-		{Err: Class("test class"), Cause: Class("test class"), Expected: true},
-		{Err: New("test class"), Cause: Class("test class"), Expected: true},
-		{Err: New("test class"), Cause: New("test class"), Expected: true},
-		{Err: New(stdLibErr), Cause: stdLibErr, Expected: true},
-		{Err: New(fmt.Errorf("outer err: %w", stdLibErr)), Cause: stdLibErr, Expected: true},
-		{Err: Multi([]error{New("test class"), Class("not test class")}), Cause: Class("not test class"), Expected: true},
-		{Err: Class("not test class"), Cause: New("test class"), Expected: false},
-		{Err: New("test class"), Cause: New("not test class"), Expected: false},
-		{Err: New("test class"), Cause: nil, Expected: false},
-		{Err: fmt.Errorf("outer err: %w", stdLibErr), Cause: stdLibErr, Expected: true},
-		{Err: nil, Cause: nil, Expected: false},
-		{Err: nil, Cause: Class("test class"), Expected: false},
+		{
+			Name:		"True for equal classes",
+			Err:		Class("test class"),
+			Cause:		Class("test class"),
+			Expected:	true,
+		},
+		{
+			Name:		"True for comparing ex against class",
+			Err:		New("test class"),
+			Cause:		Class("test class"),
+			Expected:	true,
+		},
+		{
+			Name:		"True for comparing ex against ex with equal class",
+			Err:		New("test class"),
+			Cause:		New("test class"),
+			Expected:	true,
+		},
+		{
+			Name:		"True for comparing ex against ex with equal sentinel errors",
+			Err:		New(stdLibErr),
+			Cause:		stdLibErr,
+			Expected:	true,
+		},
+		{
+			Name:		"True for comparing ex with wrapped sentinel error against sentinel error",
+			Err:		New(fmt.Errorf("outer err: %w", stdLibErr)),
+			Cause:		stdLibErr,
+			Expected:	true,
+		},
+		{
+			Name:		"True for comparing multi ex against class",
+			Err:		Multi([]error{New("test class"), Class("not test class")}),
+			Cause:		Class("not test class"),
+			Expected:	true,
+		},
+		{
+			Name:		"False for different classes",
+			Err:		Class("not test class"),
+			Cause:		New("test class"),
+			Expected:	false,
+		},
+		{
+			Name:		"False for ex with different classes",
+			Err:		New("test class"),
+			Cause:		New("not test class"),
+			Expected:	false,
+		},
+		{
+			Name:		"False for ex comparison against nil",
+			Err:		New("test class"),
+			Cause:		nil,
+			Expected:	false,
+		},
+		{
+			Name:		"True for wrapped sentinel error",
+			Err:		fmt.Errorf("outer err: %w", stdLibErr),
+			Cause:		stdLibErr,
+			Expected:	true,
+		},
+		{
+			Name:		"False for nil comparisons",
+			Err:		nil,
+			Cause:		nil,
+			Expected:	false,
+		},
+		{
+			Name:		"False for nil error against class",
+			Err:		nil,
+			Cause:		Class("test class"),
+			Expected:	false,
+		},
 	}
 
-	for index, tc := range testCases {
-		it.Equal(tc.Expected, Is(tc.Err, tc.Cause), fmt.Sprintf("test case %d", index))
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			its := assert.New(t)
+			its.Equal(tc.Expected, Is(tc.Err, tc.Cause))
+		})
 	}
 }

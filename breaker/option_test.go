@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -50,9 +50,9 @@ func TestOptConfig(t *testing.T) {
 	assert.Zero(b.ClosedExpiryInterval)
 	assert.Zero(b.OpenExpiryInterval)
 	OptConfig(Config{
-		HalfOpenMaxActions:   1,
-		ClosedExpiryInterval: 2 * time.Second,
-		OpenExpiryInterval:   3 * time.Second,
+		HalfOpenMaxActions:	1,
+		ClosedExpiryInterval:	2 * time.Second,
+		OpenExpiryInterval:	3 * time.Second,
 	})(b)
 	assert.Equal(1, b.HalfOpenMaxActions)
 	assert.Equal(2*time.Second, b.ClosedExpiryInterval)

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -16,16 +16,16 @@ import (
 
 // these are compile time assertions
 var (
-	_ Event        = (*ErrorEvent)(nil)
-	_ TextWritable = (*ErrorEvent)(nil)
-	_ JSONWritable = (*ErrorEvent)(nil)
+	_	Event		= (*ErrorEvent)(nil)
+	_	TextWritable	= (*ErrorEvent)(nil)
+	_	JSONWritable	= (*ErrorEvent)(nil)
 )
 
 // NewErrorEvent returns a new error event.
 func NewErrorEvent(flag string, err error, options ...ErrorEventOption) ErrorEvent {
 	ee := ErrorEvent{
-		Flag: flag,
-		Err:  err,
+		Flag:	flag,
+		Err:	err,
 	}
 	for _, opt := range options {
 		opt(&ee)
@@ -74,15 +74,23 @@ func OptErrorEventState(state interface{}) ErrorEventOption {
 	}
 }
 
+// OptErrorEventRestricted sets the restricted field on an error event.
+func OptErrorEventRestricted(restricted bool) ErrorEventOption {
+	return func(ee *ErrorEvent) {
+		ee.Restricted = restricted
+	}
+}
+
 // ErrorEvent is an event that wraps an error.
 type ErrorEvent struct {
-	Flag  string
-	Err   error
-	State interface{}
+	Flag		string
+	Err		error
+	State		interface{}
+	Restricted	bool
 }
 
 // GetFlag implements Event.
-func (ee ErrorEvent) GetFlag() string { return ee.Flag }
+func (ee ErrorEvent) GetFlag() string	{ return ee.Flag }
 
 // WriteText writes the text version of an error.
 func (ee ErrorEvent) WriteText(formatter TextFormatter, output io.Writer) {
@@ -99,10 +107,12 @@ func (ee ErrorEvent) Decompose() map[string]interface{} {
 
 	if _, ok := ee.Err.(json.Marshaler); ok {
 		return map[string]interface{}{
-			"err": ee.Err,
+			"err":			ee.Err,
+			FieldRestricted:	ee.Restricted,
 		}
 	}
 	return map[string]interface{}{
-		"err": ee.Err.Error(),
+		"err":			ee.Err.Error(),
+		FieldRestricted:	ee.Restricted,
 	}
 }

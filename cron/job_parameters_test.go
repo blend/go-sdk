@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -18,8 +18,8 @@ func Test_JobParametersContext(t *testing.T) {
 	assert := assert.New(t)
 
 	final := GetJobParameterValues(WithJobParameterValues(context.Background(), JobParameters{
-		"foo":  "bar",
-		"buzz": "fuzz",
+		"foo":	"bar",
+		"buzz":	"fuzz",
 	}))
 	assert.Equal("bar", final["foo"])
 	assert.Equal("fuzz", final["buzz"])

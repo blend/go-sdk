@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -11,4 +11,4 @@ package validate
 type NoOp struct{}
 
 // Validate implements the no op.
-func (no NoOp) Validate() error { return nil }
+func (no NoOp) Validate() error	{ return nil }

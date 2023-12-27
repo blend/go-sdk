@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -22,8 +22,8 @@ func TestJobInvocationElapsed(t *testing.T) {
 	started := time.Now().UTC()
 
 	assert.Equal(200*time.Millisecond, (&JobInvocation{
-		Started:  started,
-		Complete: started.Add(200 * time.Millisecond),
+		Started:	started,
+		Complete:	started.Add(200 * time.Millisecond),
 	}).Elapsed())
 
 	assert.NotZero((&JobInvocation{
@@ -36,15 +36,15 @@ func TestJobInvocationClone(t *testing.T) {
 
 	ts := time.Now().UTC()
 	ji := &JobInvocation{
-		ID:         NewJobInvocationID(),
-		JobName:    uuid.V4().String(),
-		Started:    ts,
-		Complete:   ts.Add(100 * time.Millisecond),
-		Err:        fmt.Errorf("this is a test"),
-		Status:     JobInvocationStatusErrored,
-		Parameters: map[string]string{"foo": "bar", "example-string": "dog"},
-		State:      "this is also a test",
-		Cancel:     func() {},
+		ID:		NewJobInvocationID(),
+		JobName:	uuid.V4().String(),
+		Started:	ts,
+		Complete:	ts.Add(100 * time.Millisecond),
+		Err:		fmt.Errorf("this is a test"),
+		Status:		JobInvocationStatusErrored,
+		Parameters:	map[string]string{"foo": "bar", "example-string": "dog"},
+		State:		"this is also a test",
+		Cancel:		func() {},
 	}
 	cloned := ji.Clone()
 	assert.Equal(ji.ID, cloned.ID)

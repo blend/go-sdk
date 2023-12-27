@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -28,28 +28,31 @@ const DefaultRestrictionsOpenSource = `Use of this source code is governed by a 
 const DefaultNoticeBodyTemplate = `Copyright (c) {{ .Year }} - Present. {{ .Company }}. All rights reserved
 {{ .Restrictions }}`
 
+// DefaultImplicitConfigFile is the file name for the default config file the `copyright` command will parse for globs, if present.
+const DefaultImplicitConfigFile = ".copyright-check-exclude-globs"
+
 // Extension
 const (
-	ExtensionUnknown = ""
-	ExtensionCSS     = ".css"
-	ExtensionGo      = ".go"
-	ExtensionHTML    = ".html"
-	ExtensionJS      = ".js"
-	ExtensionJSX     = ".jsx"
-	ExtensionPy      = ".py"
-	ExtensionSASS    = ".sass"
-	ExtensionSCSS    = ".scss"
-	ExtensionTS      = ".ts"
-	ExtensionTSX     = ".tsx"
-	ExtensionYAML    = ".yaml"
-	ExtensionYML     = ".yml"
-	ExtensionSQL     = ".sql"
-	ExtensionProto   = ".proto"
+	ExtensionUnknown	= ""
+	ExtensionCSS		= ".css"
+	ExtensionGo		= ".go"
+	ExtensionHTML		= ".html"
+	ExtensionJS		= ".js"
+	ExtensionJSX		= ".jsx"
+	ExtensionPy		= ".py"
+	ExtensionSASS		= ".sass"
+	ExtensionSCSS		= ".scss"
+	ExtensionTS		= ".ts"
+	ExtensionTSX		= ".tsx"
+	ExtensionYAML		= ".yaml"
+	ExtensionYML		= ".yml"
+	ExtensionSQL		= ".sql"
+	ExtensionProto		= ".proto"
 )
 
 var (
 	// KnownExtensions is a list of all the known extensions.
-	KnownExtensions = []string{
+	KnownExtensions	= []string{
 		ExtensionCSS,
 		ExtensionGo,
 		ExtensionHTML,
@@ -67,25 +70,25 @@ var (
 	}
 
 	// DefaultExtensionNoticeTemplates is a mapping between file extension (including the prefix dot) to the notice templates.
-	DefaultExtensionNoticeTemplates = map[string]string{
-		ExtensionCSS:   cssNoticeTemplate,
-		ExtensionGo:    goNoticeTemplate,
-		ExtensionHTML:  htmlNoticeTemplate,
-		ExtensionJS:    jsNoticeTemplate,
-		ExtensionJSX:   jsNoticeTemplate,
-		ExtensionPy:    pythonNoticeTemplate,
-		ExtensionSASS:  sassNoticeTemplate,
-		ExtensionSCSS:  scssNoticeTemplate,
-		ExtensionTS:    tsNoticeTemplate,
-		ExtensionTSX:   tsNoticeTemplate,
-		ExtensionYAML:  yamlNoticeTemplate,
-		ExtensionYML:   yamlNoticeTemplate,
-		ExtensionSQL:   sqlNoticeTemplate,
-		ExtensionProto: protoNoticeTemplate,
+	DefaultExtensionNoticeTemplates	= map[string]string{
+		ExtensionCSS:	cssNoticeTemplate,
+		ExtensionGo:	goNoticeTemplate,
+		ExtensionHTML:	htmlNoticeTemplate,
+		ExtensionJS:	jsNoticeTemplate,
+		ExtensionJSX:	jsNoticeTemplate,
+		ExtensionPy:	pythonNoticeTemplate,
+		ExtensionSASS:	sassNoticeTemplate,
+		ExtensionSCSS:	scssNoticeTemplate,
+		ExtensionTS:	tsNoticeTemplate,
+		ExtensionTSX:	tsNoticeTemplate,
+		ExtensionYAML:	yamlNoticeTemplate,
+		ExtensionYML:	yamlNoticeTemplate,
+		ExtensionSQL:	sqlNoticeTemplate,
+		ExtensionProto:	protoNoticeTemplate,
 	}
 
 	// DefaultExcludes is the default excluded directories.
-	DefaultExcludes = []string{
+	DefaultExcludes	= []string{
 		".git/*",
 		".github/*",
 		"*/_config",
@@ -101,10 +104,11 @@ var (
 		"vendor/*",
 		"venv/*",
 		"*/venv/*",
+		"*.vault.yml",
 	}
 
 	// DefaultIncludeFiles is the default included files list.
-	DefaultIncludeFiles = []string{
+	DefaultIncludeFiles	= []string{
 		"*.css",
 		"*.go",
 		"*.html",
@@ -129,14 +133,14 @@ var (
 
 // Error sentinels
 var (
-	ErrWalkSkip = errors.New("walk skip; we should not process this file or path")
-	ErrFailure  = errors.New("failure; one or more steps failed")
+	ErrWalkSkip	= errors.New("walk skip; we should not process this file or path")
+	ErrFailure	= errors.New("failure; one or more steps failed")
 )
 
 const (
 	// goNoticeTemplate is the notice template specific to go files
 	// note: it _must_ end in two newlines to prevent linting / compiler failures.
-	goNoticeTemplate = `/*
+	goNoticeTemplate	= `/*
 
 {{ .Notice }}
 
@@ -144,53 +148,53 @@ const (
 
 `
 
-	yamlNoticeTemplate = `#
+	yamlNoticeTemplate	= `#
 {{ .Notice | prefix "# " }}
 #
 `
 
-	htmlNoticeTemplate = `<!--
+	htmlNoticeTemplate	= `<!--
 {{ .Notice }}
 -->
 `
 
-	jsNoticeTemplate = `/**
+	jsNoticeTemplate	= `/**
 {{ .Notice | prefix " * " }}
  */
 `
 
-	tsNoticeTemplate = `/**
+	tsNoticeTemplate	= `/**
 {{ .Notice | prefix " * " }}
  */
 `
 
-	cssNoticeTemplate = `/*
+	cssNoticeTemplate	= `/*
 {{ .Notice | prefix " * " }}
  */
 `
 
-	scssNoticeTemplate = `/*
+	scssNoticeTemplate	= `/*
 {{ .Notice | prefix " * " }}
  */
 `
 
-	sassNoticeTemplate = `/*
+	sassNoticeTemplate	= `/*
 {{ .Notice | prefix " * " }}
  */
 `
 
-	pythonNoticeTemplate = `#
+	pythonNoticeTemplate	= `#
 {{ .Notice | prefix "# " }}
 #
 
 `
 
-	sqlNoticeTemplate = `--
+	sqlNoticeTemplate	= `--
 {{ .Notice | prefix "-- " }}
 --
 `
 
-	protoNoticeTemplate = `//
+	protoNoticeTemplate	= `//
 {{ .Notice | prefix "// " }}
 //
 
@@ -198,15 +202,15 @@ const (
 )
 
 const (
-	goBuildTagExpr      = `^(\/\/(go:build| \+build).*\n)+\n`
-	tsReferenceTagsExpr = `^(\/\/\/ \<reference path=\"(.*)\" \/\>\n)+`
-	yearExpr            = `([0-9]{4,}?)`
-	shebangExpr         = `(?s)^(\s*)#!([^\n]+)\n`
+	goBuildTagExpr		= `^(\/\/(go:build| \+build).*\n)+\n`
+	tsReferenceTagsExpr	= `^(\/\/\/ \<reference path=\"(.*)\" \/\>\n)+`
+	yearExpr		= `([0-9]{4,}?)`
+	shebangExpr		= `(?s)^(\s*)#!([^\n]+)\n`
 )
 
 var (
-	goBuildTagMatch      = regexp.MustCompile(goBuildTagExpr)
-	tsReferenceTagsMatch = regexp.MustCompile(tsReferenceTagsExpr)
-	yearMatch            = regexp.MustCompile(yearExpr)
-	shebangMatch         = regexp.MustCompile(shebangExpr)
+	goBuildTagMatch		= regexp.MustCompile(goBuildTagExpr)
+	tsReferenceTagsMatch	= regexp.MustCompile(tsReferenceTagsExpr)
+	yearMatch		= regexp.MustCompile(yearExpr)
+	shebangMatch		= regexp.MustCompile(shebangExpr)
 )

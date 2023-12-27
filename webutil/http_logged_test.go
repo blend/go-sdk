@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -58,9 +58,9 @@ func TestColorizeByStatusCode(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := [...]struct {
-		StatusCode int
-		Value      string
-		Expected   string
+		StatusCode	int
+		Value		string
+		Expected	string
 	}{
 		{StatusCode: http.StatusInternalServerError, Value: "this is a server error", Expected: ansi.ColorRed.Apply("this is a server error")},
 		{StatusCode: http.StatusBadRequest, Value: "this is a bad request", Expected: ansi.ColorYellow.Apply("this is a bad request")},
@@ -83,10 +83,10 @@ func TestColorizebyStatusCodeWithFormatter(t *testing.T) {
 	}
 
 	testCases := [...]struct {
-		StatusCode int
-		Formatter  logger.TextFormatter
-		Value      string
-		Expected   string
+		StatusCode	int
+		Formatter	logger.TextFormatter
+		Value		string
+		Expected	string
 	}{
 		// Color
 		{StatusCode: http.StatusInternalServerError, Value: "this is a server error", Formatter: color, Expected: ansi.ColorRed.Apply("this is a server error")},
@@ -108,8 +108,8 @@ func TestColorizeStatusCode(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := [...]struct {
-		StatusCode int
-		Expected   string
+		StatusCode	int
+		Expected	string
 	}{
 		{StatusCode: http.StatusInternalServerError, Expected: ansi.ColorRed.Apply("500")},
 		{StatusCode: http.StatusBadRequest, Expected: ansi.ColorYellow.Apply("400")},
@@ -132,9 +132,9 @@ func TestColorizeStatusCodeWithFormatter(t *testing.T) {
 	}
 
 	testCases := [...]struct {
-		StatusCode int
-		Formatter  logger.TextFormatter
-		Expected   string
+		StatusCode	int
+		Formatter	logger.TextFormatter
+		Expected	string
 	}{
 		// Color
 		{StatusCode: http.StatusInternalServerError, Formatter: color, Expected: ansi.ColorRed.Apply("500")},

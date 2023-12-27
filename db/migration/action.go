@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -28,7 +28,7 @@ func (a ActionFunc) Action(ctx context.Context, conn *db.Connection, tx *sql.Tx)
 }
 
 // NoOp performs no action.
-func NoOp(_ context.Context, _ *db.Connection, _ *sql.Tx) error { return nil }
+func NoOp(_ context.Context, _ *db.Connection, _ *sql.Tx) error	{ return nil }
 
 // Statements returns a body func that executes the statments serially.
 func Statements(statements ...string) Action {

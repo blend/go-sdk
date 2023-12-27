@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -17,8 +17,8 @@ const errNilConfig ex.Class = "config cannot be nil"
 
 // SecretTraceConfig are the options for sending trace messages for the secrets package
 type SecretTraceConfig struct {
-	VaultOperation string
-	KeyName        string
+	VaultOperation	string
+	KeyName		string
 }
 
 // TraceOption is an option type for secret trace

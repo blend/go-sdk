@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -28,8 +28,8 @@ func Any(msg proto.Message) (*any.Any, error) {
 		return nil, ex.New(err)
 	}
 	return &any.Any{
-		TypeUrl: m.TypeUrl,
-		Value:   m.Value,
+		TypeUrl:	m.TypeUrl,
+		Value:		m.Value,
 	}, nil
 }
 
@@ -39,8 +39,8 @@ func FromAny(m *any.Any) (proto.Message, error) {
 		return nil, ex.New("cannot unpack message from nil *any.Any")
 	}
 	return anypb.UnmarshalNew(&anypb.Any{
-		TypeUrl: m.TypeUrl,
-		Value:   m.Value,
+		TypeUrl:	m.TypeUrl,
+		Value:		m.Value,
 	}, proto.UnmarshalOptions{
 		AllowPartial: true,
 	})

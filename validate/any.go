@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -15,19 +15,19 @@ import (
 
 // Basic errors
 const (
-	ErrZero       ex.Class = "object should be its default value or unset"
-	ErrNotZero    ex.Class = "object should not be its default value or unset"
-	ErrRequired   ex.Class = "field is required"
-	ErrForbidden  ex.Class = "field is forbidden"
-	ErrEmpty      ex.Class = "object should be empty"
-	ErrNotEmpty   ex.Class = "object should not be empty"
-	ErrLen        ex.Class = "object should have a given length"
-	ErrNil        ex.Class = "object should be nil"
-	ErrNotNil     ex.Class = "object should not be nil"
-	ErrEquals     ex.Class = "objects should be equal"
-	ErrNotEquals  ex.Class = "objects should not be equal"
-	ErrAllowed    ex.Class = "objects should be one of a given set of allowed values"
-	ErrDisallowed ex.Class = "objects should not be one of a given set of disallowed values"
+	ErrZero		ex.Class	= "object should be its default value or unset"
+	ErrNotZero	ex.Class	= "object should not be its default value or unset"
+	ErrRequired	ex.Class	= "field is required"
+	ErrForbidden	ex.Class	= "field is forbidden"
+	ErrEmpty	ex.Class	= "object should be empty"
+	ErrNotEmpty	ex.Class	= "object should not be empty"
+	ErrLen		ex.Class	= "object should have a given length"
+	ErrNil		ex.Class	= "object should be nil"
+	ErrNotNil	ex.Class	= "object should not be nil"
+	ErrEquals	ex.Class	= "objects should be equal"
+	ErrNotEquals	ex.Class	= "objects should not be equal"
+	ErrAllowed	ex.Class	= "objects should be one of a given set of allowed values"
+	ErrDisallowed	ex.Class	= "objects should not be one of a given set of disallowed values"
 )
 
 // Any returns a new AnyRefValidators.

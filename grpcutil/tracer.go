@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -83,7 +83,7 @@ func TracedServerStream(tracer ServerTracer) grpc.StreamServerInterceptor {
 // add tracing handling for individual stream calls.
 type contextServerStream struct {
 	grpc.ServerStream
-	ctx context.Context
+	ctx	context.Context
 }
 
 func (cs *contextServerStream) Context() context.Context {

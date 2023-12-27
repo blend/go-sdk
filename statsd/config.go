@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,12 +21,12 @@ var (
 
 // Config is the set of options for the statsd client.
 type Config struct {
-	Addr          string            `json:"addr" yaml:"addr" env:"STATSD_ADDR"`
-	DialTimeout   time.Duration     `json:"dialTimeout" yaml:"dialTimeout"`
-	SampleRate    float64           `json:"sampleRate" yaml:"sampleRate"`
-	MaxPacketSize int               `json:"maxPacketSize" yaml:"maxPacketSize"`
-	MaxBufferSize int               `json:"maxBufferSize" yaml:"maxBufferSize"`
-	DefaultTags   map[string]string `json:"defaultTags" yaml:"defaultTags"`
+	Addr		string			`json:"addr" yaml:"addr" env:"STATSD_ADDR"`
+	DialTimeout	time.Duration		`json:"dialTimeout" yaml:"dialTimeout"`
+	SampleRate	float64			`json:"sampleRate" yaml:"sampleRate"`
+	MaxPacketSize	int			`json:"maxPacketSize" yaml:"maxPacketSize"`
+	MaxBufferSize	int			`json:"maxBufferSize" yaml:"maxBufferSize"`
+	DefaultTags	map[string]string	`json:"defaultTags" yaml:"defaultTags"`
 }
 
 // Resolve implements configutil.Resolver.

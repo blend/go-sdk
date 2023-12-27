@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -25,9 +25,9 @@ const (
 
 // these are compile time assertions
 var (
-	_ logger.Event        = (*RPCStreamMessageEvent)(nil)
-	_ logger.TextWritable = (*RPCStreamMessageEvent)(nil)
-	_ logger.JSONWritable = (*RPCStreamMessageEvent)(nil)
+	_	logger.Event		= (*RPCStreamMessageEvent)(nil)
+	_	logger.TextWritable	= (*RPCStreamMessageEvent)(nil)
+	_	logger.JSONWritable	= (*RPCStreamMessageEvent)(nil)
 )
 
 // StreamMessageDirection is the direction the message was sent.
@@ -35,19 +35,19 @@ type StreamMessageDirection string
 
 // constants
 const (
-	StreamMessageDirectionReceive = "recv"
-	StreamMessageDirectionSend    = "send"
+	StreamMessageDirectionReceive	= "recv"
+	StreamMessageDirectionSend	= "send"
 )
 
 // NewRPCStreamMessageEvent creates a new rpc stream message event.
 func NewRPCStreamMessageEvent(method string, direction StreamMessageDirection, elapsed time.Duration, options ...RPCStreamMessageEventOption) RPCStreamMessageEvent {
 	rpe := RPCStreamMessageEvent{
 		RPCEvent: RPCEvent{
-			Engine:  EngineGRPC,
-			Method:  method,
-			Elapsed: elapsed,
+			Engine:		EngineGRPC,
+			Method:		method,
+			Elapsed:	elapsed,
 		},
-		Direction: direction,
+		Direction:	direction,
 	}
 	for _, opt := range options {
 		opt(&rpe)
@@ -125,11 +125,11 @@ func OptRPCStreamMessageErr(value error) RPCStreamMessageEventOption {
 // RPCStreamMessageEvent is an event type for rpc
 type RPCStreamMessageEvent struct {
 	RPCEvent
-	Direction StreamMessageDirection
+	Direction	StreamMessageDirection
 }
 
 // GetFlag implements Event.
-func (e RPCStreamMessageEvent) GetFlag() string { return FlagRPCStreamMessage }
+func (e RPCStreamMessageEvent) GetFlag() string	{ return FlagRPCStreamMessage }
 
 // WriteText implements TextWritable.
 func (e RPCStreamMessageEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
@@ -177,14 +177,14 @@ func (e RPCStreamMessageEvent) WriteText(tf logger.TextFormatter, wr io.Writer) 
 // Decompose implements JSONWritable.
 func (e RPCStreamMessageEvent) Decompose() map[string]interface{} {
 	return map[string]interface{}{
-		"engine":      e.Engine,
-		"peer":        e.Peer,
-		"method":      e.Method,
-		"direction":   e.Direction,
-		"userAgent":   e.UserAgent,
-		"authority":   e.Authority,
-		"contentType": e.ContentType,
-		"elapsed":     timeutil.Milliseconds(e.Elapsed),
-		"err":         e.Err,
+		"engine":	e.Engine,
+		"peer":		e.Peer,
+		"method":	e.Method,
+		"direction":	e.Direction,
+		"userAgent":	e.UserAgent,
+		"authority":	e.Authority,
+		"contentType":	e.ContentType,
+		"elapsed":	timeutil.Milliseconds(e.Elapsed),
+		"err":		e.Err,
 	}
 }

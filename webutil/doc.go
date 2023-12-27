@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -12,4 +12,4 @@ It includes things like a webhook sender and helpers to parse the remote address
 
 It is used by other packages in the repository like `web` and `r2`.
 */
-package webutil // import "github.com/blend/go-sdk/webutil"
+package webutil	// import "github.com/blend/go-sdk/webutil"

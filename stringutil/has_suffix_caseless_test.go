@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -25,5 +25,5 @@ func TestHasSuffixCaseless(t *testing.T) {
 
 	assert.False(HasSuffixCaseless("hello world", "hello hello world"))
 	assert.False(HasSuffixCaseless("hello world", "foobar"))
-	assert.False(HasSuffixCaseless("hello world", "hello")) //this would pass prefix
+	assert.False(HasSuffixCaseless("hello world", "hello"))	//this would pass prefix
 }

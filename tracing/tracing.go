@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -28,11 +28,8 @@ func StartSpanFromContext(ctx context.Context, tracer opentracing.Tracer, operat
 }
 
 // GetTracingSpanFromContext returns a tracing span from a given context.
-func GetTracingSpanFromContext(ctx context.Context, key interface{}) opentracing.Span {
-	if typed, ok := ctx.Value(key).(opentracing.Span); ok {
-		return typed
-	}
-	return nil
+func GetTracingSpanFromContext(ctx context.Context) opentracing.Span {
+	return opentracing.SpanFromContext(ctx)
 }
 
 // Background returns a new `context.Background()`

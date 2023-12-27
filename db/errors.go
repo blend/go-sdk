@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -15,40 +15,40 @@ import (
 
 const (
 	// ErrDestinationNotStruct is an exception class.
-	ErrDestinationNotStruct ex.Class = "db: destination object is not a struct"
+	ErrDestinationNotStruct	ex.Class	= "db: destination object is not a struct"
 	// ErrConfigUnset is an exception class.
-	ErrConfigUnset ex.Class = "db: config is unset"
+	ErrConfigUnset	ex.Class	= "db: config is unset"
 	// ErrUnsafeSSLMode is an error indicating unsafe ssl mode in production.
-	ErrUnsafeSSLMode ex.Class = "db: unsafe ssl mode in prodlike environment"
+	ErrUnsafeSSLMode	ex.Class	= "db: unsafe ssl mode in prodlike environment"
 	// ErrUsernameUnset is an error indicating there is no username set in a prodlike environment.
-	ErrUsernameUnset ex.Class = "db: username is unset in prodlike environment"
+	ErrUsernameUnset	ex.Class	= "db: username is unset in prodlike environment"
 	// ErrPasswordUnset is an error indicating there is no password set in a prodlike environment.
-	ErrPasswordUnset ex.Class = "db: password is unset in prodlike environment"
+	ErrPasswordUnset	ex.Class	= "db: password is unset in prodlike environment"
 	// ErrDurationConversion is the error returned when a duration cannot be
 	// converted to multiple of some base (e.g. milliseconds or seconds)
 	// without round off.
-	ErrDurationConversion ex.Class = "db: cannot convert duration"
+	ErrDurationConversion	ex.Class	= "db: cannot convert duration"
 	// ErrConnectionAlreadyOpen is an error indicating the db connection was already opened.
-	ErrConnectionAlreadyOpen ex.Class = "db: the connection is already opened"
+	ErrConnectionAlreadyOpen	ex.Class	= "db: the connection is already opened"
 	// ErrConnectionClosed is an error indicating the db connection hasn't been opened.
-	ErrConnectionClosed ex.Class = "db: the connection is closed, or is being used before opened"
+	ErrConnectionClosed	ex.Class	= "db: the connection is closed, or is being used before opened"
 	// ErrPlanCacheUnset is an error indicating the statement cache is unset.
-	ErrPlanCacheUnset ex.Class = "db: the plan cache is unset"
+	ErrPlanCacheUnset	ex.Class	= "db: the plan cache is unset"
 	// ErrPlanCacheKeyUnset is an error indicating the plan cache key is unset.
-	ErrPlanCacheKeyUnset ex.Class = "db: the plan cache key is unset"
+	ErrPlanCacheKeyUnset	ex.Class	= "db: the plan cache key is unset"
 	// ErrCollectionNotSlice is an error returned by OutMany if the destination is not a slice.
-	ErrCollectionNotSlice ex.Class = "db: outmany destination collection is not a slice"
+	ErrCollectionNotSlice	ex.Class	= "db: outmany destination collection is not a slice"
 	// ErrInvalidIDs is an error returned by Get if the ids aren't provided.
-	ErrInvalidIDs ex.Class = "db: invalid `ids` parameter"
+	ErrInvalidIDs	ex.Class	= "db: invalid `ids` parameter"
 	// ErrNoPrimaryKey is an error returned by a number of operations that depend on a primary key.
-	ErrNoPrimaryKey ex.Class = "db: no primary key on object"
+	ErrNoPrimaryKey	ex.Class	= "db: no primary key on object"
 	// ErrRowsNotColumnsProvider is returned by `PopulateByName` if you do not pass in `sql.Rows` as the scanner.
-	ErrRowsNotColumnsProvider ex.Class = "db: rows is not a columns provider"
+	ErrRowsNotColumnsProvider	ex.Class	= "db: rows is not a columns provider"
 	// ErrTooManyRows is returned by Out if there is more than one row returned by the query
-	ErrTooManyRows ex.Class = "db: too many rows returned to map to single object"
+	ErrTooManyRows	ex.Class	= "db: too many rows returned to map to single object"
 
 	// ErrNetwork is a grouped error for network issues.
-	ErrNetwork ex.Class = "db: network error"
+	ErrNetwork	ex.Class	= "db: network error"
 )
 
 // IsConfigUnset returns if the error is an `ErrConfigUnset`.

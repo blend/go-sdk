@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -33,11 +33,11 @@ func NewStreamEncrypter(encKey, macKey []byte, plainText io.Reader) (*StreamEncr
 	stream := cipher.NewCTR(block, iv)
 	mac := hmac.New(sha256.New, macKey)
 	return &StreamEncrypter{
-		Source: plainText,
-		Block:  block,
-		Stream: stream,
-		Mac:    mac,
-		IV:     iv,
+		Source:	plainText,
+		Block:	block,
+		Stream:	stream,
+		Mac:	mac,
+		IV:	iv,
 	}, nil
 }
 
@@ -50,30 +50,30 @@ func NewStreamDecrypter(encKey, macKey []byte, meta StreamMeta, cipherText io.Re
 	stream := cipher.NewCTR(block, meta.IV)
 	mac := hmac.New(sha256.New, macKey)
 	return &StreamDecrypter{
-		Source: cipherText,
-		Block:  block,
-		Stream: stream,
-		Mac:    mac,
-		Meta:   meta,
+		Source:	cipherText,
+		Block:	block,
+		Stream:	stream,
+		Mac:	mac,
+		Meta:	meta,
 	}, nil
 }
 
 // StreamEncrypter is an encrypter for a stream of data with authentication
 type StreamEncrypter struct {
-	Source io.Reader
-	Block  cipher.Block
-	Stream cipher.Stream
-	Mac    hash.Hash
-	IV     []byte
+	Source	io.Reader
+	Block	cipher.Block
+	Stream	cipher.Stream
+	Mac	hash.Hash
+	IV	[]byte
 }
 
 // StreamDecrypter is a decrypter for a stream of data with authentication
 type StreamDecrypter struct {
-	Source io.Reader
-	Block  cipher.Block
-	Stream cipher.Stream
-	Mac    hash.Hash
-	Meta   StreamMeta
+	Source	io.Reader
+	Block	cipher.Block
+	Stream	cipher.Stream
+	Mac	hash.Hash
+	Meta	StreamMeta
 }
 
 // Read encrypts the bytes of the inner reader and places them into p
@@ -142,7 +142,7 @@ func checkedWrite(dst io.Writer, p []byte) (int, error) {
 // StreamMeta is metadata about an encrypted stream
 type StreamMeta struct {
 	// IV is the initial value for the crypto function
-	IV []byte
+	IV	[]byte
 	// Hash is the sha256 hmac of the stream
-	Hash []byte
+	Hash	[]byte
 }

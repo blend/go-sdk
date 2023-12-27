@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -32,13 +32,13 @@ func New(remoteURL string, options ...Option) *Request {
 	}
 	u.Host = webutil.RemoveHostEmptyPort(u.Host)
 	r.Request = &http.Request{
-		Method:     MethodGet,
-		URL:        u,
-		Proto:      "HTTP/1.1",
-		ProtoMajor: 1,
-		ProtoMinor: 1,
-		Header:     make(http.Header),
-		Host:       u.Host,
+		Method:		MethodGet,
+		URL:		u,
+		Proto:		"HTTP/1.1",
+		ProtoMajor:	1,
+		ProtoMinor:	1,
+		Header:		make(http.Header),
+		Host:		u.Host,
 	}
 	for _, option := range options {
 		if err = option(&r); err != nil {
@@ -51,23 +51,23 @@ func New(remoteURL string, options ...Option) *Request {
 
 // Request is a combination of the http.Request options and the underlying client.
 type Request struct {
-	Request *http.Request
+	Request	*http.Request
 	// Err is an error set on construction.
 	// It is checked before sending the request, and will be returned from any of the
 	// methods that execute the request.
 	// It is typically set in `New(string,...Option)`.
-	Err error
+	Err	error
 	// Client is the underlying http client used to make the requests.
-	Client *http.Client
+	Client	*http.Client
 	// Closer is an optional step to run as part of the Close() function.
-	Closer func() error
+	Closer	func() error
 	// Tracer is used to report span contexts to a distributed tracing collector.
-	Tracer Tracer
+	Tracer	Tracer
 	// OnRequest is an array of request lifecycle hooks used for logging
 	// or to modify the request on a per call basis before it is sent.
-	OnRequest []OnRequestListener
+	OnRequest	[]OnRequestListener
 	// OnResponse is an array of response lifecycle hooks used typically for logging.
-	OnResponse []OnResponseListener
+	OnResponse	[]OnResponseListener
 }
 
 // WithContext implements the `WithContext` method for the underlying request.

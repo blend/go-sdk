@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -14,4 +14,4 @@ The output is governed by the `LOG_FORMAT` environment variable. Text output is 
 is great for reading locally, but is less than optimal for search and automated ingestion. In
 production systems, `LOG_FORMAT=json` is recommended.
 */
-package logger // import "github.com/blend/go-sdk/logger"
+package logger	// import "github.com/blend/go-sdk/logger"

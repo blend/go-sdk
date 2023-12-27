@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -18,47 +18,47 @@ import (
 // Stuff to be used in both versions tests.
 
 const (
-	noProtocol  = "There is no spoon"
-	ip4Addr     = "127.0.0.1"
-	ip6Addr     = "::1"
-	ip6LongAddr = "1234:5678:9abc:def0:cafe:babe:dead:2bad"
-	port        = 65533
-	invalidPort = 99999
+	noProtocol	= "There is no spoon"
+	ip4Addr		= "127.0.0.1"
+	ip6Addr		= "::1"
+	ip6LongAddr	= "1234:5678:9abc:def0:cafe:babe:dead:2bad"
+	port		= 65533
+	invalidPort	= 99999
 )
 
 var (
-	v4ip = net.ParseIP(ip4Addr).To4()
-	v6ip = net.ParseIP(ip6Addr).To16()
+	v4ip	= net.ParseIP(ip4Addr).To4()
+	v6ip	= net.ParseIP(ip6Addr).To16()
 
-	v4addr net.Addr = &net.TCPAddr{IP: v4ip, Port: port}
-	v6addr net.Addr = &net.TCPAddr{IP: v6ip, Port: port}
+	v4addr	net.Addr	= &net.TCPAddr{IP: v4ip, Port: port}
+	v6addr	net.Addr	= &net.TCPAddr{IP: v6ip, Port: port}
 
-	v4UDPAddr net.Addr = &net.UDPAddr{IP: v4ip, Port: port}
-	v6UDPAddr net.Addr = &net.UDPAddr{IP: v6ip, Port: port}
+	v4UDPAddr	net.Addr	= &net.UDPAddr{IP: v4ip, Port: port}
+	v6UDPAddr	net.Addr	= &net.UDPAddr{IP: v6ip, Port: port}
 
-	unixStreamAddr   net.Addr = &net.UnixAddr{Net: "unix", Name: "socket"}
-	unixDatagramAddr net.Addr = &net.UnixAddr{Net: "unixgram", Name: "socket"}
+	unixStreamAddr		net.Addr	= &net.UnixAddr{Net: "unix", Name: "socket"}
+	unixDatagramAddr	net.Addr	= &net.UnixAddr{Net: "unixgram", Name: "socket"}
 
-	errReadIntentionallyBroken = errors.New("read is intentionally broken")
+	errReadIntentionallyBroken	= errors.New("read is intentionally broken")
 )
 
 func TestEqualsTo(t *testing.T) {
 	var headersEqual = []struct {
-		this, that *Header
-		expected   bool
+		this, that	*Header
+		expected	bool
 	}{
 		{
 			&Header{
-				Version:           1,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolTCPv4,
+				Version:		1,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolTCPv4,
 				SourceAddr: &net.TCPAddr{
-					IP:   net.ParseIP("10.1.1.1"),
-					Port: 1000,
+					IP:	net.ParseIP("10.1.1.1"),
+					Port:	1000,
 				},
 				DestinationAddr: &net.TCPAddr{
-					IP:   net.ParseIP("20.2.2.2"),
-					Port: 2000,
+					IP:	net.ParseIP("20.2.2.2"),
+					Port:	2000,
 				},
 			},
 			nil,
@@ -66,58 +66,58 @@ func TestEqualsTo(t *testing.T) {
 		},
 		{
 			&Header{
-				Version:           1,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolTCPv4,
+				Version:		1,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolTCPv4,
 				SourceAddr: &net.TCPAddr{
-					IP:   net.ParseIP("10.1.1.1"),
-					Port: 1000,
+					IP:	net.ParseIP("10.1.1.1"),
+					Port:	1000,
 				},
 				DestinationAddr: &net.TCPAddr{
-					IP:   net.ParseIP("20.2.2.2"),
-					Port: 2000,
+					IP:	net.ParseIP("20.2.2.2"),
+					Port:	2000,
 				},
 			},
 			&Header{
-				Version:           2,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolTCPv4,
+				Version:		2,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolTCPv4,
 				SourceAddr: &net.TCPAddr{
-					IP:   net.ParseIP("10.1.1.1"),
-					Port: 1000,
+					IP:	net.ParseIP("10.1.1.1"),
+					Port:	1000,
 				},
 				DestinationAddr: &net.TCPAddr{
-					IP:   net.ParseIP("20.2.2.2"),
-					Port: 2000,
+					IP:	net.ParseIP("20.2.2.2"),
+					Port:	2000,
 				},
 			},
 			false,
 		},
 		{
 			&Header{
-				Version:           1,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolTCPv4,
+				Version:		1,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolTCPv4,
 				SourceAddr: &net.TCPAddr{
-					IP:   net.ParseIP("10.1.1.1"),
-					Port: 1000,
+					IP:	net.ParseIP("10.1.1.1"),
+					Port:	1000,
 				},
 				DestinationAddr: &net.TCPAddr{
-					IP:   net.ParseIP("20.2.2.2"),
-					Port: 2000,
+					IP:	net.ParseIP("20.2.2.2"),
+					Port:	2000,
 				},
 			},
 			&Header{
-				Version:           1,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolTCPv4,
+				Version:		1,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolTCPv4,
 				SourceAddr: &net.TCPAddr{
-					IP:   net.ParseIP("10.1.1.1"),
-					Port: 1000,
+					IP:	net.ParseIP("10.1.1.1"),
+					Port:	1000,
 				},
 				DestinationAddr: &net.TCPAddr{
-					IP:   net.ParseIP("20.2.2.2"),
-					Port: 2000,
+					IP:	net.ParseIP("20.2.2.2"),
+					Port:	2000,
 				},
 			},
 			true,
@@ -138,124 +138,124 @@ func TestEqualTo(t *testing.T) {
 
 func TestGetters(t *testing.T) {
 	var tests = []struct {
-		name                         string
-		header                       *Header
-		tcpSourceAddr, tcpDestAddr   *net.TCPAddr
-		udpSourceAddr, udpDestAddr   *net.UDPAddr
-		unixSourceAddr, unixDestAddr *net.UnixAddr
-		ipSource, ipDest             net.IP
-		portSource, portDest         int
+		name				string
+		header				*Header
+		tcpSourceAddr, tcpDestAddr	*net.TCPAddr
+		udpSourceAddr, udpDestAddr	*net.UDPAddr
+		unixSourceAddr, unixDestAddr	*net.UnixAddr
+		ipSource, ipDest		net.IP
+		portSource, portDest		int
 	}{
 		{
-			name: "AddressFamilyAndProtocolTCPv4",
+			name:	"AddressFamilyAndProtocolTCPv4",
 			header: &Header{
-				Version:           1,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolTCPv4,
+				Version:		1,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolTCPv4,
 				SourceAddr: &net.TCPAddr{
-					IP:   net.ParseIP("10.1.1.1"),
-					Port: 1000,
+					IP:	net.ParseIP("10.1.1.1"),
+					Port:	1000,
 				},
 				DestinationAddr: &net.TCPAddr{
-					IP:   net.ParseIP("20.2.2.2"),
-					Port: 2000,
+					IP:	net.ParseIP("20.2.2.2"),
+					Port:	2000,
 				},
 			},
 			tcpSourceAddr: &net.TCPAddr{
-				IP:   net.ParseIP("10.1.1.1"),
-				Port: 1000,
+				IP:	net.ParseIP("10.1.1.1"),
+				Port:	1000,
 			},
 			tcpDestAddr: &net.TCPAddr{
-				IP:   net.ParseIP("20.2.2.2"),
-				Port: 2000,
+				IP:	net.ParseIP("20.2.2.2"),
+				Port:	2000,
 			},
-			ipSource:   net.ParseIP("10.1.1.1"),
-			ipDest:     net.ParseIP("20.2.2.2"),
-			portSource: 1000,
-			portDest:   2000,
+			ipSource:	net.ParseIP("10.1.1.1"),
+			ipDest:		net.ParseIP("20.2.2.2"),
+			portSource:	1000,
+			portDest:	2000,
 		},
 		{
-			name: "UDPv4",
+			name:	"UDPv4",
 			header: &Header{
-				Version:           2,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolUDPv6,
+				Version:		2,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolUDPv6,
 				SourceAddr: &net.UDPAddr{
-					IP:   net.ParseIP("10.1.1.1"),
-					Port: 1000,
+					IP:	net.ParseIP("10.1.1.1"),
+					Port:	1000,
 				},
 				DestinationAddr: &net.UDPAddr{
-					IP:   net.ParseIP("20.2.2.2"),
-					Port: 2000,
+					IP:	net.ParseIP("20.2.2.2"),
+					Port:	2000,
 				},
 			},
 			udpSourceAddr: &net.UDPAddr{
-				IP:   net.ParseIP("10.1.1.1"),
-				Port: 1000,
+				IP:	net.ParseIP("10.1.1.1"),
+				Port:	1000,
 			},
 			udpDestAddr: &net.UDPAddr{
-				IP:   net.ParseIP("20.2.2.2"),
-				Port: 2000,
+				IP:	net.ParseIP("20.2.2.2"),
+				Port:	2000,
 			},
-			ipSource:   net.ParseIP("10.1.1.1"),
-			ipDest:     net.ParseIP("20.2.2.2"),
-			portSource: 1000,
-			portDest:   2000,
+			ipSource:	net.ParseIP("10.1.1.1"),
+			ipDest:		net.ParseIP("20.2.2.2"),
+			portSource:	1000,
+			portDest:	2000,
 		},
 		{
-			name: "UnixStream",
+			name:	"UnixStream",
 			header: &Header{
-				Version:           2,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolUnixStream,
+				Version:		2,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolUnixStream,
 				SourceAddr: &net.UnixAddr{
-					Net:  "unix",
-					Name: "src",
+					Net:	"unix",
+					Name:	"src",
 				},
 				DestinationAddr: &net.UnixAddr{
-					Net:  "unix",
-					Name: "dst",
+					Net:	"unix",
+					Name:	"dst",
 				},
 			},
 			unixSourceAddr: &net.UnixAddr{
-				Net:  "unix",
-				Name: "src",
+				Net:	"unix",
+				Name:	"src",
 			},
 			unixDestAddr: &net.UnixAddr{
-				Net:  "unix",
-				Name: "dst",
+				Net:	"unix",
+				Name:	"dst",
 			},
 		},
 		{
-			name: "UnixDatagram",
+			name:	"UnixDatagram",
 			header: &Header{
-				Version:           2,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolUnixDatagram,
+				Version:		2,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolUnixDatagram,
 				SourceAddr: &net.UnixAddr{
-					Net:  "unix",
-					Name: "src",
+					Net:	"unix",
+					Name:	"src",
 				},
 				DestinationAddr: &net.UnixAddr{
-					Net:  "unix",
-					Name: "dst",
+					Net:	"unix",
+					Name:	"dst",
 				},
 			},
 			unixSourceAddr: &net.UnixAddr{
-				Net:  "unix",
-				Name: "src",
+				Net:	"unix",
+				Name:	"src",
 			},
 			unixDestAddr: &net.UnixAddr{
-				Net:  "unix",
-				Name: "dst",
+				Net:	"unix",
+				Name:	"dst",
 			},
 		},
 		{
-			name: "Unspec",
+			name:	"Unspec",
 			header: &Header{
-				Version:           1,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolUnknown,
+				Version:		1,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolUnknown,
 			},
 		},
 	}
@@ -307,51 +307,51 @@ func TestGetters(t *testing.T) {
 
 func TestSetTLVs(t *testing.T) {
 	tests := []struct {
-		header    *Header
-		name      string
-		tlvs      []TLV
-		expectErr bool
+		header		*Header
+		name		string
+		tlvs		[]TLV
+		expectErr	bool
 	}{
 		{
-			name: "add authority TLV",
+			name:	"add authority TLV",
 			header: &Header{
-				Version:           1,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolTCPv4,
+				Version:		1,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolTCPv4,
 				SourceAddr: &net.TCPAddr{
-					IP:   net.ParseIP("10.1.1.1"),
-					Port: 1000,
+					IP:	net.ParseIP("10.1.1.1"),
+					Port:	1000,
 				},
 				DestinationAddr: &net.TCPAddr{
-					IP:   net.ParseIP("20.2.2.2"),
-					Port: 2000,
+					IP:	net.ParseIP("20.2.2.2"),
+					Port:	2000,
 				},
 			},
 			tlvs: []TLV{{
-				Type:  PP2TypeAuthority,
-				Value: []byte("example.org"),
+				Type:	PP2TypeAuthority,
+				Value:	[]byte("example.org"),
 			}},
 		},
 		{
-			name: "add too long TLV",
+			name:	"add too long TLV",
 			header: &Header{
-				Version:           1,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolTCPv4,
+				Version:		1,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolTCPv4,
 				SourceAddr: &net.TCPAddr{
-					IP:   net.ParseIP("10.1.1.1"),
-					Port: 1000,
+					IP:	net.ParseIP("10.1.1.1"),
+					Port:	1000,
 				},
 				DestinationAddr: &net.TCPAddr{
-					IP:   net.ParseIP("20.2.2.2"),
-					Port: 2000,
+					IP:	net.ParseIP("20.2.2.2"),
+					Port:	2000,
 				},
 			},
 			tlvs: []TLV{{
-				Type:  PP2TypeAuthority,
-				Value: append(bytes.Repeat([]byte("a"), 0xFFFF), []byte(".example.org")...),
+				Type:	PP2TypeAuthority,
+				Value:	append(bytes.Repeat([]byte("a"), 0xFFFF), []byte(".example.org")...),
 			}},
-			expectErr: true,
+			expectErr:	true,
 		},
 	}
 	for _, tt := range tests {
@@ -366,16 +366,16 @@ func TestWriteTo(t *testing.T) {
 	var buf bytes.Buffer
 
 	validHeader := &Header{
-		Version:           1,
-		Command:           ProtocolVersionAndCommandProxy,
-		TransportProtocol: AddressFamilyAndProtocolTCPv4,
+		Version:		1,
+		Command:		ProtocolVersionAndCommandProxy,
+		TransportProtocol:	AddressFamilyAndProtocolTCPv4,
 		SourceAddr: &net.TCPAddr{
-			IP:   net.ParseIP("10.1.1.1"),
-			Port: 1000,
+			IP:	net.ParseIP("10.1.1.1"),
+			Port:	1000,
 		},
 		DestinationAddr: &net.TCPAddr{
-			IP:   net.ParseIP("20.2.2.2"),
-			Port: 2000,
+			IP:	net.ParseIP("20.2.2.2"),
+			Port:	2000,
 		},
 	}
 
@@ -385,12 +385,12 @@ func TestWriteTo(t *testing.T) {
 
 	invalidHeader := &Header{
 		SourceAddr: &net.TCPAddr{
-			IP:   net.ParseIP("10.1.1.1"),
-			Port: 1000,
+			IP:	net.ParseIP("10.1.1.1"),
+			Port:	1000,
 		},
 		DestinationAddr: &net.TCPAddr{
-			IP:   net.ParseIP("20.2.2.2"),
-			Port: 2000,
+			IP:	net.ParseIP("20.2.2.2"),
+			Port:	2000,
 		},
 	}
 
@@ -401,16 +401,16 @@ func TestWriteTo(t *testing.T) {
 
 func TestFormat(t *testing.T) {
 	validHeader := &Header{
-		Version:           1,
-		Command:           ProtocolVersionAndCommandProxy,
-		TransportProtocol: AddressFamilyAndProtocolTCPv4,
+		Version:		1,
+		Command:		ProtocolVersionAndCommandProxy,
+		TransportProtocol:	AddressFamilyAndProtocolTCPv4,
 		SourceAddr: &net.TCPAddr{
-			IP:   net.ParseIP("10.1.1.1"),
-			Port: 1000,
+			IP:	net.ParseIP("10.1.1.1"),
+			Port:	1000,
 		},
 		DestinationAddr: &net.TCPAddr{
-			IP:   net.ParseIP("20.2.2.2"),
-			Port: 2000,
+			IP:	net.ParseIP("20.2.2.2"),
+			Port:	2000,
 		},
 	}
 
@@ -421,75 +421,75 @@ func TestFormat(t *testing.T) {
 
 func TestFormatInvalid(t *testing.T) {
 	tests := []struct {
-		name   string
-		header *Header
-		err    error
+		name	string
+		header	*Header
+		err	error
 	}{
 		{
-			name: "invalidVersion",
+			name:	"invalidVersion",
 			header: &Header{
-				Version:           3,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolTCPv4,
-				SourceAddr:        v4addr,
-				DestinationAddr:   v4addr,
+				Version:		3,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolTCPv4,
+				SourceAddr:		v4addr,
+				DestinationAddr:	v4addr,
 			},
-			err: ErrUnknownProxyProtocolVersion,
+			err:	ErrUnknownProxyProtocolVersion,
 		},
 		{
-			name: "v2MismatchTCPv4_UDPv4",
+			name:	"v2MismatchTCPv4_UDPv4",
 			header: &Header{
-				Version:           2,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolTCPv4,
-				SourceAddr:        v4UDPAddr,
-				DestinationAddr:   v4addr,
+				Version:		2,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolTCPv4,
+				SourceAddr:		v4UDPAddr,
+				DestinationAddr:	v4addr,
 			},
-			err: ErrInvalidAddress,
+			err:	ErrInvalidAddress,
 		},
 		{
-			name: "v2MismatchTCPv4_TCPv6",
+			name:	"v2MismatchTCPv4_TCPv6",
 			header: &Header{
-				Version:           2,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolTCPv4,
-				SourceAddr:        v4addr,
-				DestinationAddr:   v6addr,
+				Version:		2,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolTCPv4,
+				SourceAddr:		v4addr,
+				DestinationAddr:	v6addr,
 			},
-			err: ErrInvalidAddress,
+			err:	ErrInvalidAddress,
 		},
 		{
-			name: "v2MismatchUnixStream_TCPv4",
+			name:	"v2MismatchUnixStream_TCPv4",
 			header: &Header{
-				Version:           2,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolUnixStream,
-				SourceAddr:        v4addr,
-				DestinationAddr:   unixStreamAddr,
+				Version:		2,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolUnixStream,
+				SourceAddr:		v4addr,
+				DestinationAddr:	unixStreamAddr,
 			},
-			err: ErrInvalidAddress,
+			err:	ErrInvalidAddress,
 		},
 		{
-			name: "v1MismatchTCPv4_TCPv6",
+			name:	"v1MismatchTCPv4_TCPv6",
 			header: &Header{
-				Version:           1,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolTCPv4,
-				SourceAddr:        v6addr,
-				DestinationAddr:   v4addr,
+				Version:		1,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolTCPv4,
+				SourceAddr:		v6addr,
+				DestinationAddr:	v4addr,
 			},
-			err: ErrInvalidAddress,
+			err:	ErrInvalidAddress,
 		},
 		{
-			name: "v1MismatchTCPv4_UDPv4",
+			name:	"v1MismatchTCPv4_UDPv4",
 			header: &Header{
-				Version:           1,
-				Command:           ProtocolVersionAndCommandProxy,
-				TransportProtocol: AddressFamilyAndProtocolTCPv4,
-				SourceAddr:        v4UDPAddr,
-				DestinationAddr:   v4addr,
+				Version:		1,
+				Command:		ProtocolVersionAndCommandProxy,
+				TransportProtocol:	AddressFamilyAndProtocolTCPv4,
+				SourceAddr:		v4UDPAddr,
+				DestinationAddr:	v4addr,
 			},
-			err: ErrInvalidAddress,
+			err:	ErrInvalidAddress,
 		},
 	}
 

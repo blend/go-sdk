@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -19,26 +19,26 @@ import (
 
 const (
 	// DefaultTemplateNameBadRequest is the default template name for bad request view results.
-	DefaultTemplateNameBadRequest = "bad_request"
+	DefaultTemplateNameBadRequest	= "bad_request"
 	// DefaultTemplateNameInternalError is the default template name for internal server error view results.
-	DefaultTemplateNameInternalError = "error"
+	DefaultTemplateNameInternalError	= "error"
 	// DefaultTemplateNameNotFound is the default template name for not found error view results.
-	DefaultTemplateNameNotFound = "not_found"
+	DefaultTemplateNameNotFound	= "not_found"
 	// DefaultTemplateNameNotAuthorized is the default template name for not authorized error view results.
-	DefaultTemplateNameNotAuthorized = "not_authorized"
+	DefaultTemplateNameNotAuthorized	= "not_authorized"
 	// DefaultTemplateNameStatus is the default template name for status view results.
-	DefaultTemplateNameStatus = "status"
+	DefaultTemplateNameStatus	= "status"
 
 	// DefaultTemplateBadRequest is a basic view.
-	DefaultTemplateBadRequest = `<html><head><style>body { font-family: sans-serif; text-align: center; }</style></head><body><h4>Bad Request</h4></body><pre>{{ .ViewModel }}</pre></html>`
+	DefaultTemplateBadRequest	= `<html><head><style>body { font-family: sans-serif; text-align: center; }</style></head><body><h4>Bad Request</h4></body><pre>{{ .ViewModel }}</pre></html>`
 	// DefaultTemplateInternalError is a basic view.
-	DefaultTemplateInternalError = `<html><head><style>body { font-family: sans-serif; text-align: center; }</style></head><body><h4>Internal Error</h4><pre>{{ .ViewModel }}</body></html>`
+	DefaultTemplateInternalError	= `<html><head><style>body { font-family: sans-serif; text-align: center; }</style></head><body><h4>Internal Error</h4><pre>{{ .ViewModel }}</body></html>`
 	// DefaultTemplateNotAuthorized is a basic view.
-	DefaultTemplateNotAuthorized = `<html><head><style>body { font-family: sans-serif; text-align: center; }</style></head><body><h4>Not Authorized</h4></body></html>`
+	DefaultTemplateNotAuthorized	= `<html><head><style>body { font-family: sans-serif; text-align: center; }</style></head><body><h4>Not Authorized</h4></body></html>`
 	// DefaultTemplateNotFound is a basic view.
-	DefaultTemplateNotFound = `<html><head><style>body { font-family: sans-serif; text-align: center; }</style></head><body><h4>Not Found</h4></body></html>`
+	DefaultTemplateNotFound	= `<html><head><style>body { font-family: sans-serif; text-align: center; }</style></head><body><h4>Not Found</h4></body></html>`
 	// DefaultTemplateStatus is a basic view.
-	DefaultTemplateStatus = `<html><head><style>body { font-family: sans-serif; text-align: center; }</style></head><body><h4>{{ .ViewModel.StatusCode }}</h4></body><pre>{{ .ViewModel.Response }}</pre></html>`
+	DefaultTemplateStatus	= `<html><head><style>body { font-family: sans-serif; text-align: center; }</style></head><body><h4>{{ .ViewModel.StatusCode }}</h4></body><pre>{{ .ViewModel.Response }}</pre></html>`
 )
 
 // Assert the view cache is a result provider.
@@ -58,13 +58,13 @@ func MustNewViewCache(opts ...ViewCacheOption) *ViewCache {
 // NewViewCache returns a new view cache.
 func NewViewCache(options ...ViewCacheOption) (*ViewCache, error) {
 	vc := &ViewCache{
-		FuncMap:                   template.FuncMap(templatehelpers.ViewFuncs{}.FuncMap()),
-		BufferPool:                bufferutil.NewPool(1024),
-		InternalErrorTemplateName: DefaultTemplateNameInternalError,
-		BadRequestTemplateName:    DefaultTemplateNameBadRequest,
-		NotFoundTemplateName:      DefaultTemplateNameNotFound,
-		NotAuthorizedTemplateName: DefaultTemplateNameNotAuthorized,
-		StatusTemplateName:        DefaultTemplateNameStatus,
+		FuncMap:			template.FuncMap(templatehelpers.ViewFuncs{}.FuncMap()),
+		BufferPool:			bufferutil.NewPool(1024),
+		InternalErrorTemplateName:	DefaultTemplateNameInternalError,
+		BadRequestTemplateName:		DefaultTemplateNameBadRequest,
+		NotFoundTemplateName:		DefaultTemplateNameNotFound,
+		NotAuthorizedTemplateName:	DefaultTemplateNameNotAuthorized,
+		StatusTemplateName:		DefaultTemplateNameStatus,
 	}
 	var err error
 	for _, option := range options {
@@ -78,18 +78,18 @@ func NewViewCache(options ...ViewCacheOption) (*ViewCache, error) {
 // ViewCache is the cached views used in view results.
 type ViewCache struct {
 	sync.Mutex
-	LiveReload bool
-	FuncMap    template.FuncMap
-	Paths      []string
-	Literals   []string
-	Templates  *template.Template
-	BufferPool *bufferutil.Pool
+	LiveReload	bool
+	FuncMap		template.FuncMap
+	Paths		[]string
+	Literals	[]string
+	Templates	*template.Template
+	BufferPool	*bufferutil.Pool
 
-	BadRequestTemplateName    string
-	InternalErrorTemplateName string
-	NotFoundTemplateName      string
-	NotAuthorizedTemplateName string
-	StatusTemplateName        string
+	BadRequestTemplateName		string
+	InternalErrorTemplateName	string
+	NotFoundTemplateName		string
+	NotAuthorizedTemplateName	string
+	StatusTemplateName		string
 }
 
 // Initialize caches templates by path.
@@ -152,11 +152,11 @@ func (vc *ViewCache) BadRequest(err error) Result {
 	}
 
 	return &ViewResult{
-		ViewName:   vc.BadRequestTemplateName,
-		StatusCode: http.StatusBadRequest,
-		ViewModel:  err,
-		Template:   t,
-		Views:      vc,
+		ViewName:	vc.BadRequestTemplateName,
+		StatusCode:	http.StatusBadRequest,
+		ViewModel:	err,
+		Template:	t,
+		Views:		vc,
 	}
 }
 
@@ -170,11 +170,11 @@ func (vc *ViewCache) InternalError(err error) Result {
 		t, _ = template.New("").Parse(DefaultTemplateInternalError)
 	}
 	return ResultWithLoggedError(&ViewResult{
-		ViewName:   vc.InternalErrorTemplateName,
-		StatusCode: http.StatusInternalServerError,
-		ViewModel:  err,
-		Template:   t,
-		Views:      vc,
+		ViewName:	vc.InternalErrorTemplateName,
+		StatusCode:	http.StatusInternalServerError,
+		ViewModel:	err,
+		Template:	t,
+		Views:		vc,
 	}, err)
 }
 
@@ -188,10 +188,10 @@ func (vc *ViewCache) NotFound() Result {
 		t, _ = template.New("").Parse(DefaultTemplateNotFound)
 	}
 	return &ViewResult{
-		ViewName:   vc.NotFoundTemplateName,
-		StatusCode: http.StatusNotFound,
-		Template:   t,
-		Views:      vc,
+		ViewName:	vc.NotFoundTemplateName,
+		StatusCode:	http.StatusNotFound,
+		Template:	t,
+		Views:		vc,
 	}
 }
 
@@ -206,10 +206,10 @@ func (vc *ViewCache) NotAuthorized() Result {
 	}
 
 	return &ViewResult{
-		ViewName:   vc.NotAuthorizedTemplateName,
-		StatusCode: http.StatusUnauthorized,
-		Template:   t,
-		Views:      vc,
+		ViewName:	vc.NotAuthorizedTemplateName,
+		StatusCode:	http.StatusUnauthorized,
+		Template:	t,
+		Views:		vc,
 	}
 }
 
@@ -224,13 +224,13 @@ func (vc *ViewCache) Status(statusCode int, response interface{}) Result {
 	}
 
 	return &ViewResult{
-		Views:      vc,
-		ViewName:   vc.StatusTemplateName,
-		StatusCode: statusCode,
-		Template:   t,
+		Views:		vc,
+		ViewName:	vc.StatusTemplateName,
+		StatusCode:	statusCode,
+		Template:	t,
 		ViewModel: StatusViewModel{
-			StatusCode: statusCode,
-			Response:   ResultOrDefault(response, http.StatusText(statusCode))},
+			StatusCode:	statusCode,
+			Response:	ResultOrDefault(response, http.StatusText(statusCode))},
 	}
 }
 
@@ -250,11 +250,11 @@ func (vc *ViewCache) ViewStatus(statusCode int, viewName string, viewModel inter
 	}
 
 	return &ViewResult{
-		ViewName:   viewName,
-		StatusCode: statusCode,
-		ViewModel:  viewModel,
-		Template:   t,
-		Views:      vc,
+		ViewName:	viewName,
+		StatusCode:	statusCode,
+		ViewModel:	viewModel,
+		Template:	t,
+		Views:		vc,
 	}
 }
 
@@ -279,11 +279,11 @@ func (vc *ViewCache) AddLiterals(views ...string) {
 func (vc *ViewCache) viewError(err error) Result {
 	t, _ := template.New("").Parse(DefaultTemplateInternalError)
 	return &ViewResult{
-		ViewName:   DefaultTemplateNameInternalError,
-		StatusCode: http.StatusInternalServerError,
-		ViewModel:  err,
-		Template:   t,
-		Views:      vc,
+		ViewName:	DefaultTemplateNameInternalError,
+		StatusCode:	http.StatusInternalServerError,
+		ViewModel:	err,
+		Template:	t,
+		Views:		vc,
 	}
 }
 

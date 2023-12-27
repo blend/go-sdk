@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -25,10 +25,10 @@ var (
 
 // SMTPSender is a sender for emails over smtp.
 type SMTPSender struct {
-	LocalName string        `json:"localname" yaml:"localname"`
-	Host      string        `json:"host" yaml:"host" env:"SMTP_HOST"`
-	Port      string        `json:"port" yaml:"port" env:"SMTP_PORT"`
-	PlainAuth SMTPPlainAuth `json:"plainAuth" yaml:"plainAuth"`
+	LocalName	string		`json:"localname" yaml:"localname"`
+	Host		string		`json:"host" yaml:"host" env:"SMTP_HOST"`
+	Port		string		`json:"port" yaml:"port" env:"SMTP_PORT"`
+	PlainAuth	SMTPPlainAuth	`json:"plainAuth" yaml:"plainAuth"`
 }
 
 // Resolve implements configutil.ConfigResolver.
@@ -171,14 +171,14 @@ func (s SMTPSender) Send(ctx context.Context, message Message) error {
 
 // SMTPPlainAuth is a auth set for smtp.
 type SMTPPlainAuth struct {
-	Identity string `json:"identity" yaml:"identity"`
-	Username string `json:"username" yaml:"username" env:"SMTP_USERNAME"`
-	Password string `json:"password" yaml:"password" env:"SMTP_PASSWORD"`
+	Identity	string	`json:"identity" yaml:"identity"`
+	Username	string	`json:"username" yaml:"username" env:"SMTP_USERNAME"`
+	Password	string	`json:"password" yaml:"password" env:"SMTP_PASSWORD"`
 }
 
 // Resolve implements configutil.ConfigResolver.
 func (spa SMTPPlainAuth) Resolve(ctx context.Context) error {
-	return env.GetVars(ctx).ReadInto(&spa) //note(wc); i'm not sure this will always work
+	return env.GetVars(ctx).ReadInto(&spa)	//note(wc); i'm not sure this will always work
 }
 
 // IsZero returns if the plain auth is unset.

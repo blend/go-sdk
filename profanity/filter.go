@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -15,9 +15,9 @@ import (
 // Filter is the base rule helper.
 type Filter struct {
 	// Include sets a glob filter for file inclusion by name.
-	Include []string `yaml:"include,omitempty"`
+	Include	[]string	`yaml:"include,omitempty"`
 	// ExcludeGlob sets a glob filter for file exclusion by name.
-	Exclude []string `yaml:"exclude,omitempty"`
+	Exclude	[]string	`yaml:"exclude,omitempty"`
 }
 
 // IsZero returns if the filter is set or not.

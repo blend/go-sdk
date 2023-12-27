@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -11,10 +11,10 @@ import "github.com/blend/go-sdk/ex"
 
 // Errors
 const (
-	ErrInvalidSameSite        ex.Class = "invalid cookie same site string value"
-	ErrParameterMissing       ex.Class = "parameter missing"
-	ErrUnauthorized           ex.Class = "unauthorized"
-	ErrInvalidSplitColonInput ex.Class = `split colon input string is not of the form "<first>:<second>"`
+	ErrInvalidSameSite		ex.Class	= "invalid cookie same site string value"
+	ErrParameterMissing		ex.Class	= "parameter missing"
+	ErrUnauthorized			ex.Class	= "unauthorized"
+	ErrInvalidSplitColonInput	ex.Class	= `split colon input string is not of the form "<first>:<second>"`
 )
 
 // ErrIsInvalidSameSite returns if an error is `ErrInvalidSameSite`

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -689,8 +689,8 @@ func TestTemplateViewFuncSemverPatch(t *testing.T) {
 }
 
 type label struct {
-	Name string `yaml:"name"`
-	Vaue string `yaml:"value"`
+	Name	string	`yaml:"name"`
+	Vaue	string	`yaml:"value"`
 }
 
 func TestTemplateViewFuncYAML(t *testing.T) {
@@ -739,8 +739,8 @@ func TestTemplateWithVars(t *testing.T) {
 	assert := assert.New(t)
 
 	temp := New().WithVars(map[string]interface{}{
-		"foo": "baz",
-		"bar": "buz",
+		"foo":	"baz",
+		"bar":	"buz",
 	})
 	assert.True(temp.HasVar("foo"))
 	assert.True(temp.HasVar("bar"))

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -20,38 +20,38 @@ import (
 
 // Protocol Headers
 var (
-	SIGV1 = []byte{'\x50', '\x52', '\x4F', '\x58', '\x59'}
-	SIGV2 = []byte{'\x0D', '\x0A', '\x0D', '\x0A', '\x00', '\x0D', '\x0A', '\x51', '\x55', '\x49', '\x54', '\x0A'}
+	SIGV1	= []byte{'\x50', '\x52', '\x4F', '\x58', '\x59'}
+	SIGV2	= []byte{'\x0D', '\x0A', '\x0D', '\x0A', '\x00', '\x0D', '\x0A', '\x51', '\x55', '\x49', '\x54', '\x0A'}
 )
 
 // Errors
 var (
-	ErrCantReadVersion1Header               = errors.New("proxyproto: can't read version 1 header")
-	ErrVersion1HeaderTooLong                = errors.New("proxyproto: version 1 header must be 107 bytes or less")
-	ErrLineMustEndWithCrlf                  = errors.New("proxyproto: version 1 header is invalid, must end with \\r\\n")
-	ErrCantReadProtocolVersionAndCommand    = errors.New("proxyproto: can't read proxy protocol version and command")
-	ErrCantReadAddressFamilyAndProtocol     = errors.New("proxyproto: can't read address family or protocol")
-	ErrCantReadLength                       = errors.New("proxyproto: can't read length")
-	ErrCantResolveSourceUnixAddress         = errors.New("proxyproto: can't resolve source Unix address")
-	ErrCantResolveDestinationUnixAddress    = errors.New("proxyproto: can't resolve destination Unix address")
-	ErrNoProxyProtocol                      = errors.New("proxyproto: proxy protocol signature not present")
-	ErrUnknownProxyProtocolVersion          = errors.New("proxyproto: unknown proxy protocol version")
-	ErrUnsupportedProtocolVersionAndCommand = errors.New("proxyproto: unsupported proxy protocol version and command")
-	ErrUnsupportedAddressFamilyAndProtocol  = errors.New("proxyproto: unsupported address family and protocol")
-	ErrInvalidLength                        = errors.New("proxyproto: invalid length")
-	ErrInvalidAddress                       = errors.New("proxyproto: invalid address")
-	ErrInvalidPortNumber                    = errors.New("proxyproto: invalid port number")
-	ErrSuperfluousProxyHeader               = errors.New("proxyproto: upstream connection sent PROXY header but isn't allowed to send one")
+	ErrCantReadVersion1Header		= errors.New("proxyproto: can't read version 1 header")
+	ErrVersion1HeaderTooLong		= errors.New("proxyproto: version 1 header must be 107 bytes or less")
+	ErrLineMustEndWithCrlf			= errors.New("proxyproto: version 1 header is invalid, must end with \\r\\n")
+	ErrCantReadProtocolVersionAndCommand	= errors.New("proxyproto: can't read proxy protocol version and command")
+	ErrCantReadAddressFamilyAndProtocol	= errors.New("proxyproto: can't read address family or protocol")
+	ErrCantReadLength			= errors.New("proxyproto: can't read length")
+	ErrCantResolveSourceUnixAddress		= errors.New("proxyproto: can't resolve source Unix address")
+	ErrCantResolveDestinationUnixAddress	= errors.New("proxyproto: can't resolve destination Unix address")
+	ErrNoProxyProtocol			= errors.New("proxyproto: proxy protocol signature not present")
+	ErrUnknownProxyProtocolVersion		= errors.New("proxyproto: unknown proxy protocol version")
+	ErrUnsupportedProtocolVersionAndCommand	= errors.New("proxyproto: unsupported proxy protocol version and command")
+	ErrUnsupportedAddressFamilyAndProtocol	= errors.New("proxyproto: unsupported address family and protocol")
+	ErrInvalidLength			= errors.New("proxyproto: invalid length")
+	ErrInvalidAddress			= errors.New("proxyproto: invalid address")
+	ErrInvalidPortNumber			= errors.New("proxyproto: invalid port number")
+	ErrSuperfluousProxyHeader		= errors.New("proxyproto: upstream connection sent PROXY header but isn't allowed to send one")
 )
 
 // Header is the placeholder for proxy protocol header.
 type Header struct {
-	Version           byte
-	Command           ProtocolVersionAndCommand
-	TransportProtocol AddressFamilyAndProtocol
-	SourceAddr        net.Addr
-	DestinationAddr   net.Addr
-	rawTLVs           []byte
+	Version			byte
+	Command			ProtocolVersionAndCommand
+	TransportProtocol	AddressFamilyAndProtocol
+	SourceAddr		net.Addr
+	DestinationAddr		net.Addr
+	rawTLVs			[]byte
 }
 
 // TCPAddrs returns the tcp addresses for the proxy protocol header.
@@ -170,8 +170,8 @@ func (header *Header) SetTLVs(tlvs []TLV) error {
 }
 
 const (
-	crlf      = "\r\n"
-	separator = " "
+	crlf		= "\r\n"
+	separator	= " "
 )
 
 func (header *Header) formatVersion1() ([]byte, error) {
@@ -225,31 +225,31 @@ func (header *Header) formatVersion1() ([]byte, error) {
 }
 
 var (
-	lengthUnspec      = uint16(0)
-	lengthV4          = uint16(12)
-	lengthV6          = uint16(36)
-	lengthUnix        = uint16(216)
-	lengthUnspecBytes = func() []byte {
+	lengthUnspec		= uint16(0)
+	lengthV4		= uint16(12)
+	lengthV6		= uint16(36)
+	lengthUnix		= uint16(216)
+	lengthUnspecBytes	= func() []byte {
 		a := make([]byte, 2)
 		binary.BigEndian.PutUint16(a, lengthUnspec)
 		return a
 	}()
-	lengthV4Bytes = func() []byte {
+	lengthV4Bytes	= func() []byte {
 		a := make([]byte, 2)
 		binary.BigEndian.PutUint16(a, lengthV4)
 		return a
 	}()
-	lengthV6Bytes = func() []byte {
+	lengthV6Bytes	= func() []byte {
 		a := make([]byte, 2)
 		binary.BigEndian.PutUint16(a, lengthV6)
 		return a
 	}()
-	lengthUnixBytes = func() []byte {
+	lengthUnixBytes	= func() []byte {
 		a := make([]byte, 2)
 		binary.BigEndian.PutUint16(a, lengthUnix)
 		return a
 	}()
-	errUint16Overflow = errors.New("proxyproto: uint16 overflow")
+	errUint16Overflow	= errors.New("proxyproto: uint16 overflow")
 )
 
 func (header *Header) formatVersion2() ([]byte, error) {
@@ -326,15 +326,15 @@ type ProtocolVersionAndCommand byte
 const (
 	// ProtocolVersionAndCommandLocal represents the ProtocolVersionAndCommandLocal command in v2 or UNKNOWN transport in v1,
 	// in which case no address information is expected.
-	ProtocolVersionAndCommandLocal ProtocolVersionAndCommand = '\x20'
+	ProtocolVersionAndCommandLocal	ProtocolVersionAndCommand	= '\x20'
 	// ProtocolVersionAndCommandProxy represents the PROXY command in v2 or transport is not UNKNOWN in v1,
 	// in which case valid local/remote address and port information is expected.
-	ProtocolVersionAndCommandProxy ProtocolVersionAndCommand = '\x21'
+	ProtocolVersionAndCommandProxy	ProtocolVersionAndCommand	= '\x21'
 )
 
 var supportedCommand = map[ProtocolVersionAndCommand]bool{
-	ProtocolVersionAndCommandLocal: true,
-	ProtocolVersionAndCommandProxy: true,
+	ProtocolVersionAndCommandLocal:	true,
+	ProtocolVersionAndCommandProxy:	true,
 }
 
 // IsLocal returns true if the command in v2 is ProtocolVersionAndCommandLocal or the transport in v1 is UNKNOWN,
@@ -369,13 +369,13 @@ type AddressFamilyAndProtocol byte
 
 // Address family and protocol constants
 const (
-	AddressFamilyAndProtocolUnknown      AddressFamilyAndProtocol = '\x00'
-	AddressFamilyAndProtocolTCPv4        AddressFamilyAndProtocol = '\x11'
-	AddressFamilyAndProtocolUDPv4        AddressFamilyAndProtocol = '\x12'
-	AddressFamilyAndProtocolTCPv6        AddressFamilyAndProtocol = '\x21'
-	AddressFamilyAndProtocolUDPv6        AddressFamilyAndProtocol = '\x22'
-	AddressFamilyAndProtocolUnixStream   AddressFamilyAndProtocol = '\x31'
-	AddressFamilyAndProtocolUnixDatagram AddressFamilyAndProtocol = '\x32'
+	AddressFamilyAndProtocolUnknown		AddressFamilyAndProtocol	= '\x00'
+	AddressFamilyAndProtocolTCPv4		AddressFamilyAndProtocol	= '\x11'
+	AddressFamilyAndProtocolUDPv4		AddressFamilyAndProtocol	= '\x12'
+	AddressFamilyAndProtocolTCPv6		AddressFamilyAndProtocol	= '\x21'
+	AddressFamilyAndProtocolUDPv6		AddressFamilyAndProtocol	= '\x22'
+	AddressFamilyAndProtocolUnixStream	AddressFamilyAndProtocol	= '\x31'
+	AddressFamilyAndProtocolUnixDatagram	AddressFamilyAndProtocol	= '\x32'
 )
 
 // IsIPv4 returns true if the address family is IPv4 (AF_INET4), false otherwise.
@@ -469,15 +469,15 @@ const (
 
 // Proxy Protocol Type 2 constants
 const (
-	PP2TypeNoop      PP2Type = 0x04
-	PP2TypeAuthority PP2Type = 0x02
+	PP2TypeNoop		PP2Type	= 0x04
+	PP2TypeAuthority	PP2Type	= 0x02
 )
 
 // Error constants
 var (
-	ErrTruncatedTLV    = errors.New("proxyproto: truncated TLV")
-	ErrMalformedTLV    = errors.New("proxyproto: malformed TLV Value")
-	ErrIncompatibleTLV = errors.New("proxyproto: incompatible TLV type")
+	ErrTruncatedTLV		= errors.New("proxyproto: truncated TLV")
+	ErrMalformedTLV		= errors.New("proxyproto: malformed TLV Value")
+	ErrIncompatibleTLV	= errors.New("proxyproto: incompatible TLV type")
 )
 
 // PP2Type is the proxy protocol v2 type
@@ -485,8 +485,8 @@ type PP2Type byte
 
 // TLV is a uninterpreted Type-Length-Value for V2 protocol, see section 2.2
 type TLV struct {
-	Type  PP2Type
-	Value []byte
+	Type	PP2Type
+	Value	[]byte
 }
 
 // SplitTLVs splits the Type-Length-Value vector, returns the vector or an error.
@@ -499,7 +499,7 @@ func SplitTLVs(raw []byte) ([]TLV, error) {
 		if len(raw)-i <= 2 {
 			return nil, ErrTruncatedTLV
 		}
-		tlvLen := int(binary.BigEndian.Uint16(raw[i+1 : i+3])) // Max length = 65K
+		tlvLen := int(binary.BigEndian.Uint16(raw[i+1 : i+3]))	// Max length = 65K
 		i += 3
 		if i+tlvLen > len(raw) {
 			return nil, ErrTruncatedTLV

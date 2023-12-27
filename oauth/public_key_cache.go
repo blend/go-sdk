@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/jwk"
@@ -23,10 +23,10 @@ import (
 
 // PublicKeyCache holds cached signing certs.
 type PublicKeyCache struct {
-	FetchPublicKeysDefaults []r2.Option
-	mu                      sync.RWMutex
-	current                 *PublicKeysResponse
-	keyURL                  string
+	FetchPublicKeysDefaults	[]r2.Option
+	mu			sync.RWMutex
+	current			*PublicKeysResponse
+	keyURL			string
 }
 
 // NewPublicKeyCache creates a new public key cache.
@@ -112,9 +112,9 @@ func (pkc *PublicKeyCache) FetchPublicKeys(ctx context.Context, opts ...r2.Optio
 		return nil, ex.New("invalid google keys response; invalid expires value", ex.OptInner(err))
 	}
 	res := &PublicKeysResponse{
-		Keys:         jwkLookup(jwks.Keys),
-		CacheControl: meta.Header.Get("Cache-Control"),
-		Expires:      expires,
+		Keys:		jwkLookup(jwks.Keys),
+		CacheControl:	meta.Header.Get("Cache-Control"),
+		Expires:	expires,
 	}
 	return res, nil
 }
@@ -136,9 +136,9 @@ func jwkLookup(jwks []jwk.JWK) map[string]jwk.JWK {
 
 // PublicKeysResponse is a response for the google certs api.
 type PublicKeysResponse struct {
-	CacheControl string
-	Expires      time.Time
-	Keys         map[string]jwk.JWK
+	CacheControl	string
+	Expires		time.Time
+	Keys		map[string]jwk.JWK
 }
 
 // IsExpired returns if the cert response is expired.

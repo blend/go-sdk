@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,9 +21,9 @@ const (
 )
 
 type config struct {
-	LockTimeout    time.Duration
-	ContextTimeout time.Duration
-	TxSleep        time.Duration
+	LockTimeout	time.Duration
+	ContextTimeout	time.Duration
+	TxSleep		time.Duration
 }
 
 func (c *config) SetEnvironment() error {
@@ -54,33 +54,33 @@ func getConfig() *config {
 	forceDeadlock := env.Env().String("FORCE_DEADLOCK")
 	if strings.EqualFold(forceDeadlock, "true") {
 		return &config{
-			LockTimeout:    10 * time.Second,
-			ContextTimeout: 10 * time.Second,
-			TxSleep:        200 * time.Millisecond,
+			LockTimeout:	10 * time.Second,
+			ContextTimeout:	10 * time.Second,
+			TxSleep:	200 * time.Millisecond,
 		}
 	}
 
 	betweenQueries := env.Env().String("BETWEEN_QUERIES")
 	if strings.EqualFold(betweenQueries, "true") {
 		return &config{
-			LockTimeout:    10 * time.Second,
-			ContextTimeout: 100 * time.Millisecond,
-			TxSleep:        200 * time.Millisecond,
+			LockTimeout:	10 * time.Second,
+			ContextTimeout:	100 * time.Millisecond,
+			TxSleep:	200 * time.Millisecond,
 		}
 	}
 
 	disable := env.Env().String("DISABLE_LOCK_TIMEOUT")
 	if strings.EqualFold(disable, "true") {
 		return &config{
-			LockTimeout:    10 * time.Second,
-			ContextTimeout: 600 * time.Millisecond,
-			TxSleep:        200 * time.Millisecond,
+			LockTimeout:	10 * time.Second,
+			ContextTimeout:	600 * time.Millisecond,
+			TxSleep:	200 * time.Millisecond,
 		}
 	}
 
 	return &config{
-		LockTimeout:    10 * time.Millisecond,
-		ContextTimeout: 600 * time.Millisecond,
-		TxSleep:        200 * time.Millisecond,
+		LockTimeout:	10 * time.Millisecond,
+		ContextTimeout:	600 * time.Millisecond,
+		TxSleep:	200 * time.Millisecond,
 	}
 }

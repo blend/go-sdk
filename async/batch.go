@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -16,9 +16,9 @@ import (
 // Batch processes are a known quantity of work that needs to be processed in parallel.
 func NewBatch(work chan interface{}, action WorkAction, options ...BatchOption) *Batch {
 	b := Batch{
-		Action:      action,
-		Work:        work,
-		Parallelism: runtime.NumCPU(),
+		Action:		action,
+		Work:		work,
+		Parallelism:	runtime.NumCPU(),
 	}
 	for _, option := range options {
 		option(&b)
@@ -52,11 +52,11 @@ func OptBatchParallelism(parallelism int) BatchOption {
 
 // Batch is a batch of work executed by a fixed count of workers.
 type Batch struct {
-	Action            WorkAction
-	SkipRecoverPanics bool
-	Parallelism       int
-	Work              chan interface{}
-	Errors            chan error
+	Action			WorkAction
+	SkipRecoverPanics	bool
+	Parallelism		int
+	Work			chan interface{}
+	Errors			chan error
 }
 
 // Process executes the action for all the work items.

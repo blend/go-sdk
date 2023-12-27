@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -17,8 +17,8 @@ func Test_StableHash_isStable(t *testing.T) {
 	its := assert.New(t)
 
 	testCases := [...]struct {
-		Input    string
-		Expected uint64
+		Input		string
+		Expected	uint64
 	}{
 		{Input: "foo-bar-baz", Expected: 0x3bcce3e4ec07ffbc},
 		{Input: "google.com", Expected: 0x1c1766d80c8f9809},

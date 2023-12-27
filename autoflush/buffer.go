@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -25,18 +25,18 @@ import (
 // New creates a new  buffer.
 func New(handler Action, options ...Option) *Buffer {
 	afb := Buffer{
-		Latch:               async.NewLatch(),
-		Handler:             handler,
-		Parallelism:         runtime.NumCPU(),
-		MaxFlushes:          DefaultMaxFlushes,
-		MaxLen:              DefaultMaxLen,
-		Interval:            DefaultFlushInterval,
-		ShutdownGracePeriod: DefaultShutdownGracePeriod,
+		Latch:			async.NewLatch(),
+		Handler:		handler,
+		Parallelism:		runtime.NumCPU(),
+		MaxFlushes:		DefaultMaxFlushes,
+		MaxLen:			DefaultMaxLen,
+		Interval:		DefaultFlushInterval,
+		ShutdownGracePeriod:	DefaultShutdownGracePeriod,
 	}
 	for _, option := range options {
 		option(&afb)
 	}
-	afb.contents = collections.NewRingBufferWithCapacity(afb.MaxLen)
+	afb.contents = collections.NewRingBufferWithCapacity[any](afb.MaxLen)
 	return &afb
 }
 
@@ -120,29 +120,29 @@ type Action func(context.Context, []interface{}) error
 // A handler should be provided but without one the buffer will just clear.
 // Adds that would cause fixed length flushes do not block on the flush handler.
 type Buffer struct {
-	Latch   *async.Latch
-	Context context.Context
+	Latch	*async.Latch
+	Context	context.Context
 
-	Log    logger.Log
-	Stats  stats.Collector
-	Tracer Tracer
+	Log	logger.Log
+	Stats	stats.Collector
+	Tracer	Tracer
 
-	MaxLen              int
-	Interval            time.Duration
-	Parallelism         int
-	MaxFlushes          int
-	ShutdownGracePeriod time.Duration
+	MaxLen			int
+	Interval		time.Duration
+	Parallelism		int
+	MaxFlushes		int
+	ShutdownGracePeriod	time.Duration
 
-	contentsMu sync.Mutex
-	contents   *collections.RingBuffer
+	contentsMu	sync.Mutex
+	contents	*collections.RingBuffer[any]
 
-	Handler Action
-	Errors  chan error
+	Handler	Action
+	Errors	chan error
 
-	intervalWorker    *async.Interval
-	flushes           chan Flush
-	flushWorkersReady chan *async.Worker
-	flushWorkers      []*async.Worker
+	intervalWorker		*async.Interval
+	flushes			chan Flush
+	flushWorkersReady	chan *async.Worker
+	flushWorkers		[]*async.Worker
 }
 
 // Background returns a background context.
@@ -153,7 +153,7 @@ func (ab *Buffer) Background() context.Context {
 	return context.Background()
 }
 
-//Start starts the auto-flush buffer.
+// Start starts the auto-flush buffer.
 /*
 This call blocks. To call it asynchronously:
 
@@ -240,8 +240,8 @@ func (ab *Buffer) Stop() error {
 	defer ab.contentsMu.Unlock()
 	if ab.contents.Len() > 0 {
 		ab.flushes <- Flush{
-			Context:  timeoutContext,
-			Contents: ab.contents.Drain(),
+			Context:	timeoutContext,
+			Contents:	ab.contents.Drain(),
 		}
 	}
 
@@ -418,8 +418,8 @@ func (ab *Buffer) unsafeFlushAsync(ctx context.Context, contents []interface{}) 
 
 	logger.MaybeDebugf(ab.Log, "autoflush buffer; queue flush, queue length: %d", len(ab.flushes))
 	ab.flushes <- Flush{
-		Context:  ctx,
-		Contents: contents,
+		Context:	ctx,
+		Contents:	contents,
 	}
 }
 
@@ -457,6 +457,6 @@ func (ab *Buffer) statTags(ctx context.Context) (tags []string) {
 
 // Flush is an inflight flush attempt.
 type Flush struct {
-	Context  context.Context
-	Contents []interface{}
+	Context		context.Context
+	Contents	[]interface{}
 }

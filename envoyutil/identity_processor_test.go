@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -65,13 +65,13 @@ func TestOptAllowedIdentities(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	ip := &envoyutil.IdentityProcessor{
-		AllowedIdentities: collections.NewSetOfString("x.invalid", "y.invalid"),
+		AllowedIdentities: collections.NewSet("x.invalid", "y.invalid"),
 	}
 	opt := envoyutil.OptAllowedIdentities("y.invalid", "z.invalid")
 	opt(ip)
 
 	expected := &envoyutil.IdentityProcessor{
-		AllowedIdentities: collections.NewSetOfString("x.invalid", "y.invalid", "z.invalid"),
+		AllowedIdentities: collections.NewSet("x.invalid", "y.invalid", "z.invalid"),
 	}
 	assert.Equal(expected, ip)
 }
@@ -80,13 +80,13 @@ func TestOptDeniedIdentities(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	ip := &envoyutil.IdentityProcessor{
-		DeniedIdentities: collections.NewSetOfString("x.invalid", "y.invalid"),
+		DeniedIdentities: collections.NewSet("x.invalid", "y.invalid"),
 	}
 	opt := envoyutil.OptDeniedIdentities("y.invalid", "z.invalid")
 	opt(ip)
 
 	expected := &envoyutil.IdentityProcessor{
-		DeniedIdentities: collections.NewSetOfString("x.invalid", "y.invalid", "z.invalid"),
+		DeniedIdentities: collections.NewSet("x.invalid", "y.invalid", "z.invalid"),
 	}
 	assert.Equal(expected, ip)
 }
@@ -119,8 +119,8 @@ func TestIdentityProcessorIdentityProvider(t *testing.T) {
 	assert.Equal("", clientIdentity)
 	assert.True(envoyutil.IsValidationError(err))
 	var expected error = &envoyutil.XFCCValidationError{
-		Class: envoyutil.ErrInvalidClientIdentity,
-		XFCC:  xfcc.String(),
+		Class:	envoyutil.ErrInvalidClientIdentity,
+		XFCC:	xfcc.String(),
 	}
 	assert.Equal(expected, err)
 
@@ -131,8 +131,8 @@ func TestIdentityProcessorIdentityProvider(t *testing.T) {
 	assert.Equal("", clientIdentity)
 	assert.True(envoyutil.IsExtractionError(err))
 	expected = &envoyutil.XFCCExtractionError{
-		Class: envoyutil.ErrInvalidClientIdentity,
-		XFCC:  xfcc.String(),
+		Class:	envoyutil.ErrInvalidClientIdentity,
+		XFCC:	xfcc.String(),
 	}
 	assert.Equal(expected, err)
 
@@ -141,8 +141,8 @@ func TestIdentityProcessorIdentityProvider(t *testing.T) {
 		FormatIdentity: makeMockFormatter("sentinel"),
 	}
 	xfcc = envoyutil.XFCCElement{
-		By:  "spiffe://cluster.local/ns/song/sa/lyric",
-		URI: "spiffe://cluster.local/ns/foo/sa/bar",
+		By:	"spiffe://cluster.local/ns/song/sa/lyric",
+		URI:	"spiffe://cluster.local/ns/foo/sa/bar",
 	}
 	clientIdentity, err = ip.IdentityProvider(xfcc)
 	assert.Equal("sentinel", clientIdentity)
@@ -164,9 +164,9 @@ func TestIdentityProcessorIdentityProvider(t *testing.T) {
 	assert.Equal("", clientIdentity)
 	assert.True(envoyutil.IsValidationError(err))
 	expected = &envoyutil.XFCCValidationError{
-		Class:    envoyutil.ErrInvalidClientIdentity,
-		XFCC:     xfcc.String(),
-		Metadata: map[string]string{"trustDomain": "cluster.local"},
+		Class:		envoyutil.ErrInvalidClientIdentity,
+		XFCC:		xfcc.String(),
+		Metadata:	map[string]string{"trustDomain": "cluster.local"},
 	}
 	assert.Equal(expected, err)
 
@@ -178,9 +178,9 @@ func TestIdentityProcessorIdentityProvider(t *testing.T) {
 	assert.Equal("", clientIdentity)
 	assert.True(envoyutil.IsValidationError(err))
 	expected = &envoyutil.XFCCValidationError{
-		Class:    envoyutil.ErrInvalidClientIdentity,
-		XFCC:     xfcc.String(),
-		Metadata: map[string]string{"trustDomain": "cluster.local"},
+		Class:		envoyutil.ErrInvalidClientIdentity,
+		XFCC:		xfcc.String(),
+		Metadata:	map[string]string{"trustDomain": "cluster.local"},
 	}
 	assert.Equal(expected, err)
 
@@ -194,36 +194,36 @@ func TestIdentityProcessorIdentityProvider(t *testing.T) {
 
 	// Client identity not among allow list.
 	ip = envoyutil.IdentityProcessor{
-		AllowedIdentities: collections.NewSetOfString("ecks.why"),
+		AllowedIdentities: collections.NewSet("ecks.why"),
 	}
 	clientIdentity, err = ip.IdentityProvider(xfcc)
 	assert.Equal("", clientIdentity)
 	assert.True(envoyutil.IsValidationError(err))
 	expected = &envoyutil.XFCCValidationError{
-		Class:    envoyutil.ErrDeniedClientIdentity,
-		XFCC:     xfcc.String(),
-		Metadata: map[string]string{"clientIdentity": "bar.foo"},
+		Class:		envoyutil.ErrDeniedClientIdentity,
+		XFCC:		xfcc.String(),
+		Metadata:	map[string]string{"clientIdentity": "bar.foo"},
 	}
 	assert.Equal(expected, err)
 
 	// Server identity not among allow list.
 	ip = envoyutil.IdentityProcessor{
-		Type:              envoyutil.ServerIdentity,
-		AllowedIdentities: collections.NewSetOfString("ecks.why"),
+		Type:			envoyutil.ServerIdentity,
+		AllowedIdentities:	collections.NewSet("ecks.why"),
 	}
 	serverIdentity, err := ip.IdentityProvider(xfcc)
 	assert.Equal("", serverIdentity)
 	assert.True(envoyutil.IsValidationError(err))
 	expected = &envoyutil.XFCCValidationError{
-		Class:    envoyutil.ErrDeniedServerIdentity,
-		XFCC:     xfcc.String(),
-		Metadata: map[string]string{"serverIdentity": "lyric.song"},
+		Class:		envoyutil.ErrDeniedServerIdentity,
+		XFCC:		xfcc.String(),
+		Metadata:	map[string]string{"serverIdentity": "lyric.song"},
 	}
 	assert.Equal(expected, err)
 
 	// Client identity among allow list.
 	ip = envoyutil.IdentityProcessor{
-		AllowedIdentities: collections.NewSetOfString("ecks.why", "bar.foo"),
+		AllowedIdentities: collections.NewSet("ecks.why", "bar.foo"),
 	}
 	clientIdentity, err = ip.IdentityProvider(xfcc)
 	assert.Equal("bar.foo", clientIdentity)
@@ -239,23 +239,23 @@ func TestIdentityProcessorIdentityProvider(t *testing.T) {
 
 	// Server identity is contained in deny list.
 	ip = envoyutil.IdentityProcessor{
-		Type:             envoyutil.ServerIdentity,
-		DeniedIdentities: collections.NewSetOfString("lyric.song"),
+		Type:			envoyutil.ServerIdentity,
+		DeniedIdentities:	collections.NewSet("lyric.song"),
 	}
 	serverIdentity, err = ip.IdentityProvider(xfcc)
 	assert.Equal("", serverIdentity)
 	assert.True(envoyutil.IsValidationError(err))
 	expected = &envoyutil.XFCCValidationError{
-		Class:    envoyutil.ErrDeniedServerIdentity,
-		XFCC:     xfcc.String(),
-		Metadata: map[string]string{"serverIdentity": "lyric.song"},
+		Class:		envoyutil.ErrDeniedServerIdentity,
+		XFCC:		xfcc.String(),
+		Metadata:	map[string]string{"serverIdentity": "lyric.song"},
 	}
 	assert.Equal(expected, err)
 
 	// Server identity is **not** contained in deny list.
 	ip = envoyutil.IdentityProcessor{
-		Type:             envoyutil.ServerIdentity,
-		DeniedIdentities: collections.NewSetOfString("not.music"),
+		Type:			envoyutil.ServerIdentity,
+		DeniedIdentities:	collections.NewSet("not.music"),
 	}
 	serverIdentity, err = ip.IdentityProvider(xfcc)
 	assert.Equal("lyric.song", serverIdentity)
@@ -268,8 +268,8 @@ func TestIdentityProcessorIdentityProvider(t *testing.T) {
 	assert.Equal("", serverIdentity)
 	assert.True(envoyutil.IsExtractionError(err))
 	expected = &envoyutil.XFCCExtractionError{
-		Class: envoyutil.ErrInvalidServerIdentity,
-		XFCC:  xfcc.String(),
+		Class:	envoyutil.ErrInvalidServerIdentity,
+		XFCC:	xfcc.String(),
 	}
 	assert.Equal(expected, err)
 }
@@ -292,8 +292,8 @@ func TestIdentityProcessorKubernetesIdentityFormatter(t *testing.T) {
 	assert.Equal("", clientIdentity)
 	assert.True(envoyutil.IsExtractionError(err))
 	expected := &envoyutil.XFCCExtractionError{
-		Class: envoyutil.ErrInvalidClientIdentity,
-		XFCC:  xfcc.String(),
+		Class:	envoyutil.ErrInvalidClientIdentity,
+		XFCC:	xfcc.String(),
 	}
 	assert.Equal(expected, err)
 
@@ -303,8 +303,8 @@ func TestIdentityProcessorKubernetesIdentityFormatter(t *testing.T) {
 	assert.Equal("", serverIdentity)
 	assert.True(envoyutil.IsExtractionError(err))
 	expected = &envoyutil.XFCCExtractionError{
-		Class: envoyutil.ErrInvalidServerIdentity,
-		XFCC:  xfcc.String(),
+		Class:	envoyutil.ErrInvalidServerIdentity,
+		XFCC:	xfcc.String(),
 	}
 	assert.Equal(expected, err)
 }

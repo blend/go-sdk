@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,11 +21,11 @@ import (
 
 // Server is a server for handling traces.
 type Server struct {
-	Addr     string
-	Log      *log.Logger
-	Listener net.Listener
-	Server   *http.Server
-	Handler  func(context.Context, ...*Span)
+	Addr		string
+	Log		*log.Logger
+	Listener	net.Listener
+	Server		*http.Server
+	Handler		func(context.Context, ...*Span)
 }
 
 // Start starts the server.

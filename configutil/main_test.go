@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,9 +21,9 @@ func TestMain(m *testing.M) {
 }
 
 type config struct {
-	Environment string `json:"env" yaml:"env" env:"SERVICE_ENV"`
-	Other       string `json:"other" yaml:"other" env:"OTHER"`
-	Base        string `json:"base" yaml:"base"`
+	Environment	string	`json:"env" yaml:"env" env:"SERVICE_ENV"`
+	Other		string	`json:"other" yaml:"other" env:"OTHER"`
+	Base		string	`json:"base" yaml:"base"`
 }
 
 type resolvedConfig struct {
@@ -37,14 +37,14 @@ func (r *resolvedConfig) Resolve(ctx context.Context) error {
 }
 
 type fullConfig struct {
-	fullConfigMeta `yaml:",inline"`
+	fullConfigMeta	`yaml:",inline"`
 
-	Field0 string `json:"field0" yaml:"field0"`
-	Field1 string `json:"field1" yaml:"field1"`
-	Field2 string `json:"field2" yaml:"field2"`
-	Field3 string `json:"field3" yaml:"field3"`
+	Field0	string	`json:"field0" yaml:"field0"`
+	Field1	string	`json:"field1" yaml:"field1"`
+	Field2	string	`json:"field2" yaml:"field2"`
+	Field3	string	`json:"field3" yaml:"field3"`
 
-	Child fullConfigChild `json:"child" yaml:"child"`
+	Child	fullConfigChild	`json:"child" yaml:"child"`
 }
 
 func (fc *fullConfig) Resolve(ctx context.Context) error {
@@ -60,9 +60,9 @@ func (fc *fullConfig) Resolve(ctx context.Context) error {
 }
 
 type fullConfigMeta struct {
-	ServiceName string `json:"serviceName" yaml:"serviceName"`
-	ServiceEnv  string `json:"serviceEnv" yaml:"serviceEnv"`
-	Version     string `json:"version" yaml:"version"`
+	ServiceName	string	`json:"serviceName" yaml:"serviceName"`
+	ServiceEnv	string	`json:"serviceEnv" yaml:"serviceEnv"`
+	Version		string	`json:"version" yaml:"version"`
 }
 
 func (fcm *fullConfigMeta) Resolve(ctx context.Context) error {
@@ -74,10 +74,10 @@ func (fcm *fullConfigMeta) Resolve(ctx context.Context) error {
 }
 
 type fullConfigChild struct {
-	Field0 string `json:"field0" yaml:"field0"`
-	Field1 string `json:"field1" yaml:"field1"`
-	Field2 string `json:"field2" yaml:"field2"`
-	Field3 string `json:"field3" yaml:"field3"`
+	Field0	string	`json:"field0" yaml:"field0"`
+	Field1	string	`json:"field1" yaml:"field1"`
+	Field2	string	`json:"field2" yaml:"field2"`
+	Field3	string	`json:"field3" yaml:"field3"`
 }
 
 func (fcc *fullConfigChild) Resolve(ctx context.Context) error {

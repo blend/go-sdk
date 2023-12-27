@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -38,12 +38,12 @@ func TestWebhookSend(t *testing.T) {
 	defer ts.Close()
 
 	wh := Webhook{
-		URL:    ts.URL,
-		Method: "POST",
+		URL:	ts.URL,
+		Method:	"POST",
 		Headers: map[string]string{
 			"X-Test-Value": "foo",
 		},
-		Body: "this is only a test",
+		Body:	"this is only a test",
 	}
 
 	res, err := wh.Send()

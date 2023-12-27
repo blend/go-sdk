@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,9 +21,9 @@ import (
 )
 
 var (
-	rateBytes   = flag.String("rate-bytes", "1024kb", "The throttle rate in bytes")
-	rateQuantum = flag.Duration("rate-quantum", time.Second, "The throttle quantum as a duration")
-	verbose     = flag.Bool("verbose", false, "If we should show verbose output")
+	rateBytes	= flag.String("rate-bytes", "1024kb", "The throttle rate in bytes")
+	rateQuantum	= flag.Duration("rate-quantum", time.Second, "The throttle quantum as a duration")
+	verbose		= flag.Bool("verbose", false, "If we should show verbose output")
 )
 
 func init() {

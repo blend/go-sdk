@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -120,8 +120,8 @@ func main() {
 		}
 
 		proxyServerTLSConfig := &tls.Config{
-			RootCAs:        rootCAs,
-			GetCertificate: certFileWatcher.GetCertificate,
+			RootCAs:	rootCAs,
+			GetCertificate:	certFileWatcher.GetCertificate,
 		}
 		webutil.TLSSecureCipherSuites(proxyServerTLSConfig)
 		listenerOptions = append(listenerOptions, proxyprotocol.OptTLSConfig(proxyServerTLSConfig))
@@ -144,8 +144,8 @@ func main() {
 		log.Infof("http upgrader listening on: %s", upgradeAddr)
 		upgrader := reverseproxy.HTTPRedirect{}
 		servers = append(servers, webutil.NewGracefulHTTPServer(&http.Server{
-			Addr:    upgradeAddr,
-			Handler: webutil.NestMiddleware(upgrader.ServeHTTP, webutil.HTTPLogged(log)),
+			Addr:		upgradeAddr,
+			Handler:	webutil.NestMiddleware(upgrader.ServeHTTP, webutil.HTTPLogged(log)),
 		}))
 	}
 

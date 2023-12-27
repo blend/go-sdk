@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -25,8 +25,8 @@ var (
 // NewTextOutputFormatter returns a new text writer for a given output.
 func NewTextOutputFormatter(options ...TextOutputFormatterOption) *TextOutputFormatter {
 	tf := &TextOutputFormatter{
-		BufferPool: bufferutil.NewPool(DefaultBufferPoolSize),
-		TimeFormat: DefaultTextTimeFormat,
+		BufferPool:	bufferutil.NewPool(DefaultBufferPoolSize),
+		TimeFormat:	DefaultTextTimeFormat,
 	}
 
 	for _, option := range options {
@@ -71,12 +71,12 @@ func OptTextNoColor() TextOutputFormatterOption {
 
 // TextOutputFormatter handles formatting messages as text.
 type TextOutputFormatter struct {
-	HideTimestamp bool
-	HideFields    bool
-	NoColor       bool
-	TimeFormat    string
+	HideTimestamp	bool
+	HideFields	bool
+	NoColor		bool
+	TimeFormat	string
 
-	BufferPool *bufferutil.Pool
+	BufferPool	*bufferutil.Pool
 }
 
 // TimeFormatOrDefault returns the time format or a default
@@ -124,6 +124,11 @@ func (tf TextOutputFormatter) FormatPath(path ...string) string {
 	return fmt.Sprintf("[%s]", strings.Join(path, " > "))
 }
 
+// FormatAnnotations returns the scope annotations section of the message as a string.
+func (tf TextOutputFormatter) FormatAnnotations(annotations Annotations) string {
+	return FormatAnnotations(tf, ansi.ColorGreen, annotations)
+}
+
 // FormatLabels returns the scope labels section of the message as a string.
 func (tf TextOutputFormatter) FormatLabels(labels Labels) string {
 	return FormatLabels(tf, ansi.ColorBlue, labels)
@@ -159,6 +164,12 @@ func (tf TextOutputFormatter) WriteFormat(ctx context.Context, output io.Writer,
 		if len(labels) > 0 {
 			buffer.WriteString("\t")
 			buffer.WriteString(tf.FormatLabels(labels))
+		}
+
+		annotations := GetAnnotations(ctx)
+		if len(annotations) > 0 {
+			buffer.WriteString("\t")
+			buffer.WriteString(tf.FormatAnnotations(annotations))
 		}
 	}
 

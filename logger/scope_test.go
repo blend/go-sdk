@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -26,10 +26,12 @@ func TestNewScope(t *testing.T) {
 		OptScopePath("foo", "bar"),
 		OptScopeLabels(Labels{"moo": "loo"}),
 		OptScopeAnnotations(Annotations{"alpha": "bravo"}),
+		OptScopeRestriction(false),
 	)
 	assert.NotNil(sc.Logger)
 	assert.Equal([]string{"foo", "bar"}, sc.Path)
 	assert.Equal("loo", sc.Labels["moo"])
+	assert.Equal(false, sc.Restricted)
 
 	sub := sc.WithPath("example-string").WithLabels(Labels{"what": "where"}).WithAnnotations(Annotations{"zoo": 47})
 	assert.Equal([]string{"foo", "bar", "example-string"}, sub.Path)
@@ -37,6 +39,12 @@ func TestNewScope(t *testing.T) {
 	assert.Equal("loo", sub.Labels["moo"])
 	assert.Equal(47, sub.Annotations["zoo"])
 	assert.Equal("bravo", sub.Annotations["alpha"])
+
+	sc = NewScope(
+		log,
+		OptScopeRestriction(true),
+	)
+	assert.Equal(true, sc.Restricted)
 }
 
 func TestWithPath(t *testing.T) {
@@ -116,6 +124,7 @@ func TestScopeFromContext(t *testing.T) {
 	assert.Equal([]string{"three", "four", "one", "two"}, final.Path)
 	assert.Equal("bar", final.Labels["foo"])
 	assert.Equal("loo", final.Labels["moo"])
+	assert.Equal(false, final.Restricted)
 }
 
 func TestScopeApply(t *testing.T) {
@@ -132,4 +141,5 @@ func TestScopeApply(t *testing.T) {
 	assert.Equal([]string{"three", "four", "one", "two"}, GetPath(final))
 	assert.Equal("bar", GetLabels(final)["foo"])
 	assert.Equal("loo", GetLabels(final)["moo"])
+	assert.Equal(false, GetRestricted(final))
 }

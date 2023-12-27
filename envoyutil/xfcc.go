@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -27,27 +27,27 @@ type XFCC []XFCCElement
 type XFCCElement struct {
 	// By contains Subject Alternative Name (URI type) of the current proxy's
 	// certificate.	This can be decoded as a `*url.URL` via `xe.DecodeBy()`.
-	By string
+	By	string
 	// Hash contains the SHA 256 digest of the current client certificate; this
 	// is a string of 64 hexadecimal characters. This can be converted to the raw
 	// bytes underlying the hex string via `xe.DecodeHash()`.
-	Hash string
+	Hash	string
 	// Cert contains the entire client certificate in URL encoded PEM format.
 	// This can be decoded as a `*x509.Certificate` via `xe.DecodeCert()`.
-	Cert string
+	Cert	string
 	// Chain contains entire client certificate chain (including the leaf certificate)
 	// in URL encoded PEM format. This can be decoded as a `[]*x509.Certificate` via
 	// `xe.DecodeChain()`.
-	Chain string
+	Chain	string
 	// Subject contains the `Subject` field of the current client certificate.
-	Subject string
+	Subject	string
 	// URI contains the URI SAN of the current client certificate (assumes only
 	// one URI SAN). This can be decoded as a `*url.URL` via `xe.DecodeURI()`.
-	URI string
+	URI	string
 	// DNS contains the DNS SANs of the current client certificate. A client
 	// certificate may contain multiple DNS SANs, each will be a separate
 	// key-value pair in the XFCC element.
-	DNS []string
+	DNS	[]string
 }
 
 // DecodeBy decodes the `By` element from a URI string to a `*url.URL`.
@@ -175,20 +175,20 @@ const (
 
 const (
 	// ErrXFCCParsing is the class of error returned when parsing XFCC fails
-	ErrXFCCParsing = ex.Class("Error Parsing X-Forwarded-Client-Cert")
+	ErrXFCCParsing	= ex.Class("Error Parsing X-Forwarded-Client-Cert")
 
 	// initialValueCapacity is the capacity used for a key in a key-value
 	// pair from an XFCC header.
-	initialKeyCapacity = 4
+	initialKeyCapacity	= 4
 	// initialValueCapacity is the capacity used for a value in a key-value
 	// pair from an XFCC header.
-	initialValueCapacity = 8
+	initialValueCapacity	= 8
 )
 
 type parseXFCCState int
 
 const (
-	parseXFCCKey parseXFCCState = iota
+	parseXFCCKey	parseXFCCState	= iota
 	parseXFCCValueStart
 	parseXFCCValue
 	parseXFCCValueQuoted
@@ -196,13 +196,13 @@ const (
 
 // xfccParser holds state while an XFCC header is being parsed.
 type xfccParser struct {
-	Header  []rune
-	Index   int
-	State   parseXFCCState
-	Key     []rune
-	Value   []rune
-	Element XFCCElement
-	Parsed  XFCC
+	Header	[]rune
+	Index	int
+	State	parseXFCCState
+	Key	[]rune
+	Value	[]rune
+	Element	XFCCElement
+	Parsed	XFCC
 }
 
 // ParseXFCC parses the XFCC header.
@@ -212,11 +212,11 @@ func ParseXFCC(header string) (XFCC, error) {
 	}
 
 	xp := &xfccParser{
-		Header: []rune(header),
-		Index:  0,
-		State:  parseXFCCKey,
-		Key:    make([]rune, 0, initialKeyCapacity),
-		Value:  make([]rune, 0, initialValueCapacity),
+		Header:	[]rune(header),
+		Index:	0,
+		State:	parseXFCCKey,
+		Key:	make([]rune, 0, initialKeyCapacity),
+		Value:	make([]rune, 0, initialValueCapacity),
 	}
 	lastCharacter := xp.Header[len(xp.Header)-1]
 	if lastCharacter == ',' || lastCharacter == ';' {

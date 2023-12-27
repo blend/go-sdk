@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -45,16 +45,16 @@ func makeChunk(len int) []byte {
 }
 
 var (
-	provider = rand.New(rand.NewSource(time.Now().UnixNano()))
+	provider	= rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	// LowerLetters is a runset of lowercase letters.
-	lowerLetters = []byte("abcdefghijklmnopqrstuvwxyz")
+	lowerLetters	= []byte("abcdefghijklmnopqrstuvwxyz")
 
 	// UpperLetters is a runset of uppercase letters.
-	upperLetters = []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	upperLetters	= []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 	// Letters is a runset of both lower and uppercase letters.
-	letters = append(lowerLetters, upperLetters...)
+	letters	= append(lowerLetters, upperLetters...)
 )
 
 func randomLetter() byte {

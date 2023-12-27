@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -62,7 +62,7 @@ func main() {
 				GoRewritePackageCall("fmt", "Printf"),
 			),
 		},
-		Debug: ref.Bool(true),
+		Debug:	ref.Bool(true),
 	}
 	var buf bytes.Buffer
 	if err := cr.rewriteGoAst(ctx, "main.go", []byte(file), &buf); err != nil {

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -9,9 +9,9 @@ package slack
 
 // PostMessageResponse is a slack response
 type PostMessageResponse struct {
-	OK        bool    `json:"ok"`
-	Channel   string  `json:"channel,omitempty"`
-	Timestamp string  `json:"ts,omitempty"`
-	Message   Message `json:"message,omitempty"`
-	Error     string  `json:"error,omitempty"`
+	OK		bool	`json:"ok"`
+	Channel		string	`json:"channel,omitempty"`
+	Timestamp	string	`json:"ts,omitempty"`
+	Message		Message	`json:"message,omitempty"`
+	Error		string	`json:"error,omitempty"`
 }

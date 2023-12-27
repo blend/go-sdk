@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -24,15 +24,15 @@ func TestConvertEvent(t *testing.T) {
 	assert := assert.New(t)
 
 	original := stats.Event{
-		Title:          uuid.V4().String(),
-		Text:           uuid.V4().String(),
-		Timestamp:      time.Now().UTC(),
-		Hostname:       uuid.V4().String(),
-		AggregationKey: uuid.V4().String(),
-		Priority:       uuid.V4().String(),
-		SourceTypeName: uuid.V4().String(),
-		AlertType:      uuid.V4().String(),
-		Tags:           []string{uuid.V4().String()},
+		Title:		uuid.V4().String(),
+		Text:		uuid.V4().String(),
+		Timestamp:	time.Now().UTC(),
+		Hostname:	uuid.V4().String(),
+		AggregationKey:	uuid.V4().String(),
+		Priority:	uuid.V4().String(),
+		SourceTypeName:	uuid.V4().String(),
+		AlertType:	uuid.V4().String(),
+		Tags:		[]string{uuid.V4().String()},
 	}
 
 	converted := ConvertEvent(original)

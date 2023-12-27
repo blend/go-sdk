@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -126,7 +126,7 @@ func deserialize(ext string, r io.Reader, ref Any) error {
 		return ex.New(json.NewDecoder(r).Decode(ref))
 	case ExtensionYAML, ExtensionYML:
 		return ex.New(yaml.NewDecoder(r).Decode(ref))
-	default: // return an error if we're passed a weird extension
+	default:	// return an error if we're passed a weird extension
 		return ex.New(ErrInvalidConfigExtension, ex.OptMessagef("extension: %s", ext))
 	}
 }

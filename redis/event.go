@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -26,17 +26,17 @@ const (
 
 // these are compile time assertions
 var (
-	_ logger.Event        = (*Event)(nil)
-	_ logger.TextWritable = (*Event)(nil)
-	_ logger.JSONWritable = (*Event)(nil)
+	_	logger.Event		= (*Event)(nil)
+	_	logger.TextWritable	= (*Event)(nil)
+	_	logger.JSONWritable	= (*Event)(nil)
 )
 
 // NewEvent creates a new query event.
 func NewEvent(op string, args []string, elapsed time.Duration, options ...EventOption) Event {
 	qe := Event{
-		Op:      op,
-		Args:    args,
-		Elapsed: elapsed,
+		Op:		op,
+		Args:		args,
+		Elapsed:	elapsed,
 	}
 	for _, opt := range options {
 		opt(&qe)
@@ -108,18 +108,18 @@ func OptEventErr(value error) EventOption {
 
 // Event represents a call to redis.
 type Event struct {
-	Network  string
-	Addr     string
-	AuthUser string
-	DB       string
-	Op       string
-	Args     []string
-	Elapsed  time.Duration
-	Err      error
+	Network		string
+	Addr		string
+	AuthUser	string
+	DB		string
+	Op		string
+	Args		[]string
+	Elapsed		time.Duration
+	Err		error
 }
 
 // GetFlag implements Event.
-func (e Event) GetFlag() string { return Flag }
+func (e Event) GetFlag() string	{ return Flag }
 
 // WriteText writes the event text to the output.
 func (e Event) WriteText(tf logger.TextFormatter, wr io.Writer) {
@@ -158,11 +158,11 @@ func (e Event) WriteText(tf logger.TextFormatter, wr io.Writer) {
 // Decompose implements JSONWritable.
 func (e Event) Decompose() map[string]interface{} {
 	return map[string]interface{}{
-		"addr":    e.Addr,
-		"db":      e.DB,
-		"op":      e.Op,
-		"args":    e.Args,
-		"elapsed": timeutil.Milliseconds(e.Elapsed),
-		"err":     e.Err,
+		"addr":		e.Addr,
+		"db":		e.DB,
+		"op":		e.Op,
+		"args":		e.Args,
+		"elapsed":	timeutil.Milliseconds(e.Elapsed),
+		"err":		e.Err,
 	}
 }

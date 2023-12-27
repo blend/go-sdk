@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -35,7 +35,7 @@ func ParseSource(repoRoot, sourcePath string) (*Source, error) {
 	var line string
 	for scanner.Scan() {
 		line = strings.TrimSpace(scanner.Text())
-		if strings.HasPrefix(strings.TrimSpace(line), "#") { // ignore comments
+		if strings.HasPrefix(strings.TrimSpace(line), "#") {	// ignore comments
 			continue
 		}
 		if strings.Contains(line, "#") {
@@ -53,8 +53,8 @@ func ParseSource(repoRoot, sourcePath string) (*Source, error) {
 			return nil, err
 		}
 		output.Paths = append(output.Paths, Path{
-			PathGlob: pathGlob,
-			Owners:   pieces[1:],
+			PathGlob:	pathGlob,
+			Owners:		pieces[1:],
 		})
 	}
 	return &output, nil

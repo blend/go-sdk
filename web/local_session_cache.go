@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -15,16 +15,16 @@ import (
 // NewLocalSessionCache returns a new session cache.
 func NewLocalSessionCache() *LocalSessionCache {
 	return &LocalSessionCache{
-		SessionLock: &sync.Mutex{},
-		Sessions:    map[string]*Session{},
+		SessionLock:	&sync.Mutex{},
+		Sessions:	map[string]*Session{},
 	}
 }
 
 // LocalSessionCache is a memory cache of sessions.
 // It is meant to be used in tests.
 type LocalSessionCache struct {
-	SessionLock *sync.Mutex
-	Sessions    map[string]*Session
+	SessionLock	*sync.Mutex
+	Sessions	map[string]*Session
 }
 
 // Apply applies the local session cache to a given auth manager.

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -28,17 +28,17 @@ const (
 
 // these are compile time assertions
 var (
-	_ logger.Event        = (*RPCEvent)(nil)
-	_ logger.TextWritable = (*RPCEvent)(nil)
-	_ logger.JSONWritable = (*RPCEvent)(nil)
+	_	logger.Event		= (*RPCEvent)(nil)
+	_	logger.TextWritable	= (*RPCEvent)(nil)
+	_	logger.JSONWritable	= (*RPCEvent)(nil)
 )
 
 // NewRPCEvent creates a new rpc event.
 func NewRPCEvent(method string, elapsed time.Duration, options ...RPCEventOption) RPCEvent {
 	rpe := RPCEvent{
-		Engine:  EngineGRPC,
-		Method:  method,
-		Elapsed: elapsed,
+		Engine:		EngineGRPC,
+		Method:		method,
+		Elapsed:	elapsed,
 	}
 	for _, opt := range options {
 		opt(&rpe)
@@ -110,18 +110,18 @@ func OptRPCErr(value error) RPCEventOption {
 
 // RPCEvent is an event type for rpc
 type RPCEvent struct {
-	Engine      string
-	Peer        string
-	Method      string
-	UserAgent   string
-	Authority   string
-	ContentType string
-	Elapsed     time.Duration
-	Err         error
+	Engine		string
+	Peer		string
+	Method		string
+	UserAgent	string
+	Authority	string
+	ContentType	string
+	Elapsed		time.Duration
+	Err		error
 }
 
 // GetFlag implements Event.
-func (e RPCEvent) GetFlag() string { return FlagRPC }
+func (e RPCEvent) GetFlag() string	{ return FlagRPC }
 
 // WriteText implements TextWritable.
 func (e RPCEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
@@ -174,14 +174,14 @@ func (e RPCEvent) Decompose() map[string]interface{} {
 		code = s.Code()
 	}
 	return map[string]interface{}{
-		"engine":      e.Engine,
-		"peer":        e.Peer,
-		"method":      e.Method,
-		"userAgent":   e.UserAgent,
-		"authority":   e.Authority,
-		"contentType": e.ContentType,
-		"elapsed":     timeutil.Milliseconds(e.Elapsed),
-		"err":         e.Err,
-		"code":        code,
+		"engine":	e.Engine,
+		"peer":		e.Peer,
+		"method":	e.Method,
+		"userAgent":	e.UserAgent,
+		"authority":	e.Authority,
+		"contentType":	e.ContentType,
+		"elapsed":	timeutil.Milliseconds(e.Elapsed),
+		"err":		e.Err,
+		"code":		code,
 	}
 }

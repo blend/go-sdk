@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -9,13 +9,13 @@ package configutil
 
 const (
 	// EnvVarConfigPath is the env var for configs.
-	EnvVarConfigPath = "CONFIG_PATH"
+	EnvVarConfigPath	= "CONFIG_PATH"
 	// ExtensionJSON is a file extension.
-	ExtensionJSON = ".json"
+	ExtensionJSON	= ".json"
 	// ExtensionYAML is a file extension.
-	ExtensionYAML = ".yaml"
+	ExtensionYAML	= ".yaml"
 	// ExtensionYML is a file extension.
-	ExtensionYML = ".yml"
+	ExtensionYML	= ".yml"
 )
 
 var (

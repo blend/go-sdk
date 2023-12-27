@@ -1,7 +1,7 @@
 /*
 
 Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Blend Confidential - Restricted
 
 */
 
@@ -55,18 +55,18 @@ func (ngd NoGenericDecls) Check(filename string, contents []byte) RuleResult {
 		case *ast.FuncType:
 			if nt.TypeParams != nil {
 				result = &RuleResult{
-					File:    filename,
-					Line:    fset.Position(nt.TypeParams.Pos()).Line,
-					Message: "Type params present on function declaration",
+					File:		filename,
+					Line:		fset.Position(nt.TypeParams.Pos()).Line,
+					Message:	"Type params present on function declaration",
 				}
 				return false
 			}
 		case *ast.TypeSpec:
 			if nt.TypeParams != nil {
 				result = &RuleResult{
-					File:    filename,
-					Line:    fset.Position(nt.TypeParams.Pos()).Line,
-					Message: "Type params present on type declaration",
+					File:		filename,
+					Line:		fset.Position(nt.TypeParams.Pos()).Line,
+					Message:	"Type params present on type declaration",
 				}
 				return false
 			}
@@ -87,18 +87,18 @@ func (ngd NoGenericDecls) Check(filename string, contents []byte) RuleResult {
 						case *ast.BinaryExpr:
 							if nt.Op == token.OR {
 								result = &RuleResult{
-									File:    filename,
-									Line:    fset.Position(nt.Pos()).Line,
-									Message: "Union present in interface",
+									File:		filename,
+									Line:		fset.Position(nt.Pos()).Line,
+									Message:	"Union present in interface",
 								}
 								return false
 							}
 						case *ast.UnaryExpr:
 							if nt.Op == token.TILDE {
 								result = &RuleResult{
-									File:    filename,
-									Line:    fset.Position(nt.Pos()).Line,
-									Message: "Underlying type operator present in interface",
+									File:		filename,
+									Line:		fset.Position(nt.Pos()).Line,
+									Message:	"Underlying type operator present in interface",
 								}
 								return false
 							}

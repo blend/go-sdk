@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -10,7 +10,7 @@ Package web implements a model view controller system for building http servers.
 It is meant to be composed with other packages to form everything from small api servers
 to fully formed web view applications.
 
-Basics
+# Basics
 
 To create a web server:
 
@@ -34,4 +34,4 @@ and close the server gracefully if they're received, letting requests finish.
 
 There are many more examples in the github.com/blend/go-sdk/examples/web directory.
 */
-package web // import "github.com/blend/go-sdk/web"
+package web	// import "github.com/blend/go-sdk/web"

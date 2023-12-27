@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -15,8 +15,8 @@ import (
 
 // String errors
 const (
-	ErrTimeBefore ex.Class = "time should be before"
-	ErrTimeAfter  ex.Class = "time should be after"
+	ErrTimeBefore	ex.Class	= "time should be before"
+	ErrTimeAfter	ex.Class	= "time should be after"
 )
 
 // Time validator singleton.
@@ -76,7 +76,7 @@ func (t TimeValidators) AfterNowUTC() Validator {
 		if t.Value == nil {
 			return Errorf(ErrTimeAfter, nil, "after: %v", nowUTC)
 		}
-		if t.Value.Before(nowUTC) { // if value not after now == value is before now
+		if t.Value.Before(nowUTC) {	// if value not after now == value is before now
 			return Errorf(ErrTimeAfter, *t.Value, "after: %v", nowUTC)
 		}
 		return nil

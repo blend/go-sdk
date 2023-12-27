@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -15,8 +15,8 @@ import (
 
 // Interface assertions.
 var (
-	_ Schedule     = (*ImmediateSchedule)(nil)
-	_ fmt.Stringer = (*ImmediateSchedule)(nil)
+	_	Schedule	= (*ImmediateSchedule)(nil)
+	_	fmt.Stringer	= (*ImmediateSchedule)(nil)
 )
 
 // Immediately Returns a schedule that causes a job to run immediately on start,
@@ -27,8 +27,8 @@ func Immediately() *ImmediateSchedule {
 
 // ImmediateSchedule fires immediately with an optional continuation schedule.
 type ImmediateSchedule struct {
-	didRun int32
-	then   Schedule
+	didRun	int32
+	then	Schedule
 }
 
 // String returns a string representation of the schedul.e

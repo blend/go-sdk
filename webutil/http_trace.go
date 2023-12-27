@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,29 +21,29 @@ func WithClientHTTPTrace(req *http.Request, trace *HTTPTrace) *http.Request {
 
 // HTTPTrace is timing information for the full http call.
 type HTTPTrace struct {
-	Start       time.Time `json:"start"`
-	GetConn     time.Time `json:"getConn"`
-	GotConn     time.Time `json:"gotConn"`
-	PutIdleConn time.Time `json:"putIdleConn"`
+	Start		time.Time	`json:"start"`
+	GetConn		time.Time	`json:"getConn"`
+	GotConn		time.Time	`json:"gotConn"`
+	PutIdleConn	time.Time	`json:"putIdleConn"`
 
-	DNSStart time.Time `json:"dnsStart"`
-	DNSDone  time.Time `json:"dnsDone"`
+	DNSStart	time.Time	`json:"dnsStart"`
+	DNSDone		time.Time	`json:"dnsDone"`
 
-	ConnectStart time.Time `json:"connectStart"`
-	ConnectDone  time.Time `json:"connectDone"`
+	ConnectStart	time.Time	`json:"connectStart"`
+	ConnectDone	time.Time	`json:"connectDone"`
 
-	TLSHandshakeStart time.Time `json:"tlsHandshakeStart"`
-	TLSHandshakeDone  time.Time `json:"tlsHandshakeDone"`
+	TLSHandshakeStart	time.Time	`json:"tlsHandshakeStart"`
+	TLSHandshakeDone	time.Time	`json:"tlsHandshakeDone"`
 
-	WroteHeaders         time.Time `json:"wroteHeaders"`
-	WroteRequest         time.Time `json:"wroteRequest"`
-	GotFirstResponseByte time.Time `json:"gotFirstResponseByte"`
+	WroteHeaders		time.Time	`json:"wroteHeaders"`
+	WroteRequest		time.Time	`json:"wroteRequest"`
+	GotFirstResponseByte	time.Time	`json:"gotFirstResponseByte"`
 
-	DNSElapsed          time.Duration `json:"dnsElapsed"`
-	TLSHandshakeElapsed time.Duration `json:"tlsHandshakeElapsed"`
-	DialElapsed         time.Duration `json:"dialElapsed"`
-	RequestElapsed      time.Duration `json:"requestElapsed"`
-	ServerElapsed       time.Duration `json:"severElapsed"`
+	DNSElapsed		time.Duration	`json:"dnsElapsed"`
+	TLSHandshakeElapsed	time.Duration	`json:"tlsHandshakeElapsed"`
+	DialElapsed		time.Duration	`json:"dialElapsed"`
+	RequestElapsed		time.Duration	`json:"requestElapsed"`
+	ServerElapsed		time.Duration	`json:"severElapsed"`
 }
 
 // Trace returns the trace binder.

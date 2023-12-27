@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -15,6 +15,7 @@ import (
 	"time"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	opentracingExt "github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/mocktracer"
 
 	"github.com/blend/go-sdk/assert"
@@ -44,15 +45,16 @@ func TestStartHTTPSpan(t *testing.T) {
 	assert.Equal(tracing.OperationHTTPRequest, mockSpan.OperationName)
 
 	expectedTags := map[string]interface{}{
-		tracing.TagKeyMeasured:     1,
-		tracing.TagKeyResourceName: fmt.Sprintf("GET %s", resource),
-		tracing.TagKeySpanType:     tracing.SpanTypeWeb,
-		tracing.TagKeyHTTPMethod:   "GET",
-		tracing.TagKeyHTTPURL:      path,
-		"http.remote_addr":         "127.0.0.1",
-		"http.host":                "localhost",
-		"http.user_agent":          "go-sdk test",
-		"http.route":               resource,
+		tracing.TagKeyMeasured:			1,
+		tracing.TagKeyResourceName:		fmt.Sprintf("GET %s", resource),
+		tracing.TagKeySpanType:			tracing.SpanTypeWeb,
+		tracing.TagKeyHTTPMethod:		"GET",
+		tracing.TagKeyHTTPURL:			path,
+		"http.remote_addr":			"127.0.0.1",
+		"http.host":				"localhost",
+		"http.user_agent":			"go-sdk test",
+		"http.route":				resource,
+		string(opentracingExt.SpanKind):	opentracingExt.SpanKindRPCServerEnum,
 	}
 	assert.Equal(expectedTags, mockSpan.Tags())
 	assert.Equal(startTime, mockSpan.StartTime)
@@ -73,14 +75,15 @@ func TestStart(t *testing.T) {
 	assert.Equal(tracing.OperationHTTPRequest, mockSpan.OperationName)
 
 	expectedTags := map[string]interface{}{
-		tracing.TagKeyMeasured:     1,
-		tracing.TagKeyResourceName: fmt.Sprintf("GET %s", path),
-		tracing.TagKeySpanType:     tracing.SpanTypeWeb,
-		tracing.TagKeyHTTPMethod:   "GET",
-		tracing.TagKeyHTTPURL:      path,
-		"http.remote_addr":         "127.0.0.1",
-		"http.host":                "localhost",
-		"http.user_agent":          "go-sdk test",
+		tracing.TagKeyMeasured:			1,
+		tracing.TagKeyResourceName:		fmt.Sprintf("GET %s", path),
+		tracing.TagKeySpanType:			tracing.SpanTypeWeb,
+		tracing.TagKeyHTTPMethod:		"GET",
+		tracing.TagKeyHTTPURL:			path,
+		"http.remote_addr":			"127.0.0.1",
+		"http.host":				"localhost",
+		"http.user_agent":			"go-sdk test",
+		string(opentracingExt.SpanKind):	opentracingExt.SpanKindRPCServerEnum,
 	}
 	assert.Equal(expectedTags, mockSpan.Tags())
 	assert.True(mockSpan.FinishTime.IsZero())

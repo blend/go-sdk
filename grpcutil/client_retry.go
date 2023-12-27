@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -27,13 +27,13 @@ var (
 	//
 	// `ResourceExhausted` means that the user quota, e.g. per-RPC limits, have been reached.
 	// `Unavailable` means that system is currently unavailable and the client should retry again.
-	DefaultRetriableCodes = []codes.Code{codes.ResourceExhausted, codes.Unavailable}
+	DefaultRetriableCodes	= []codes.Code{codes.ResourceExhausted, codes.Unavailable}
 
-	defaultRetryOptions = &retryOptions{
-		max:            0, // disabled
-		perCallTimeout: 0, // disabled
-		includeHeader:  true,
-		codes:          DefaultRetriableCodes,
+	defaultRetryOptions	= &retryOptions{
+		max:		0,	// disabled
+		perCallTimeout:	0,	// disabled
+		includeHeader:	true,
+		codes:		DefaultRetriableCodes,
 		backoffFunc: BackoffFuncContext(func(ctx context.Context, attempt uint) time.Duration {
 			return BackoffLinearWithJitter(50*time.Millisecond, 0.10)(attempt)
 		}),
@@ -110,18 +110,18 @@ func WithClientRetryPerRetryTimeout(timeout time.Duration) CallOption {
 }
 
 type retryOptions struct {
-	max            uint
-	perCallTimeout time.Duration
-	includeHeader  bool
-	codes          []codes.Code
-	backoffFunc    BackoffFuncContext
-	abortOnFailure bool
+	max		uint
+	perCallTimeout	time.Duration
+	includeHeader	bool
+	codes		[]codes.Code
+	backoffFunc	BackoffFuncContext
+	abortOnFailure	bool
 }
 
 // CallOption is a grpc.CallOption that is local to grpc_retry.
 type CallOption struct {
-	grpc.EmptyCallOption // make sure we implement private after() and before() fields so we don't panic.
-	applyFunc            func(opt *retryOptions)
+	grpc.EmptyCallOption	// make sure we implement private after() and before() fields so we don't panic.
+	applyFunc		func(opt *retryOptions)
 }
 
 func reuseOrNewWithCallOptions(opt *retryOptions, callOptions []CallOption) *retryOptions {
@@ -225,9 +225,9 @@ func RetryStreamClientInterceptor(optFuncs ...CallOption) grpc.StreamClientInter
 			}()
 			if lastErr == nil {
 				retryingStreamer := &serverStreamingRetryingStream{
-					ClientStream: newStreamer,
-					callOpts:     callOpts,
-					parentCtx:    parentCtx,
+					ClientStream:	newStreamer,
+					callOpts:	callOpts,
+					parentCtx:	parentCtx,
 					streamerCall: func(ctx context.Context) (grpc.ClientStream, error) {
 						return streamer(ctx, desc, cc, method, grpcOpts...)
 					},
@@ -258,13 +258,13 @@ func RetryStreamClientInterceptor(optFuncs ...CallOption) grpc.StreamClientInter
 // a new ClientStream according to the retry policy.
 type serverStreamingRetryingStream struct {
 	grpc.ClientStream
-	bufferedSends []interface{} // single message that the client can sen
-	receivedGood  bool          // indicates whether any prior receives were successful
-	wasClosedSend bool          // indicates that CloseSend was closed
-	parentCtx     context.Context
-	callOpts      *retryOptions
-	streamerCall  func(ctx context.Context) (grpc.ClientStream, error)
-	mu            sync.RWMutex
+	bufferedSends	[]interface{}	// single message that the client can sen
+	receivedGood	bool		// indicates whether any prior receives were successful
+	wasClosedSend	bool		// indicates that CloseSend was closed
+	parentCtx	context.Context
+	callOpts	*retryOptions
+	streamerCall	func(ctx context.Context) (grpc.ClientStream, error)
+	mu		sync.RWMutex
 }
 
 func (s *serverStreamingRetryingStream) setStream(clientStream grpc.ClientStream) {
@@ -304,7 +304,7 @@ func (s *serverStreamingRetryingStream) Trailer() metadata.MD {
 func (s *serverStreamingRetryingStream) RecvMsg(m interface{}) error {
 	attemptRetry, lastErr := s.receiveMsgAndIndicateRetry(m)
 	if !attemptRetry {
-		return lastErr // success or hard failure
+		return lastErr	// success or hard failure
 	}
 	// We start off from attempt 1, because zeroth was already made on normal SendMsg().
 	for attempt := uint(1); attempt < s.callOpts.max; attempt++ {
@@ -446,7 +446,7 @@ func contextErrToGrpcErr(err error) error {
 func extractOutgoingMetadata(ctx context.Context) metadata.MD {
 	md, ok := metadata.FromOutgoingContext(ctx)
 	if !ok {
-		return metadata.Pairs() // empty md set
+		return metadata.Pairs()	// empty md set
 	}
 	return md
 }

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -54,18 +54,18 @@ func NewColumnFromFieldTag(field reflect.StructField) *Column {
 
 // Column represents a single field on a struct that is mapped to the database.
 type Column struct {
-	Parent       *Column
-	TableName    string
-	FieldName    string
-	FieldType    reflect.Type
-	ColumnName   string
-	Index        int
-	IsPrimaryKey bool
-	IsUniqueKey  bool
-	IsAuto       bool
-	IsReadOnly   bool
-	IsJSON       bool
-	Inline       bool
+	Parent		*Column
+	TableName	string
+	FieldName	string
+	FieldType	reflect.Type
+	ColumnName	string
+	Index		int
+	IsPrimaryKey	bool
+	IsUniqueKey	bool
+	IsAuto		bool
+	IsReadOnly	bool
+	IsJSON		bool
+	Inline		bool
 }
 
 // SetValue sets the field on a database mapped object to the instance of `value`.
@@ -141,8 +141,8 @@ func (c Column) SetValueReflected(objectValue reflect.Value, value interface{}) 
 	}
 
 	valueReflected := ReflectValue(value)
-	if !valueReflected.IsValid() { // if the value is nil
-		objectField.Set(reflect.Zero(objectField.Type())) // zero the field
+	if !valueReflected.IsValid() {	// if the value is nil
+		objectField.Set(reflect.Zero(objectField.Type()))	// zero the field
 		return nil
 	}
 

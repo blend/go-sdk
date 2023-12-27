@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -18,9 +18,9 @@ func TestNewConstraint(t *testing.T) {
 	assert := assert.New(t)
 
 	cases := []struct {
-		input string
-		count int
-		err   bool
+		input	string
+		count	int
+		err	bool
 	}{
 		{">= 1.2", 1, false},
 		{"1.0", 1, false},
@@ -43,9 +43,9 @@ func TestConstraintCheck(t *testing.T) {
 	assert := assert.New(t)
 
 	cases := []struct {
-		constraint string
-		version    string
-		check      bool
+		constraint	string
+		version		string
+		check		bool
 	}{
 		{">= 1.0, < 1.2", "1.1.5", true},
 		{"< 1.0, < 1.2", "1.1.5", false},
@@ -101,8 +101,8 @@ func TestConstraintsString(t *testing.T) {
 	assert := assert.New(t)
 
 	cases := []struct {
-		constraint string
-		result     string
+		constraint	string
+		result		string
 	}{
 		{">= 1.0, < 1.2", ""},
 		{"~> 1.0.7", ""},

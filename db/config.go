@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -75,24 +75,24 @@ func NewConfigFromDSN(dsn string) (config Config, err error) {
 
 // NewConfigFromEnv returns a new config from the environment.
 // The environment variable mappings are as follows:
-//  -  DB_ENGINE            = Engine
-//  -  DATABASE_URL         = DSN     //note that this has precedence over other vars (!!)
-//  -  DB_HOST              = Host
-//  -  DB_PORT              = Port
-//  -  DB_NAME              = Database
-//  -  DB_SCHEMA            = Schema
-//  -  DB_APPLICATION_NAME  = ApplicationName
-//  -  DB_USER              = Username
-//  -  DB_PASSWORD          = Password
-//  -  DB_CONNECT_TIMEOUT   = ConnectTimeout
-//  -  DB_LOCK_TIMEOUT      = LockTimeout
-//  -  DB_STATEMENT_TIMEOUT = StatementTimeout
-//  -  DB_SSLMODE           = SSLMode
-//  -  DB_IDLE_CONNECTIONS  = IdleConnections
-//  -  DB_MAX_CONNECTIONS   = MaxConnections
-//  -  DB_MAX_LIFETIME      = MaxLifetime
-//  -  DB_BUFFER_POOL_SIZE  = BufferPoolSize
-//  -  DB_DIALECT           = Dialect
+//   - DB_ENGINE            = Engine
+//   - DATABASE_URL         = DSN     //note that this has precedence over other vars (!!)
+//   - DB_HOST              = Host
+//   - DB_PORT              = Port
+//   - DB_NAME              = Database
+//   - DB_SCHEMA            = Schema
+//   - DB_APPLICATION_NAME  = ApplicationName
+//   - DB_USER              = Username
+//   - DB_PASSWORD          = Password
+//   - DB_CONNECT_TIMEOUT   = ConnectTimeout
+//   - DB_LOCK_TIMEOUT      = LockTimeout
+//   - DB_STATEMENT_TIMEOUT = StatementTimeout
+//   - DB_SSLMODE           = SSLMode
+//   - DB_IDLE_CONNECTIONS  = IdleConnections
+//   - DB_MAX_CONNECTIONS   = MaxConnections
+//   - DB_MAX_LIFETIME      = MaxLifetime
+//   - DB_BUFFER_POOL_SIZE  = BufferPoolSize
+//   - DB_DIALECT           = Dialect
 func NewConfigFromEnv() (config Config, err error) {
 	if err = (&config).Resolve(env.WithVars(context.Background(), env.Env())); err != nil {
 		return
@@ -113,15 +113,15 @@ func MustNewConfigFromEnv() Config {
 // Config is a set of connection config options.
 type Config struct {
 	// Engine is the database engine.
-	Engine string `json:"engine,omitempty" yaml:"engine,omitempty" env:"DB_ENGINE"`
+	Engine	string	`json:"engine,omitempty" yaml:"engine,omitempty" env:"DB_ENGINE"`
 	// DSN is a fully formed DSN (this skips DSN formation from all other variables outside `schema`).
-	DSN string `json:"dsn,omitempty" yaml:"dsn,omitempty" env:"DATABASE_URL"`
+	DSN	string	`json:"dsn,omitempty" yaml:"dsn,omitempty" env:"DATABASE_URL"`
 	// Host is the server to connect to.
-	Host string `json:"host,omitempty" yaml:"host,omitempty" env:"DB_HOST"`
+	Host	string	`json:"host,omitempty" yaml:"host,omitempty" env:"DB_HOST"`
 	// Port is the port to connect to.
-	Port string `json:"port,omitempty" yaml:"port,omitempty" env:"DB_PORT"`
+	Port	string	`json:"port,omitempty" yaml:"port,omitempty" env:"DB_PORT"`
 	// DBName is the database name
-	Database string `json:"database,omitempty" yaml:"database,omitempty" env:"DB_NAME"`
+	Database	string	`json:"database,omitempty" yaml:"database,omitempty" env:"DB_NAME"`
 	// Schema is the application schema within the database, defaults to `public`. This schema is used to set the
 	// Postgres "search_path" If you want to reference tables in other schemas, you'll need to specify those schemas
 	// in your queries e.g. "SELECT * FROM schema_two.table_one..."
@@ -132,18 +132,18 @@ type Config struct {
 	// separated schema names as the value for this config, or you can dbc.Invoke().Exec a SET statement on a newly
 	// opened connection such as "SET search_path = 'schema_one,schema_two';" Again, we recommend against this practice
 	// and encourage you to specify schema names beyond the first in your queries.
-	Schema string `json:"schema,omitempty" yaml:"schema,omitempty" env:"DB_SCHEMA"`
+	Schema	string	`json:"schema,omitempty" yaml:"schema,omitempty" env:"DB_SCHEMA"`
 	// ApplicationName is the name set by an application connection to a database
 	// server, intended to be transmitted in the connection string. It can be
 	// used to uniquely identify an application and will be included in the
 	// `pg_stat_activity` view.
 	//
 	// See: https://www.postgresql.org/docs/12/runtime-config-logging.html#GUC-APPLICATION-NAME
-	ApplicationName string `json:"applicationName,omitempty" yaml:"applicationName,omitempty" env:"DB_APPLICATION_NAME"`
+	ApplicationName	string	`json:"applicationName,omitempty" yaml:"applicationName,omitempty" env:"DB_APPLICATION_NAME"`
 	// Username is the username for the connection via password auth.
-	Username string `json:"username,omitempty" yaml:"username,omitempty" env:"DB_USER"`
+	Username	string	`json:"username,omitempty" yaml:"username,omitempty" env:"DB_USER"`
 	// Password is the password for the connection via password auth.
-	Password string `json:"password,omitempty" yaml:"password,omitempty" env:"DB_PASSWORD"`
+	Password	string	`json:"password,omitempty" yaml:"password,omitempty" env:"DB_PASSWORD"`
 	// ConnectTimeout determines the maximum wait for connection. The minimum
 	// allowed timeout is 2 seconds, so anything below is treated the same
 	// as unset. PostgreSQL will only accept second precision so this value will be
@@ -152,7 +152,7 @@ type Config struct {
 	// precision.
 	//
 	// See: https://www.postgresql.org/docs/10/libpq-connect.html#LIBPQ-CONNECT-CONNECT-TIMEOUT
-	ConnectTimeout time.Duration `json:"connectTimeout,omitempty" yaml:"connectTimeout,omitempty" env:"DB_CONNECT_TIMEOUT"`
+	ConnectTimeout	time.Duration	`json:"connectTimeout,omitempty" yaml:"connectTimeout,omitempty" env:"DB_CONNECT_TIMEOUT"`
 	// LockTimeout is the timeout to use when attempting to acquire a lock.
 	// PostgreSQL will only accept millisecond precision so this value will be
 	// rounded to the nearest millisecond before being set on a connection string.
@@ -160,7 +160,7 @@ type Config struct {
 	// precision.
 	//
 	// See: https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT
-	LockTimeout time.Duration `json:"lockTimeout,omitempty" yaml:"lockTimeout,omitempty" env:"DB_LOCK_TIMEOUT"`
+	LockTimeout	time.Duration	`json:"lockTimeout,omitempty" yaml:"lockTimeout,omitempty" env:"DB_LOCK_TIMEOUT"`
 	// StatementTimeout is the timeout to use when invoking a SQL statement.
 	// PostgreSQL will only accept millisecond precision so this value will be
 	// rounded to the nearest millisecond before being set on a connection string.
@@ -168,21 +168,21 @@ type Config struct {
 	// precision.
 	//
 	// See: https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-STATEMENT-TIMEOUT
-	StatementTimeout time.Duration `json:"statementTimeout,omitempty" yaml:"statementTimeout,omitempty" env:"DB_STATEMENT_TIMEOUT"`
+	StatementTimeout	time.Duration	`json:"statementTimeout,omitempty" yaml:"statementTimeout,omitempty" env:"DB_STATEMENT_TIMEOUT"`
 	// SSLMode is the sslmode for the connection.
-	SSLMode string `json:"sslMode,omitempty" yaml:"sslMode,omitempty" env:"DB_SSLMODE"`
+	SSLMode	string	`json:"sslMode,omitempty" yaml:"sslMode,omitempty" env:"DB_SSLMODE"`
 	// IdleConnections is the number of idle connections.
-	IdleConnections int `json:"idleConnections,omitempty" yaml:"idleConnections,omitempty" env:"DB_IDLE_CONNECTIONS"`
+	IdleConnections	int	`json:"idleConnections,omitempty" yaml:"idleConnections,omitempty" env:"DB_IDLE_CONNECTIONS"`
 	// MaxConnections is the maximum number of connections.
-	MaxConnections int `json:"maxConnections,omitempty" yaml:"maxConnections,omitempty" env:"DB_MAX_CONNECTIONS"`
+	MaxConnections	int	`json:"maxConnections,omitempty" yaml:"maxConnections,omitempty" env:"DB_MAX_CONNECTIONS"`
 	// MaxLifetime is the maximum time a connection can be open.
-	MaxLifetime time.Duration `json:"maxLifetime,omitempty" yaml:"maxLifetime,omitempty" env:"DB_MAX_LIFETIME"`
+	MaxLifetime	time.Duration	`json:"maxLifetime,omitempty" yaml:"maxLifetime,omitempty" env:"DB_MAX_LIFETIME"`
 	// MaxIdleTime is the maximum time a connection can be idle.
-	MaxIdleTime time.Duration `json:"maxIdleTime,omitempty" yaml:"maxIdleTime,omitempty" env:"DB_MAX_IDLE_TIME"`
+	MaxIdleTime	time.Duration	`json:"maxIdleTime,omitempty" yaml:"maxIdleTime,omitempty" env:"DB_MAX_IDLE_TIME"`
 	// BufferPoolSize is the number of query composition buffers to maintain.
-	BufferPoolSize int `json:"bufferPoolSize,omitempty" yaml:"bufferPoolSize,omitempty" env:"DB_BUFFER_POOL_SIZE"`
+	BufferPoolSize	int	`json:"bufferPoolSize,omitempty" yaml:"bufferPoolSize,omitempty" env:"DB_BUFFER_POOL_SIZE"`
 	// Dialect includes hints to tweak specific sql semantics by database connection.
-	Dialect string `json:"dialect,omitempty" yaml:"dialect,omitempty" env:"DB_DIALECT"`
+	Dialect	string	`json:"dialect,omitempty" yaml:"dialect,omitempty" env:"DB_DIALECT"`
 }
 
 // IsZero returns if the config is unset.
@@ -341,9 +341,9 @@ func (c Config) CreateDSN() string {
 	}
 
 	dsn := &url.URL{
-		Scheme: "postgres",
-		Host:   host,
-		Path:   c.DatabaseOrDefault(),
+		Scheme:	"postgres",
+		Host:	host,
+		Path:	c.DatabaseOrDefault(),
 	}
 
 	if len(c.Username) > 0 {
@@ -434,34 +434,34 @@ func (c Config) ValidateProduction() error {
 // and "d" and the value should be between 0 and 2147483647ms. We explicitly
 // cast to milliseconds but leave validation on the value to PostgreSQL.
 //
-//   blend=> BEGIN;
-//   BEGIN
-//   blend=> SET LOCAL lock_timeout TO '4000ms';
-//   SET
-//   blend=> SHOW lock_timeout;
-//    lock_timeout
-//   --------------
-//    4s
-//   (1 row)
-//   --
-//   blend=> SET LOCAL lock_timeout TO '4500ms';
-//   SET
-//   blend=> SHOW lock_timeout;
-//    lock_timeout
-//   --------------
-//    4500ms
-//   (1 row)
-//   --
-//   blend=> SET LOCAL lock_timeout = 'go';
-//   ERROR:  invalid value for parameter "lock_timeout": "go"
-//   blend=> SET LOCAL lock_timeout = '1ns';
-//   ERROR:  invalid value for parameter "lock_timeout": "1ns"
-//   HINT:  Valid units for this parameter are "ms", "s", "min", "h", and "d".
-//   blend=> SET LOCAL lock_timeout = '-1ms';
-//   ERROR:  -1 is outside the valid range for parameter "lock_timeout" (0 .. 2147483647)
-//   --
-//   blend=> COMMIT;
-//   COMMIT
+//	blend=> BEGIN;
+//	BEGIN
+//	blend=> SET LOCAL lock_timeout TO '4000ms';
+//	SET
+//	blend=> SHOW lock_timeout;
+//	 lock_timeout
+//	--------------
+//	 4s
+//	(1 row)
+//	--
+//	blend=> SET LOCAL lock_timeout TO '4500ms';
+//	SET
+//	blend=> SHOW lock_timeout;
+//	 lock_timeout
+//	--------------
+//	 4500ms
+//	(1 row)
+//	--
+//	blend=> SET LOCAL lock_timeout = 'go';
+//	ERROR:  invalid value for parameter "lock_timeout": "go"
+//	blend=> SET LOCAL lock_timeout = '1ns';
+//	ERROR:  invalid value for parameter "lock_timeout": "1ns"
+//	HINT:  Valid units for this parameter are "ms", "s", "min", "h", and "d".
+//	blend=> SET LOCAL lock_timeout = '-1ms';
+//	ERROR:  -1 is outside the valid range for parameter "lock_timeout" (0 .. 2147483647)
+//	--
+//	blend=> COMMIT;
+//	COMMIT
 //
 // See:
 // - https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT

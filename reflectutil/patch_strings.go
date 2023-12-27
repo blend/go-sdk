@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -20,13 +20,13 @@ import (
 // PatchStrings options.
 const (
 	// FieldTagEnv is the struct tag for what environment variable to use to populate a field.
-	FieldTagEnv = "env"
+	FieldTagEnv	= "env"
 	// FieldFlagCSV is a field tag flag (say that 10 times fast).
-	FieldFlagCSV = "csv"
+	FieldFlagCSV	= "csv"
 	// FieldFlagBase64 is a field tag flag (say that 10 times fast).
-	FieldFlagBase64 = "base64"
+	FieldFlagBase64	= "base64"
 	// FieldFlagBytes is a field tag flag (say that 10 times fast).
-	FieldFlagBytes = "bytes"
+	FieldFlagBytes	= "bytes"
 )
 
 // PatchStringer is a type that handles unmarshalling a map of strings into itself.

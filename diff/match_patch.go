@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -20,32 +20,32 @@ import (
 func New() *MatchPatch {
 	// Defaults.
 	return &MatchPatch{
-		Timeout:              time.Second,
-		EditCost:             4,
-		MatchThreshold:       0.5,
-		MatchDistance:        1000,
-		PatchDeleteThreshold: 0.5,
-		PatchMargin:          4,
-		MatchMaxBits:         32,
+		Timeout:		time.Second,
+		EditCost:		4,
+		MatchThreshold:		0.5,
+		MatchDistance:		1000,
+		PatchDeleteThreshold:	0.5,
+		PatchMargin:		4,
+		MatchMaxBits:		32,
 	}
 }
 
 // MatchPatch holds the configuration for diff-match-patch operations.
 type MatchPatch struct {
 	// Number of seconds to map a diff before giving up (0 for infinity).
-	Timeout time.Duration
+	Timeout	time.Duration
 	// Cost of an empty edit operation in terms of edit characters.
-	EditCost int
+	EditCost	int
 	// How far to search for a match (0 = exact location, 1000+ = broad match). A match this many characters away from the expected location will add 1.0 to the score (0.0 is a perfect match).
-	MatchDistance int
+	MatchDistance	int
 	// When deleting a large block of text (over ~64 characters), how close do the contents have to be to match the expected contents. (0.0 = perfection, 1.0 = very loose).  Note that MatchThreshold controls how closely the end points of a delete need to match.
-	PatchDeleteThreshold float64
+	PatchDeleteThreshold	float64
 	// Chunk size for context length.
-	PatchMargin int
+	PatchMargin	int
 	// The number of bits in an int.
-	MatchMaxBits int
+	MatchMaxBits	int
 	// At what point is no match declared (0.0 = perfection, 1.0 = very loose).
-	MatchThreshold float64
+	MatchThreshold	float64
 }
 
 // Diff finds the differences between two texts.
@@ -221,7 +221,7 @@ func (dmp *MatchPatch) diffLineMode(text1, text2 []rune, deadline time.Time) []D
 		pointer++
 	}
 
-	return diffs[:len(diffs)-1] // Remove the dummy entry at the end.
+	return diffs[:len(diffs)-1]	// Remove the dummy entry at the end.
 }
 
 // diffBisect finds the 'middle snake' of a diff, split the problem in two and return the recursively constructed diff.
@@ -479,7 +479,7 @@ func (dmp *MatchPatch) diffHalfMatch(text1, text2 []rune) [][]rune {
 	}
 
 	if len(longtext) < 4 || len(shorttext)*2 < len(longtext) {
-		return nil // Pointless.
+		return nil	// Pointless.
 	}
 
 	// First check if the second quarter is the seed for a half-match.
@@ -564,7 +564,7 @@ func (dmp *MatchPatch) diffCleanupSemantic(diffs []Diff) []Diff {
 
 	var lastequality string
 	// Always equal to diffs[equalities[equalitiesLength - 1]][1]
-	var pointer int // Index of current position.
+	var pointer int	// Index of current position.
 	// Number of characters that changed prior to the equality.
 	var lengthInsertions1, lengthDeletions1 int
 	// Number of characters that changed after the equality.
@@ -610,7 +610,7 @@ func (dmp *MatchPatch) diffCleanupSemantic(diffs []Diff) []Diff {
 					pointer = equalities[len(equalities)-1]
 				}
 
-				lengthInsertions1 = 0 // Reset the counters.
+				lengthInsertions1 = 0	// Reset the counters.
 				lengthDeletions1 = 0
 				lengthInsertions2 = 0
 				lengthDeletions2 = 0
@@ -674,11 +674,11 @@ func (dmp *MatchPatch) diffCleanupSemantic(diffs []Diff) []Diff {
 
 // Define some regex patterns for matching boundaries.
 var (
-	nonAlphaNumericRegex = regexp.MustCompile(`[^a-zA-Z0-9]`)
-	whitespaceRegex      = regexp.MustCompile(`\s`)
-	linebreakRegex       = regexp.MustCompile(`[\r\n]`)
-	blanklineEndRegex    = regexp.MustCompile(`\n\r?\n$`)
-	blanklineStartRegex  = regexp.MustCompile(`^\r?\n\r?\n`)
+	nonAlphaNumericRegex	= regexp.MustCompile(`[^a-zA-Z0-9]`)
+	whitespaceRegex		= regexp.MustCompile(`\s`)
+	linebreakRegex		= regexp.MustCompile(`[\r\n]`)
+	blanklineEndRegex	= regexp.MustCompile(`\n\r?\n$`)
+	blanklineStartRegex	= regexp.MustCompile(`^\r?\n\r?\n`)
 )
 
 // diffCleanupSemanticScore computes a score representing whether the internal boundary falls on logical boundaries.
@@ -802,13 +802,13 @@ func (dmp *MatchPatch) diffCleanupEfficiency(diffs []Diff) []Diff {
 	changes := false
 	// Stack of indices where equalities are found.
 	type equality struct {
-		data int
-		next *equality
+		data	int
+		next	*equality
 	}
 	var equalities *equality
 	// Always equal to equalities[equalitiesLength-1][1]
 	lastequality := ""
-	pointer := 0 // Index of current position.
+	pointer := 0	// Index of current position.
 	// Is there an insertion operation before the last equality.
 	preIns := false
 	// Is there a deletion operation before the last equality.
@@ -818,13 +818,13 @@ func (dmp *MatchPatch) diffCleanupEfficiency(diffs []Diff) []Diff {
 	// Is there a deletion operation after the last equality.
 	postDel := false
 	for pointer < len(diffs) {
-		if diffs[pointer].Type == DiffEqual { // Equality found.
+		if diffs[pointer].Type == DiffEqual {	// Equality found.
 			if len(diffs[pointer].Text) < dmp.EditCost &&
 				(postIns || postDel) {
 				// Candidate found.
 				equalities = &equality{
-					data: pointer,
-					next: equalities,
+					data:	pointer,
+					next:	equalities,
 				}
 				preIns = postIns
 				preDel = postDel
@@ -836,7 +836,7 @@ func (dmp *MatchPatch) diffCleanupEfficiency(diffs []Diff) []Diff {
 			}
 			postIns = false
 			postDel = false
-		} else { // An insertion or deletion.
+		} else {	// An insertion or deletion.
 			if diffs[pointer].Type == DiffDelete {
 				postDel = true
 			} else {
@@ -997,7 +997,7 @@ func (dmp *MatchPatch) diffCleanupMerge(diffs []Diff) []Diff {
 	}
 
 	if len(diffs[len(diffs)-1].Text) == 0 {
-		diffs = diffs[0 : len(diffs)-1] // Remove the dummy entry at the end.
+		diffs = diffs[0 : len(diffs)-1]	// Remove the dummy entry at the end.
 	}
 
 	// Second pass: look for single edits surrounded on both sides by equalities which can be shifted sideways to eliminate an equality. E.g: A<ins>BA</ins>C -> <ins>AB</ins>AC
@@ -1071,7 +1071,7 @@ func (dmp *MatchPatch) diffXIndex(diffs []Diff, loc int) int {
 // diffLinesToStrings splits two texts into a list of strings. Each string represents one line.
 func (dmp *MatchPatch) diffLinesToStrings(text1, text2 string) (string, string, []string) {
 	// '\x00' is a valid character, but various debuggers don't like it. So we'll insert a junk entry to avoid generating a null character.
-	lineArray := []string{""} // e.g. lineArray[4] == 'Hello\n'
+	lineArray := []string{""}	// e.g. lineArray[4] == 'Hello\n'
 
 	//Each string has the index of lineArray which it points to
 	strIndexArray1 := dmp.diffLinesToStringsMunge(text1, &lineArray)
@@ -1083,7 +1083,7 @@ func (dmp *MatchPatch) diffLinesToStrings(text1, text2 string) (string, string, 
 // diffLinesToStringsMunge splits a text into an array of strings, and reduces the texts to a []string.
 func (dmp *MatchPatch) diffLinesToStringsMunge(text string, lineArray *[]string) []uint32 {
 	// Walk the text, pulling out a substring for each line. text.split('\n') would would temporarily double our memory footprint. Modifying text would create many large strings to garbage collect.
-	lineHash := map[string]int{} // e.g. lineHash['Hello\n'] == 4
+	lineHash := map[string]int{}	// e.g. lineHash['Hello\n'] == 4
 	lineStart := 0
 	lineEnd := -1
 	strs := []uint32{}

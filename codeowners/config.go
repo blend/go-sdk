@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -10,18 +10,18 @@ package codeowners
 // Config are the configuration options for the utility.
 type Config struct {
 	// Path is the owners file path (typically `.github/CODEOWNERS`)
-	Path string `yaml:"path"`
+	Path	string	`yaml:"path"`
 	// GithubURL is the url of the github instance to communicate with.
-	GithubURL string `yaml:"githubURL"`
+	GithubURL	string	`yaml:"githubURL"`
 	// GithubToken is the authorization token used to communicate with github.
-	GithubToken string `yaml:"githubToken"`
+	GithubToken	string	`yaml:"githubToken"`
 
 	// Quiet controls whether output is suppressed.
-	Quiet *bool `yaml:"quiet"`
+	Quiet	*bool	`yaml:"quiet"`
 	// Verbose controls whether verbose output is shown.
-	Verbose *bool `yaml:"verbose"`
+	Verbose	*bool	`yaml:"verbose"`
 	// Debug controls whether debug output is shown.
-	Debug *bool `yaml:"debug"`
+	Debug	*bool	`yaml:"debug"`
 }
 
 // PathOrDefault is the path for the codeowners file or a default.

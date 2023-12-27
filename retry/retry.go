@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -36,9 +36,9 @@ func New(opts ...Option) *Retrier {
 
 // Retrier is the retry agent.
 type Retrier struct {
-	MaxAttempts         uint
-	DelayProvider       DelayProvider
-	ShouldRetryProvider ShouldRetryProvider
+	MaxAttempts		uint
+	DelayProvider		DelayProvider
+	ShouldRetryProvider	ShouldRetryProvider
 }
 
 // Intercept calls a function and retries on error or if a should retry provider

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -22,13 +22,13 @@ func CompressSpace(text string) (output string) {
 	var state int
 	for _, r := range text {
 		switch state {
-		case 0: // non-whitespace
+		case 0:	// non-whitespace
 			if unicode.IsSpace(r) {
 				state = 1
 			} else {
 				output = output + string(r)
 			}
-		case 1: // whitespace
+		case 1:	// whitespace
 			if !unicode.IsSpace(r) {
 				output = output + " " + string(r)
 				state = 0

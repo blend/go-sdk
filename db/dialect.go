@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -24,11 +24,11 @@ func (d Dialect) Is(others ...Dialect) bool {
 
 var (
 	// DialectUnknown is an unknown dialect, typically inferred as DialectPostgres.
-	DialectUnknown Dialect = ""
+	DialectUnknown	Dialect	= ""
 	// DialectPostgres is the postgres dialect.
-	DialectPostgres Dialect = "psql"
+	DialectPostgres	Dialect	= "psql"
 	// DialectCockroachDB is the crdb dialect.
-	DialectCockroachDB Dialect = "cockroachdb"
+	DialectCockroachDB	Dialect	= "cockroachdb"
 	// DialectRedshift is the redshift dialect.
-	DialectRedshift Dialect = "redshift"
+	DialectRedshift	Dialect	= "redshift"
 )

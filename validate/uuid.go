@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -14,10 +14,10 @@ import (
 
 // UUID errors
 const (
-	ErrUUIDRequired  ex.Class = "uuid should be set"
-	ErrUUIDForbidden ex.Class = "uuid should not be set"
-	ErrUUIDV4        ex.Class = "uuid should be version 4"
-	ErrUUIDVersion   ex.Class = "uuid should be a given version"
+	ErrUUIDRequired		ex.Class	= "uuid should be set"
+	ErrUUIDForbidden	ex.Class	= "uuid should not be set"
+	ErrUUIDV4		ex.Class	= "uuid should be version 4"
+	ErrUUIDVersion		ex.Class	= "uuid should be a given version"
 )
 
 // UUID returns a uuid.UUID validator.

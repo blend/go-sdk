@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -10,6 +10,7 @@ package crypto
 import (
 	cryptorand "crypto/rand"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/hex"
 
 	"github.com/blend/go-sdk/ex"
@@ -72,4 +73,32 @@ func ParseKey(key string) ([]byte, error) {
 		return nil, ex.New("parse key; invalid key length")
 	}
 	return decoded, nil
+}
+
+func formatNumToString(num uint64, digits int) string {
+	k := make([]byte, digits)
+	for i := digits - 1; i >= 0; i-- {
+		k[i] = byte(num%10 + '0')
+		num /= 10
+	}
+	return string(k)
+}
+
+// CreateIntKey creates an integer key of the specified length, return an error if it fails.
+func CreateIntKey(keySize int) (string, error) {
+
+	if keySize <= 0 {
+		return "", ex.New("parse key; invalid key length")
+	}
+
+	//take 8 bytes of randomness
+	key, err := CreateKey(8)
+	if err != nil {
+		return "", err
+	}
+	//convert random bytes to integer, then to string, limiting to keySize
+	intKey := binary.BigEndian.Uint64(key)
+	stringKey := formatNumToString(intKey, keySize)
+
+	return stringKey, nil
 }

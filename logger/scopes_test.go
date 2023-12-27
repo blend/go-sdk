@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -131,7 +131,7 @@ func Test_Scopes_IsEnabled_inputAll_strict_explicitDisable(t *testing.T) {
 	its.True(all.IsEnabled("test0", "test2"))
 	its.True(all.IsEnabled("test2", "test1"))
 
-	its.True(all.IsEnabled("foo0")) // doesn't match glob
+	its.True(all.IsEnabled("foo0"))	// doesn't match glob
 	its.False(all.IsEnabled("foo0", "foo1"))
 	its.True(all.IsEnabled("foo0", "foo2"))
 	its.True(all.IsEnabled("foo2", "foo1"))
@@ -151,7 +151,7 @@ func Test_Scopes_IsEnabled_inputAll_wildcard_explicitDisable(t *testing.T) {
 	its.True(all.IsEnabled("test0", "test2"))
 	its.True(all.IsEnabled("test2", "test1"))
 
-	its.True(all.IsEnabled("foo0")) // doesn't match glob
+	its.True(all.IsEnabled("foo0"))	// doesn't match glob
 	its.False(all.IsEnabled("foo0", "foo1"))
 	its.False(all.IsEnabled("foo0", "foo2"))
 	its.True(all.IsEnabled("foo2", "foo1"))

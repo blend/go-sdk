@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -20,8 +20,8 @@ func NewBufferPool(bufferSize int) *BufferPool {
 	bp.Pool = sync.Pool{
 		New: func() interface{} {
 			b := &Buffer{
-				Buffer: bytes.NewBuffer(make([]byte, bufferSize)),
-				pool:   bp,
+				Buffer:	bytes.NewBuffer(make([]byte, bufferSize)),
+				pool:	bp,
 			}
 			return b
 		},
@@ -50,7 +50,7 @@ func (bp *BufferPool) Put(b *Buffer) {
 // It returns itself to the pool on close.
 type Buffer struct {
 	*bytes.Buffer
-	pool *BufferPool
+	pool	*BufferPool
 }
 
 // Close returns the buffer to the pool.

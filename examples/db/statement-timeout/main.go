@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -18,8 +18,8 @@ import (
 )
 
 const (
-	longQueryTemplate = "SELECT id, pg_sleep(%f) FROM might_sleep WHERE id = 1337;"
-	separator         = "=================================================="
+	longQueryTemplate	= "SELECT id, pg_sleep(%f) FROM might_sleep WHERE id = 1337;"
+	separator		= "=================================================="
 )
 
 func createConn(ctx context.Context) (*db.Connection, error) {
@@ -44,8 +44,8 @@ func createConn(ctx context.Context) (*db.Connection, error) {
 
 func intentionallyLongQuery(ctx context.Context, pool *db.Connection, cfg *config) error {
 	type resultRow struct {
-		ID      int    `db:"id"`
-		PGSleep string `db:"pg_sleep"`
+		ID	int	`db:"id"`
+		PGSleep	string	`db:"pg_sleep"`
 	}
 
 	s := float64(cfg.PGSleep) / float64(time.Second)

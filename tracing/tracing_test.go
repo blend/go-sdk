@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -35,7 +35,7 @@ func TestStartSpanFromContext(t *testing.T) {
 	assert.Len(mockSpan.Tags(), 1)
 	assert.Equal("v1", mockSpan.Tags()["k1"])
 
-	spanFromCtx := opentracing.SpanFromContext(ctx)
+	spanFromCtx := GetTracingSpanFromContext(ctx)
 	mockSpanFromCtx := spanFromCtx.(*mocktracer.MockSpan)
 	assert.Equal(mockSpan.String(), mockSpanFromCtx.String())
 }
@@ -63,40 +63,11 @@ func TestStartSpanFromContextWithParent(t *testing.T) {
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal("test.operation.two", mockSpan.OperationName)
 
-	spanFromCtx := opentracing.SpanFromContext(ctx)
+	spanFromCtx := GetTracingSpanFromContext(ctx)
 	mockSpanFromCtx := spanFromCtx.(*mocktracer.MockSpan)
 	assert.Equal(mockSpan.String(), mockSpanFromCtx.String())
 
 	assert.Equal(mockSpan.ParentID, mockParentSpan.SpanContext.SpanID)
-}
-
-func TestGetTracingSpanFromContext(t *testing.T) {
-	assert := assert.New(t)
-	mockTracer := mocktracer.New()
-
-	spanKey := struct{}{}
-	span := mockTracer.StartSpan("test.operation")
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, spanKey, span)
-
-	spanFromCtx := GetTracingSpanFromContext(ctx, spanKey)
-
-	mockSpan := span.(*mocktracer.MockSpan)
-	mockSpanFromCtx := spanFromCtx.(*mocktracer.MockSpan)
-	assert.Equal(mockSpan.String(), mockSpanFromCtx.String())
-}
-
-func TestGetTracingSpanFromContextMiss(t *testing.T) {
-	assert := assert.New(t)
-	mockTracer := mocktracer.New()
-
-	spanKey := struct{}{}
-	span := mockTracer.StartSpan("test.operation")
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, spanKey, span)
-
-	spanFromCtx := GetTracingSpanFromContext(ctx, "wrongKey")
-	assert.Nil(spanFromCtx)
 }
 
 func TestSpanError(t *testing.T) {

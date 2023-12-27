@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -54,11 +54,11 @@ func ParseGoComments(repoRoot, sourcePath, linePrefix string) (*Source, error) {
 		return nil, err
 	}
 	return &Source{
-		Source: repoSourcePath,
+		Source:	repoSourcePath,
 		Paths: []Path{
 			{
-				PathGlob: pathGlob,
-				Owners:   owners,
+				PathGlob:	pathGlob,
+				Owners:		owners,
 			},
 		},
 	}, nil

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -14,9 +14,9 @@ import (
 )
 
 type manyTest struct {
-	Foo *string
-	Bar *string
-	Baz *string
+	Foo	*string
+	Bar	*string
+	Baz	*string
 }
 
 func TestManyNil(t *testing.T) {
@@ -25,9 +25,9 @@ func TestManyNil(t *testing.T) {
 	refStr := func(val string) *string { return &val }
 
 	bad := manyTest{
-		Foo: refStr("foo"),
-		Bar: refStr("bar"),
-		Baz: refStr("baz"),
+		Foo:	refStr("foo"),
+		Bar:	refStr("bar"),
+		Baz:	refStr("baz"),
 	}
 	assert.NotNil(Many(bad.Foo, bad.Bar, bad.Baz).Nil()())
 
@@ -54,9 +54,9 @@ func TestManyNotNil(t *testing.T) {
 	assert.Nil(Many(maybe.Foo, maybe.Bar, maybe.Baz).NotNil()())
 
 	good := manyTest{
-		Foo: refStr("foo"),
-		Bar: refStr("bar"),
-		Baz: refStr("baz"),
+		Foo:	refStr("foo"),
+		Bar:	refStr("bar"),
+		Baz:	refStr("baz"),
 	}
 	assert.Nil(Many(good.Foo, good.Bar, good.Baz).NotNil()())
 }
@@ -75,9 +75,9 @@ func TestManyOneNotNil(t *testing.T) {
 	assert.Nil(Many(maybe.Foo, maybe.Bar, maybe.Baz).OneNotNil()())
 
 	good := manyTest{
-		Foo: refStr("foo"),
-		Bar: refStr("bar"),
-		Baz: refStr("baz"),
+		Foo:	refStr("foo"),
+		Bar:	refStr("bar"),
+		Baz:	refStr("baz"),
 	}
 	assert.NotNil(Many(good.Foo, good.Bar, good.Baz).OneNotNil()())
 }

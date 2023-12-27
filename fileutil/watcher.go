@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -18,8 +18,8 @@ import (
 
 // Watch constants
 const (
-	ErrWatchStopped          ex.Class = "watch file should stop"
-	DefaultWatchPollInterval          = 500 * time.Millisecond
+	ErrWatchStopped			ex.Class	= "watch file should stop"
+	DefaultWatchPollInterval			= 500 * time.Millisecond
 )
 
 // Watch watches a file for changes and calls the action if there are changes.
@@ -43,9 +43,9 @@ func Watch(ctx context.Context, path string, action WatchAction) error {
 // NewWatcher returns a new watcher.
 func NewWatcher(path string, action WatchAction, opts ...WatcherOption) *Watcher {
 	watch := Watcher{
-		Latch:  async.NewLatch(),
-		Path:   path,
-		Action: action,
+		Latch:	async.NewLatch(),
+		Path:	path,
+		Action:	action,
 	}
 	for _, opt := range opts {
 		opt(&watch)
@@ -63,10 +63,10 @@ type WatcherOption func(*Watcher)
 type Watcher struct {
 	*async.Latch
 
-	Path         string
-	PollInterval time.Duration
-	Action       func(*os.File) error
-	Errors       chan error
+	Path		string
+	PollInterval	time.Duration
+	Action		func(*os.File) error
+	Errors		chan error
 }
 
 // PollIntervalOrDefault returns the polling interval or a default.

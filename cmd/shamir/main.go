@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -22,8 +22,8 @@ import (
 
 func main() {
 	root := &cobra.Command{
-		Use:   "shamir",
-		Short: "shamir splits and combines secrets into a configurable number of parts",
+		Use:	"shamir",
+		Short:	"shamir splits and combines secrets into a configurable number of parts",
 	}
 	root.AddCommand(NewSplitCommand(), NewCombineCommand())
 	if err := root.Execute(); err != nil {
@@ -39,8 +39,8 @@ func NewSplitCommand() *cobra.Command {
 	var inputFile *string
 	var secret *string
 	split := &cobra.Command{
-		Use:   "split",
-		Short: "split takes a given input from stdin or a file and separates it into a configurable number of sections",
+		Use:	"split",
+		Short:	"split takes a given input from stdin or a file and separates it into a configurable number of sections",
 		Run: func(cmd *cobra.Command, args []string) {
 			var contents []byte
 			var err error
@@ -83,8 +83,8 @@ func NewCombineCommand() *cobra.Command {
 	var input *string
 	var parts *[]string
 	combine := &cobra.Command{
-		Use:   "combine",
-		Short: "combine takes a shard share and combines it into the final output",
+		Use:	"combine",
+		Short:	"combine takes a shard share and combines it into the final output",
 		Run: func(cmd *cobra.Command, args []string) {
 			var inputParts [][]byte
 			var inputPartsEncoded []string

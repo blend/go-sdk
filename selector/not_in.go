@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -14,8 +14,8 @@ import (
 
 // NotIn returns if a key does not match a set of values.
 type NotIn struct {
-	Key    string
-	Values []string
+	Key	string
+	Values	[]string
 }
 
 // Matches returns the selector result.

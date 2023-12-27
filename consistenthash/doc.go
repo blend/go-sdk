@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,23 +21,22 @@ from multiple goroutines and will use a read/write mutex to synchronize changes 
 
 Example usage:
 
-    ch := consistenthash.New(
-		consistenthash.OptBuckets("worker-0", "worker-1", "worker-2"),
-	)
-	// figure out which bucket an item maps to
-	worker := ch.Assignment("item-0") // will yield `worker-0` or `worker-1` etc.
+	    ch := consistenthash.New(
+			consistenthash.OptBuckets("worker-0", "worker-1", "worker-2"),
+		)
+		// figure out which bucket an item maps to
+		worker := ch.Assignment("item-0") // will yield `worker-0` or `worker-1` etc.
 
 You can tune the number of virtual replicas to reduce the constant time hit of most operations
 at the expense of bucket to item mapping uniformity.
 
 Example setting the replicas:
 
-    ch := consistenthash.New(
-		consistenthash.OptBuckets("worker-0", "worker-1", "worker-2"),
-		consistenthash.OptReplicas(5),
-	)
-	// figure out which bucket an item maps to
-	worker := ch.Assignment("item-0") // will yield `worker-0` or `worker-1` etc.
-
+	    ch := consistenthash.New(
+			consistenthash.OptBuckets("worker-0", "worker-1", "worker-2"),
+			consistenthash.OptReplicas(5),
+		)
+		// figure out which bucket an item maps to
+		worker := ch.Assignment("item-0") // will yield `worker-0` or `worker-1` etc.
 */
-package consistenthash // import "github.com/blend/go-sdk/consistenthash"
+package consistenthash	// import "github.com/blend/go-sdk/consistenthash"

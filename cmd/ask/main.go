@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -20,9 +20,9 @@ import (
 )
 
 type configVar struct {
-	Field   string
-	Default string
-	Value   string
+	Field	string
+	Default	string
+	Value	string
 }
 
 func (cv *configVar) Set(value string) error {
@@ -44,8 +44,8 @@ func (cvs *configVarSet) Set(flagValue string) error {
 	parts := strings.SplitN(flagValue, "=", 2)
 	if len(parts) > 1 {
 		*cvs = append(*cvs, configVar{
-			Field:   parts[0],
-			Default: parts[1],
+			Field:		parts[0],
+			Default:	parts[1],
 		})
 	} else if len(parts) > 0 {
 		*cvs = append(*cvs, configVar{

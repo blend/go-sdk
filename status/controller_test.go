@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -25,9 +25,9 @@ func Test_Controller_getStatus(t *testing.T) {
 
 	statusController := NewController(
 		OptConfig(configmeta.Meta{
-			ServiceEnv:  "test",
-			ServiceName: "test-service",
-			Version:     "1.2.3",
+			ServiceEnv:	"test",
+			ServiceName:	"test-service",
+			Version:	"1.2.3",
 		}),
 	)
 	app := web.MustNew()

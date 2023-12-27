@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -12,7 +12,7 @@ import "time"
 // Predicate is a func that returns a bool.
 type Predicate func(item interface{}) bool
 
-//PredicateOfInt is a func that takes an int and returns a bool.
+// PredicateOfInt is a func that takes an int and returns a bool.
 type PredicateOfInt func(item int) bool
 
 // PredicateOfFloat is a func that takes a float64 and returns a bool.

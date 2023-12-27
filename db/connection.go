@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -49,7 +49,8 @@ func MustNew(options ...Option) *Connection {
 
 // Open opens a connection, testing an error and returning it if not nil, and if nil, opening the connection.
 // It's designed ot be used in conjunction with a constructor, i.e.
-//    conn, err := db.Open(db.NewFromConfig(cfg))
+//
+//	conn, err := db.Open(db.NewFromConfig(cfg))
 func Open(conn *Connection, err error) (*Connection, error) {
 	if err != nil {
 		return nil, err
@@ -62,12 +63,12 @@ func Open(conn *Connection, err error) (*Connection, error) {
 
 // Connection is the basic wrapper for connection parameters and saves a reference to the created sql.Connection.
 type Connection struct {
-	Connection           *sql.DB
-	BufferPool           *bufferutil.Pool
-	Config               Config
-	Log                  logger.Log
-	Tracer               Tracer
-	StatementInterceptor StatementInterceptor
+	Connection		*sql.DB
+	BufferPool		*bufferutil.Pool
+	Config			Config
+	Log			logger.Log
+	Tracer			Tracer
+	StatementInterceptor	StatementInterceptor
 }
 
 // Close implements a closer.
@@ -154,12 +155,12 @@ func (dbc *Connection) PrepareContext(ctx context.Context, statement string, tx 
 // Invoke returns a new invocation.
 func (dbc *Connection) Invoke(options ...InvocationOption) *Invocation {
 	i := Invocation{
-		Config:               dbc.Config,
-		BufferPool:           dbc.BufferPool,
-		Context:              context.Background(),
-		Log:                  dbc.Log,
-		Tracer:               dbc.Tracer,
-		StatementInterceptor: dbc.StatementInterceptor,
+		Config:			dbc.Config,
+		BufferPool:		dbc.BufferPool,
+		Context:		context.Background(),
+		Log:			dbc.Log,
+		Tracer:			dbc.Tracer,
+		StatementInterceptor:	dbc.StatementInterceptor,
 	}
 	if dbc.Connection != nil {
 		i.DB = dbc.Connection

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -13,31 +13,31 @@ import (
 )
 
 var (
-	_ ResponseWriter      = (*GZipResponseWriter)(nil)
-	_ http.ResponseWriter = (*GZipResponseWriter)(nil)
-	_ http.Flusher        = (*GZipResponseWriter)(nil)
+	_	ResponseWriter		= (*GZipResponseWriter)(nil)
+	_	http.ResponseWriter	= (*GZipResponseWriter)(nil)
+	_	http.Flusher		= (*GZipResponseWriter)(nil)
 )
 
 // NewGZipResponseWriter returns a new gzipped response writer.
 func NewGZipResponseWriter(w http.ResponseWriter) *GZipResponseWriter {
 	if typed, ok := w.(ResponseWriter); ok {
 		return &GZipResponseWriter{
-			innerResponse: typed.InnerResponse(),
-			gzipWriter:    gzip.NewWriter(typed.InnerResponse()),
+			innerResponse:	typed.InnerResponse(),
+			gzipWriter:	gzip.NewWriter(typed.InnerResponse()),
 		}
 	}
 	return &GZipResponseWriter{
-		innerResponse: w,
-		gzipWriter:    gzip.NewWriter(w),
+		innerResponse:	w,
+		gzipWriter:	gzip.NewWriter(w),
 	}
 }
 
 // GZipResponseWriter is a response writer that compresses output.
 type GZipResponseWriter struct {
-	gzipWriter    *gzip.Writer
-	innerResponse http.ResponseWriter
-	statusCode    int
-	contentLength int
+	gzipWriter	*gzip.Writer
+	innerResponse	http.ResponseWriter
+	statusCode	int
+	contentLength	int
 }
 
 // InnerResponse returns the underlying response.

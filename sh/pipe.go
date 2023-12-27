@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -28,15 +28,15 @@ func Pipe(commands ...*exec.Cmd) error {
 
 		// wire up pipes
 		switch {
-		case index == 0: // the first command
+		case index == 0:	// the first command
 			commands[index].Stdin = os.Stdin
 			commands[index].Stdout = writers[index]
 			commands[index].Stderr = writers[index]
-		case index == len(commands)-1: // the last command
+		case index == len(commands)-1:	// the last command
 			commands[index].Stdin = readers[index-1]
 			commands[index].Stdout = os.Stdout
 			commands[index].Stderr = os.Stderr
-		default: // intermediate commands
+		default:	// intermediate commands
 			commands[index].Stdin = readers[index-1]
 			commands[index].Stdout = writers[index]
 			commands[index].Stderr = writers[index]

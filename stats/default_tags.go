@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -17,18 +17,18 @@ func AddDefaultTagsFromEnv(collector Collector) {
 	collector.AddDefaultTags(
 		Tag(TagService, env.Env().String("SERVICE_NAME")),
 		Tag(TagEnv, env.Env().String("SERVICE_ENV")),
-		Tag(TagContainer, env.Env().String("HOSTNAME")),
+		Tag(TagClusterName, env.Env().String("CLUSTER_NAME")),
 	)
 }
 
 // AddDefaultTags adds default tags to a stats collector.
-func AddDefaultTags(collector Collector, serviceName, serviceEnv, container string) {
+func AddDefaultTags(collector Collector, serviceName, serviceEnv, clusterName string) {
 	if collector == nil {
 		return
 	}
 	collector.AddDefaultTags(
 		Tag(TagService, serviceName),
 		Tag(TagEnv, serviceEnv),
-		Tag(TagContainer, container),
+		Tag(TagClusterName, clusterName),
 	)
 }

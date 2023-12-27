@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -15,13 +15,13 @@ import (
 
 // Float32 errors
 const (
-	ErrFloat32Min      ex.Class = "float32 should be above a minimum value"
-	ErrFloat32Max      ex.Class = "float32 should be below a maximum value"
-	ErrFloat32Positive ex.Class = "float32 should be positive"
-	ErrFloat32Negative ex.Class = "float32 should be negative"
-	ErrFloat32Epsilon  ex.Class = "float32 should be within an epsilon of a value"
-	ErrFloat32Zero     ex.Class = "float32 should be zero"
-	ErrFloat32NotZero  ex.Class = "float32 should not be zero"
+	ErrFloat32Min		ex.Class	= "float32 should be above a minimum value"
+	ErrFloat32Max		ex.Class	= "float32 should be below a maximum value"
+	ErrFloat32Positive	ex.Class	= "float32 should be positive"
+	ErrFloat32Negative	ex.Class	= "float32 should be negative"
+	ErrFloat32Epsilon	ex.Class	= "float32 should be within an epsilon of a value"
+	ErrFloat32Zero		ex.Class	= "float32 should be zero"
+	ErrFloat32NotZero	ex.Class	= "float32 should not be zero"
 )
 
 // Float32 returns validators for float32s.

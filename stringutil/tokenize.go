@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -40,7 +40,7 @@ func Tokenize(corpus string, tokens Tokens) string {
 
 	for _, c := range corpus {
 		switch state {
-		case 0: // non-token, add to output
+		case 0:	// non-token, add to output
 			if c == start0 {
 				state = 1
 				workingToken = bytes.NewBuffer(nil)
@@ -51,7 +51,7 @@ func Tokenize(corpus string, tokens Tokens) string {
 			continue
 		case 1:
 			if c == start1 {
-				state = 2 //consume token key
+				state = 2	//consume token key
 				workingToken.WriteRune(c)
 				workingKey = bytes.NewBuffer(nil)
 				continue

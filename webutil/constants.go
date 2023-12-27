@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -33,46 +33,46 @@ const (
 //
 // They are aliases for the constants in net/http at this point.
 const (
-	MethodConnect = http.MethodConnect
-	MethodGet     = http.MethodGet
-	MethodDelete  = http.MethodDelete
-	MethodHead    = http.MethodHead
-	MethodPatch   = http.MethodPatch
-	MethodPost    = http.MethodPost
-	MethodPut     = http.MethodPut
-	MethodOptions = http.MethodOptions
+	MethodConnect	= http.MethodConnect
+	MethodGet	= http.MethodGet
+	MethodDelete	= http.MethodDelete
+	MethodHead	= http.MethodHead
+	MethodPatch	= http.MethodPatch
+	MethodPost	= http.MethodPost
+	MethodPut	= http.MethodPut
+	MethodOptions	= http.MethodOptions
 )
 
 // Header names in canonical form.
 var (
-	HeaderAccept                  = http.CanonicalHeaderKey("Accept")
-	HeaderAcceptEncoding          = http.CanonicalHeaderKey("Accept-Encoding")
-	HeaderAllow                   = http.CanonicalHeaderKey("Allow")
-	HeaderAuthorization           = http.CanonicalHeaderKey("Authorization")
-	HeaderCacheControl            = http.CanonicalHeaderKey("Cache-Control")
-	HeaderConnection              = http.CanonicalHeaderKey("Connection")
-	HeaderContentEncoding         = http.CanonicalHeaderKey("Content-Encoding")
-	HeaderContentLength           = http.CanonicalHeaderKey("Content-Length")
-	HeaderContentType             = http.CanonicalHeaderKey("Content-Type")
-	HeaderCookie                  = http.CanonicalHeaderKey("Cookie")
-	HeaderDate                    = http.CanonicalHeaderKey("Date")
-	HeaderETag                    = http.CanonicalHeaderKey("etag")
-	HeaderForwarded               = http.CanonicalHeaderKey("Forwarded")
-	HeaderServer                  = http.CanonicalHeaderKey("Server")
-	HeaderSetCookie               = http.CanonicalHeaderKey("Set-Cookie")
-	HeaderStrictTransportSecurity = http.CanonicalHeaderKey("Strict-Transport-Security")
-	HeaderUserAgent               = http.CanonicalHeaderKey("User-Agent")
-	HeaderVary                    = http.CanonicalHeaderKey("Vary")
-	HeaderXContentTypeOptions     = http.CanonicalHeaderKey("X-Content-Type-Options")
-	HeaderXForwardedFor           = http.CanonicalHeaderKey("X-Forwarded-For")
-	HeaderXForwardedHost          = http.CanonicalHeaderKey("X-Forwarded-Host")
-	HeaderXForwardedPort          = http.CanonicalHeaderKey("X-Forwarded-Port")
-	HeaderXForwardedProto         = http.CanonicalHeaderKey("X-Forwarded-Proto")
-	HeaderXForwardedScheme        = http.CanonicalHeaderKey("X-Forwarded-Scheme")
-	HeaderXFrameOptions           = http.CanonicalHeaderKey("X-Frame-Options")
-	HeaderXRealIP                 = http.CanonicalHeaderKey("X-Real-IP")
-	HeaderXServedBy               = http.CanonicalHeaderKey("X-Served-By")
-	HeaderXXSSProtection          = http.CanonicalHeaderKey("X-Xss-Protection")
+	HeaderAccept			= http.CanonicalHeaderKey("Accept")
+	HeaderAcceptEncoding		= http.CanonicalHeaderKey("Accept-Encoding")
+	HeaderAllow			= http.CanonicalHeaderKey("Allow")
+	HeaderAuthorization		= http.CanonicalHeaderKey("Authorization")
+	HeaderCacheControl		= http.CanonicalHeaderKey("Cache-Control")
+	HeaderConnection		= http.CanonicalHeaderKey("Connection")
+	HeaderContentEncoding		= http.CanonicalHeaderKey("Content-Encoding")
+	HeaderContentLength		= http.CanonicalHeaderKey("Content-Length")
+	HeaderContentType		= http.CanonicalHeaderKey("Content-Type")
+	HeaderCookie			= http.CanonicalHeaderKey("Cookie")
+	HeaderDate			= http.CanonicalHeaderKey("Date")
+	HeaderETag			= http.CanonicalHeaderKey("etag")
+	HeaderForwarded			= http.CanonicalHeaderKey("Forwarded")
+	HeaderServer			= http.CanonicalHeaderKey("Server")
+	HeaderSetCookie			= http.CanonicalHeaderKey("Set-Cookie")
+	HeaderStrictTransportSecurity	= http.CanonicalHeaderKey("Strict-Transport-Security")
+	HeaderUserAgent			= http.CanonicalHeaderKey("User-Agent")
+	HeaderVary			= http.CanonicalHeaderKey("Vary")
+	HeaderXContentTypeOptions	= http.CanonicalHeaderKey("X-Content-Type-Options")
+	HeaderXForwardedFor		= http.CanonicalHeaderKey("X-Forwarded-For")
+	HeaderXForwardedHost		= http.CanonicalHeaderKey("X-Forwarded-Host")
+	HeaderXForwardedPort		= http.CanonicalHeaderKey("X-Forwarded-Port")
+	HeaderXForwardedProto		= http.CanonicalHeaderKey("X-Forwarded-Proto")
+	HeaderXForwardedScheme		= http.CanonicalHeaderKey("X-Forwarded-Scheme")
+	HeaderXFrameOptions		= http.CanonicalHeaderKey("X-Frame-Options")
+	HeaderXRealIP			= http.CanonicalHeaderKey("X-Real-IP")
+	HeaderXServedBy			= http.CanonicalHeaderKey("X-Served-By")
+	HeaderXXSSProtection		= http.CanonicalHeaderKey("X-Xss-Protection")
 )
 
 /*
@@ -82,9 +82,9 @@ It also provides some protection against cross-site request forgery attacks.
 Possible values for the flag are "lax", "strict" or "default".
 */
 const (
-	SameSiteStrict  = "strict"
-	SameSiteLax     = "lax"
-	SameSiteDefault = "default"
+	SameSiteStrict	= "strict"
+	SameSiteLax	= "lax"
+	SameSiteDefault	= "default"
 )
 
 var (
@@ -99,16 +99,16 @@ var (
 
 // Well known schemes
 const (
-	SchemeHTTP  = "http"
-	SchemeHTTPS = "https"
-	SchemeSPDY  = "spdy"
+	SchemeHTTP	= "http"
+	SchemeHTTPS	= "https"
+	SchemeSPDY	= "spdy"
 )
 
 // HSTS Cookie Fields
 const (
-	HSTSMaxAgeFormat      = "max-age=%d"
-	HSTSIncludeSubDomains = "includeSubDomains"
-	HSTSPreload           = "preload"
+	HSTSMaxAgeFormat	= "max-age=%d"
+	HSTSIncludeSubDomains	= "includeSubDomains"
+	HSTSPreload		= "preload"
 )
 
 // Connection header values.
@@ -122,35 +122,35 @@ const (
 const (
 	// ContentTypeApplicationJSON is a content type for JSON responses.
 	// We specify chartset=utf-8 so that clients know to use the UTF-8 string encoding.
-	ContentTypeApplicationJSON = "application/json; charset=utf-8"
+	ContentTypeApplicationJSON	= "application/json; charset=utf-8"
 
 	// ContentTypeApplicationXML is a content type header value.
-	ContentTypeApplicationXML = "application/xml"
+	ContentTypeApplicationXML	= "application/xml"
 
 	// ContentTypeApplicationFormEncoded is a content type header value.
-	ContentTypeApplicationFormEncoded = "application/x-www-form-urlencoded"
+	ContentTypeApplicationFormEncoded	= "application/x-www-form-urlencoded"
 
 	// ContentTypeApplicationOctetStream is a content type header value.
-	ContentTypeApplicationOctetStream = "application/octet-stream"
+	ContentTypeApplicationOctetStream	= "application/octet-stream"
 
 	// ContentTypeHTML is a content type for html responses.
 	// We specify chartset=utf-8 so that clients know to use the UTF-8 string encoding.
-	ContentTypeHTML = "text/html; charset=utf-8"
+	ContentTypeHTML	= "text/html; charset=utf-8"
 
 	//ContentTypeXML is a content type for XML responses.
 	// We specify chartset=utf-8 so that clients know to use the UTF-8 string encoding.
-	ContentTypeXML = "text/xml; charset=utf-8"
+	ContentTypeXML	= "text/xml; charset=utf-8"
 
 	// ContentTypeText is a content type for text responses.
 	// We specify chartset=utf-8 so that clients know to use the UTF-8 string encoding.
-	ContentTypeText = "text/plain; charset=utf-8"
+	ContentTypeText	= "text/plain; charset=utf-8"
 
 	// ContentEncodingIdentity is the identity (uncompressed) content encoding.
-	ContentEncodingIdentity = "identity"
+	ContentEncodingIdentity	= "identity"
 
 	// ContentEncodingGZIP is the gzip (compressed) content encoding.
-	ContentEncodingGZIP = "gzip"
+	ContentEncodingGZIP	= "gzip"
 
 	// ConnectionClose is the connection value of "close"
-	ConnectionClose = "close"
+	ConnectionClose	= "close"
 )

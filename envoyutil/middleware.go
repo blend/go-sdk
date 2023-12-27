@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -58,21 +58,21 @@ func GetClientIdentity(ctx context.Context) string {
 // returned in the HTTP response.
 //
 // A 401 Unauthorized will be returned in the following cases:
-// - The XFCC header is missing
-// - The XFCC header (after parsing) contains zero elements or multiple elements
-//   (this code expects exactly one XFCC element, under the assumption that the
-//   Envoy `ForwardClientCertDetails` setting is configured to `SANITIZE_SET`)
-// - The values from the XFCC header fail custom validation provided by `cip` or
-//   `verifiers`. For example, if the client identity is contained in a deny
-//   list, this would be considered a validation error.
+//   - The XFCC header is missing
+//   - The XFCC header (after parsing) contains zero elements or multiple elements
+//     (this code expects exactly one XFCC element, under the assumption that the
+//     Envoy `ForwardClientCertDetails` setting is configured to `SANITIZE_SET`)
+//   - The values from the XFCC header fail custom validation provided by `cip` or
+//     `verifiers`. For example, if the client identity is contained in a deny
+//     list, this would be considered a validation error.
 //
 // A 400 Bad Request will be returned in the following cases:
-// - The XFCC header cannot be parsed
-// - Custom parsing / extraction done by `cip` fails. For example, in cases
-//   where the `URI` field in the XFCC is expected to be a valid SPIFFE URI
-//   with a valid Kubernetes workload identifier, if the `URI` field does
-//   not follow that format (e.g. `urn:uuid:6e8bc430-9c3a-11d9-9669-0800200c9a66`)
-//   this would be considered an extraction error.
+//   - The XFCC header cannot be parsed
+//   - Custom parsing / extraction done by `cip` fails. For example, in cases
+//     where the `URI` field in the XFCC is expected to be a valid SPIFFE URI
+//     with a valid Kubernetes workload identifier, if the `URI` field does
+//     not follow that format (e.g. `urn:uuid:6e8bc430-9c3a-11d9-9669-0800200c9a66`)
+//     this would be considered an extraction error.
 //
 // A 500 Internal Server Error will be returned if the error is unrelated to
 // validating the XFCC header or to parsing / extracting values from the XFCC

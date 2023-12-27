@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -18,17 +18,17 @@ import (
 )
 
 // NOTE: Ensure that
-//       * `InfrequentTask` satisfies `cron.Job`.
-//       * `InfrequentTask` satisfies `cron.ScheduleProvider`.
+//   - `InfrequentTask` satisfies `cron.Job`.
+//   - `InfrequentTask` satisfies `cron.ScheduleProvider`.
 var (
-	_ cron.Job              = (*InfrequentTask)(nil)
-	_ cron.ScheduleProvider = (*InfrequentTask)(nil)
+	_	cron.Job		= (*InfrequentTask)(nil)
+	_	cron.ScheduleProvider	= (*InfrequentTask)(nil)
 )
 
 // Config contains options for the command.
 type Config struct {
-	ServiceName string `json:"serviceName" yaml:"serviceName" env:"SERVICE_NAME"`
-	ServiceEnv  string `json:"serviceEnv" yaml:"serviceEnv" env:"SERVICE_ENV"`
+	ServiceName	string	`json:"serviceName" yaml:"serviceName" env:"SERVICE_NAME"`
+	ServiceEnv	string	`json:"serviceEnv" yaml:"serviceEnv" env:"SERVICE_ENV"`
 }
 
 // NewConfigFromEnv returns a new config from the environment.
@@ -40,8 +40,8 @@ func NewConfigFromEnv() *Config {
 
 // InfrequentTask extends the lease on vault token.
 type InfrequentTask struct {
-	Config *Config
-	Log    logger.Log
+	Config	*Config
+	Log	logger.Log
 }
 
 // Name returns the job name.

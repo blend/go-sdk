@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -19,18 +19,18 @@ import (
 // NewGraceful returns a new graceful host for a grpc server.
 func NewGraceful(listener net.Listener, server *grpc.Server) *Graceful {
 	return &Graceful{
-		Latch:    async.NewLatch(),
-		Listener: listener,
-		Server:   server,
+		Latch:		async.NewLatch(),
+		Listener:	listener,
+		Server:		server,
 	}
 }
 
 // Graceful is a shim for graceful hosting grpc servers.
 type Graceful struct {
 	*async.Latch
-	Log      logger.Log
-	Listener net.Listener
-	Server   *grpc.Server
+	Log		logger.Log
+	Listener	net.Listener
+	Server		*grpc.Server
 }
 
 // WithLogger sets the logger.

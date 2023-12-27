@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -39,8 +39,8 @@ func (mh *MockHTTPClient) With(verb string, url *url.URL, response *http.Respons
 // WithString adds a mocked endpoint.
 func (mh *MockHTTPClient) WithString(verb string, url *url.URL, contents string) *MockHTTPClient {
 	mh.contents[fmt.Sprintf("%s_%s", verb, url.String())] = &http.Response{
-		StatusCode: http.StatusOK,
-		Body:       io.NopCloser(bytes.NewBuffer([]byte(contents))),
+		StatusCode:	http.StatusOK,
+		Body:		io.NopCloser(bytes.NewBuffer([]byte(contents))),
 	}
 	return mh
 }

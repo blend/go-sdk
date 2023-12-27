@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -43,16 +43,16 @@ func (hc HTTPClient) UpdateIncident(ctx context.Context, id string, incident Upd
 
 // UpdateIncidentInput is the input to update incident.
 type UpdateIncidentInput struct {
-	Type             string            `json:"type"`             // required
-	Status           IncidentStatus    `json:"status,omitempty"` // required
-	Priority         *APIObject        `json:"priority,omitempty"`
-	Resolution       string            `json:"resolution,omitempty"`
-	Title            string            `json:"title,omitempty"`
-	EscalationLevel  int               `json:"escalation_level,omitempty"`
-	Assignments      []Assignment      `json:"assignments,omitempty"`
-	EscalationPolicy *APIObject        `json:"escalation_policy,omitempty"`
-	Urgency          string            `json:"urgency,omitempty"`
-	ConferenceBridge *ConferenceBridge `json:"conference_bridge,omitempty"`
+	Type			string			`json:"type"`			// required
+	Status			IncidentStatus		`json:"status,omitempty"`	// required
+	Priority		*APIObject		`json:"priority,omitempty"`
+	Resolution		string			`json:"resolution,omitempty"`
+	Title			string			`json:"title,omitempty"`
+	EscalationLevel		int			`json:"escalation_level,omitempty"`
+	Assignments		[]Assignment		`json:"assignments,omitempty"`
+	EscalationPolicy	*APIObject		`json:"escalation_policy,omitempty"`
+	Urgency			string			`json:"urgency,omitempty"`
+	ConferenceBridge	*ConferenceBridge	`json:"conference_bridge,omitempty"`
 }
 
 // updateIncidentInputWrapper wraps the input to satisfy the input schema.

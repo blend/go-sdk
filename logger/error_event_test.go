@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -32,6 +32,7 @@ func TestNewErrorEvent(t *testing.T) {
 	assert.Equal(Fatal, ee.GetFlag())
 	assert.Equal("not a test", ee.Err.Error())
 	assert.NotNil(ee.State)
+	assert.Equal(ee.Restricted, false)
 	assert.Equal("POST", ee.State.(*http.Request).Method)
 
 	buf := new(bytes.Buffer)
@@ -46,9 +47,10 @@ func TestNewErrorEvent(t *testing.T) {
 	assert.Nil(err)
 	assert.Contains(string(contents), "not a test")
 
-	ee = NewErrorEvent(Fatal, ex.New("this is only a test"))
+	ee = NewErrorEvent(Fatal, ex.New("this is only a test"), OptErrorEventRestricted(true))
 	contents, err = json.Marshal(ee.Decompose())
 	assert.Nil(err)
+	assert.Equal(ee.Restricted, true)
 	assert.Contains(string(contents), "this is only a test")
 }
 
@@ -68,12 +70,12 @@ func TestErrorEventListener(t *testing.T) {
 
 func TestScopedErrorEventListener(t *testing.T) {
 	testCases := []struct {
-		scopes           *Scopes
-		enabledContexts  []context.Context
-		disabledContexts []context.Context
+		scopes			*Scopes
+		enabledContexts		[]context.Context
+		disabledContexts	[]context.Context
 	}{
 		{
-			scopes: NewScopes("*"),
+			scopes:	NewScopes("*"),
 			enabledContexts: []context.Context{
 				WithPath(context.Background(), "test0", "test1"),
 				WithPath(context.Background(), "test0"),
@@ -81,7 +83,7 @@ func TestScopedErrorEventListener(t *testing.T) {
 			},
 		},
 		{
-			scopes: NewScopes("-*"),
+			scopes:	NewScopes("-*"),
 			disabledContexts: []context.Context{
 				WithPath(context.Background(), "test0", "test1"),
 				WithPath(context.Background(), "test0"),
@@ -89,7 +91,7 @@ func TestScopedErrorEventListener(t *testing.T) {
 			},
 		},
 		{
-			scopes: NewScopes("test0/test1"),
+			scopes:	NewScopes("test0/test1"),
 			enabledContexts: []context.Context{
 				WithPath(context.Background(), "test0", "test1"),
 			},

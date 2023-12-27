@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -15,8 +15,8 @@ import (
 // Wait is a type that allows you to throttle actions
 // with sleeps based on a desired rate.
 type Wait struct {
-	NumberOfActions int64
-	Quantum         time.Duration
+	NumberOfActions	int64
+	Quantum		time.Duration
 }
 
 // Wait waits for a calculated throttling time based on the input options.
@@ -55,11 +55,10 @@ func (w Wait) WaitTimer(ctx context.Context, actions int64, quantum time.Duratio
 //
 // The wait quantum is derrived from the following algebraic steps (where ? is what we're solving for):
 //
-//    pb/(pq+?) = rb/rq
-//    1/(pq+?) = rb/pb*rq
-//    pq+? = (pb*rq)/rb
-//    ? = ((pb*rq)/rb) - pq
-//
+//	pb/(pq+?) = rb/rq
+//	1/(pq+?) = rb/pb*rq
+//	pq+? = (pb*rq)/rb
+//	? = ((pb*rq)/rb) - pq
 func (w Wait) Calculate(actions int64, quantum time.Duration) time.Duration {
 	return time.Duration(((actions * int64(w.Quantum)) / w.NumberOfActions) - int64(quantum))
 }

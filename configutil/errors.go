@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -15,10 +15,10 @@ import (
 
 const (
 	// ErrConfigPathUnset is a common error.
-	ErrConfigPathUnset = ex.Class("config path unset")
+	ErrConfigPathUnset	= ex.Class("config path unset")
 
 	// ErrInvalidConfigExtension is a common error.
-	ErrInvalidConfigExtension = ex.Class("config extension invalid")
+	ErrInvalidConfigExtension	= ex.Class("config extension invalid")
 )
 
 // IsIgnored returns if we should ignore the config read error.

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -129,11 +129,11 @@ type GoImportRewriteOption func(*GoImportRewriteOptions)
 
 // GoImportRewriteOptions breaks the mutator out into field specific mutators.
 type GoImportRewriteOptions struct {
-	Filter         func(context.Context, *ast.ImportSpec) (bool, error)
-	CommentVisitor func(context.Context, *ast.CommentGroup) error
-	DocVisitor     func(context.Context, *ast.CommentGroup) error
-	NameVisitor    func(context.Context, *ast.Ident) error
-	PathVisitor    func(context.Context, *ast.BasicLit) error
+	Filter		func(context.Context, *ast.ImportSpec) (bool, error)
+	CommentVisitor	func(context.Context, *ast.CommentGroup) error
+	DocVisitor	func(context.Context, *ast.CommentGroup) error
+	NameVisitor	func(context.Context, *ast.Ident) error
+	PathVisitor	func(context.Context, *ast.BasicLit) error
 }
 
 // Apply applies the options to the import.

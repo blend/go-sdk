@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,9 +21,9 @@ import (
 )
 
 var (
-	_ logger.Event        = (*Event)(nil)
-	_ logger.TextWritable = (*Event)(nil)
-	_ logger.JSONWritable = (*Event)(nil)
+	_	logger.Event		= (*Event)(nil)
+	_	logger.TextWritable	= (*Event)(nil)
+	_	logger.JSONWritable	= (*Event)(nil)
 )
 
 const (
@@ -43,23 +43,23 @@ func NewEventListener(action func(context.Context, Event)) logger.Listener {
 // NewEvent returns a new event from a request.
 func NewEvent(req *http.Request) *Event {
 	return &Event{
-		Remote: req.URL.Host,
-		Method: req.Method,
-		Path:   strings.TrimPrefix(req.URL.Path, "/v1/"),
+		Remote:	req.URL.Host,
+		Method:	req.Method,
+		Path:	strings.TrimPrefix(req.URL.Path, "/v1/"),
 	}
 }
 
 // Event is an event.
 type Event struct {
-	Remote     string
-	Method     string
-	Path       string
-	StatusCode int
-	Elapsed    time.Duration
+	Remote		string
+	Method		string
+	Path		string
+	StatusCode	int
+	Elapsed		time.Duration
 }
 
 // GetFlag implements logger.Event.
-func (e Event) GetFlag() string { return Flag }
+func (e Event) GetFlag() string	{ return Flag }
 
 // WriteText writes text for the event.
 func (e *Event) WriteText(tf logger.TextFormatter, wr io.Writer) {
@@ -77,10 +77,10 @@ func (e *Event) WriteText(tf logger.TextFormatter, wr io.Writer) {
 // Decompose impements logger.JSONWritable.
 func (e *Event) Decompose() map[string]interface{} {
 	return map[string]interface{}{
-		"remote":     e.Remote,
-		"method":     e.Method,
-		"path":       e.Path,
-		"statusCode": e.StatusCode,
-		"elapsed":    timeutil.Milliseconds(e.Elapsed),
+		"remote":	e.Remote,
+		"method":	e.Method,
+		"path":		e.Path,
+		"statusCode":	e.StatusCode,
+		"elapsed":	timeutil.Milliseconds(e.Elapsed),
 	}
 }

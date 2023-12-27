@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,23 +21,23 @@ var (
 
 // Errors
 const (
-	ErrRuleSpecMultipleRules ex.Class = "rule spec invalid; multiple rule types specified"
-	ErrRuleSpecRuleMissing   ex.Class = "rule spec invalid; at least one rule type is required"
+	ErrRuleSpecMultipleRules	ex.Class	= "rule spec invalid; multiple rule types specified"
+	ErrRuleSpecRuleMissing		ex.Class	= "rule spec invalid; at least one rule type is required"
 )
 
 // RuleSpec is a serialized rule.
 type RuleSpec struct {
 	// ID is a unique identifier for the rule.
-	ID string `yaml:"id"`
+	ID	string	`yaml:"id"`
 	// SourceFile is the rules file path the rule came from.
-	SourceFile string `yaml:"-"`
+	SourceFile	string	`yaml:"-"`
 	// Description is a descriptive message for the rule.
-	Description string `yaml:"description,omitempty"`
+	Description	string	`yaml:"description,omitempty"`
 	// Files is the glob filter for inclusion and exclusion'
 	// for this specific rule spec.
-	Files GlobFilter `yaml:"files,omitempty"`
+	Files	GlobFilter	`yaml:"files,omitempty"`
 	// RuleSpecRules are the rules for the rule spec.
-	RuleSpecRules `yaml:",inline"`
+	RuleSpecRules	`yaml:",inline"`
 }
 
 // Validate validates the RuleSpec.
@@ -76,13 +76,13 @@ func (r RuleSpec) String() string {
 // should be set for a given rule spec.
 type RuleSpecRules struct {
 	// Contains implies we should fail if a file contains a given string.
-	Contents *Contents `yaml:"contents,omitempty"`
+	Contents	*Contents	`yaml:"contents,omitempty"`
 	// GoImportsContain enforces that a given list of imports are used.
-	GoImports *GoImports `yaml:"goImports,omitempty"`
+	GoImports	*GoImports	`yaml:"goImports,omitempty"`
 	// GoCalls enforces that a given list of imports are used.
-	GoCalls *GoCalls `yaml:"goCalls,omitempty"`
+	GoCalls	*GoCalls	`yaml:"goCalls,omitempty"`
 	// NoGenericDecls enforces that no generic declarations exist.
-	NoGenericDecls *NoGenericDecls `yaml:"noGenericDecls,omitempty"`
+	NoGenericDecls	*NoGenericDecls	`yaml:"noGenericDecls,omitempty"`
 }
 
 // Rules returns the rules from the spec.
@@ -118,8 +118,8 @@ func (r RuleSpecRules) Check(filename string, contents []byte) (result RuleResul
 		return
 	}
 	result = RuleResult{
-		OK:   true,
-		File: filename,
+		OK:	true,
+		File:	filename,
 	}
 	return
 }

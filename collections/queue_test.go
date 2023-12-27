@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -14,13 +14,14 @@ import (
 
 const (
 	// DefaultSampleSize is the default number of steps to run per test.
-	DefaultSampleSize = 10000
+	DefaultSampleSize	= 10000
 
 	// DefaultStasisSize is the stasis size for the fixed length test.
-	DefaultStasisSize = 512
+	DefaultStasisSize	= 512
 )
 
-type QueueFactory func(capacity int) Queue
+// QueueFactory is a function that emits a Queue[time.Time]
+type QueueFactory func(capacity int) Queue[time.Time]
 
 func doQueueBenchmark(queueFactory QueueFactory, sampleSize int, b *testing.B) {
 	for iteration := 0; iteration < b.N; iteration++ {
@@ -47,47 +48,47 @@ func doFixedQueueBenchmark(queueFactory QueueFactory, sampleSize, stasisSize int
 	}
 }
 
-func makeLinkedList(capacity int) Queue {
-	return NewLinkedList()
+func makeLinkedList[T any](capacity int) Queue[T] {
+	return NewLinkedList[T]()
 }
 
-func makeChannelQueue(capacity int) Queue {
-	return NewChannelQueueWithCapacity(capacity)
+func makeChannelQueue[T any](capacity int) Queue[T] {
+	return NewChannelQueueWithCapacity[T](capacity)
 }
 
-func makeRingBuffer(capacity int) Queue {
-	return NewRingBufferWithCapacity(capacity)
+func makeRingBuffer[T any](capacity int) Queue[T] {
+	return NewRingBufferWithCapacity[T](capacity)
 }
 
-func makeSyncedRingBuffer(capacity int) Queue {
-	rb := NewSyncRingBufferWithCapacity(capacity)
+func makeSyncedRingBuffer[T any](capacity int) Queue[T] {
+	rb := NewSyncRingBufferWithCapacity[T](capacity)
 	return rb
 }
 
 func BenchmarkLinkedList(b *testing.B) {
-	doQueueBenchmark(makeLinkedList, DefaultSampleSize, b)
+	doQueueBenchmark(makeLinkedList[time.Time], DefaultSampleSize, b)
 }
 
 func BenchmarkChannelQueue(b *testing.B) {
-	doQueueBenchmark(makeChannelQueue, DefaultSampleSize, b)
+	doQueueBenchmark(makeChannelQueue[time.Time], DefaultSampleSize, b)
 }
 
 func BenchmarkRingBuffer(b *testing.B) {
-	doQueueBenchmark(makeRingBuffer, DefaultSampleSize, b)
+	doQueueBenchmark(makeRingBuffer[time.Time], DefaultSampleSize, b)
 }
 
 func BenchmarkRingBufferSynced(b *testing.B) {
-	doQueueBenchmark(makeSyncedRingBuffer, DefaultSampleSize, b)
+	doQueueBenchmark(makeSyncedRingBuffer[time.Time], DefaultSampleSize, b)
 }
 
 func BenchmarkFixedLinkedList(b *testing.B) {
-	doFixedQueueBenchmark(makeLinkedList, DefaultSampleSize, DefaultStasisSize, b)
+	doFixedQueueBenchmark(makeLinkedList[time.Time], DefaultSampleSize, DefaultStasisSize, b)
 }
 
 func BenchmarkFixedChannelQueue(b *testing.B) {
-	doFixedQueueBenchmark(makeChannelQueue, DefaultSampleSize, DefaultStasisSize, b)
+	doFixedQueueBenchmark(makeChannelQueue[time.Time], DefaultSampleSize, DefaultStasisSize, b)
 }
 
 func BenchmarkFixedRingBuffer(b *testing.B) {
-	doFixedQueueBenchmark(makeRingBuffer, DefaultSampleSize, DefaultStasisSize, b)
+	doFixedQueueBenchmark(makeRingBuffer[time.Time], DefaultSampleSize, DefaultStasisSize, b)
 }

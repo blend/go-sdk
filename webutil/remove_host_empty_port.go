@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -19,4 +19,4 @@ func RemoveHostEmptyPort(host string) string {
 }
 
 // HostHasPort returns true if a string is in the form "host:port", or "[ipv6::address]:port".
-func HostHasPort(s string) bool { return strings.LastIndex(s, ":") > strings.LastIndex(s, "]") }
+func HostHasPort(s string) bool	{ return strings.LastIndex(s, ":") > strings.LastIndex(s, "]") }

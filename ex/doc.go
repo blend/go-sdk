@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -14,12 +14,11 @@ To create an error that includes a given string class and stack trace:
 	...
 	fmt.Println(ex.ErrStackTrace(err))
 
-
 When in doubt, wrap any errors from non-sdk methods with an exception:
 
 	res, err := http.Get(...)
 	if err != nil {
-		return nil, ex.New(err) // stack trace will originate from this ca..
+		return nil, ex.New(err) // stack trace will originate from this call
 	}
 
 To create an error from a known error class, that can be used later to check the type of the error:
@@ -40,4 +39,4 @@ We can pass other options to the `ex.New(...)` constructor, such as setting an i
 		fmt.Printf("validation error: %v\n", ex.ErrInner(err))
 	}
 */
-package ex // import "github.com/blend/go-sdk/ex"
+package ex	// import "github.com/blend/go-sdk/ex"

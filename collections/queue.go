@@ -1,28 +1,26 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
 package collections
 
 // Queue is an interface for implementations of a FIFO buffer.
-//
-// With the DequeueBack method, you can also use a Queue as a stack.
-type Queue interface {
+type Queue[T any] interface {
 	Len() int
-	Enqueue(value interface{})
-	Dequeue() interface{}
-	DequeueBack() interface{}
-	Peek() interface{}
-	PeekBack() interface{}
-	Drain() []interface{}
-	Contents() []interface{}
+	Enqueue(T)
+	Dequeue() T
+	DequeueBack() T
+	Peek() T
+	PeekBack() T
+	Drain() []T
+	Contents() []T
 	Clear()
 
-	Consume(consumer func(value interface{}))
-	Each(consumer func(value interface{}))
-	EachUntil(consumer func(value interface{}) bool)
-	ReverseEachUntil(consumer func(value interface{}) bool)
+	Consume(consumer func(value T))
+	Each(consumer func(value T))
+	EachUntil(consumer func(value T) bool)
+	ReverseEachUntil(consumer func(value T) bool)
 }

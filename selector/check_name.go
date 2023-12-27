@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -20,7 +20,7 @@ func CheckName(value string) (err error) {
 	for pos := 0; pos < valueLen; pos += width {
 		ch, width = utf8.DecodeRuneInString(value[pos:])
 		switch state {
-		case 0: //check prefix/suffix
+		case 0:	//check prefix/suffix
 			if !isAlpha(ch) {
 				err = ErrLabelInvalidCharacter
 				return

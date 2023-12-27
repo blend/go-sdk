@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -17,19 +17,23 @@ import (
 	"github.com/blend/go-sdk/ex"
 )
 
-/*ParseSchedule parses a cron formatted string into a schedule.
+/*
+ParseSchedule parses a cron formatted string into a schedule.
 
 The string must be at least 5 components, whitespace separated.
 If the string has 5 components a 0 will be prepended for the seconds component, and a * appended for the year component.
 If the string has 6 components a * appended for the year component.
 
 The components are (in short form / 5 component):
+
 	(minutes) (hours) (day of month) (month) (day of week)
 
 The components are (in medium form / 6 component):
+
 	(seconds) (hours) (day of month) (month) (day of week)
 
 The components are (in long form / 7 component):
+
 	(seconds) (minutes) (hours) (day of month) (month) (day of week) (year)
 
 The full list of possible field values:
@@ -55,7 +59,6 @@ You can also use shorthands:
 	"@immediately-then @every 500ms" is equivalent to "cron.Immediately().Then(cron.Every(500*time.Millisecond))"
 	"@once-at 2021-06-05 13:04" is "cron.OnceAtUTC(time.Date(...))"
 	"@never" is equivalent to an unset schedule (i.e., only on demand) to avoid defaults
-
 */
 func ParseSchedule(cronString string) (schedule Schedule, err error) {
 	cronString = strings.TrimSpace(cronString)
@@ -207,74 +210,74 @@ func ParseSchedule(cronString string) (schedule Schedule, err error) {
 	}
 
 	schedule = &StringSchedule{
-		Original:    cronString,
-		Seconds:     seconds,
-		Minutes:     minutes,
-		Hours:       hours,
-		DaysOfMonth: days,
-		Months:      months,
-		DaysOfWeek:  daysOfWeek,
-		Years:       years,
+		Original:	cronString,
+		Seconds:	seconds,
+		Minutes:	minutes,
+		Hours:		hours,
+		DaysOfMonth:	days,
+		Months:		months,
+		DaysOfWeek:	daysOfWeek,
+		Years:		years,
 	}
 	return
 }
 
 // Error Constants
 const (
-	ErrStringScheduleInvalid         ex.Class = "cron: schedule string invalid"
-	ErrStringScheduleComponents      ex.Class = "cron: must have at least (5) components space delimited; ex: '0 0 * * * * *'"
-	ErrStringScheduleValueOutOfRange ex.Class = "cron: string schedule part out of range"
-	ErrStringScheduleInvalidRange    ex.Class = "cron: range (from-to) invalid"
+	ErrStringScheduleInvalid		ex.Class	= "cron: schedule string invalid"
+	ErrStringScheduleComponents		ex.Class	= "cron: must have at least (5) components space delimited; ex: '0 0 * * * * *'"
+	ErrStringScheduleValueOutOfRange	ex.Class	= "cron: string schedule part out of range"
+	ErrStringScheduleInvalidRange		ex.Class	= "cron: range (from-to) invalid"
 )
 
 // String schedule constants
 const (
-	StringScheduleImmediately     = "@immediately"
-	StringScheduleDelay           = "@delay"
-	StringScheduleImmediatelyThen = "@immediately-then"
-	StringScheduleEvery           = "@every"
-	StringScheduleOnceAt          = "@once-at"
-	StringScheduleNever           = "@never"
+	StringScheduleImmediately	= "@immediately"
+	StringScheduleDelay		= "@delay"
+	StringScheduleImmediatelyThen	= "@immediately-then"
+	StringScheduleEvery		= "@every"
+	StringScheduleOnceAt		= "@once-at"
+	StringScheduleNever		= "@never"
 )
 
 // String schedule shorthands labels
 const (
-	StringScheduleShorthandAnnually = "@annually"
-	StringScheduleShorthandYearly   = "@yearly"
-	StringScheduleShorthandMonthly  = "@monthly"
-	StringScheduleShorthandWeekly   = "@weekly"
-	StringScheduleShorthandDaily    = "@daily"
-	StringScheduleShorthandHourly   = "@hourly"
+	StringScheduleShorthandAnnually	= "@annually"
+	StringScheduleShorthandYearly	= "@yearly"
+	StringScheduleShorthandMonthly	= "@monthly"
+	StringScheduleShorthandWeekly	= "@weekly"
+	StringScheduleShorthandDaily	= "@daily"
+	StringScheduleShorthandHourly	= "@hourly"
 )
 
 // String schedule shorthand values
 var (
 	StringScheduleShorthands = map[string]string{
-		StringScheduleShorthandAnnually: "0 0 0 1 1 * *",
-		StringScheduleShorthandYearly:   "0 0 0 1 1 * *",
-		StringScheduleShorthandMonthly:  "0 0 0 1 * * *",
-		StringScheduleShorthandDaily:    "0 0 0 * * * *",
-		StringScheduleShorthandHourly:   "0 0 * * * * *",
+		StringScheduleShorthandAnnually:	"0 0 0 1 1 * *",
+		StringScheduleShorthandYearly:		"0 0 0 1 1 * *",
+		StringScheduleShorthandMonthly:		"0 0 0 1 * * *",
+		StringScheduleShorthandDaily:		"0 0 0 * * * *",
+		StringScheduleShorthandHourly:		"0 0 * * * * *",
 	}
 )
 
 // Interface assertions.
 var (
-	_ Schedule     = (*StringSchedule)(nil)
-	_ fmt.Stringer = (*StringSchedule)(nil)
+	_	Schedule	= (*StringSchedule)(nil)
+	_	fmt.Stringer	= (*StringSchedule)(nil)
 )
 
 // StringSchedule is a schedule generated from a cron string.
 type StringSchedule struct {
-	Original string
+	Original	string
 
-	Seconds     []int
-	Minutes     []int
-	Hours       []int
-	DaysOfMonth []int
-	Months      []int
-	DaysOfWeek  []int
-	Years       []int
+	Seconds		[]int
+	Minutes		[]int
+	Hours		[]int
+	DaysOfMonth	[]int
+	Months		[]int
+	DaysOfWeek	[]int
+	Years		[]int
 }
 
 // String returns the original string schedule.
@@ -674,9 +677,9 @@ func csvOfInts(values []int, placeholder string) string {
 
 // these are special characters
 const (
-	cronSpecialComma = ',' //
-	cronSpecialDash  = '-'
-	cronSpecialStar  = '*'
+	cronSpecialComma	= ','	//
+	cronSpecialDash		= '-'
+	cronSpecialStar		= '*'
 
 	// these are unused
 	// cronSpecialSlash = '/'
@@ -686,32 +689,32 @@ const (
 	// cronSpecialWeekday    = 'W' // nearest weekday to the given day of the month
 	// cronSpecialDayOfMonth = '#' //
 
-	cronSpecialEvery = "*/"
+	cronSpecialEvery	= "*/"
 )
 
 var (
-	validMonths = map[string]int{
-		"JAN": 1,
-		"FEB": 2,
-		"MAR": 3,
-		"APR": 4,
-		"MAY": 5,
-		"JUN": 6,
-		"JUL": 7,
-		"AUG": 8,
-		"SEP": 9,
-		"OCT": 10,
-		"NOV": 11,
-		"DEC": 12,
+	validMonths	= map[string]int{
+		"JAN":	1,
+		"FEB":	2,
+		"MAR":	3,
+		"APR":	4,
+		"MAY":	5,
+		"JUN":	6,
+		"JUL":	7,
+		"AUG":	8,
+		"SEP":	9,
+		"OCT":	10,
+		"NOV":	11,
+		"DEC":	12,
 	}
 
-	validDaysOfWeek = map[string]int{
-		"SUN": 0,
-		"MON": 1,
-		"TUE": 2,
-		"WED": 3,
-		"THU": 4,
-		"FRI": 5,
-		"SAT": 6,
+	validDaysOfWeek	= map[string]int{
+		"SUN":	0,
+		"MON":	1,
+		"TUE":	2,
+		"WED":	3,
+		"THU":	4,
+		"FRI":	5,
+		"SAT":	6,
 	}
 )

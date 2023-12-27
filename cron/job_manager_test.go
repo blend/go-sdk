@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -283,7 +283,7 @@ func Test_JobManager_IsRunning(t *testing.T) {
 		close(proceed)
 		<-checked
 		return nil
-	})))) // hadoooooken
+	}))))	// hadoooooken
 
 	_, _, err := jm.RunJob("is-running-test")
 	its.Nil(err)
@@ -304,10 +304,10 @@ func Test_JobManager_CancelJob(t *testing.T) {
 	job := NewJob(OptJobName("is-running-test"), OptJobAction(func(ctx context.Context) error {
 		close(started)
 		<-canceling
-		time.Sleep(time.Millisecond) // this is a pad to make the test more reliable.
+		time.Sleep(time.Millisecond)	// this is a pad to make the test more reliable.
 		return nil
 	}), OptJobOnCancellation(func(_ context.Context) {
-		close(canceled) // but signal on the lifecycle event
+		close(canceled)	// but signal on the lifecycle event
 	}))
 	its.Nil(jm.LoadJobs(job))
 

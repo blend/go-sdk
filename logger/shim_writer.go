@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -24,15 +24,15 @@ const (
 )
 
 // NewShimWriter returns a new shim writer.
-// A "Shim Writer" is mean to bridge situations where you need to pass
+// A "Shim Writer" is meant to bridge situations where you need to pass
 // an io.Writer to a given function, and want that function to write to a logger.
 // I.e. you can set `cmd.Stdout = NewShimWriter(log)` to have a
 // shell command write to a logger for standard out.
 func NewShimWriter(log Triggerable, opts ...ShimWriterOption) ShimWriter {
 	shim := ShimWriter{
-		Context:       context.Background(),
-		Log:           log,
-		EventProvider: ShimWriterMessageEventProvider(DefaultShimWriterMessageFlag),
+		Context:	context.Background(),
+		Log:		log,
+		EventProvider:	ShimWriterMessageEventProvider(DefaultShimWriterMessageFlag),
 	}
 	for _, opt := range opts {
 		opt(&shim)
@@ -72,9 +72,9 @@ type ShimWriterOption func(*ShimWriter)
 // ShimWriter is a type that implements io.Writer with
 // a logger backend.
 type ShimWriter struct {
-	Context       context.Context
-	Log           Triggerable
-	EventProvider func([]byte) Event
+	Context		context.Context
+	Log		Triggerable
+	EventProvider	func([]byte) Event
 }
 
 // Write implements io.Writer.

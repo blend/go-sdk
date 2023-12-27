@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -32,9 +32,9 @@ func New(options ...Option) *Profanity {
 // Profanity parses rules from the filesystem and applies them to a given root path.
 // Creating a full rules set.
 type Profanity struct {
-	Config Config
-	Stdout io.Writer
-	Stderr io.Writer
+	Config	Config
+	Stdout	io.Writer
+	Stderr	io.Writer
 }
 
 // Process processes the profanity rules.

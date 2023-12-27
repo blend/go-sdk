@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -11,12 +11,12 @@ import "github.com/blend/go-sdk/ex"
 
 // Int32 errors
 const (
-	ErrInt32Min      ex.Class = "int32 should be above a minimum value"
-	ErrInt32Max      ex.Class = "int32 should be below a maximum value"
-	ErrInt32Positive ex.Class = "int32 should be positive"
-	ErrInt32Negative ex.Class = "int32 should be negative"
-	ErrInt32Zero     ex.Class = "int32 should be zero"
-	ErrInt32NotZero  ex.Class = "int32 should not be zero"
+	ErrInt32Min		ex.Class	= "int32 should be above a minimum value"
+	ErrInt32Max		ex.Class	= "int32 should be below a maximum value"
+	ErrInt32Positive	ex.Class	= "int32 should be positive"
+	ErrInt32Negative	ex.Class	= "int32 should be negative"
+	ErrInt32Zero		ex.Class	= "int32 should be zero"
+	ErrInt32NotZero		ex.Class	= "int32 should not be zero"
 )
 
 // Int32 returns validators for int32s.

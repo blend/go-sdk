@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -26,16 +26,16 @@ const (
 
 // these are compile time assertions
 var (
-	_ logger.Event        = (*QueryEvent)(nil)
-	_ logger.TextWritable = (*QueryEvent)(nil)
-	_ logger.JSONWritable = (*QueryEvent)(nil)
+	_	logger.Event		= (*QueryEvent)(nil)
+	_	logger.TextWritable	= (*QueryEvent)(nil)
+	_	logger.JSONWritable	= (*QueryEvent)(nil)
 )
 
 // NewQueryEvent creates a new query event.
 func NewQueryEvent(body string, elapsed time.Duration, options ...QueryEventOption) QueryEvent {
 	qe := QueryEvent{
-		Body:    body,
-		Elapsed: elapsed,
+		Body:		body,
+		Elapsed:	elapsed,
 	}
 	for _, opt := range options {
 		opt(&qe)
@@ -102,17 +102,17 @@ func OptQueryEventErr(value error) QueryEventOption {
 
 // QueryEvent represents a database query.
 type QueryEvent struct {
-	Database string
-	Engine   string
-	Username string
-	Label    string
-	Body     string
-	Elapsed  time.Duration
-	Err      error
+	Database	string
+	Engine		string
+	Username	string
+	Label		string
+	Body		string
+	Elapsed		time.Duration
+	Err		error
 }
 
 // GetFlag implements Event.
-func (e QueryEvent) GetFlag() string { return QueryFlag }
+func (e QueryEvent) GetFlag() string	{ return QueryFlag }
 
 // WriteText writes the event text to the output.
 func (e QueryEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
@@ -150,12 +150,12 @@ func (e QueryEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
 // Decompose implements JSONWritable.
 func (e QueryEvent) Decompose() map[string]interface{} {
 	return map[string]interface{}{
-		"engine":   e.Engine,
-		"database": e.Database,
-		"username": e.Username,
-		"label":    e.Label,
-		"body":     e.Body,
-		"err":      e.Err,
-		"elapsed":  timeutil.Milliseconds(e.Elapsed),
+		"engine":	e.Engine,
+		"database":	e.Database,
+		"username":	e.Username,
+		"label":	e.Label,
+		"body":		e.Body,
+		"err":		e.Err,
+		"elapsed":	timeutil.Milliseconds(e.Elapsed),
 	}
 }

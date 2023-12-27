@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -13,9 +13,9 @@ import (
 
 // Errors
 const (
-	ErrSomeNil       ex.Class = "all references should be nil"
-	ErrSomeNotNil    ex.Class = "at least one reference should not be nil"
-	ErrSomeOneNotNil ex.Class = "exactly one of a set of reference should not be nil"
+	ErrSomeNil		ex.Class	= "all references should be nil"
+	ErrSomeNotNil		ex.Class	= "at least one reference should not be nil"
+	ErrSomeOneNotNil	ex.Class	= "exactly one of a set of reference should not be nil"
 )
 
 // Many defines validator rules that apply to a variadic

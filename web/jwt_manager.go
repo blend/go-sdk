@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -11,7 +11,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 
 	"github.com/blend/go-sdk/ex"
 )
@@ -77,23 +77,23 @@ func (jwtm JWTManager) FetchHandler(_ context.Context, sessionValue string) (*Se
 // Claims returns the sesion as a JWT standard claims object.
 func (jwtm JWTManager) Claims(session *Session) *jwt.StandardClaims {
 	return &jwt.StandardClaims{
-		Id:        session.SessionID,
-		Audience:  session.BaseURL,
-		Issuer:    "go-web",
-		Subject:   session.UserID,
-		IssuedAt:  session.CreatedUTC.Unix(),
-		ExpiresAt: session.ExpiresUTC.Unix(),
+		Id:		session.SessionID,
+		Audience:	session.BaseURL,
+		Issuer:		"go-web",
+		Subject:	session.UserID,
+		IssuedAt:	session.CreatedUTC.Unix(),
+		ExpiresAt:	session.ExpiresUTC.Unix(),
 	}
 }
 
 // FromClaims returns a session from a given claims set.
 func (jwtm JWTManager) FromClaims(claims *jwt.StandardClaims) *Session {
 	return &Session{
-		SessionID:  claims.Id,
-		BaseURL:    claims.Audience,
-		UserID:     claims.Subject,
-		CreatedUTC: time.Unix(claims.IssuedAt, 0).In(time.UTC),
-		ExpiresUTC: time.Unix(claims.ExpiresAt, 0).In(time.UTC),
+		SessionID:	claims.Id,
+		BaseURL:	claims.Audience,
+		UserID:		claims.Subject,
+		CreatedUTC:	time.Unix(claims.IssuedAt, 0).In(time.UTC),
+		ExpiresUTC:	time.Unix(claims.ExpiresAt, 0).In(time.UTC),
 	}
 }
 

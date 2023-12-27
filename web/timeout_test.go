@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -18,35 +18,35 @@ import (
 
 func TestTimeout(t *testing.T) {
 	for _, tc := range []struct {
-		Name    string
-		Timeout time.Duration
-		Action  Action
-		Status  int
+		Name	string
+		Timeout	time.Duration
+		Action	Action
+		Status	int
 	}{
 		{
-			Name:    "panic",
-			Timeout: time.Minute,
+			Name:		"panic",
+			Timeout:	time.Minute,
 			Action: func(_ *Ctx) Result {
 				panic("test")
 			},
-			Status: http.StatusInternalServerError,
+			Status:	http.StatusInternalServerError,
 		},
 		{
-			Name:    "long action",
-			Timeout: time.Microsecond,
+			Name:		"long action",
+			Timeout:	time.Microsecond,
 			Action: func(r *Ctx) Result {
 				<-r.Context().Done()
 				return NoContent
 			},
-			Status: http.StatusServiceUnavailable,
+			Status:	http.StatusServiceUnavailable,
 		},
 		{
-			Name:    "short action",
-			Timeout: time.Minute,
+			Name:		"short action",
+			Timeout:	time.Minute,
 			Action: func(_ *Ctx) Result {
 				return NoContent
 			},
-			Status: http.StatusNoContent,
+			Status:	http.StatusNoContent,
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -64,9 +64,9 @@ func Test_WebhookSender_Defaults(t *testing.T) {
 	its := assert.New(t)
 
 	config := Config{
-		Webhook:  "http://foo.com",
-		Channel:  "#bot-test",
-		Username: "default-test",
+		Webhook:	"http://foo.com",
+		Channel:	"#bot-test",
+		Username:	"default-test",
 	}
 
 	sender := New(config)
@@ -90,21 +90,21 @@ func Test_WebhookSend_DecodeResponse(t *testing.T) {
 	its := assert.New(t)
 
 	mockResponse := PostMessageResponse{
-		OK:        true,
-		Channel:   "#bot-test",
-		Timestamp: "1503435956.000247",
+		OK:		true,
+		Channel:	"#bot-test",
+		Timestamp:	"1503435956.000247",
 		Message: Message{
-			Text:     "Here's a message for you",
-			Username: "ecto1",
-			BotID:    "B19LU7CSY",
+			Text:		"Here's a message for you",
+			Username:	"ecto1",
+			BotID:		"B19LU7CSY",
 			Attachments: []MessageAttachment{
 				{
 					Text: "This is an attachment",
 				},
 			},
-			Type:      "message",
-			SubType:   "bot_message",
-			Timestamp: "1503435956.000247",
+			Type:		"message",
+			SubType:	"bot_message",
+			Timestamp:	"1503435956.000247",
 		},
 	}
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -129,8 +129,8 @@ func Test_WebhookSender_ReadResponse_BadStatusCode(t *testing.T) {
 	its := assert.New(t)
 
 	mockResponse := PostMessageResponse{
-		OK:    false,
-		Error: "too_many_attachments",
+		OK:	false,
+		Error:	"too_many_attachments",
 	}
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
@@ -155,21 +155,21 @@ func Test_WebhookSender_PostMessageAndReadResponse(t *testing.T) {
 	its := assert.New(t)
 
 	mockResponse := PostMessageResponse{
-		OK:        true,
-		Channel:   "#bot-test",
-		Timestamp: "1503435956.000247",
+		OK:		true,
+		Channel:	"#bot-test",
+		Timestamp:	"1503435956.000247",
 		Message: Message{
-			Text:     "Here's a message for you",
-			Username: "ecto1",
-			BotID:    "B19LU7CSY",
+			Text:		"Here's a message for you",
+			Username:	"ecto1",
+			BotID:		"B19LU7CSY",
 			Attachments: []MessageAttachment{
 				{
 					Text: "This is an attachment",
 				},
 			},
-			Type:      "message",
-			SubType:   "bot_message",
-			Timestamp: "1503435956.000247",
+			Type:		"message",
+			SubType:	"bot_message",
+			Timestamp:	"1503435956.000247",
 		},
 	}
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

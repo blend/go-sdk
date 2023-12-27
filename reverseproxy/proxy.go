@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -39,13 +39,13 @@ func NewProxy(opts ...ProxyOption) (*Proxy, error) {
 
 // Proxy is a factory for a simple reverse proxy.
 type Proxy struct {
-	Headers          http.Header
-	Log              logger.Log
-	Upstreams        []*Upstream
-	Resolver         Resolver
-	Tracer           webutil.HTTPTracer
-	TransformRequest TransformRequest
-	Timeout          time.Duration
+	Headers			http.Header
+	Log			logger.Log
+	Upstreams		[]*Upstream
+	Resolver		Resolver
+	Tracer			webutil.HTTPTracer
+	TransformRequest	TransformRequest
+	Timeout			time.Duration
 }
 
 // ServeHTTP is the http entrypoint.

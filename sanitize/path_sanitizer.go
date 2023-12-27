@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -22,4 +22,4 @@ func (psf PathSanitizerFunc) SanitizePath(path string) string {
 
 // DefaultPathSanitizerFunc is a default implementation of a path
 // sanitizer func that just returns the original path.
-func DefaultPathSanitizerFunc(p string) string { return p }
+func DefaultPathSanitizerFunc(p string) string	{ return p }

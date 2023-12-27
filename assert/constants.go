@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -11,17 +11,17 @@ import "os"
 
 const (
 	// RED is the ansi escape code fragment for red.
-	RED = "31"
+	RED	= "31"
 	// BLUE is the ansi escape code fragment for blue.
-	BLUE = "94"
+	BLUE	= "94"
 	// GREEN is the ansi escape code fragment for green.
-	GREEN = "32"
+	GREEN	= "32"
 	// YELLOW is the ansi escape code fragment for yellow.
-	YELLOW = "33"
+	YELLOW	= "33"
 	// WHITE is the ansi escape code fragment for white.
-	WHITE = "37"
+	WHITE	= "37"
 	// GRAY is the ansi escape code fragment for gray.
-	GRAY = "90"
+	GRAY	= "90"
 )
 
 // OutputFormatFromEnv gets the output format from the env or the default.
@@ -38,7 +38,7 @@ type OutputFormat string
 
 // OutputFormats
 const (
-	OutputFormatDefault OutputFormat = ""
-	OutputFormatText    OutputFormat = "text"
-	OutputFormatJSON    OutputFormat = "json"
+	OutputFormatDefault	OutputFormat	= ""
+	OutputFormatText	OutputFormat	= "text"
+	OutputFormatJSON	OutputFormat	= "json"
 )

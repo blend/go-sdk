@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -17,9 +17,9 @@ import (
 // Constraint represents a single constraint for a version, such as
 // ">= 1.0".
 type Constraint struct {
-	f        constraintFunc
-	check    *Version
-	original string
+	f		constraintFunc
+	check		*Version
+	original	string
 }
 
 // Constraints is a slice of constraints. We make a custom type so that
@@ -34,14 +34,14 @@ var constraintRegexp *regexp.Regexp
 
 func init() {
 	constraintOperators = map[string]constraintFunc{
-		"":   constraintEqual,
-		"=":  constraintEqual,
-		"!=": constraintNotEqual,
-		">":  constraintGreaterThan,
-		"<":  constraintLessThan,
-		">=": constraintGreaterThanEqual,
-		"<=": constraintLessThanEqual,
-		"~>": constraintPessimistic,
+		"":	constraintEqual,
+		"=":	constraintEqual,
+		"!=":	constraintNotEqual,
+		">":	constraintGreaterThan,
+		"<":	constraintLessThan,
+		">=":	constraintGreaterThanEqual,
+		"<=":	constraintLessThanEqual,
+		"~>":	constraintPessimistic,
 	}
 
 	ops := make([]string, 0, len(constraintOperators))
@@ -116,9 +116,9 @@ func parseSingle(v string) (*Constraint, error) {
 	}
 
 	return &Constraint{
-		f:        constraintOperators[matches[1]],
-		check:    check,
-		original: v,
+		f:		constraintOperators[matches[1]],
+		check:		check,
+		original:	v,
 	}, nil
 }
 

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -38,11 +38,11 @@ func TestOptLogResponse(t *testing.T) {
 	opt := OptLogResponse(ml)
 	e := logResponseHelper(assert, ml, opt, "OK!\n")
 	assert.Equal(e, Event{
-		Flag:     FlagResponse,
-		Request:  e.Request,
-		Response: e.Response,
-		Body:     nil,
-		Elapsed:  e.Elapsed,
+		Flag:		FlagResponse,
+		Request:	e.Request,
+		Response:	e.Response,
+		Body:		nil,
+		Elapsed:	e.Elapsed,
 	})
 }
 
@@ -53,11 +53,11 @@ func TestOptLogResponseWithBody(t *testing.T) {
 	body := "This is the response body\n"
 	e := logResponseHelper(assert, ml, opt, body)
 	assert.Equal(e, Event{
-		Flag:     FlagResponse,
-		Request:  e.Request,
-		Response: e.Response,
-		Body:     []byte(body),
-		Elapsed:  e.Elapsed,
+		Flag:		FlagResponse,
+		Request:	e.Request,
+		Response:	e.Response,
+		Body:		[]byte(body),
+		Elapsed:	e.Elapsed,
 	})
 	assert.Equal(e.Request.ContentLength, 0)
 	assert.Equal(e.Response.ContentLength, 26)

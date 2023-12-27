@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -15,9 +15,9 @@ import (
 
 // Config is the pagerduty config.
 type Config struct {
-	Addr  string `yaml:"addr,omitempty"`
-	Token string `yaml:"token,omitempty"`
-	Email string `yaml:"email,omitempty"`
+	Addr	string	`yaml:"addr,omitempty"`
+	Token	string	`yaml:"token,omitempty"`
+	Email	string	`yaml:"email,omitempty"`
 }
 
 // IsZero returns if the config is set or not.

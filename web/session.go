@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -14,23 +14,23 @@ import (
 // NewSession returns a new session object.
 func NewSession(userID string, sessionID string) *Session {
 	return &Session{
-		UserID:     userID,
-		SessionID:  sessionID,
-		CreatedUTC: time.Now().UTC(),
-		State:      map[string]interface{}{},
+		UserID:		userID,
+		SessionID:	sessionID,
+		CreatedUTC:	time.Now().UTC(),
+		State:		map[string]interface{}{},
 	}
 }
 
 // Session is an active session
 type Session struct {
-	UserID     string                 `json:"userID" yaml:"userID"`
-	BaseURL    string                 `json:"baseURL" yaml:"baseURL"`
-	SessionID  string                 `json:"sessionID" yaml:"sessionID"`
-	CreatedUTC time.Time              `json:"createdUTC" yaml:"createdUTC"`
-	ExpiresUTC time.Time              `json:"expiresUTC" yaml:"expiresUTC"`
-	UserAgent  string                 `json:"userAgent" yaml:"userAgent"`
-	RemoteAddr string                 `json:"remoteAddr" yaml:"remoteAddr"`
-	State      map[string]interface{} `json:"state,omitempty" yaml:"state,omitempty"`
+	UserID		string			`json:"userID" yaml:"userID"`
+	BaseURL		string			`json:"baseURL" yaml:"baseURL"`
+	SessionID	string			`json:"sessionID" yaml:"sessionID"`
+	CreatedUTC	time.Time		`json:"createdUTC" yaml:"createdUTC"`
+	ExpiresUTC	time.Time		`json:"expiresUTC" yaml:"expiresUTC"`
+	UserAgent	string			`json:"userAgent" yaml:"userAgent"`
+	RemoteAddr	string			`json:"remoteAddr" yaml:"remoteAddr"`
+	State		map[string]interface{}	`json:"state,omitempty" yaml:"state,omitempty"`
 }
 
 // WithBaseURL sets the base url.

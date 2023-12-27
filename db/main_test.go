@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -120,9 +120,9 @@ func OpenTestConnection(opts ...Option) (*Connection, error) {
 //------------------------------------------------------------------------------------------------
 
 type upsertObj struct {
-	UUID      uuid.UUID `db:"uuid,pk,auto"`
-	Timestamp time.Time `db:"timestamp_utc"`
-	Category  string    `db:"category"`
+	UUID		uuid.UUID	`db:"uuid,pk,auto"`
+	Timestamp	time.Time	`db:"timestamp_utc"`
+	Category	string		`db:"category"`
 }
 
 func (uo upsertObj) TableName() string {
@@ -135,9 +135,9 @@ func createUpsertObjectTable(tx *sql.Tx) error {
 }
 
 type upsertNoAutosObj struct {
-	UUID      uuid.UUID `db:"uuid,pk"`
-	Timestamp time.Time `db:"timestamp_utc"`
-	Category  string    `db:"category"`
+	UUID		uuid.UUID	`db:"uuid,pk"`
+	Timestamp	time.Time	`db:"timestamp_utc"`
+	Category	string		`db:"category"`
 }
 
 func (uo upsertNoAutosObj) TableName() string {
@@ -154,13 +154,13 @@ func createUpsertNoAutosObjectTable(tx *sql.Tx) error {
 //------------------------------------------------------------------------------------------------
 
 type benchObj struct {
-	ID        int       `db:"id,pk,auto"`
-	UUID      string    `db:"uuid"`
-	Name      string    `db:"name,uk"`
-	Timestamp time.Time `db:"timestamp_utc"`
-	Amount    float32   `db:"amount"`
-	Pending   bool      `db:"pending"`
-	Category  string    `db:"category"`
+	ID		int		`db:"id,pk,auto"`
+	UUID		string		`db:"uuid"`
+	Name		string		`db:"name,uk"`
+	Timestamp	time.Time	`db:"timestamp_utc"`
+	Amount		float32		`db:"amount"`
+	Pending		bool		`db:"pending"`
+	Category	string		`db:"category"`
 }
 
 func (b *benchObj) Populate(rows Scanner) error {
@@ -201,12 +201,12 @@ func ensureUUIDExtension() error {
 
 func createObject(index int, tx *sql.Tx) error {
 	obj := benchObj{
-		Name:      fmt.Sprintf("test_object_%d", index),
-		UUID:      uuid.V4().String(),
-		Timestamp: time.Now().UTC(),
-		Amount:    1000.0 + (5.0 * float32(index)),
-		Pending:   index%2 == 0,
-		Category:  fmt.Sprintf("category_%d", index),
+		Name:		fmt.Sprintf("test_object_%d", index),
+		UUID:		uuid.V4().String(),
+		Timestamp:	time.Now().UTC(),
+		Amount:		1000.0 + (5.0 * float32(index)),
+		Pending:	index%2 == 0,
+		Category:	fmt.Sprintf("category_%d", index),
 	}
 	return defaultDB().Invoke(OptTx(tx)).Create(&obj)
 }
@@ -283,10 +283,10 @@ func defaultDB() *Connection {
 }
 
 type mockTracer struct {
-	PrepareHandler       func(context.Context, Config, string)
-	QueryHandler         func(context.Context, Config, string, string) TraceFinisher
-	FinishPrepareHandler func(context.Context, error)
-	FinishQueryHandler   func(context.Context, sql.Result, error)
+	PrepareHandler		func(context.Context, Config, string)
+	QueryHandler		func(context.Context, Config, string, string) TraceFinisher
+	FinishPrepareHandler	func(context.Context, error)
+	FinishQueryHandler	func(context.Context, sql.Result, error)
 }
 
 func (mt mockTracer) Prepare(ctx context.Context, cfg Config, statement string) TraceFinisher {
@@ -294,8 +294,8 @@ func (mt mockTracer) Prepare(ctx context.Context, cfg Config, statement string) 
 		mt.PrepareHandler(ctx, cfg, statement)
 	}
 	return mockTraceFinisher{
-		FinishPrepareHandler: mt.FinishPrepareHandler,
-		FinishQueryHandler:   mt.FinishQueryHandler,
+		FinishPrepareHandler:	mt.FinishPrepareHandler,
+		FinishQueryHandler:	mt.FinishQueryHandler,
 	}
 }
 
@@ -304,14 +304,14 @@ func (mt mockTracer) Query(ctx context.Context, cfg Config, label, statement str
 		mt.PrepareHandler(ctx, cfg, statement)
 	}
 	return mockTraceFinisher{
-		FinishPrepareHandler: mt.FinishPrepareHandler,
-		FinishQueryHandler:   mt.FinishQueryHandler,
+		FinishPrepareHandler:	mt.FinishPrepareHandler,
+		FinishQueryHandler:	mt.FinishQueryHandler,
 	}
 }
 
 type mockTraceFinisher struct {
-	FinishPrepareHandler func(context.Context, error)
-	FinishQueryHandler   func(context.Context, sql.Result, error)
+	FinishPrepareHandler	func(context.Context, error)
+	FinishQueryHandler	func(context.Context, sql.Result, error)
 }
 
 func (mtf mockTraceFinisher) FinishPrepare(ctx context.Context, err error) {
@@ -333,9 +333,9 @@ var (
 type captureStatementTracer struct {
 	Tracer
 
-	Label     string
-	Statement string
-	Err       error
+	Label		string
+	Statement	string
+	Err		error
 }
 
 func (cst *captureStatementTracer) Query(_ context.Context, cfg Config, label string, statement string) TraceFinisher {
@@ -348,7 +348,7 @@ type captureStatementTracerFinisher struct {
 	*captureStatementTracer
 }
 
-func (cstf *captureStatementTracerFinisher) FinishPrepare(context.Context, error) {}
+func (cstf *captureStatementTracerFinisher) FinishPrepare(context.Context, error)	{}
 func (cstf *captureStatementTracerFinisher) FinishQuery(_ context.Context, _ sql.Result, err error) {
 	cstf.captureStatementTracer.Err = err
 }
@@ -360,8 +360,8 @@ func failInterceptor(_ context.Context, _, statement string) (string, error) {
 }
 
 type uniqueObj struct {
-	ID   int    `db:"id,pk"`
-	Name string `db:"name"`
+	ID	int	`db:"id,pk"`
+	Name	string	`db:"name"`
 }
 
 // TableName returns the mapped table name.
@@ -370,8 +370,8 @@ func (uo uniqueObj) TableName() string {
 }
 
 type uuidTest struct {
-	ID   uuid.UUID `db:"id"`
-	Name string    `db:"name"`
+	ID	uuid.UUID	`db:"id"`
+	Name	string		`db:"name"`
 }
 
 func (ut uuidTest) TableName() string {
@@ -379,13 +379,13 @@ func (ut uuidTest) TableName() string {
 }
 
 type EmbeddedTestMeta struct {
-	ID           uuid.UUID `db:"id,pk"`
-	TimestampUTC time.Time `db:"timestamp_utc"`
+	ID		uuid.UUID	`db:"id,pk"`
+	TimestampUTC	time.Time	`db:"timestamp_utc"`
 }
 
 type embeddedTest struct {
-	EmbeddedTestMeta `db:",inline"`
-	Name             string `db:"name"`
+	EmbeddedTestMeta	`db:",inline"`
+	Name			string	`db:"name"`
 }
 
 func (et embeddedTest) TableName() string {
@@ -397,11 +397,11 @@ type jsonTestChild struct {
 }
 
 type jsonTest struct {
-	ID   int    `db:"id,pk,auto"`
-	Name string `db:"name"`
+	ID	int	`db:"id,pk,auto"`
+	Name	string	`db:"name"`
 
-	NotNull  jsonTestChild `db:"not_null,json"`
-	Nullable []string      `db:"nullable,json"`
+	NotNull		jsonTestChild	`db:"not_null,json"`
+	Nullable	[]string	`db:"nullable,json"`
 }
 
 func (jt jsonTest) TableName() string {
@@ -466,13 +466,13 @@ func dropUpsertSerialPKTable(tx *sql.Tx) error {
 
 // upsertAutoRegression contains all data associated with an envelope of documents.
 type upsertAutoRegression struct {
-	ID         uuid.UUID  `db:"id,pk"`
-	Status     uint8      `db:"status"`
-	Required   bool       `db:"required"`
-	CreatedAt  *time.Time `db:"created_at,auto"`
-	UpdatedAt  *time.Time `db:"updated_at,auto"`
-	MigratedAt *time.Time `db:"migrated_at"`
-	ReadOnly   string     `db:"read_only,readonly"`
+	ID		uuid.UUID	`db:"id,pk"`
+	Status		uint8		`db:"status"`
+	Required	bool		`db:"required"`
+	CreatedAt	*time.Time	`db:"created_at,auto"`
+	UpdatedAt	*time.Time	`db:"updated_at,auto"`
+	MigratedAt	*time.Time	`db:"migrated_at"`
+	ReadOnly	string		`db:"read_only,readonly"`
 }
 
 // TableName returns the table name.
@@ -481,13 +481,13 @@ func (uar upsertAutoRegression) TableName() string {
 }
 
 type upsertSerialPK struct {
-	ID         int        `db:"id,pk,serial"`
-	Status     uint8      `db:"status"`
-	Required   bool       `db:"required"`
-	CreatedAt  *time.Time `db:"created_at,auto"`
-	UpdatedAt  *time.Time `db:"updated_at,auto"`
-	MigratedAt *time.Time `db:"migrated_at"`
-	ReadOnly   string     `db:"read_only,readonly"`
+	ID		int		`db:"id,pk,serial"`
+	Status		uint8		`db:"status"`
+	Required	bool		`db:"required"`
+	CreatedAt	*time.Time	`db:"created_at,auto"`
+	UpdatedAt	*time.Time	`db:"updated_at,auto"`
+	MigratedAt	*time.Time	`db:"migrated_at"`
+	ReadOnly	string		`db:"read_only,readonly"`
 }
 
 // TableName returns the table name.

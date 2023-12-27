@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -19,8 +19,8 @@ func TestFormatDuration(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := [...]struct {
-		Input    time.Duration
-		Expected string
+		Input		time.Duration
+		Expected	string
 	}{
 		{Input: ((10 * time.Hour) + (9 * time.Minute) + (8 * time.Second) + (7 * time.Millisecond) + (6 * time.Microsecond) + (5 * time.Nanosecond)), Expected: "10h"},
 		{Input: ((9 * time.Minute) + (8 * time.Second) + (7 * time.Millisecond) + (6 * time.Microsecond) + (5 * time.Nanosecond)), Expected: "9m"},

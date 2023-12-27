@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -17,8 +17,8 @@ import (
 // - Can we stat the file / path? (i.e. does it exist?)
 // - Is the file mode a directory?
 type pathInfo struct {
-	Exists bool
-	IsDir  bool
+	Exists	bool
+	IsDir	bool
 }
 
 func pathExists(path string) (*pathInfo, error) {

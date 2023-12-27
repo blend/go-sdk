@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -26,9 +26,9 @@ func main() {
 
 	ansi.TableForSlice(os.Stdout,
 		[]struct {
-			ID     int
-			Status int
-			URL    string
+			ID	int
+			Status	int
+			URL	string
 		}{
 			{0, 200, "http://google.com"},
 			{1, 200, "http://go.blend.com/foo"},

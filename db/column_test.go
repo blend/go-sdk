@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -16,22 +16,22 @@ import (
 )
 
 type jsonFieldValue struct {
-	Label string `json:"label"`
-	Value string `json:"value"`
+	Label	string	`json:"label"`
+	Value	string	`json:"value"`
 }
 
 type setValueTest struct {
-	PrimaryKey   string `db:"primary_key,pk"`
-	UniqueKey    string `db:"unique_key,uk"`
-	InferredName string
-	NullFloat64  sql.NullFloat64        `db:"null_float64"`
-	NullInt64    sql.NullInt64          `db:"null_int64"`
-	NullString   sql.NullString         `db:"null_string"`
-	JSON         map[string]interface{} `db:"json_col,json"`
-	JSONPtr      *jsonFieldValue        `db:"json_ptr,json"`
-	Int64        int64                  `db:"int64"`
-	Int64Ptr     *int64                 `db:"int64_ptr"`
-	StringPtr    *string                `db:"string_ptr"`
+	PrimaryKey	string	`db:"primary_key,pk"`
+	UniqueKey	string	`db:"unique_key,uk"`
+	InferredName	string
+	NullFloat64	sql.NullFloat64		`db:"null_float64"`
+	NullInt64	sql.NullInt64		`db:"null_int64"`
+	NullString	sql.NullString		`db:"null_string"`
+	JSON		map[string]interface{}	`db:"json_col,json"`
+	JSONPtr		*jsonFieldValue		`db:"json_ptr,json"`
+	Int64		int64			`db:"int64"`
+	Int64Ptr	*int64			`db:"int64_ptr"`
+	StringPtr	*string			`db:"string_ptr"`
 }
 
 func Test_Column_SetValue(t *testing.T) {

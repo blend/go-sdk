@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -22,7 +22,7 @@ var (
 type RateSampler float64
 
 // SetRate is a no-op
-func (r RateSampler) SetRate(newRate float64) {}
+func (r RateSampler) SetRate(newRate float64)	{}
 
 // Rate returns the rate.
 func (r RateSampler) Rate() float64 {

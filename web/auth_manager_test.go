@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -53,11 +53,11 @@ func Test_NewAuthManager(t *testing.T) {
 	its.Equal(DefaultCookieSameSiteMode, am.CookieDefaults.SameSite)
 
 	am, err = NewAuthManager(OptAuthManagerCookieDefaults(http.Cookie{
-		Name:     "_FOO_AUTH_",
-		Path:     "/admin",
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
+		Name:		"_FOO_AUTH_",
+		Path:		"/admin",
+		HttpOnly:	true,
+		Secure:		true,
+		SameSite:	http.SameSiteLaxMode,
 	}))
 	its.Nil(err)
 	its.Equal("_FOO_AUTH_", am.CookieDefaults.Name)

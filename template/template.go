@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,8 +21,8 @@ import (
 func New() *Template {
 	temp := &Template{
 		Viewmodel: Viewmodel{
-			vars: Vars{},
-			env:  env.Env(),
+			vars:	Vars{},
+			env:	env.Env(),
 		},
 	}
 	temp.funcs = texttemplate.FuncMap(ViewFuncs{}.FuncMap())
@@ -42,12 +42,12 @@ func NewFromFile(filepath string) (*Template, error) {
 // Template is a wrapper for html.Template.
 type Template struct {
 	Viewmodel
-	name       string
-	body       string
-	includes   []string
-	funcs      texttemplate.FuncMap
-	leftDelim  string
-	rightDelim string
+	name		string
+	body		string
+	includes	[]string
+	funcs		texttemplate.FuncMap
+	leftDelim	string
+	rightDelim	string
 }
 
 // WithName sets the template name.

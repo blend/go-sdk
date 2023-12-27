@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -20,8 +20,8 @@ import (
 
 // GithubClient is a client to make requests to github via the api.
 type GithubClient struct {
-	Addr  string
-	Token string
+	Addr	string
+	Token	string
 }
 
 // CreateURL creates a fully qualified url with a given path.

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -20,21 +20,21 @@ import (
 // Config is the sentry config.
 type Config struct {
 	// The DSN to use. If the DSN is not set, the client is effectively disabled.
-	DSN string `json:"dsn" yaml:"dsn"`
+	DSN	string	`json:"dsn" yaml:"dsn"`
 	// The server name to be reported.
-	ServerName string `json:"serverName" yaml:"serverName"`
+	ServerName	string	`json:"serverName" yaml:"serverName"`
 	// The dist to be sent with events.
-	Dist string `json:"dist" yaml:"dist"`
+	Dist	string	`json:"dist" yaml:"dist"`
 	// The release to be sent with events.
-	Release string `json:"release" yaml:"release"`
+	Release	string	`json:"release" yaml:"release"`
 	// The environment to be sent with events.
-	Environment string `json:"environment" yaml:"environment"`
+	Environment	string	`json:"environment" yaml:"environment"`
 	// Maximum number of breadcrumbs.
-	MaxBreadcrumbs int `json:"maxBreadCrumbs" yaml:"maxBreadCrumbs"`
+	MaxBreadcrumbs	int	`json:"maxBreadCrumbs" yaml:"maxBreadCrumbs"`
 	// Debug prints debugging information to the screen.
-	Debug bool `json:"debug" yaml:"debug"`
+	Debug	bool	`json:"debug" yaml:"debug"`
 	// FlushTimeout is the timeout for flushing exceptions to sentry.
-	FlushTimeout time.Duration `json:"flushTimeout" yaml:"flushTimeout"`
+	FlushTimeout	time.Duration	`json:"flushTimeout" yaml:"flushTimeout"`
 }
 
 // IsZero returns if the config is unset.

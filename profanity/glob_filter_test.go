@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -18,8 +18,8 @@ func Test_Glob_include(t *testing.T) {
 	its := assert.New(t)
 
 	testCases := [...]struct {
-		Input    string
-		Expected bool
+		Input		string
+		Expected	bool
 	}{
 		{Input: "foo.txt", Expected: false},
 		{Input: "foo.go", Expected: true},

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -27,13 +27,13 @@ func Test_ParamTokensCSV(t *testing.T) {
 }
 
 type SimpleType struct {
-	ID   int
-	Name string
+	ID	int
+	Name	string
 }
 
 type SimpleTypeWithName struct {
-	ID   int
-	Name string
+	ID	int
+	Name	string
 }
 
 func (st SimpleTypeWithName) TableName() string {
@@ -41,8 +41,8 @@ func (st SimpleTypeWithName) TableName() string {
 }
 
 type EmbeddedSimpleTypeMeta struct {
-	ID   int
-	Name string
+	ID	int
+	Name	string
 }
 
 type EmbeddedSimpleType struct {

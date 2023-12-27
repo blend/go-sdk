@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	opentracingExt "github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/mocktracer"
 
 	"github.com/blend/go-sdk/assert"
@@ -35,9 +36,9 @@ func TestPrepare(t *testing.T) {
 
 	assert.Len(mockSpan.Tags(), 6)
 	assert.Equal(tracing.SpanTypeSQL, mockSpan.Tags()[tracing.TagKeySpanType])
-	assert.Equal(dbCfg.Database, mockSpan.Tags()[tracing.TagKeyDBName])
-	assert.Equal(dbCfg.Username, mockSpan.Tags()[tracing.TagKeyDBUser])
-	assert.Equal("select * from test_table limit 1", mockSpan.Tags()[TagKeyQuery])
+	assert.Equal(dbCfg.Database, mockSpan.Tags()[string(opentracingExt.DBInstance)])
+	assert.Equal(dbCfg.Username, mockSpan.Tags()[string(opentracingExt.DBUser)])
+	assert.Equal("select * from test_table limit 1", mockSpan.Tags()[string(opentracingExt.DBStatement)])
 	assert.True(mockSpan.FinishTime.IsZero())
 }
 
@@ -81,9 +82,9 @@ func TestQuery(t *testing.T) {
 	assert.Len(mockSpan.Tags(), 7)
 	assert.Equal("test_table_exists", mockSpan.Tags()[tracing.TagKeyResourceName])
 	assert.Equal(tracing.SpanTypeSQL, mockSpan.Tags()[tracing.TagKeySpanType])
-	assert.Equal(dbCfg.Database, mockSpan.Tags()[tracing.TagKeyDBName])
-	assert.Equal(dbCfg.Username, mockSpan.Tags()[tracing.TagKeyDBUser])
-	assert.Equal(statement, mockSpan.Tags()[TagKeyQuery])
+	assert.Equal(dbCfg.Database, mockSpan.Tags()[string(opentracingExt.DBInstance)])
+	assert.Equal(dbCfg.Username, mockSpan.Tags()[string(opentracingExt.DBUser)])
+	assert.Equal(statement, mockSpan.Tags()[string(opentracingExt.DBStatement)])
 	assert.True(mockSpan.FinishTime.IsZero())
 }
 

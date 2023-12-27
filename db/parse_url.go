@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -78,6 +78,6 @@ func ParseURL(databaseURL string) (string, error) {
 		accrue(k, q.Get(k))
 	}
 
-	sort.Strings(kvs) // Makes testing easier (not a performance concern)
+	sort.Strings(kvs)	// Makes testing easier (not a performance concern)
 	return strings.Join(kvs, " "), nil
 }

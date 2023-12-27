@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -10,5 +10,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 // /debug/vars in JSON format.
 //
 // Operations to set or modify these public variables are atomic.
-//
-package expvar // import "github.com/blend/go-sdk/expvar"
+package expvar	// import "github.com/blend/go-sdk/expvar"

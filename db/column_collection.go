@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -16,8 +16,8 @@ import (
 )
 
 var (
-	metaCacheMu sync.RWMutex
-	metaCache   = make(map[string]*ColumnCollection)
+	metaCacheMu	sync.RWMutex
+	metaCache	= make(map[string]*ColumnCollection)
 )
 
 // --------------------------------------------------------------------------------
@@ -99,20 +99,20 @@ func NewColumnCollectionWithPrefix(columnPrefix string, columns ...Column) *Colu
 
 // ColumnCollection represents the column metadata for a given struct.
 type ColumnCollection struct {
-	columns      []Column
-	lookup       map[string]*Column
-	columnPrefix string
+	columns		[]Column
+	lookup		map[string]*Column
+	columnPrefix	string
 
-	autos          *ColumnCollection
-	notAutos       *ColumnCollection
-	readOnly       *ColumnCollection
-	notReadOnly    *ColumnCollection
-	primaryKeys    *ColumnCollection
-	notPrimaryKeys *ColumnCollection
-	uniqueKeys     *ColumnCollection
-	notUniqueKeys  *ColumnCollection
-	insertColumns  *ColumnCollection
-	updateColumns  *ColumnCollection
+	autos		*ColumnCollection
+	notAutos	*ColumnCollection
+	readOnly	*ColumnCollection
+	notReadOnly	*ColumnCollection
+	primaryKeys	*ColumnCollection
+	notPrimaryKeys	*ColumnCollection
+	uniqueKeys	*ColumnCollection
+	notUniqueKeys	*ColumnCollection
+	insertColumns	*ColumnCollection
+	updateColumns	*ColumnCollection
 }
 
 // Len returns the number of columns.
@@ -481,7 +481,7 @@ func generateColumnsForType(parent *Column, t reflect.Type) []Column {
 			col.Parent = parent
 			col.Index = index
 			col.TableName = tableName
-			if col.Inline && field.Anonymous { // if it's not anonymous, whatchu doin
+			if col.Inline && field.Anonymous {	// if it's not anonymous, whatchu doin
 				cols = append(cols, generateColumnsForType(col, col.FieldType)...)
 			} else if !field.Anonymous {
 				cols = append(cols, *col)

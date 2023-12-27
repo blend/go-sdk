@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -31,8 +31,8 @@ func ShutdownByContext(ctx context.Context, hosted ...Graceful) error {
 		// start the instance
 		go func(instance Graceful) {
 			defer func() {
-				_ = safely(func() { close(serverExited) }) // close the server exited channel, but do so safely
-				waitServerExited.Done()                    // signal the normal exit process is done
+				_ = safely(func() { close(serverExited) })	// close the server exited channel, but do so safely
+				waitServerExited.Done()				// signal the normal exit process is done
 			}()
 			if err := instance.Start(); err != nil {
 				errors <- err
@@ -42,7 +42,7 @@ func ShutdownByContext(ctx context.Context, hosted ...Graceful) error {
 		// wait to stop the instance
 		go func(instance Graceful) {
 			defer waitShutdownComplete.Done()
-			<-shouldShutdown // tell the hosted process to stop "gracefully"
+			<-shouldShutdown	// tell the hosted process to stop "gracefully"
 			if err := instance.Stop(); err != nil {
 				errors <- err
 			}
@@ -50,12 +50,12 @@ func ShutdownByContext(ctx context.Context, hosted ...Graceful) error {
 	}
 
 	select {
-	case <-ctx.Done(): // if we've issued a shutdown, wait for the server to exit
+	case <-ctx.Done():	// if we've issued a shutdown, wait for the server to exit
 		close(shouldShutdown)
 		waitShutdownComplete.Wait()
 		waitServerExited.Wait()
-	case <-serverExited: // if any of the servers exited on their own
-		close(shouldShutdown) // quit the signal listener
+	case <-serverExited:	// if any of the servers exited on their own
+		close(shouldShutdown)	// quit the signal listener
 		waitShutdownComplete.Wait()
 	}
 	if errorCount := len(errors); errorCount > 0 {

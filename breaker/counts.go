@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -12,9 +12,9 @@ package breaker
 // on the change of the state or at the closed-state intervals.
 // Counts ignores the results of the requests sent before clearing.
 type Counts struct {
-	Requests             int64 `json:"requests"`
-	TotalSuccesses       int64 `json:"totalSuccesses"`
-	TotalFailures        int64 `json:"totalFailures"`
-	ConsecutiveSuccesses int64 `json:"consecutiveSuccesses"`
-	ConsecutiveFailures  int64 `json:"consecutiveFailures"`
+	Requests		int64	`json:"requests"`
+	TotalSuccesses		int64	`json:"totalSuccesses"`
+	TotalFailures		int64	`json:"totalFailures"`
+	ConsecutiveSuccesses	int64	`json:"consecutiveSuccesses"`
+	ConsecutiveFailures	int64	`json:"consecutiveFailures"`
 }

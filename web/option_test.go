@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -24,8 +24,8 @@ func TestOptConfig(t *testing.T) {
 	assert := assert.New(t)
 
 	cfg := Config{
-		DefaultHeaders: map[string]string{"X-Debug": "debug-value"},
-		CookieName:     "FOOBAR",
+		DefaultHeaders:	map[string]string{"X-Debug": "debug-value"},
+		CookieName:	"FOOBAR",
 	}
 
 	var app App

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -35,9 +35,9 @@ func TestParseCertInfo(t *testing.T) {
 					Issuer: pkix.Name{
 						CommonName: "example-string dog",
 					},
-					DNSNames:  []string{"foo.local"},
-					NotAfter:  time.Now().UTC().AddDate(0, 1, 0),
-					NotBefore: time.Now().UTC().AddDate(0, -1, 0),
+					DNSNames:	[]string{"foo.local"},
+					NotAfter:	time.Now().UTC().AddDate(0, 1, 0),
+					NotBefore:	time.Now().UTC().AddDate(0, -1, 0),
 				},
 			},
 		},

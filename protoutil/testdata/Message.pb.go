@@ -19,9 +19,9 @@ import (
 
 const (
 	// Verify that this generated code is sufficiently up-to-date.
-	_ = protoimpl.EnforceVersion(20 - protoimpl.MinVersion)
+	_	= protoimpl.EnforceVersion(20 - protoimpl.MinVersion)
 	// Verify that runtime/protoimpl is sufficiently up-to-date.
-	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
+	_	= protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
 // This is a compile-time assertion that a sufficiently up-to-date version
@@ -29,17 +29,17 @@ const (
 const _ = proto.ProtoPackageIsVersion4
 
 type Message struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
+	state		protoimpl.MessageState
+	sizeCache	protoimpl.SizeCache
+	unknownFields	protoimpl.UnknownFields
 
-	Uid           string               `protobuf:"bytes,10,opt,name=uid,proto3" json:"uid,omitempty"`
-	TimestampUtc  *timestamp.Timestamp `protobuf:"bytes,11,opt,name=timestamp_utc,json=timestampUtc,proto3" json:"timestamp_utc,omitempty"`
-	Elapsed       *duration.Duration   `protobuf:"bytes,12,opt,name=elapsed,proto3" json:"elapsed,omitempty"`
-	StatusCode    int32                `protobuf:"varint,13,opt,name=status_code,json=statusCode,proto3" json:"status_code,omitempty"`
-	ContentLength int64                `protobuf:"varint,14,opt,name=content_length,json=contentLength,proto3" json:"content_length,omitempty"`
-	Value         float64              `protobuf:"fixed64,15,opt,name=value,proto3" json:"value,omitempty"`
-	Error         string               `protobuf:"bytes,16,opt,name=error,proto3" json:"error,omitempty"`
+	Uid		string			`protobuf:"bytes,10,opt,name=uid,proto3" json:"uid,omitempty"`
+	TimestampUtc	*timestamp.Timestamp	`protobuf:"bytes,11,opt,name=timestamp_utc,json=timestampUtc,proto3" json:"timestamp_utc,omitempty"`
+	Elapsed		*duration.Duration	`protobuf:"bytes,12,opt,name=elapsed,proto3" json:"elapsed,omitempty"`
+	StatusCode	int32			`protobuf:"varint,13,opt,name=status_code,json=statusCode,proto3" json:"status_code,omitempty"`
+	ContentLength	int64			`protobuf:"varint,14,opt,name=content_length,json=contentLength,proto3" json:"content_length,omitempty"`
+	Value		float64			`protobuf:"fixed64,15,opt,name=value,proto3" json:"value,omitempty"`
+	Error		string			`protobuf:"bytes,16,opt,name=error,proto3" json:"error,omitempty"`
 }
 
 func (x *Message) Reset() {
@@ -55,7 +55,7 @@ func (x *Message) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Message) ProtoMessage() {}
+func (*Message) ProtoMessage()	{}
 
 func (x *Message) ProtoReflect() protoreflect.Message {
 	mi := &file_Message_proto_msgTypes[0]
@@ -153,8 +153,8 @@ var file_Message_proto_rawDesc = []byte{
 }
 
 var (
-	file_Message_proto_rawDescOnce sync.Once
-	file_Message_proto_rawDescData = file_Message_proto_rawDesc
+	file_Message_proto_rawDescOnce	sync.Once
+	file_Message_proto_rawDescData	= file_Message_proto_rawDesc
 )
 
 func file_Message_proto_rawDescGZIP() []byte {
@@ -166,21 +166,21 @@ func file_Message_proto_rawDescGZIP() []byte {
 
 var file_Message_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_Message_proto_goTypes = []interface{}{
-	(*Message)(nil),             // 0: testdata.Message
-	(*timestamp.Timestamp)(nil), // 1: google.protobuf.Timestamp
-	(*duration.Duration)(nil),   // 2: google.protobuf.Duration
+	(*Message)(nil),		// 0: testdata.Message
+	(*timestamp.Timestamp)(nil),	// 1: google.protobuf.Timestamp
+	(*duration.Duration)(nil),	// 2: google.protobuf.Duration
 }
 var file_Message_proto_depIdxs = []int32{
-	1, // 0: testdata.Message.timestamp_utc:type_name -> google.protobuf.Timestamp
-	2, // 1: testdata.Message.elapsed:type_name -> google.protobuf.Duration
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	1,	// 0: testdata.Message.timestamp_utc:type_name -> google.protobuf.Timestamp
+	2,	// 1: testdata.Message.elapsed:type_name -> google.protobuf.Duration
+	2,	// [2:2] is the sub-list for method output_type
+	2,	// [2:2] is the sub-list for method input_type
+	2,	// [2:2] is the sub-list for extension type_name
+	2,	// [2:2] is the sub-list for extension extendee
+	0,	// [0:2] is the sub-list for field type_name
 }
 
-func init() { file_Message_proto_init() }
+func init()	{ file_Message_proto_init() }
 func file_Message_proto_init() {
 	if File_Message_proto != nil {
 		return
@@ -202,16 +202,16 @@ func file_Message_proto_init() {
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
-			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_Message_proto_rawDesc,
-			NumEnums:      0,
-			NumMessages:   1,
-			NumExtensions: 0,
-			NumServices:   0,
+			GoPackagePath:	reflect.TypeOf(x{}).PkgPath(),
+			RawDescriptor:	file_Message_proto_rawDesc,
+			NumEnums:	0,
+			NumMessages:	1,
+			NumExtensions:	0,
+			NumServices:	0,
 		},
-		GoTypes:           file_Message_proto_goTypes,
-		DependencyIndexes: file_Message_proto_depIdxs,
-		MessageInfos:      file_Message_proto_msgTypes,
+		GoTypes:		file_Message_proto_goTypes,
+		DependencyIndexes:	file_Message_proto_depIdxs,
+		MessageInfos:		file_Message_proto_msgTypes,
 	}.Build()
 	File_Message_proto = out.File
 	file_Message_proto_rawDesc = nil

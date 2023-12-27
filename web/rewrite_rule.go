@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -14,9 +14,9 @@ type RewriteAction func(filePath string, matchedPieces ...string) string
 
 // RewriteRule is a rule for re-writing incoming static urls.
 type RewriteRule struct {
-	MatchExpression string
-	expr            *regexp.Regexp
-	Action          RewriteAction
+	MatchExpression	string
+	expr		*regexp.Regexp
+	Action		RewriteAction
 }
 
 // Apply runs the filter, returning a bool if it matched, and the resulting path.

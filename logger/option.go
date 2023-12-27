@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -55,7 +55,6 @@ To set the output to be both stdout and a file, use the following:
 	file, _ := os.Open("app.log")
 	combined := io.MultiWriter(os.Stdout, file)
 	log := logger.New(logger.OptOutput(combined))
-
 */
 func OptOutput(output io.Writer) Option {
 	return func(l *Logger) error {

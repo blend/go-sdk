@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -20,38 +20,37 @@ import (
 //
 // A very simple example:
 //
-//    rt := new(web.RouteTree)
-//    rt.Handle(http.MethodGet, "/", func(w http.ResponseWriter, req *http.Request, route *web.Route, params web.Params) {
-//        w.WriteHeader(http.StatusOK)
-//        fmt.Fprintf(w, "OK!")
-//    })
-//    (&http.Server{Addr: "127.0.0.1:8080", Handler: rt}).ListenAndServe()
-//
+//	rt := new(web.RouteTree)
+//	rt.Handle(http.MethodGet, "/", func(w http.ResponseWriter, req *http.Request, route *web.Route, params web.Params) {
+//	    w.WriteHeader(http.StatusOK)
+//	    fmt.Fprintf(w, "OK!")
+//	})
+//	(&http.Server{Addr: "127.0.0.1:8080", Handler: rt}).ListenAndServe()
 type RouteTree struct {
 	// Routes is a map between canonicalized http method
 	// (i.e. `GET` vs. `get`) and individual method
 	// route trees.
-	Routes map[string]*RouteNode
+	Routes	map[string]*RouteNode
 	// SkipTrailingSlashRedirects disables matching
 	// routes that are off by a trailing slash, either because
 	// routes are registered with the '/' suffix, or because
 	// the request has a '/' suffix and the
 	// registered route does not.
-	SkipTrailingSlashRedirects bool
+	SkipTrailingSlashRedirects	bool
 	// SkipHandlingMethodOptions disables returning
 	// a result with the `ALLOWED` header for method options,
 	// and will instead 404 for `OPTIONS` methods.
-	SkipHandlingMethodOptions bool
+	SkipHandlingMethodOptions	bool
 	// SkipMethodNotAllowed skips specific handling
 	// for methods that do not have a route tree with
 	// a specific 405 response, and will instead return a 404.
-	SkipMethodNotAllowed bool
+	SkipMethodNotAllowed	bool
 	// NotFoundHandler is an optional handler to set
 	// to customize not found (404) results.
-	NotFoundHandler Handler
+	NotFoundHandler	Handler
 	// MethodNotAllowedHandler is an optional handler
 	// to set to customize method not allowed (405) results.
-	MethodNotAllowedHandler Handler
+	MethodNotAllowedHandler	Handler
 }
 
 // Handle adds a handler at a given method and path.
@@ -165,9 +164,9 @@ func (rt *RouteTree) withPathAlternateTrailingSlash(path string) string {
 // redirectTrailingSlash redirects the request if a suffix trailing
 // forward slash should be added.
 func (rt *RouteTree) redirectTrailingSlash(w http.ResponseWriter, req *http.Request) {
-	code := http.StatusMovedPermanently // 301 // Permanent redirect, request with GET method
+	code := http.StatusMovedPermanently	// 301 // Permanent redirect, request with GET method
 	if req.Method != http.MethodGet {
-		code = http.StatusTemporaryRedirect // 307
+		code = http.StatusTemporaryRedirect	// 307
 	}
 	req.URL.Path = rt.withPathAlternateTrailingSlash(req.URL.Path)
 	http.Redirect(w, req, req.URL.String(), code)
@@ -175,7 +174,7 @@ func (rt *RouteTree) redirectTrailingSlash(w http.ResponseWriter, req *http.Requ
 }
 
 func (rt *RouteTree) allowed(path, reqMethod string) (allow string) {
-	if path == "*" { // server-wide
+	if path == "*" {	// server-wide
 		for method := range rt.Routes {
 			if method == http.MethodOptions {
 				continue

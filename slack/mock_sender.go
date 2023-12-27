@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -38,8 +38,8 @@ func (ms MockWebhookSender) SendAndReadResponse(ctx context.Context, m Message) 
 // PostMessage sends a mocked message.
 func (ms MockWebhookSender) PostMessage(channel, text string, options ...MessageOption) error {
 	m := Message{
-		Channel: channel,
-		Text:    text,
+		Channel:	channel,
+		Text:		text,
 	}
 	for _, option := range options {
 		option(&m)
@@ -52,8 +52,8 @@ func (ms MockWebhookSender) PostMessage(channel, text string, options ...Message
 // PostMessageContext sends a mocked message.
 func (ms MockWebhookSender) PostMessageContext(ctx context.Context, channel, text string, options ...MessageOption) error {
 	m := Message{
-		Channel: channel,
-		Text:    text,
+		Channel:	channel,
+		Text:		text,
 	}
 	for _, option := range options {
 		option(&m)

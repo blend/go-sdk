@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -15,17 +15,17 @@ import (
 
 // Interface assertions.
 var (
-	_ Schedule     = (*TimesSchedule)(nil)
-	_ fmt.Stringer = (*TimesSchedule)(nil)
+	_	Schedule	= (*TimesSchedule)(nil)
+	_	fmt.Stringer	= (*TimesSchedule)(nil)
 )
 
 // Times returns a new times schedule that returns a given
 // next run time from a schedule only a certain number of times.
 func Times(times int, schedule Schedule) *TimesSchedule {
 	return &TimesSchedule{
-		times:    times,
-		left:     times,
-		schedule: schedule,
+		times:		times,
+		left:		times,
+		schedule:	schedule,
 	}
 }
 
@@ -35,9 +35,9 @@ func Times(times int, schedule Schedule) *TimesSchedule {
 type TimesSchedule struct {
 	sync.Mutex
 
-	times    int
-	left     int
-	schedule Schedule
+	times		int
+	left		int
+	schedule	Schedule
 }
 
 // Next implements cron.Schedule.

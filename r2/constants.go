@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -23,24 +23,24 @@ const (
 
 const (
 	// MethodGet is a method.
-	MethodGet = webutil.MethodGet
+	MethodGet	= webutil.MethodGet
 	// MethodPost is a method.
-	MethodPost = webutil.MethodPost
+	MethodPost	= webutil.MethodPost
 	// MethodPut is a method.
-	MethodPut = webutil.MethodPut
+	MethodPut	= webutil.MethodPut
 	// MethodPatch is a method.
-	MethodPatch = webutil.MethodPatch
+	MethodPatch	= webutil.MethodPatch
 	// MethodDelete is a method.
-	MethodDelete = webutil.MethodDelete
+	MethodDelete	= webutil.MethodDelete
 	// MethodOptions is a method.
-	MethodOptions = webutil.MethodOptions
+	MethodOptions	= webutil.MethodOptions
 )
 
 var (
 	// HeaderConnection is a http header.
-	HeaderConnection = webutil.HeaderConnection
+	HeaderConnection	= webutil.HeaderConnection
 	// HeaderContentType is a http header.
-	HeaderContentType = webutil.HeaderContentType
+	HeaderContentType	= webutil.HeaderContentType
 )
 
 const (
@@ -50,11 +50,11 @@ const (
 
 const (
 	// ContentTypeApplicationJSON is a content type header value.
-	ContentTypeApplicationJSON = webutil.ContentTypeApplicationJSON
+	ContentTypeApplicationJSON	= webutil.ContentTypeApplicationJSON
 	// ContentTypeApplicationXML is a content type header value.
-	ContentTypeApplicationXML = webutil.ContentTypeApplicationXML
+	ContentTypeApplicationXML	= webutil.ContentTypeApplicationXML
 	// ContentTypeApplicationFormEncoded is a content type header value.
-	ContentTypeApplicationFormEncoded = webutil.ContentTypeApplicationFormEncoded
+	ContentTypeApplicationFormEncoded	= webutil.ContentTypeApplicationFormEncoded
 	// ContentTypeApplicationOctetStream is a content type header value.
-	ContentTypeApplicationOctetStream = webutil.ContentTypeApplicationOctetStream
+	ContentTypeApplicationOctetStream	= webutil.ContentTypeApplicationOctetStream
 )

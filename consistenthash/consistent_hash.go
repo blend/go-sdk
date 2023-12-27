@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,8 +21,8 @@ const (
 )
 
 var (
-	_ json.Marshaler = (*ConsistentHash)(nil)
-	_ fmt.Stringer   = (*ConsistentHash)(nil)
+	_	json.Marshaler	= (*ConsistentHash)(nil)
+	_	fmt.Stringer	= (*ConsistentHash)(nil)
 )
 
 // New returns a new consistent hash.
@@ -68,12 +68,12 @@ func OptHashFunction(hashFunction HashFunction) Option {
 
 // ConsistentHash creates hashed assignments for each bucket.
 type ConsistentHash struct {
-	mu sync.RWMutex
+	mu	sync.RWMutex
 
-	replicas     int
-	buckets      map[string]struct{}
-	hashFunction HashFunction
-	hashring     []HashedBucket
+	replicas	int
+	buckets		map[string]struct{}
+	hashFunction	HashFunction
+	hashring	[]HashedBucket
 }
 
 //
@@ -277,9 +277,9 @@ func (ch *ConsistentHash) assignmentUnsafe(item string) (bucket string) {
 func (ch *ConsistentHash) insertUnsafe(bucket string) {
 	for x := 0; x < ch.ReplicasOrDefault(); x++ {
 		ch.hashring = InsertionSort(ch.hashring, HashedBucket{
-			Bucket:   bucket,
-			Replica:  x,
-			Hashcode: ch.hashcode(ch.bucketHashKey(bucket, x)),
+			Bucket:		bucket,
+			Replica:	x,
+			Hashcode:	ch.hashcode(ch.bucketHashKey(bucket, x)),
 		})
 	}
 }
@@ -311,7 +311,7 @@ func (ch *ConsistentHash) hashcode(item string) uint64 {
 // that holds the hashcode, the bucket name (as Bucket)
 // and the virtual replica index.
 type HashedBucket struct {
-	Hashcode uint64 `json:"hashcode"`
-	Bucket   string `json:"bucket"`
-	Replica  int    `json:"replica"`
+	Hashcode	uint64	`json:"hashcode"`
+	Bucket		string	`json:"bucket"`
+	Replica		int	`json:"replica"`
 }

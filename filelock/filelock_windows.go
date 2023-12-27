@@ -3,8 +3,8 @@
 
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -19,13 +19,13 @@ import (
 type lockType uint32
 
 const (
-	readLock  lockType = 0
-	writeLock lockType = windows.LOCKFILE_EXCLUSIVE_LOCK
+	readLock	lockType	= 0
+	writeLock	lockType	= windows.LOCKFILE_EXCLUSIVE_LOCK
 )
 
 const (
-	reserved = 0
-	allBytes = ^uint32(0)
+	reserved	= 0
+	allBytes	= ^uint32(0)
 )
 
 func lock(f File, lt lockType) error {
@@ -39,9 +39,9 @@ func lock(f File, lt lockType) error {
 	err := windows.LockFileEx(syscall.Handle(f.Fd()), uint32(lt), reserved, allBytes, allBytes, ol)
 	if err != nil {
 		return &fs.PathError{
-			Op:   lt.String(),
-			Path: f.Name(),
-			Err:  err,
+			Op:	lt.String(),
+			Path:	f.Name(),
+			Err:	err,
 		}
 	}
 	return nil
@@ -52,9 +52,9 @@ func unlock(f File) error {
 	err := windows.UnlockFileEx(syscall.Handle(f.Fd()), reserved, allBytes, allBytes, ol)
 	if err != nil {
 		return &fs.PathError{
-			Op:   "Unlock",
-			Path: f.Name(),
-			Err:  err,
+			Op:	"Unlock",
+			Path:	f.Name(),
+			Err:	err,
 		}
 	}
 	return nil

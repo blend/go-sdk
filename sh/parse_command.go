@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -18,7 +18,7 @@ import (
 //
 // Example:
 //
-//    bin, args := sh.ParseCommand("git rebase master")
+//	bin, args := sh.ParseCommand("git rebase master")
 //
 // Would yield "git", and "rebase","master" as the args.
 func ParseCommand(statement string) (bin string, args []string) {

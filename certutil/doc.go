@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -10,4 +10,4 @@ Package certutil contains helpers for working with x509 certificates.
 
 The most common use case is parsing and evaluating key details of the cert like the "NotAfter" date.
 */
-package certutil // import "github.com/blend/go-sdk/certutil"
+package certutil	// import "github.com/blend/go-sdk/certutil"

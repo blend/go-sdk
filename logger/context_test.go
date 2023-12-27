@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,6 +21,12 @@ func TestContextWithTimestamp(t *testing.T) {
 	ts := time.Date(2019, 8, 16, 12, 11, 10, 9, time.UTC)
 	assert.Equal(ts, GetTimestamp(WithTimestamp(context.Background(), ts)))
 	assert.True(GetTimestamp(context.Background()).IsZero())
+}
+
+func TestContextWithRestricted(t *testing.T) {
+	assert := assert.New(t)
+
+	assert.Equal(true, GetRestricted(WithRestricted(context.Background(), true)))
 }
 
 func TestContextWithPath(t *testing.T) {
@@ -55,8 +61,8 @@ func TestContextWithAnnotation(t *testing.T) {
 
 	ctx = WithAnnotation(ctx, "two", 3)
 	expectedAnnotations = Annotations{
-		"one": "two",
-		"two": 3,
+		"one":	"two",
+		"two":	3,
 	}
 	assert.Equal(expectedAnnotations, GetAnnotations(ctx))
 }

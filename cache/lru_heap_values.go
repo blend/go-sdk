@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -20,13 +20,13 @@ var (
 type LRUHeapValues []*Value
 
 // Len returns the values length.
-func (lruv LRUHeapValues) Len() int { return len(lruv) }
+func (lruv LRUHeapValues) Len() int	{ return len(lruv) }
 
 // Less returns if two values are strictly less than eachother.
-func (lruv LRUHeapValues) Less(i, j int) bool { return lruv[i].Expires.Before(lruv[j].Expires) }
+func (lruv LRUHeapValues) Less(i, j int) bool	{ return lruv[i].Expires.Before(lruv[j].Expires) }
 
 // Swap swaps values at the given positions.
-func (lruv LRUHeapValues) Swap(i, j int) { lruv[i], lruv[j] = lruv[j], lruv[i] }
+func (lruv LRUHeapValues) Swap(i, j int)	{ lruv[i], lruv[j] = lruv[j], lruv[i] }
 
 // Push adds a new item.
 func (lruv *LRUHeapValues) Push(x interface{}) {

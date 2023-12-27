@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,7 +21,7 @@ type State interface {
 // SyncState is the collection of state objects on a context.
 type SyncState struct {
 	sync.RWMutex
-	Values map[string]interface{}
+	Values	map[string]interface{}
 }
 
 // Keys returns

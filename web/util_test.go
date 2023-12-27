@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -47,18 +47,18 @@ func TestMergeHeaders(t *testing.T) {
 	assert := assert.New(t)
 
 	a := map[string][]string{
-		"Foo": {"foo1a", "foo2a"},
-		"Bar": {"bar1a", "bar2a"},
+		"Foo":	{"foo1a", "foo2a"},
+		"Bar":	{"bar1a", "bar2a"},
 	}
 
 	b := map[string][]string{
-		"Foo":            {"foo1b", "foo2b", "foo3b"},
-		"example-string": {"dog"},
+		"Foo":			{"foo1b", "foo2b", "foo3b"},
+		"example-string":	{"dog"},
 	}
 
 	c := map[string][]string{
-		"Bar":  {"bar1c", "bar2c"},
-		"Buzz": {"fuzz"},
+		"Bar":	{"bar1c", "bar2c"},
+		"Buzz":	{"fuzz"},
 	}
 
 	merged := MergeHeaders(a, b, c)

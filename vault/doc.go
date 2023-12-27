@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -10,7 +10,7 @@ Package vault implements a high throughput vault client.
 
 It also provides helpers for reading and writing objects to vault key value stores.
 
-Mock and Testing Examples
+# Mock and Testing Examples
 
 Very often you will need to mock the vault client in your code so you don't reach out to and actual vault instance during tests.
 Before writing tests, however, you should make sure that any references to the vault client do so through the `vault.Client` interface, not a concrete type like `*vault.APIClient`.
@@ -27,4 +27,4 @@ Then, in your tests, you can create a new mock:
 
 This will then let you pass `new(clientMock)` to anywhere you need to set a `vault.Client`
 */
-package vault // import "github.com/blend/go-sdk/vault"
+package vault	// import "github.com/blend/go-sdk/vault"

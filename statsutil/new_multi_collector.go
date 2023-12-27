@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -20,10 +20,10 @@ import (
 type MultiCollectorOptions struct {
 	configmeta.Meta
 
-	DefaultTags []string
-	Datadog     datadog.Config
-	Prometheus  statsd.Config
-	Printer     bool
+	DefaultTags	[]string
+	Datadog		datadog.Config
+	Prometheus	statsd.Config
+	Printer		bool
 }
 
 // MultiCollectorOption mutates MultiCollectorOptions.
@@ -139,15 +139,15 @@ func NewMultiCollector(log logger.Log, opts ...MultiCollectorOption) (stats.Coll
 		} else if env.Env().ServiceEnv() != "" {
 			collector.AddDefaultTags(stats.Tag(stats.TagEnv, env.Env().ServiceEnv()))
 		}
-		if options.Meta.Hostname != "" {
-			collector.AddDefaultTags(stats.Tag(stats.TagHostname, options.Meta.Hostname))
-		} else if env.Env().Hostname() != "" {
-			collector.AddDefaultTags(stats.Tag(stats.TagHostname, env.Env().Hostname()))
-		}
 		if options.Meta.Version != "" {
 			collector.AddDefaultTags(stats.Tag(stats.TagVersion, options.Meta.Version))
 		} else if env.Env().Version() != "" {
 			collector.AddDefaultTags(stats.Tag(stats.TagVersion, env.Env().Version()))
+		}
+		if options.Meta.ClusterName != "" {
+			collector.AddDefaultTags(stats.Tag(stats.TagClusterName, options.Meta.ClusterName))
+		} else if env.Env().ClusterName() != "" {
+			collector.AddDefaultTags(stats.Tag(stats.TagClusterName, env.Env().ClusterName()))
 		}
 		collector.AddDefaultTags(options.DefaultTags...)
 	}

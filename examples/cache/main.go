@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -31,11 +31,11 @@ func getData() (interface{}, error) {
 
 func main() {
 	log := logger.Prod()
-	log.Disable(webutil.FlagHTTPRequest) // disable noisey events.
+	log.Disable(webutil.FlagHTTPRequest)	// disable noisey events.
 	app, err := web.New(
 		web.OptConfigFromEnv(),
 		web.OptLog(log),
-		web.OptUse(web.GZip), // NOTE: as of v3.0.0 gzip response compression middleware is not enabled by default, you _must_ enable it explicitly.
+		web.OptUse(web.GZip),	// NOTE: as of v3.0.0 gzip response compression middleware is not enabled by default, you _must_ enable it explicitly.
 		web.OptShutdownGracePeriod(time.Second),
 	)
 	if err != nil {

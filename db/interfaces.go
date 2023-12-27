@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -19,6 +19,7 @@ type DatabaseMapped interface{}
 //	func (_ MyDatabaseMappedObject) TableName() string {
 //		return "my_database_mapped_object"
 //	}
+//
 // If you require different table names based on alias, create another type.
 type TableNameProvider interface {
 	TableName() string

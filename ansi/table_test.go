@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -49,8 +49,8 @@ func TestTableWriteErr(t *testing.T) {
 }
 
 type failAfter struct {
-	Written  []byte
-	MaxBytes int
+	Written		[]byte
+	MaxBytes	int
 }
 
 func (fa *failAfter) Write(contents []byte) (int, error) {
@@ -65,8 +65,8 @@ func TestTableForSlice(t *testing.T) {
 	assert := assert.New(t)
 
 	objects := []struct {
-		ID   int
-		Name string
+		ID	int
+		Name	string
 	}{
 		{1, "Foo"},
 		{2, "Bar"},
@@ -85,8 +85,8 @@ func TestTableForSliceUnicode(t *testing.T) {
 	assert := assert.New(t)
 
 	objects := []struct {
-		ID    string
-		Count int
+		ID	string
+		Count	int
 	}{
 		{"モ foo", 1},
 		{"ふ bar", 1},

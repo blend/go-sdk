@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -59,11 +59,11 @@ func OptStaticFileServerCacheDisabled(cacheDisabled bool) StaticFileserverOption
 type StaticFileServer struct {
 	sync.RWMutex
 
-	SearchPaths   []http.FileSystem
-	RewriteRules  []RewriteRule
-	Headers       http.Header
-	CacheDisabled bool
-	Cache         map[string]*CachedStaticFile
+	SearchPaths	[]http.FileSystem
+	RewriteRules	[]RewriteRule
+	Headers		http.Header
+	CacheDisabled	bool
+	Cache		map[string]*CachedStaticFile
 }
 
 // AddHeader adds a header to the static cache results.
@@ -84,9 +84,9 @@ func (sc *StaticFileServer) AddRewriteRule(match string, action RewriteAction) e
 		return err
 	}
 	sc.RewriteRules = append(sc.RewriteRules, RewriteRule{
-		MatchExpression: match,
-		expr:            expr,
-		Action:          action,
+		MatchExpression:	match,
+		expr:			expr,
+		Action:			action,
 	})
 	return nil
 }
@@ -231,11 +231,11 @@ func (sc *StaticFileServer) ResolveCachedFile(filepath string) (*CachedStaticFil
 	}
 
 	file := &CachedStaticFile{
-		Path:     filepath,
-		Contents: bytes.NewReader(contents),
-		ModTime:  finfo.ModTime(),
-		ETag:     webutil.ETag(contents),
-		Size:     len(contents),
+		Path:		filepath,
+		Contents:	bytes.NewReader(contents),
+		ModTime:	finfo.ModTime(),
+		ETag:		webutil.ETag(contents),
+		Size:		len(contents),
 	}
 
 	sc.Cache[filepath] = file

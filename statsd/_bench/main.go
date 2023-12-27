@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -20,10 +20,10 @@ import (
 )
 
 var (
-	addr        = flag.String("addr", "127.0.0.1:8125", "The statsd server address")
-	dialTimeout = flag.Duration("dial-timeout", time.Second, "The client dial timeout")
-	bufferSize  = flag.Int("buffer-size", 64, "The client buffer size")
-	workers     = flag.Int("workers", runtime.NumCPU(), "The number of workers to use")
+	addr		= flag.String("addr", "127.0.0.1:8125", "The statsd server address")
+	dialTimeout	= flag.Duration("dial-timeout", time.Second, "The client dial timeout")
+	bufferSize	= flag.Int("buffer-size", 64, "The client buffer size")
+	workers		= flag.Int("workers", runtime.NumCPU(), "The number of workers to use")
 )
 
 var metrics = []statsd.Metric{

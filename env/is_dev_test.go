@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -20,8 +20,8 @@ func TestIsDevlike(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := []struct {
-		Input    string
-		Expected bool
+		Input		string
+		Expected	bool
 	}{
 		{Input: env.ServiceEnvDev, Expected: false},
 		{Input: env.ServiceEnvCI, Expected: false},
@@ -43,8 +43,8 @@ func TestIsDev(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := []struct {
-		Input    string
-		Expected bool
+		Input		string
+		Expected	bool
 	}{
 		{Input: env.ServiceEnvDev, Expected: true},
 		{Input: env.ServiceEnvCI, Expected: false},
@@ -66,8 +66,8 @@ func TestIsDevTest(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := []struct {
-		Input    string
-		Expected bool
+		Input		string
+		Expected	bool
 	}{
 		{Input: env.ServiceEnvDev, Expected: true},
 		{Input: env.ServiceEnvCI, Expected: false},

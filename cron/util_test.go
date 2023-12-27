@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -56,7 +56,7 @@ func Test_Const(t *testing.T) {
 	its.Equal(123, ConstInt(123)())
 	its.Equal(6*time.Hour, ConstDuration(6*time.Hour)())
 	its.Equal("foo", ConstLabels(map[string]string{
-		"bar": "buzz",
-		"moo": "foo",
+		"bar":	"buzz",
+		"moo":	"foo",
 	})()["moo"])
 }

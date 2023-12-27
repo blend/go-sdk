@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -27,10 +27,10 @@ import (
 // It defaults the sample rate to the sample rate as returned by the configuration.
 func NewTracer(opts ...TracerOption) opentracing.Tracer {
 	options := TracerOptions{
-		ServiceName: env.Env().ServiceName(),
-		ServiceEnv:  env.Env().ServiceEnv(),
-		Hostname:    env.Env().Hostname(),
-		SampleRate:  DefaultTraceSampleRate,
+		ServiceName:	env.Env().ServiceName(),
+		ServiceEnv:	env.Env().ServiceEnv(),
+		Hostname:	env.Env().Hostname(),
+		SampleRate:	DefaultTraceSampleRate,
 	}
 	for _, opt := range opts {
 		opt(&options)
@@ -118,15 +118,15 @@ type TracerOption func(*TracerOptions)
 
 // TracerOptions are all the options we can set when creating a tracer.
 type TracerOptions struct {
-	Addr        string
-	StatsAddr   string
-	ServiceName string
-	ServiceEnv  string
-	Version     string
-	Hostname    string
-	SampleRate  float64
-	Tags        map[string]string
-	Log         logger.Triggerable
+	Addr		string
+	StatsAddr	string
+	ServiceName	string
+	ServiceEnv	string
+	Version		string
+	Hostname	string
+	SampleRate	float64
+	Tags		map[string]string
+	Log		logger.Triggerable
 }
 
 var (

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -16,22 +16,22 @@ import (
 
 const (
 	// DefaultPostedFilesMaxMemory is the maximum post body size we will typically consume.
-	DefaultPostedFilesMaxMemory = 67_108_864 //64mb
+	DefaultPostedFilesMaxMemory = 67_108_864	//64mb
 )
 
 // PostedFile is a file that has been posted to an hc endpoint.
 type PostedFile struct {
-	Key         string
-	FileName    string
-	Contents    []byte
-	ContentType string
+	Key		string
+	FileName	string
+	Contents	[]byte
+	ContentType	string
 }
 
 // PostedFilesOptions are options for the PostedFiles function.
 type PostedFilesOptions struct {
-	MaxMemory          int64
-	ParseMultipartForm bool
-	ParseForm          bool
+	MaxMemory		int64
+	ParseMultipartForm	bool
+	ParseForm		bool
 }
 
 // PostedFileOption mutates posted file options.
@@ -60,9 +60,9 @@ func PostedFiles(r *http.Request, opts ...PostedFileOption) ([]PostedFile, error
 	var files []PostedFile
 
 	options := PostedFilesOptions{
-		MaxMemory:          DefaultPostedFilesMaxMemory,
-		ParseMultipartForm: true,
-		ParseForm:          false,
+		MaxMemory:		DefaultPostedFilesMaxMemory,
+		ParseMultipartForm:	true,
+		ParseForm:		false,
 	}
 	for _, opt := range opts {
 		opt(&options)

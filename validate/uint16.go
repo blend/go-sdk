@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -11,10 +11,10 @@ import "github.com/blend/go-sdk/ex"
 
 // Uint16 errors
 const (
-	ErrUint16Min     ex.Class = "uint16 should be above a minimum value"
-	ErrUint16Max     ex.Class = "uint16 should be below a maximum value"
-	ErrUint16Zero    ex.Class = "uint16 should be zero"
-	ErrUint16NotZero ex.Class = "uint16 should not be zero"
+	ErrUint16Min		ex.Class	= "uint16 should be above a minimum value"
+	ErrUint16Max		ex.Class	= "uint16 should be below a maximum value"
+	ErrUint16Zero		ex.Class	= "uint16 should be zero"
+	ErrUint16NotZero	ex.Class	= "uint16 should not be zero"
 )
 
 // Uint16 returns validators for uint16s.

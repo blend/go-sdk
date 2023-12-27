@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,22 +21,22 @@ import (
 
 const (
 	// N is the number of jobs to load.
-	N = 32
+	N	= 32
 
 	// Q is the total simulation time.
-	Q = 10 * time.Second
+	Q	= 10 * time.Second
 
 	// JobRunEvery is the job interval.
-	JobRunEvery = 5 * time.Second
+	JobRunEvery	= 5 * time.Second
 
 	// JobTimeout is the timeout for the jobs.
-	JobTimeout = 3 * time.Second
+	JobTimeout	= 3 * time.Second
 
 	// JobShortRunTime is the short run time.
-	JobShortRunTime = 2 * time.Second
+	JobShortRunTime	= 2 * time.Second
 
 	// JobLongRunTime is the long run time (will induce a timeout.)
-	JobLongRunTime = 8 * time.Second
+	JobLongRunTime	= 8 * time.Second
 )
 
 var startedCount int32
@@ -45,15 +45,15 @@ var expectedTimeoutCount int32
 var timeoutCount int32
 
 var (
-	_ cron.Job               = (*loadTestJob)(nil)
-	_ cron.ScheduleProvider  = (*loadTestJob)(nil)
-	_ cron.ConfigProvider    = (*loadTestJob)(nil)
-	_ cron.LifecycleProvider = (*loadTestJob)(nil)
+	_	cron.Job		= (*loadTestJob)(nil)
+	_	cron.ScheduleProvider	= (*loadTestJob)(nil)
+	_	cron.ConfigProvider	= (*loadTestJob)(nil)
+	_	cron.LifecycleProvider	= (*loadTestJob)(nil)
 )
 
 type loadTestJob struct {
-	id      int
-	running bool
+	id	int
+	running	bool
 }
 
 func (j *loadTestJob) Name() string {
@@ -80,7 +80,7 @@ func (j *loadTestJob) Execute(ctx context.Context) error {
 
 	var runFor time.Duration
 	var randValue = rand.Float64()
-	if randValue <= 0.5 { // 50% split between short vs. long.
+	if randValue <= 0.5 {	// 50% split between short vs. long.
 		runFor = JobShortRunTime
 	} else {
 		atomic.AddInt32(&expectedTimeoutCount, 1)

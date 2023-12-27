@@ -1,11 +1,11 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
 /*
 Package selector is a high performance selector parsing library, tightly coupled to the functionality of selectors found in Kubernetes.
 */
-package selector // import "github.com/blend/go-sdk/selector"
+package selector	// import "github.com/blend/go-sdk/selector"

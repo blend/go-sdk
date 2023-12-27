@@ -1,22 +1,24 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
 package main
 
 import (
+	"fmt"
+	"math"
 	"testing"
 
 	"github.com/blend/go-sdk/assert"
 )
 
 type coverProfileTestCase struct {
-	BaseDir  string
-	FileName string
-	Expected string
+	BaseDir		string
+	FileName	string
+	Expected	string
 }
 
 func TestGlob(t *testing.T) {
@@ -74,20 +76,22 @@ func TestEnforceCoverage(t *testing.T) {
 	assert := assert.New(t)
 
 	// errors cases
-	assert.NotNil(enforceCoverage("./", "asdf"))
-	assert.NotNil(enforceCoverage("/usr/lib", "50"))
+	assert.NotNil(enforceCoverage("./", math.NaN()))
+	assert.NotNil(enforceCoverage("./", math.Inf(+1)))
+	assert.NotNil(enforceCoverage("./", math.Inf(-1)))
+	assert.NotNil(enforceCoverage("/usr/lib", 50))
 
 	assert.Nil(writeCoverage("/tmp", ""))
-	assert.NotNil(enforceCoverage("/tmp", "90"))
+	assert.NotNil(enforceCoverage("/tmp", 90))
 
 	assert.Nil(writeCoverage("/tmp", "90"))
-	assert.NotNil(enforceCoverage("/tmp", "70"))
+	assert.NotNil(enforceCoverage("/tmp", 70))
 
 	assert.Nil(writeCoverage("/tmp", "0"))
-	assert.Nil(enforceCoverage("/tmp", "0"))
+	assert.Nil(enforceCoverage("/tmp", 0))
 
 	assert.Nil(writeCoverage("/tmp", "70"))
-	assert.Nil(enforceCoverage("/tmp", "90"))
+	assert.Nil(enforceCoverage("/tmp", 90))
 }
 
 func TestExtractCoverage(t *testing.T) {
@@ -100,8 +104,21 @@ func TestExtractCoverage(t *testing.T) {
 func TestParseCoverage(t *testing.T) {
 	assert := assert.New(t)
 
-	assert.Equal(94, parseCoverage("94%"))
-	assert.Equal(94, parseCoverage("94"))
+	val, err := parseCoverage("94%")
+	assert.Nil(err)
+	assert.Equal(94, val)
+	val, err = parseCoverage("94")
+	assert.Nil(err)
+	assert.Equal(94, val)
+	val, err = parseCoverage("NaN")
+	assert.True(math.IsNaN(val))
+	assert.Equal(`"NaN" parses to an invalid coverage value: NaN`, fmt.Sprintf("%v", err))
+	val, err = parseCoverage("+Infinity")
+	assert.True(math.IsNaN(val))
+	assert.Equal(`"+Infinity" parses to an invalid coverage value: +Inf`, fmt.Sprintf("%v", err))
+	val, err = parseCoverage("-Infinity")
+	assert.True(math.IsNaN(val))
+	assert.Equal(`"-Infinity" parses to an invalid coverage value: -Inf`, fmt.Sprintf("%v", err))
 }
 
 func TestColorCoverage(t *testing.T) {

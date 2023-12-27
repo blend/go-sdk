@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -18,13 +18,13 @@ import (
 // By default it uses a text output formatter writing to stdout.
 func New(options ...Option) (*Logger, error) {
 	l := &Logger{
-		Formatter:      NewTextOutputFormatter(),
-		Output:         NopCloserWriter{NewInterlockedWriter(os.Stdout)},
-		RecoverPanics:  DefaultRecoverPanics,
-		Flags:          NewFlags(DefaultFlags...),
-		Writable:       FlagsAll(),
-		Scopes:         ScopesAll(),
-		WritableScopes: ScopesAll(),
+		Formatter:	NewTextOutputFormatter(),
+		Output:		NopCloserWriter{NewInterlockedWriter(os.Stdout)},
+		RecoverPanics:	DefaultRecoverPanics,
+		Flags:		NewFlags(DefaultFlags...),
+		Writable:	FlagsAll(),
+		Scopes:		ScopesAll(),
+		WritableScopes:	ScopesAll(),
 	}
 
 	l.Scope = NewScope(l)
@@ -97,20 +97,20 @@ type Logger struct {
 	*Flags
 	Scope
 
-	Writable       *Flags
-	Scopes         *Scopes
-	WritableScopes *Scopes
-	RecoverPanics  bool
+	Writable	*Flags
+	Scopes		*Scopes
+	WritableScopes	*Scopes
+	RecoverPanics	bool
 
-	Output    io.Writer
-	Formatter WriteFormatter
-	Errors    chan error
+	Output		io.Writer
+	Formatter	WriteFormatter
+	Errors		chan error
 
 	// Filters hold filters organized by flag, and then by filter name.
 	// The intent is to modify event data before it is written or given to listeners.
-	Filters map[string]map[string]Filter
+	Filters	map[string]map[string]Filter
 	// Listeners hold event listeners organized by flag, and then by listener name.
-	Listeners map[string]map[string]*Worker
+	Listeners	map[string]map[string]*Worker
 }
 
 // GetFlags returns the flags.

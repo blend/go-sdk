@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -18,8 +18,8 @@ import (
 // It surfaces a subset of the template api.
 // It is set / accessed by the outer template.
 type Viewmodel struct {
-	vars Vars
-	env  env.Vars
+	vars	Vars
+	env	env.Vars
 }
 
 // Vars returns the vars collection.

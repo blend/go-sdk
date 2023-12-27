@@ -1,63 +1,63 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
 package collections
 
 import (
-	"strconv"
+	"fmt"
 	"strings"
 )
 
-// NewSetOfInt creates a new SetOfInt.
-func NewSetOfInt(values ...int) SetOfInt {
-	set := SetOfInt{}
+// NewSet creates a new set from a list of values.
+func NewSet[T comparable](values ...T) Set[T] {
+	output := Set[T](make(map[T]struct{}))
 	for _, v := range values {
-		set.Add(v)
+		output[v] = struct{}{}
 	}
-	return set
+	return output
 }
 
-// SetOfInt is a type alias for map[int]int
-type SetOfInt map[int]bool
+// Set is a generic implementation of a set data structure.
+type Set[T comparable] map[T]struct{}
 
-// Add adds an element to the set, replaceing a previous value.
-func (si SetOfInt) Add(i int) {
-	si[i] = true
+// Add adds an element to the set, replacing a previous value.
+func (s Set[T]) Add(i T) {
+	s[i] = struct{}{}
 }
 
 // Remove removes an element from the set.
-func (si SetOfInt) Remove(i int) {
-	delete(si, i)
+func (s Set[T]) Remove(i T) {
+	delete(s, i)
 }
 
 // Contains returns if the element is in the set.
-func (si SetOfInt) Contains(i int) bool {
-	_, ok := si[i]
+func (s Set[T]) Contains(i T) bool {
+	_, ok := s[i]
 	return ok
 }
 
 // Len returns the number of elements in the set.
-func (si SetOfInt) Len() int {
-	return len(si)
+func (s Set[T]) Len() int {
+	return len(s)
 }
 
 // Copy returns a new copy of the set.
-func (si SetOfInt) Copy() SetOfInt {
-	newSet := NewSetOfInt()
-	for key := range si {
+func (s Set[T]) Copy() Set[T] {
+	newSet := NewSet[T]()
+	for key := range s {
 		newSet.Add(key)
 	}
 	return newSet
 }
 
 // Union joins two sets together without dupes.
-func (si SetOfInt) Union(other SetOfInt) SetOfInt {
-	union := NewSetOfInt()
-	for k := range si {
+func (s Set[T]) Union(other Set[T]) Set[T] {
+	union := NewSet[T]()
+	for k := range s {
 		union.Add(k)
 	}
 
@@ -68,9 +68,9 @@ func (si SetOfInt) Union(other SetOfInt) SetOfInt {
 }
 
 // Intersect returns shared elements between two sets.
-func (si SetOfInt) Intersect(other SetOfInt) SetOfInt {
-	intersection := NewSetOfInt()
-	for k := range si {
+func (s Set[T]) Intersect(other Set[T]) Set[T] {
+	intersection := NewSet[T]()
+	for k := range s {
 		if other.Contains(k) {
 			intersection.Add(k)
 		}
@@ -79,15 +79,15 @@ func (si SetOfInt) Intersect(other SetOfInt) SetOfInt {
 }
 
 // Difference returns non-shared elements between two sets.
-func (si SetOfInt) Difference(other SetOfInt) SetOfInt {
-	difference := NewSetOfInt()
-	for k := range si {
+func (s Set[T]) Difference(other Set[T]) Set[T] {
+	difference := NewSet[T]()
+	for k := range s {
 		if !other.Contains(k) {
 			difference.Add(k)
 		}
 	}
 	for k := range other {
-		if !si.Contains(k) {
+		if !s.Contains(k) {
 			difference.Add(k)
 		}
 	}
@@ -96,8 +96,8 @@ func (si SetOfInt) Difference(other SetOfInt) SetOfInt {
 
 // IsSubsetOf returns if a given set is a complete subset of another set,
 // i.e. all elements in target set are in other set.
-func (si SetOfInt) IsSubsetOf(other SetOfInt) bool {
-	for k := range si {
+func (s Set[T]) IsSubsetOf(other Set[T]) bool {
+	for k := range s {
 		if !other.Contains(k) {
 			return false
 		}
@@ -106,133 +106,19 @@ func (si SetOfInt) IsSubsetOf(other SetOfInt) bool {
 }
 
 // AsSlice returns the set as a slice.
-func (si SetOfInt) AsSlice() []int {
-	output := []int{}
-	for key := range si {
+func (s Set[T]) AsSlice() []T {
+	var output []T
+	for key := range s {
 		output = append(output, key)
 	}
 	return output
 }
 
 // String returns the set as a csv string.
-func (si SetOfInt) String() string {
+func (s Set[T]) String() string {
 	var values []string
-	for _, i := range si.AsSlice() {
-		values = append(values, strconv.Itoa(i))
+	for key := range s {
+		values = append(values, fmt.Sprint(key))
 	}
-
 	return strings.Join(values, ", ")
-}
-
-// NewSetOfString creates a new SetOfString.
-func NewSetOfString(values ...string) SetOfString {
-	set := SetOfString{}
-	for _, v := range values {
-		set.Add(v)
-	}
-	return set
-}
-
-// SetOfString is a set of strings
-type SetOfString map[string]bool
-
-// Add adds an element.
-func (ss SetOfString) Add(entry string) {
-	if _, hasEntry := ss[entry]; !hasEntry {
-		ss[entry] = true
-	}
-}
-
-// Remove deletes an element, returns if the element was in the set.
-func (ss SetOfString) Remove(entry string) bool {
-	if _, hasEntry := ss[entry]; hasEntry {
-		delete(ss, entry)
-		return true
-	}
-	return false
-}
-
-// Contains returns if an element is in the set.
-func (ss SetOfString) Contains(entry string) bool {
-	_, hasEntry := ss[entry]
-	return hasEntry
-}
-
-// Len returns the length of the set.
-func (ss SetOfString) Len() int {
-	return len(ss)
-}
-
-// Copy returns a new copy of the set.
-func (ss SetOfString) Copy() SetOfString {
-	newSet := SetOfString{}
-	for key := range ss {
-		newSet.Add(key)
-	}
-	return newSet
-}
-
-// Union joins two sets together without dupes.
-func (ss SetOfString) Union(other SetOfString) SetOfString {
-	union := NewSetOfString()
-	for k := range ss {
-		union.Add(k)
-	}
-
-	for k := range other {
-		union.Add(k)
-	}
-	return union
-}
-
-// Intersect returns shared elements between two sets.
-func (ss SetOfString) Intersect(other SetOfString) SetOfString {
-	intersection := NewSetOfString()
-	for k := range ss {
-		if other.Contains(k) {
-			intersection.Add(k)
-		}
-	}
-	return intersection
-}
-
-// Difference returns non-shared elements between two sets.
-func (ss SetOfString) Difference(other SetOfString) SetOfString {
-	difference := NewSetOfString()
-	for k := range ss {
-		if !other.Contains(k) {
-			difference.Add(k)
-		}
-	}
-	for k := range other {
-		if !ss.Contains(k) {
-			difference.Add(k)
-		}
-	}
-	return difference
-}
-
-// IsSubsetOf returns if a given set is a complete subset of another set,
-// i.e. all elements in target set are in other set.
-func (ss SetOfString) IsSubsetOf(other SetOfString) bool {
-	for k := range ss {
-		if !other.Contains(k) {
-			return false
-		}
-	}
-	return true
-}
-
-// AsSlice returns the set as a slice.
-func (ss SetOfString) AsSlice() []string {
-	output := []string{}
-	for key := range ss {
-		output = append(output, key)
-	}
-	return output
-}
-
-// String returns the set as a csv string.
-func (ss SetOfString) String() string {
-	return strings.Join(ss.AsSlice(), ", ")
 }

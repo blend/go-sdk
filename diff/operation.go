@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -15,13 +15,13 @@ type Operation int8
 // Operation constants.
 const (
 	// DiffDelete item represents a delete diff.
-	DiffDelete Operation = -1
+	DiffDelete	Operation	= -1
 	// DiffInsert item represents an insert diff.
-	DiffInsert Operation = 1
+	DiffInsert	Operation	= 1
 	// DiffEqual item represents an equal diff.
-	DiffEqual Operation = 0
+	DiffEqual	Operation	= 0
 	//IndexSeparator is used to separate the array indexes in an index string
-	IndexSeparator = ","
+	IndexSeparator	= ","
 )
 
 func _() {

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -12,5 +12,5 @@ import "time"
 // BeginningOfMonth returns the date that represents
 // the last day of the month for a given time.
 func BeginningOfMonth(t time.Time) time.Time {
-	return time.Date(t.Year(), t.Month(), 01, 00, 00, 00, 00, t.Location()) // move to YY-MM-01 00:00.00
+	return time.Date(t.Year(), t.Month(), 01, 00, 00, 00, 00, t.Location())	// move to YY-MM-01 00:00.00
 }

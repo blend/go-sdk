@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -20,9 +20,9 @@ import (
 )
 
 type myConfig struct {
-	Environment string `yaml:"environment" env:"SERVICE_ENV" secret:"environment"`
-	Version     string `yaml:"version" env:"SERVICE_VERSION"`
-	Secret      string `yaml:"secret" secret:"secret,base64"`
+	Environment	string	`yaml:"environment" env:"SERVICE_ENV" secret:"environment"`
+	Version		string	`yaml:"version" env:"SERVICE_VERSION"`
+	Secret		string	`yaml:"secret" secret:"secret,base64"`
 }
 
 func main() {
@@ -31,9 +31,9 @@ func main() {
 
 	keyPath := "configTest"
 	err := client.WriteInto(context.TODO(), keyPath, myConfig{
-		Environment: "test",
-		Version:     "wont be in output",
-		Secret:      base64.StdEncoding.EncodeToString([]byte("a super secure one")),
+		Environment:	"test",
+		Version:	"wont be in output",
+		Secret:		base64.StdEncoding.EncodeToString([]byte("a super secure one")),
 	})
 	if err != nil {
 		log.Fatal(err)

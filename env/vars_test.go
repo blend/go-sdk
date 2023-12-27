@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -9,6 +9,7 @@ package env_test
 
 import (
 	"encoding/base64"
+	"errors"
 	"os"
 	"testing"
 	"time"
@@ -26,7 +27,8 @@ func TestVarsSet(t *testing.T) {
 	assert := assert.New(t)
 
 	vars := env.Vars{
-		"Foo": "baz",
+		"Foo":	"baz",
+		"bat":	"man",
 	}
 
 	vars.Set("Foo", "bar")
@@ -34,16 +36,22 @@ func TestVarsSet(t *testing.T) {
 
 	vars.Set("NotFoo", "buzz")
 	assert.Equal("buzz", vars.String("NotFoo"))
+
+	val, err := vars.GetString("bat")
+	assert.Nil(err)
+	assert.Equal("man", val)
+	_, err = vars.GetString("NoValueKey")
+	assert.True(errors.Is(err, env.ErrNotFound{Key: "NoValueKey"}))
 }
 
 func TestEnvBool(t *testing.T) {
 	assert := assert.New(t)
 
 	vars := env.Vars{
-		"true":  "true",
-		"1":     "1",
-		"yes":   "yes",
-		"false": "false",
+		"true":		"true",
+		"1":		"1",
+		"yes":		"yes",
+		"false":	"false",
 	}
 
 	assert.True(vars.Bool("true"))
@@ -66,9 +74,9 @@ func TestEnvInt(t *testing.T) {
 	assert := assert.New(t)
 
 	vars := env.Vars{
-		"One": "1",
-		"Two": "2",
-		"Foo": "Bar",
+		"One":	"1",
+		"Two":	"2",
+		"Foo":	"Bar",
 	}
 
 	assert.Equal(1, vars.MustInt("One"))
@@ -83,9 +91,9 @@ func TestEnvInt64(t *testing.T) {
 	assert := assert.New(t)
 
 	vars := env.Vars{
-		"One": "1",
-		"Two": "2",
-		"Foo": "Bar",
+		"One":	"1",
+		"Two":	"2",
+		"Foo":	"Bar",
 	}
 
 	assert.Equal(1, vars.MustInt64("One"))
@@ -113,8 +121,8 @@ func TestEnvBase64(t *testing.T) {
 
 	testValue := base64.StdEncoding.EncodeToString([]byte("this is a test"))
 	vars := env.Vars{
-		"Foo": string(testValue),
-		"Bar": "not_base64",
+		"Foo":	string(testValue),
+		"Bar":	"not_base64",
 	}
 
 	res, err := vars.Base64("Foo")
@@ -130,10 +138,10 @@ func TestEnvHasKey(t *testing.T) {
 	assert := assert.New(t)
 
 	vars := env.Vars{
-		"test1": "foo",
-		"test2": "bar",
-		"test3": "baz",
-		"test4": "buzz",
+		"test1":	"foo",
+		"test2":	"bar",
+		"test3":	"baz",
+		"test4":	"buzz",
 	}
 
 	assert.True(vars.Has("test1"))
@@ -144,10 +152,10 @@ func TestEnvHasAnyKeys(t *testing.T) {
 	assert := assert.New(t)
 
 	vars := env.Vars{
-		"test1": "foo",
-		"test2": "bar",
-		"test3": "baz",
-		"test4": "buzz",
+		"test1":	"foo",
+		"test2":	"bar",
+		"test3":	"baz",
+		"test4":	"buzz",
 	}
 
 	assert.True(vars.HasAny("test1"))
@@ -161,10 +169,10 @@ func TestEnvHasAllKeys(t *testing.T) {
 	assert := assert.New(t)
 
 	vars := env.Vars{
-		"test1": "foo",
-		"test2": "bar",
-		"test3": "baz",
-		"test4": "buzz",
+		"test1":	"foo",
+		"test2":	"bar",
+		"test3":	"baz",
+		"test4":	"buzz",
 	}
 
 	assert.True(vars.HasAll("test1"))
@@ -177,10 +185,10 @@ func TestVarsKeys(t *testing.T) {
 	assert := assert.New(t)
 
 	vars := env.Vars{
-		"test1": "foo",
-		"test2": "bar",
-		"test3": "baz",
-		"test4": "buzz",
+		"test1":	"foo",
+		"test2":	"bar",
+		"test3":	"baz",
+		"test4":	"buzz",
 	}
 
 	keys := vars.Vars()
@@ -195,13 +203,13 @@ func TestEnvUnion(t *testing.T) {
 	assert := assert.New(t)
 
 	vars1 := env.Vars{
-		"test3": "baz",
-		"test4": "buzz",
+		"test3":	"baz",
+		"test4":	"buzz",
 	}
 
 	vars2 := env.Vars{
-		"test1": "foo",
-		"test2": "bar",
+		"test1":	"foo",
+		"test2":	"bar",
 	}
 
 	union := vars1.Union(vars2)
@@ -211,45 +219,45 @@ func TestEnvUnion(t *testing.T) {
 }
 
 type readInto struct {
-	Test1   string        `env:"test1"`
-	Test2   int           `env:"test2"`
-	Test3   float64       `env:"test3"`
-	Dur     time.Duration `env:"dur"`
-	Sub     readIntoSub
-	Alias   alias   `env:"alias"`
-	Uint    uint    `env:"uint"`
-	Uint8   uint    `env:"uint8"`
-	Uint16  uint16  `env:"uint16"`
-	Uint32  uint32  `env:"uint32"`
-	Uint64  uint64  `env:"uint64"`
-	Int     int     `env:"int"`
-	Int8    int     `env:"int8"`
-	Int16   int16   `env:"int16"`
-	Int32   int32   `env:"int32"`
-	Int64   int64   `env:"int64"`
-	Float32 float32 `env:"float32"`
-	Float64 float32 `env:"float64"`
+	Test1	string		`env:"test1"`
+	Test2	int		`env:"test2"`
+	Test3	float64		`env:"test3"`
+	Dur	time.Duration	`env:"dur"`
+	Sub	readIntoSub
+	Alias	alias	`env:"alias"`
+	Uint	uint	`env:"uint"`
+	Uint8	uint	`env:"uint8"`
+	Uint16	uint16	`env:"uint16"`
+	Uint32	uint32	`env:"uint32"`
+	Uint64	uint64	`env:"uint64"`
+	Int	int	`env:"int"`
+	Int8	int	`env:"int8"`
+	Int16	int16	`env:"int16"`
+	Int32	int32	`env:"int32"`
+	Int64	int64	`env:"int64"`
+	Float32	float32	`env:"float32"`
+	Float64	float32	`env:"float64"`
 
-	EmptyUint    uint    `env:"emptyuint"`
-	EmptyUint8   uint    `env:"emptyuint8"`
-	EmptyUint16  uint16  `env:"emptyuint16"`
-	EmptyUint32  uint32  `env:"emptyuint32"`
-	EmptyUint64  uint64  `env:"emptyuint64"`
-	EmptyInt     int     `env:"emptyint"`
-	EmptyInt8    int     `env:"emptyint8"`
-	EmptyInt16   int16   `env:"emptyint16"`
-	EmptyInt32   int32   `env:"emptyint32"`
-	EmptyInt64   int64   `env:"emptyint64"`
-	EmptyFloat32 float32 `env:"emptyfloat32"`
-	EmptyFloat64 float32 `env:"emptyfloat64"`
+	EmptyUint	uint	`env:"emptyuint"`
+	EmptyUint8	uint	`env:"emptyuint8"`
+	EmptyUint16	uint16	`env:"emptyuint16"`
+	EmptyUint32	uint32	`env:"emptyuint32"`
+	EmptyUint64	uint64	`env:"emptyuint64"`
+	EmptyInt	int	`env:"emptyint"`
+	EmptyInt8	int	`env:"emptyint8"`
+	EmptyInt16	int16	`env:"emptyint16"`
+	EmptyInt32	int32	`env:"emptyint32"`
+	EmptyInt64	int64	`env:"emptyint64"`
+	EmptyFloat32	float32	`env:"emptyfloat32"`
+	EmptyFloat64	float32	`env:"emptyfloat64"`
 }
 
 type readIntoSub struct {
-	Test4 string   `env:"test4"`
-	Test5 []string `env:"test5,csv"`
-	Test6 []byte   `env:"test6,base64"`
-	Test7 []byte   `env:"test7,bytes"`
-	Test8 *bool    `env:"test8"`
+	Test4	string		`env:"test4"`
+	Test5	[]string	`env:"test5,csv"`
+	Test6	[]byte		`env:"test6,base64"`
+	Test7	[]byte		`env:"test7,bytes"`
+	Test8	*bool		`env:"test8"`
 }
 
 type alias string
@@ -258,41 +266,41 @@ func TestEnvReadInto(t *testing.T) {
 	assert := assert.New(t)
 
 	vars1 := env.Vars{
-		"test1":   "foo",
-		"test2":   "1",
-		"test3":   "2.0",
-		"test4":   "bar",
-		"dur":     "4s",
-		"test5":   "bar0,bar1,bar2",
-		"test6":   string(base64.StdEncoding.EncodeToString([]byte("base64encoded"))),
-		"test7":   "alsoBytes",
-		"test8":   "true",
-		"alias":   "hello",
-		"uint":    "1",
-		"uint8":   "1",
-		"uint16":  "1",
-		"uint32":  "1",
-		"uint64":  "1",
-		"int":     "1",
-		"int8":    "1",
-		"int16":   "1",
-		"int32":   "1",
-		"int64":   "1",
-		"float32": "1",
-		"float64": "1",
+		"test1":	"foo",
+		"test2":	"1",
+		"test3":	"2.0",
+		"test4":	"bar",
+		"dur":		"4s",
+		"test5":	"bar0,bar1,bar2",
+		"test6":	string(base64.StdEncoding.EncodeToString([]byte("base64encoded"))),
+		"test7":	"alsoBytes",
+		"test8":	"true",
+		"alias":	"hello",
+		"uint":		"1",
+		"uint8":	"1",
+		"uint16":	"1",
+		"uint32":	"1",
+		"uint64":	"1",
+		"int":		"1",
+		"int8":		"1",
+		"int16":	"1",
+		"int32":	"1",
+		"int64":	"1",
+		"float32":	"1",
+		"float64":	"1",
 
-		"emptyuint":    "",
-		"emptyuint8":   "",
-		"emptyuint16":  "",
-		"emptyuint32":  "",
-		"emptyuint64":  "",
-		"emptyint":     "",
-		"emptyint8":    "",
-		"emptyint16":   "",
-		"emptyint32":   "",
-		"emptyint64":   "",
-		"emptyfloat32": "",
-		"emptyfloat64": "",
+		"emptyuint":	"",
+		"emptyuint8":	"",
+		"emptyuint16":	"",
+		"emptyuint32":	"",
+		"emptyuint64":	"",
+		"emptyint":	"",
+		"emptyint8":	"",
+		"emptyint16":	"",
+		"emptyint32":	"",
+		"emptyint64":	"",
+		"emptyfloat32":	"",
+		"emptyfloat64":	"",
 	}
 
 	var obj readInto
@@ -342,8 +350,8 @@ func TestEnvDelete(t *testing.T) {
 	assert := assert.New(t)
 
 	vars := env.Vars{
-		"test": "foo",
-		"bar":  "baz",
+		"test":	"foo",
+		"bar":	"baz",
 	}
 	assert.True(vars.Has("test"))
 	vars.Delete("test")
@@ -355,8 +363,8 @@ func TestEnvCSV(t *testing.T) {
 	assert := assert.New(t)
 
 	vars := env.Vars{
-		"foo": "a,b,c",
-		"bar": "",
+		"foo":	"a,b,c",
+		"bar":	"",
 	}
 
 	assert.Equal([]string{"a", "b", "c"}, vars.CSV("foo"))

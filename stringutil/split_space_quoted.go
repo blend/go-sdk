@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -18,11 +18,11 @@ func SplitSpaceQuoted(text string) (output []string) {
 
 	// fsm states
 	const (
-		stateLeadingSpace    = iota
-		stateWord            = iota
-		stateIntraSpace      = iota
-		stateLeadingQuoted   = iota
-		stateIntraWordQuoted = iota
+		stateLeadingSpace	= iota
+		stateWord		= iota
+		stateIntraSpace		= iota
+		stateLeadingQuoted	= iota
+		stateIntraWordQuoted	= iota
 	)
 
 	var state int
@@ -30,9 +30,9 @@ func SplitSpaceQuoted(text string) (output []string) {
 	var opened rune
 	for _, r := range text {
 		switch state {
-		case stateLeadingSpace: //leading whitespace until quote or alpha
+		case stateLeadingSpace:	//leading whitespace until quote or alpha
 			if !unicode.IsSpace(r) {
-				if isQuote(r) { // start a quoted section
+				if isQuote(r) {	// start a quoted section
 					opened = r
 					state = stateLeadingQuoted
 				} else {
@@ -40,7 +40,7 @@ func SplitSpaceQuoted(text string) (output []string) {
 					word = append(word, r)
 				}
 			}
-		case stateWord: // within a word
+		case stateWord:	// within a word
 			if isQuote(r) {
 				opened = r
 				word = append(word, r)
@@ -54,10 +54,10 @@ func SplitSpaceQuoted(text string) (output []string) {
 			} else {
 				word = append(word, r)
 			}
-		case stateIntraSpace: // we've seen a space after we've seen at least one word
+		case stateIntraSpace:	// we've seen a space after we've seen at least one word
 			// consume spaces until a non-space character
 			if !unicode.IsSpace(r) {
-				if isQuote(r) { // start a quoted section
+				if isQuote(r) {	// start a quoted section
 					opened = r
 					state = stateLeadingQuoted
 				} else {
@@ -65,7 +65,7 @@ func SplitSpaceQuoted(text string) (output []string) {
 					word = append(word, r)
 				}
 			}
-		case stateLeadingQuoted: // leading quoted section
+		case stateLeadingQuoted:	// leading quoted section
 			// if we close a quoted section, switch
 			// back to normal word mode
 			if matchesQuote(opened, r) {
@@ -73,7 +73,7 @@ func SplitSpaceQuoted(text string) (output []string) {
 			} else {
 				word = append(word, r)
 			}
-		case stateIntraWordQuoted: // quoted section within a word
+		case stateIntraWordQuoted:	// quoted section within a word
 			// if we close a quoted section, switch
 			// back to normal word mode
 			if matchesQuote(opened, r) {

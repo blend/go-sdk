@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -16,17 +16,17 @@ import (
 
 // ConfigOptions are options built for reading configs.
 type ConfigOptions struct {
-	Log       Logger
-	Context   context.Context
-	Contents  []ConfigContents
-	FilePaths []string
-	Env       env.Vars
+	Log		Logger
+	Context		context.Context
+	Contents	[]ConfigContents
+	FilePaths	[]string
+	Env		env.Vars
 }
 
 // ConfigContents are literal contents to read from.
 type ConfigContents struct {
-	Ext      string
-	Contents io.Reader
+	Ext		string
+	Contents	io.Reader
 }
 
 // Background yields a context for a config options set.

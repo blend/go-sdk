@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -16,7 +16,7 @@ import (
 
 type classProvider struct {
 	error
-	ErrClass error
+	ErrClass	error
 }
 
 func (cp classProvider) Class() error {
@@ -36,8 +36,8 @@ func TestErrClass(t *testing.T) {
 	assert.Equal("this is a test", ErrClass(err).Error())
 
 	cp := classProvider{
-		error:    fmt.Errorf("this is a provider test"),
-		ErrClass: fmt.Errorf("the error class"),
+		error:		fmt.Errorf("this is a provider test"),
+		ErrClass:	fmt.Errorf("the error class"),
 	}
 	assert.Equal("the error class", ErrClass(cp).Error())
 	assert.Equal("this is a test", ErrClass(fmt.Errorf("this is a test")).Error())
@@ -53,7 +53,7 @@ func TestErrMessage(t *testing.T) {
 
 type stackProvider struct {
 	error
-	Stack StackTrace
+	Stack	StackTrace
 }
 
 func (sp stackProvider) StackTrace() StackTrace {
@@ -67,8 +67,8 @@ func TestErrStackTrace(t *testing.T) {
 	assert.NotNil(ErrStackTrace(err))
 
 	sp := stackProvider{
-		error: fmt.Errorf("this is a provider test"),
-		Stack: StackStrings([]string{"first", "second"}),
+		error:	fmt.Errorf("this is a provider test"),
+		Stack:	StackStrings([]string{"first", "second"}),
 	}
 	assert.Equal([]string{"first", "second"}, ErrStackTrace(sp).Strings())
 

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -10,4 +10,4 @@ Package stats includes helpers for writing stats to collectors by adding listene
 
 It also includes sub-packages for working with distributed tracing.
 */
-package stats // import "github.com/blend/go-sdk/stats"
+package stats	// import "github.com/blend/go-sdk/stats"

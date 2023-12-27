@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -17,21 +17,21 @@ import (
 // a given schedule by a given duration.
 func Delay(d time.Duration, then Schedule) *DelaySchedule {
 	return &DelaySchedule{
-		delay: d,
-		then:  then,
+		delay:	d,
+		then:	then,
 	}
 }
 
 var (
-	_ Schedule     = (*DelaySchedule)(nil)
-	_ fmt.Stringer = (*DelaySchedule)(nil)
+	_	Schedule	= (*DelaySchedule)(nil)
+	_	fmt.Stringer	= (*DelaySchedule)(nil)
 )
 
 // DelaySchedule wraps a schedule with a delay.
 type DelaySchedule struct {
-	didRun int32
-	delay  time.Duration
-	then   Schedule
+	didRun	int32
+	delay	time.Duration
+	then	Schedule
 }
 
 // Next implements Schedule.

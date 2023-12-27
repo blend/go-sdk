@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -35,11 +35,11 @@ const (
 func New(options ...Option) (*Manager, error) {
 	manager := &Manager{
 		Config: oauth2.Config{
-			Endpoint: google.Endpoint,
-			Scopes:   DefaultScopes,
+			Endpoint:	google.Endpoint,
+			Scopes:		DefaultScopes,
 		},
-		PublicKeyCache: NewPublicKeyCache(GoogleKeysURL),
-		Issuer:         googleIssuerURL,
+		PublicKeyCache:	NewPublicKeyCache(GoogleKeysURL),
+		Issuer:		googleIssuerURL,
 	}
 
 	for _, option := range options {
@@ -63,19 +63,19 @@ func MustNew(options ...Option) *Manager {
 // Manager is the oauth manager.
 type Manager struct {
 	oauth2.Config
-	Tracer Tracer
+	Tracer	Tracer
 
-	Secret []byte
+	Secret	[]byte
 
-	HostedDomain   string
-	AllowedDomains []string
+	HostedDomain	string
+	AllowedDomains	[]string
 
-	Issuer string
+	Issuer	string
 
-	ValidateJWT ValidateJWTFunc
+	ValidateJWT	ValidateJWTFunc
 
-	FetchProfileDefaults []r2.Option
-	PublicKeyCache       *PublicKeyCache
+	FetchProfileDefaults	[]r2.Option
+	PublicKeyCache		*PublicKeyCache
 }
 
 // OAuthURL is the auth url for google with a given clientID.

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -23,8 +23,8 @@ import (
 )
 
 type xmlBody struct {
-	X []string `xml:"x"`
-	Y []string `xml:"y"`
+	X	[]string	`xml:"x"`
+	Y	[]string	`xml:"y"`
 }
 
 func TestRequestOptions(t *testing.T) {

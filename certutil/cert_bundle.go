@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -66,19 +66,19 @@ func NewCertBundle(keyPair KeyPair) (*CertBundle, error) {
 	}
 
 	return &CertBundle{
-		PrivateKey:      privateKey,
-		PublicKey:       &privateKey.PublicKey,
-		Certificates:    certs,
-		CertificateDERs: ders,
+		PrivateKey:		privateKey,
+		PublicKey:		&privateKey.PublicKey,
+		Certificates:		certs,
+		CertificateDERs:	ders,
 	}, nil
 }
 
 // CertBundle is the packet of information for a certificate.
 type CertBundle struct {
-	PrivateKey      *rsa.PrivateKey
-	PublicKey       *rsa.PublicKey
-	Certificates    []x509.Certificate
-	CertificateDERs [][]byte
+	PrivateKey	*rsa.PrivateKey
+	PublicKey	*rsa.PublicKey
+	Certificates	[]x509.Certificate
+	CertificateDERs	[][]byte
 }
 
 // MustGenerateKeyPair returns a serialized version of the bundle as a key pair
@@ -102,8 +102,8 @@ func (cb *CertBundle) GenerateKeyPair() (output KeyPair, err error) {
 		return
 	}
 	output = KeyPair{
-		Cert: public.String(),
-		Key:  private.String(),
+		Cert:	public.String(),
+		Key:	private.String(),
 	}
 	return
 }

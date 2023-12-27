@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -13,82 +13,34 @@ import (
 	"github.com/blend/go-sdk/assert"
 )
 
-func TestSetOfInt(t *testing.T) {
-	assert := assert.New(t)
+func TestSet(t *testing.T) {
+	a := assert.New(t)
 
-	set := SetOfInt{}
+	set := Set[int]{}
 	set.Add(1)
-	assert.True(set.Contains(1))
-	assert.Equal(1, set.Len())
-	assert.False(set.Contains(2))
+	a.True(set.Contains(1))
+	a.Equal(1, set.Len())
+	a.False(set.Contains(2))
 	set.Remove(1)
-	assert.False(set.Contains(1))
-	assert.Zero(set.Len())
+	a.False(set.Contains(1))
+	a.Zero(set.Len())
 }
 
-func TestSetOfString(t *testing.T) {
-	assert := assert.New(t)
+func TestSetOperations(t *testing.T) {
+	a := assert.New(t)
 
-	set := SetOfString{}
-	assert.Equal(0, set.Len())
+	s1 := NewSet[int](1, 2, 3, 4)
+	s2 := NewSet[int](1, 2)
+	s3 := NewSet[int](3, 4, 5, 6)
 
-	set.Add("test")
-	assert.Equal(1, set.Len())
-	assert.True(set.Contains("test"))
-
-	set.Add("test")
-	assert.Equal(1, set.Len())
-	assert.True(set.Contains("test"))
-
-	set.Add("not test")
-	assert.Equal(2, set.Len())
-	assert.True(set.Contains("not test"))
-
-	set.Remove("test")
-	assert.Equal(1, set.Len())
-	assert.False(set.Contains("test"))
-	assert.True(set.Contains("not test"))
-
-	set.Remove("not test")
-	assert.Equal(0, set.Len())
-	assert.False(set.Contains("test"))
-	assert.False(set.Contains("not test"))
-}
-
-func TestSetOfIntOperations(t *testing.T) {
-	assert := assert.New(t)
-
-	a := NewSetOfInt(1, 2, 3, 4)
-	b := NewSetOfInt(1, 2)
-	c := NewSetOfInt(3, 4, 5, 6)
-
-	union := a.Union(c)
-	assert.Len(union, 6)
-	intersect := a.Intersect(b)
-	assert.Len(intersect, 2)
-	diff := a.Difference(c)
-	assert.Len(diff, 4)
-	diff = c.Difference(a)
-	assert.Len(diff, 4)
-	assert.True(b.IsSubsetOf(a))
-	assert.False(a.IsSubsetOf(b))
-}
-
-func TestSetOfStringOperations(t *testing.T) {
-	assert := assert.New(t)
-
-	a := NewSetOfString("a", "b", "c", "d")
-	b := NewSetOfString("a", "b")
-	c := NewSetOfString("c", "d", "e", "f")
-
-	union := a.Union(c)
-	assert.Len(union, 6)
-	intersect := a.Intersect(b)
-	assert.Len(intersect, 2)
-	diff := a.Difference(c)
-	assert.Len(diff, 4)
-	diff = c.Difference(a)
-	assert.Len(diff, 4)
-	assert.True(b.IsSubsetOf(a))
-	assert.False(a.IsSubsetOf(b))
+	union := s1.Union(s3)
+	a.Len(union, 6)
+	intersect := s1.Intersect(s2)
+	a.Len(intersect, 2)
+	diff := s1.Difference(s3)
+	a.Len(diff, 4)
+	diff = s3.Difference(s1)
+	a.Len(diff, 4)
+	a.True(s2.IsSubsetOf(s1))
+	a.False(s1.IsSubsetOf(s2))
 }

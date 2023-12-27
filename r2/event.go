@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -22,9 +22,9 @@ import (
 
 const (
 	// Flag is a logger event flag.
-	Flag = "http.client.request"
+	Flag	= "http.client.request"
 	// FlagResponse is a logger event flag.
-	FlagResponse = "http.client.response"
+	FlagResponse	= "http.client.response"
 )
 
 // NewEvent returns a new event.
@@ -58,26 +58,26 @@ func NewEventFilter(filter func(context.Context, Event) (Event, bool)) logger.Fi
 }
 
 var (
-	_ logger.Event        = (*Event)(nil)
-	_ logger.TextWritable = (*Event)(nil)
-	_ logger.JSONWritable = (*Event)(nil)
+	_	logger.Event		= (*Event)(nil)
+	_	logger.TextWritable	= (*Event)(nil)
+	_	logger.JSONWritable	= (*Event)(nil)
 )
 
 // Event is a response to outgoing requests.
 type Event struct {
-	Flag string
+	Flag	string
 	// The request metadata.
-	Request *http.Request
+	Request	*http.Request
 	// The response metadata (excluding the body).
-	Response *http.Response
+	Response	*http.Response
 	// The response body.
-	Body []byte
+	Body	[]byte
 	// Elapsed is the time elapsed.
-	Elapsed time.Duration
+	Elapsed	time.Duration
 }
 
 // GetFlag implements logger.Event.
-func (e Event) GetFlag() string { return e.Flag }
+func (e Event) GetFlag() string	{ return e.Flag }
 
 // WriteText writes the event to a text writer.
 func (e Event) WriteText(tf logger.TextFormatter, wr io.Writer) {
@@ -101,20 +101,18 @@ func (e Event) Decompose() map[string]interface{} {
 			url = e.Request.URL.String()
 		}
 		output["req"] = map[string]interface{}{
-			"method":  e.Request.Method,
-			"url":     url,
-			"headers": e.Request.Header,
+			"method":	e.Request.Method,
+			"url":		url,
 		}
 	}
 	if e.Response != nil {
 		output["res"] = map[string]interface{}{
-			"statusCode":      e.Response.StatusCode,
-			"contentLength":   e.Response.ContentLength,
-			"contentType":     tryHeader(e.Response.Header, "Content-Type", "content-type"),
-			"contentEncoding": tryHeader(e.Response.Header, "Content-Encoding", "content-encoding"),
-			"headers":         e.Response.Header,
-			"cert":            webutil.ParseCertInfo(e.Response),
-			"elapsed":         timeutil.Milliseconds(e.Elapsed),
+			"statusCode":		e.Response.StatusCode,
+			"contentLength":	e.Response.ContentLength,
+			"contentType":		tryHeader(e.Response.Header, "Content-Type", "content-type"),
+			"contentEncoding":	tryHeader(e.Response.Header, "Content-Encoding", "content-encoding"),
+			"cert":			webutil.ParseCertInfo(e.Response),
+			"elapsed":		timeutil.Milliseconds(e.Elapsed),
 		}
 	}
 	if e.Body != nil {
@@ -126,19 +124,19 @@ func (e Event) Decompose() map[string]interface{} {
 
 // EventJSONSchema is the json schema of the logger event.
 type EventJSONSchema struct {
-	Req struct {
-		StartTime time.Time           `json:"startTime"`
-		Method    string              `json:"method"`
-		URL       string              `json:"url"`
-		Headers   map[string][]string `json:"headers"`
-	} `json:"req"`
-	Res struct {
-		CompleteTime  time.Time           `json:"completeTime"`
-		StatusCode    int                 `json:"statusCode"`
-		ContentLength int                 `json:"contentLength"`
-		Headers       map[string][]string `json:"headers"`
-	} `json:"res"`
-	Body string `json:"body"`
+	Req	struct {
+		StartTime	time.Time		`json:"startTime"`
+		Method		string			`json:"method"`
+		URL		string			`json:"url"`
+		Headers		map[string][]string	`json:"headers"`
+	}	`json:"req"`
+	Res	struct {
+		CompleteTime	time.Time		`json:"completeTime"`
+		StatusCode	int			`json:"statusCode"`
+		ContentLength	int			`json:"contentLength"`
+		Headers		map[string][]string	`json:"headers"`
+	}	`json:"res"`
+	Body	string	`json:"body"`
 }
 
 func tryHeader(headers http.Header, keys ...string) string {

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,9 +21,9 @@ import (
 )
 
 var (
-	_ logger.Event        = (*HTTPRequestEvent)(nil)
-	_ logger.TextWritable = (*HTTPRequestEvent)(nil)
-	_ logger.JSONWritable = (*HTTPRequestEvent)(nil)
+	_	logger.Event		= (*HTTPRequestEvent)(nil)
+	_	logger.TextWritable	= (*HTTPRequestEvent)(nil)
+	_	logger.JSONWritable	= (*HTTPRequestEvent)(nil)
 )
 
 // NewHTTPRequestEvent is an event representing a request to an http server.
@@ -101,18 +101,18 @@ func OptHTTPRequestHeader(header http.Header) HTTPRequestEventOption {
 
 // HTTPRequestEvent is an event type for http requests.
 type HTTPRequestEvent struct {
-	Request         *http.Request
-	Route           string
-	ContentLength   int
-	ContentType     string
-	ContentEncoding string
-	StatusCode      int
-	Elapsed         time.Duration
-	Header          http.Header
+	Request		*http.Request
+	Route		string
+	ContentLength	int
+	ContentType	string
+	ContentEncoding	string
+	StatusCode	int
+	Elapsed		time.Duration
+	Header		http.Header
 }
 
 // GetFlag implements event.
-func (e HTTPRequestEvent) GetFlag() string { return FlagHTTPRequest }
+func (e HTTPRequestEvent) GetFlag() string	{ return FlagHTTPRequest }
 
 // WriteText implements TextWritable.
 func (e HTTPRequestEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
@@ -138,17 +138,17 @@ func (e HTTPRequestEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
 // Decompose implements JSONWritable.
 func (e HTTPRequestEvent) Decompose() map[string]interface{} {
 	return map[string]interface{}{
-		"ip":              GetRemoteAddr(e.Request),
-		"userAgent":       GetUserAgent(e.Request),
-		"verb":            e.Request.Method,
-		"path":            e.Request.URL.Path,
-		"route":           e.Route,
-		"query":           e.Request.URL.RawQuery,
-		"host":            e.Request.Host,
-		"contentLength":   e.ContentLength,
-		"contentType":     e.ContentType,
-		"contentEncoding": e.ContentEncoding,
-		"statusCode":      e.StatusCode,
-		"elapsed":         timeutil.Milliseconds(e.Elapsed),
+		"ip":			GetRemoteAddr(e.Request),
+		"userAgent":		GetUserAgent(e.Request),
+		"verb":			e.Request.Method,
+		"path":			e.Request.URL.Path,
+		"route":		e.Route,
+		"query":		e.Request.URL.RawQuery,
+		"host":			e.Request.Host,
+		"contentLength":	e.ContentLength,
+		"contentType":		e.ContentType,
+		"contentEncoding":	e.ContentEncoding,
+		"statusCode":		e.StatusCode,
+		"elapsed":		timeutil.Milliseconds(e.Elapsed),
 	}
 }

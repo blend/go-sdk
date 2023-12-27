@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -40,10 +40,10 @@ func TestTextOutputFormatter(t *testing.T) {
 	assert.Equal(time.RFC3339, tf.TimeFormatOrDefault())
 
 	tf = NewTextOutputFormatter(OptTextConfig(TextConfig{
-		HideTimestamp: true,
-		HideFields:    true,
-		NoColor:       true,
-		TimeFormat:    time.Kitchen,
+		HideTimestamp:	true,
+		HideFields:	true,
+		NoColor:	true,
+		TimeFormat:	time.Kitchen,
 	}))
 
 	assert.True(tf.HideTimestamp)
@@ -58,7 +58,7 @@ func TestTextOutputFormatterWriteFormat(t *testing.T) {
 	tf := NewTextOutputFormatter()
 	paths := []string{"foo", "bar"}
 	ctxPaths := make([]string, len(paths))
-	copy(ctxPaths, paths) // make sure that the original paths are not modified
+	copy(ctxPaths, paths)	// make sure that the original paths are not modified
 	ctx := WithPath(context.Background(), ctxPaths...)
 
 	message := "this is a test"
@@ -66,7 +66,7 @@ func TestTextOutputFormatterWriteFormat(t *testing.T) {
 
 	assert.Nil(tf.WriteFormat(ctx, buf, NewMessageEvent(Info, message)))
 	assert.Contains(buf.String(), message)
-	assert.Equal(paths, GetPath(ctx)) // test that the context paths are not modified
+	assert.Equal(paths, GetPath(ctx))	// test that the context paths are not modified
 }
 
 func TestTextOutputFormatterColorize(t *testing.T) {

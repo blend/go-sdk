@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -18,9 +18,9 @@ func TestSerializeState(t *testing.T) {
 	assert := assert.New(t)
 
 	state := State{
-		RedirectURI: "https://foo.com/bar",
-		Token:       stringutil.Random(stringutil.Letters, 32),
-		SecureToken: stringutil.Random(stringutil.Letters, 64),
+		RedirectURI:	"https://foo.com/bar",
+		Token:		stringutil.Random(stringutil.Letters, 32),
+		SecureToken:	stringutil.Random(stringutil.Letters, 64),
 	}
 
 	contents, err := SerializeState(state)

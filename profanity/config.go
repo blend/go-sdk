@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -9,14 +9,14 @@ package profanity
 
 // Config is the profanity rules parsing config.
 type Config struct {
-	Root      string     `yaml:"root"`
-	ExitFirst *bool      `yaml:"failFast"`
-	RulesFile string     `yaml:"rulesFile"`
-	Rules     GlobFilter `yaml:"rules"`
-	Files     GlobFilter `yaml:"files"`
-	Dirs      GlobFilter `yaml:"dirs"`
-	Verbose   *bool      `yaml:"verbose"`
-	Debug     *bool      `yaml:"debug"`
+	Root		string		`yaml:"root"`
+	ExitFirst	*bool		`yaml:"failFast"`
+	RulesFile	string		`yaml:"rulesFile"`
+	Rules		GlobFilter	`yaml:"rules"`
+	Files		GlobFilter	`yaml:"files"`
+	Dirs		GlobFilter	`yaml:"dirs"`
+	Verbose		*bool		`yaml:"verbose"`
+	Debug		*bool		`yaml:"debug"`
 }
 
 // RootOrDefault returns the starting path or a default.

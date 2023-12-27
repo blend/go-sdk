@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -16,10 +16,10 @@ import (
 // NewWorker creates a new worker.
 func NewWorker(action WorkAction) *Worker {
 	return &Worker{
-		Latch:   NewLatch(),
-		Context: context.Background(),
-		Action:  action,
-		Work:    make(chan interface{}),
+		Latch:		NewLatch(),
+		Context:	context.Background(),
+		Action:		action,
+		Work:		make(chan interface{}),
 	}
 }
 
@@ -29,13 +29,13 @@ func NewWorker(action WorkAction) *Worker {
 type Worker struct {
 	*Latch
 
-	Context   context.Context
-	Action    WorkAction
-	Finalizer WorkerFinalizer
+	Context		context.Context
+	Action		WorkAction
+	Finalizer	WorkerFinalizer
 
-	SkipRecoverPanics bool
-	Errors            chan error
-	Work              chan interface{}
+	SkipRecoverPanics	bool
+	Errors			chan error
+	Work			chan interface{}
 }
 
 // Background returns the queue worker background context.

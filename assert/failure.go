@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -16,17 +16,17 @@ import (
 // NewFailure creates a new failure.
 func NewFailure(message string, userMessageComponents ...interface{}) Failure {
 	return Failure{
-		Message:     message,
-		UserMessage: fmt.Sprint(userMessageComponents...),
-		CallerInfo:  callerInfoStrings(callerInfo()),
+		Message:	message,
+		UserMessage:	fmt.Sprint(userMessageComponents...),
+		CallerInfo:	callerInfoStrings(callerInfo()),
 	}
 }
 
 // Failure is an assertion failure.
 type Failure struct {
-	Message     string   `json:"message"`
-	UserMessage string   `json:"userMessage,omitempty"`
-	CallerInfo  []string `json:"callerInfo"`
+	Message		string		`json:"message"`
+	UserMessage	string		`json:"userMessage,omitempty"`
+	CallerInfo	[]string	`json:"callerInfo"`
 }
 
 // Error implements error.

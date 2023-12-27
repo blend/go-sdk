@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -72,8 +72,8 @@ func TestOutputChunkJSON(t *testing.T) {
 	assert := assert.New(t)
 
 	chunk := BufferChunk{
-		Timestamp: time.Date(2019, 9, 21, 12, 11, 10, 9, time.UTC),
-		Data:      []byte("this is just a test"),
+		Timestamp:	time.Date(2019, 9, 21, 12, 11, 10, 9, time.UTC),
+		Data:		[]byte("this is just a test"),
 	}
 
 	jsonContents, err := json.Marshal(chunk)

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -18,16 +18,16 @@ import (
 
 // these are compile time assertions
 var (
-	_ Event        = (*AuditEvent)(nil)
-	_ TextWritable = (*AuditEvent)(nil)
-	_ JSONWritable = (*AuditEvent)(nil)
+	_	Event		= (*AuditEvent)(nil)
+	_	TextWritable	= (*AuditEvent)(nil)
+	_	JSONWritable	= (*AuditEvent)(nil)
 )
 
 // NewAuditEvent returns a new audit event.
 func NewAuditEvent(principal, verb string, options ...AuditEventOption) AuditEvent {
 	ae := AuditEvent{
-		Principal: principal,
-		Verb:      verb,
+		Principal:	principal,
+		Verb:		verb,
 	}
 	for _, option := range options {
 		option(&ae)
@@ -104,19 +104,19 @@ func OptAuditExtra(values map[string]string) AuditEventOption {
 
 // AuditEvent is a common type of event detailing a business action by a subject.
 type AuditEvent struct {
-	Context       string
-	Principal     string
-	Verb          string
-	Noun          string
-	Subject       string
-	Property      string
-	RemoteAddress string
-	UserAgent     string
-	Extra         map[string]string
+	Context		string
+	Principal	string
+	Verb		string
+	Noun		string
+	Subject		string
+	Property	string
+	RemoteAddress	string
+	UserAgent	string
+	Extra		map[string]string
 }
 
 // GetFlag implements Event.
-func (e AuditEvent) GetFlag() string { return Audit }
+func (e AuditEvent) GetFlag() string	{ return Audit }
 
 // WriteText implements TextWritable.
 func (e AuditEvent) WriteText(formatter TextFormatter, wr io.Writer) {
@@ -172,14 +172,14 @@ func (e AuditEvent) WriteText(formatter TextFormatter, wr io.Writer) {
 // Decompose implements Decomposer.
 func (e AuditEvent) Decompose() map[string]interface{} {
 	return map[string]interface{}{
-		"context":    e.Context,
-		"principal":  e.Principal,
-		"verb":       e.Verb,
-		"noun":       e.Noun,
-		"subject":    e.Subject,
-		"property":   e.Property,
-		"remoteAddr": e.RemoteAddress,
-		"ua":         e.UserAgent,
-		"extra":      e.Extra,
+		"context":	e.Context,
+		"principal":	e.Principal,
+		"verb":		e.Verb,
+		"noun":		e.Noun,
+		"subject":	e.Subject,
+		"property":	e.Property,
+		"remoteAddr":	e.RemoteAddress,
+		"ua":		e.UserAgent,
+		"extra":	e.Extra,
 	}
 }

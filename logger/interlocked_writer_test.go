@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -21,8 +21,8 @@ var (
 
 // mockWriter is a stub for a io.WriteCloser.
 type mockWriter struct {
-	WriteHandler func([]byte) (int, error)
-	CloseHandler func() error
+	WriteHandler	func([]byte) (int, error)
+	CloseHandler	func() error
 }
 
 // Write implements io.Writer

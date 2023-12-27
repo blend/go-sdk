@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -17,37 +17,37 @@ import (
 // These are set with `-ldflags="-X` on `go install`
 var (
 	// Version is the current version.
-	Version = ""
+	Version	= ""
 	// GitRef is the currently deployed git ref
-	GitRef = "HEAD"
+	GitRef	= "HEAD"
 	// ServiceName is the name of the service
-	ServiceName = ""
+	ServiceName	= ""
 	// ProjectName is the name of the project the service belongs to
-	ProjectName = ""
+	ProjectName	= ""
 	// ClusterName is the name of the cluster the service is deployed to
-	ClusterName = ""
+	ClusterName	= ""
 	// Region is the region the service is deployed to
-	Region = ""
+	Region	= ""
 )
 
 // Meta is the cluster config meta.
 type Meta struct {
 	// Region is the aws region the service is deployed to.
-	Region string `json:"region,omitempty" yaml:"region,omitempty"`
+	Region	string	`json:"region,omitempty" yaml:"region,omitempty"`
 	// ServiceName is name of the service
-	ServiceName string `json:"serviceName,omitempty" yaml:"serviceName,omitempty"`
+	ServiceName	string	`json:"serviceName,omitempty" yaml:"serviceName,omitempty"`
 	// ProjectName is the project name injected by Deployinator.
-	ProjectName string `json:"projectName,omitempty" yaml:"projectName,omitempty"`
+	ProjectName	string	`json:"projectName,omitempty" yaml:"projectName,omitempty"`
 	// ClusterName is the name of the cluster the service is deployed to
-	ClusterName string `json:"clusterName,omitempty" yaml:"clusterName,omitempty"`
+	ClusterName	string	`json:"clusterName,omitempty" yaml:"clusterName,omitempty"`
 	// Environment is the environment of the cluster (sandbox, prod etc.)
-	ServiceEnv string `json:"serviceEnv,omitempty" yaml:"serviceEnv,omitempty"`
+	ServiceEnv	string	`json:"serviceEnv,omitempty" yaml:"serviceEnv,omitempty"`
 	// Hostname is the environment of the cluster (sandbox, prod etc.)
-	Hostname string `json:"hostname,omitempty" yaml:"hostname,omitempty"`
+	Hostname	string	`json:"hostname,omitempty" yaml:"hostname,omitempty"`
 	// Version is the application version.
-	Version string `json:"version,omitempty" yaml:"version,omitempty"`
+	Version	string	`json:"version,omitempty" yaml:"version,omitempty"`
 	// GitRef is the git ref of the image.
-	GitRef string `json:"gitRef,omitempty" yaml:"gitRef,omitempty"`
+	GitRef	string	`json:"gitRef,omitempty" yaml:"gitRef,omitempty"`
 }
 
 // SetFrom returns a resolve action to set this meta from a root meta.

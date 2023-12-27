@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -95,11 +95,11 @@ func TestClientIdentityRequired(t *testing.T) {
 	assert.Equal(http.StatusUnauthorized, meta.StatusCode, "Fail on denied client identity")
 	assert.Nil(capturedContext)
 	expected = &envoyutil.XFCCValidationError{
-		Class: envoyutil.ErrDeniedClientIdentity,
-		XFCC:  xfcc,
+		Class:	envoyutil.ErrDeniedClientIdentity,
+		XFCC:	xfcc,
 		// NOTE: This should really be a `map[string]string`. We use a `map[string]interface{}`
 		//       so that the comparison in `invalidXFCCJSONEqual()` passes.
-		Metadata: map[string]interface{}{"clientIdentity": "gw.blend"},
+		Metadata:	map[string]interface{}{"clientIdentity": "gw.blend"},
 	}
 	invalidXFCCJSONEqual(assert, expected, body)
 
@@ -117,8 +117,8 @@ func TestClientIdentityRequired(t *testing.T) {
 	assert.Equal(http.StatusBadRequest, meta.StatusCode, "Fail on invalid server identity")
 	assert.Nil(capturedContext)
 	expected = &envoyutil.XFCCExtractionError{
-		Class: envoyutil.ErrInvalidServerIdentity,
-		XFCC:  xfcc,
+		Class:	envoyutil.ErrInvalidServerIdentity,
+		XFCC:	xfcc,
 	}
 	invalidXFCCJSONEqual(assert, expected, body)
 
@@ -128,11 +128,11 @@ func TestClientIdentityRequired(t *testing.T) {
 	assert.Equal(http.StatusUnauthorized, meta.StatusCode, "Fail on wrong server identity")
 	assert.Nil(capturedContext)
 	expected = &envoyutil.XFCCValidationError{
-		Class: envoyutil.ErrDeniedServerIdentity,
-		XFCC:  xfcc,
+		Class:	envoyutil.ErrDeniedServerIdentity,
+		XFCC:	xfcc,
 		// NOTE: This should really be a `map[string]string`. We use a `map[string]interface{}`
 		//       so that the comparison in `invalidXFCCJSONEqual()` passes.
-		Metadata: map[string]interface{}{"serverIdentity": "outside.blend"},
+		Metadata:	map[string]interface{}{"serverIdentity": "outside.blend"},
 	}
 	invalidXFCCJSONEqual(assert, expected, body)
 

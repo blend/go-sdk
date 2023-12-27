@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -157,8 +157,8 @@ func TestVaultCreateTransitKey(t *testing.T) {
 			"POST",
 			mustURLf("%s/v1/transit/keys/%s", client.Remote.String(), key),
 			&http.Response{
-				StatusCode: http.StatusNoContent,
-				Body:       io.NopCloser(bytes.NewBuffer([]byte{})),
+				StatusCode:	http.StatusNoContent,
+				Body:		io.NopCloser(bytes.NewBuffer([]byte{})),
 			},
 		)
 	client.Client = m
@@ -181,8 +181,8 @@ func TestVaultConfigureTransitKey(t *testing.T) {
 			"POST",
 			mustURLf("%s/v1/transit/keys/%s/config", client.Remote.String(), key),
 			&http.Response{
-				StatusCode: http.StatusNoContent,
-				Body:       io.NopCloser(bytes.NewBuffer([]byte{})),
+				StatusCode:	http.StatusNoContent,
+				Body:		io.NopCloser(bytes.NewBuffer([]byte{})),
 			},
 		)
 	client.Client = m
@@ -223,8 +223,8 @@ func TestVaultDeleteTransitKey(t *testing.T) {
 			"DELETE",
 			mustURLf("%s/v1/transit/keys/%s", client.Remote.String(), key),
 			&http.Response{
-				StatusCode: http.StatusNoContent,
-				Body:       io.NopCloser(bytes.NewBuffer([]byte{})),
+				StatusCode:	http.StatusNoContent,
+				Body:		io.NopCloser(bytes.NewBuffer([]byte{})),
 			},
 		)
 	client.Client = m
@@ -281,12 +281,12 @@ func TestVaultBatchEncryptDecrypt_Happy(t *testing.T) {
 	batchInput := BatchTransitInput{
 		BatchTransitInputItems: []BatchTransitInputItem{
 			{
-				Context:   nil,
-				Plaintext: plaintext1,
+				Context:	nil,
+				Plaintext:	plaintext1,
 			},
 			{
-				Context:   nil,
-				Plaintext: plaintext2,
+				Context:	nil,
+				Plaintext:	plaintext2,
 			},
 		},
 	}
@@ -329,15 +329,15 @@ func TestVaultBatchEncryptDecrypt_Happy(t *testing.T) {
 			"POST",
 			mustURLf("%s/v1/transit/encrypt/%s", client.Remote.String(), key),
 			&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       io.NopCloser(bytes.NewBuffer(batchEncryptResultBytes)),
+				StatusCode:	http.StatusOK,
+				Body:		io.NopCloser(bytes.NewBuffer(batchEncryptResultBytes)),
 			},
 		).With(
 		"POST",
 		mustURLf("%s/v1/transit/decrypt/%s", client.Remote.String(), key),
 		&http.Response{
-			StatusCode: http.StatusOK,
-			Body:       io.NopCloser(bytes.NewBuffer(batchDecryptResultBytes)),
+			StatusCode:	http.StatusOK,
+			Body:		io.NopCloser(bytes.NewBuffer(batchDecryptResultBytes)),
 		},
 	)
 	client.Client = m
@@ -378,15 +378,15 @@ func TestVaultBatchEncryptDecrypt_EmptyInput(t *testing.T) {
 			"POST",
 			mustURLf("%s/v1/transit/encrypt/%s", client.Remote.String(), key),
 			&http.Response{
-				StatusCode: http.StatusBadRequest,
-				Body:       io.NopCloser(bytes.NewBuffer(errorResultBytes)),
+				StatusCode:	http.StatusBadRequest,
+				Body:		io.NopCloser(bytes.NewBuffer(errorResultBytes)),
 			},
 		).With(
 		"POST",
 		mustURLf("%s/v1/transit/decrypt/%s", client.Remote.String(), key),
 		&http.Response{
-			StatusCode: http.StatusBadRequest,
-			Body:       io.NopCloser(bytes.NewBuffer(errorResultBytes)),
+			StatusCode:	http.StatusBadRequest,
+			Body:		io.NopCloser(bytes.NewBuffer(errorResultBytes)),
 		},
 	)
 	client.Client = m
@@ -414,12 +414,12 @@ func TestVaultBatchEncrypt_Error(t *testing.T) {
 	batchInput := BatchTransitInput{
 		BatchTransitInputItems: []BatchTransitInputItem{
 			{
-				Context:   nil,
-				Plaintext: plaintext1,
+				Context:	nil,
+				Plaintext:	plaintext1,
 			},
 			{
-				Context:   nil,
-				Plaintext: plaintext2,
+				Context:	nil,
+				Plaintext:	plaintext2,
 			},
 		},
 	}
@@ -446,8 +446,8 @@ func TestVaultBatchEncrypt_Error(t *testing.T) {
 			"POST",
 			mustURLf("%s/v1/transit/encrypt/%s", client.Remote.String(), key),
 			&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       io.NopCloser(bytes.NewBuffer(batchEncryptResultBytes)),
+				StatusCode:	http.StatusOK,
+				Body:		io.NopCloser(bytes.NewBuffer(batchEncryptResultBytes)),
 			},
 		)
 	client.Client = m
@@ -472,12 +472,12 @@ func TestVaultBatchDecrypt_Error(t *testing.T) {
 	batchInput := BatchTransitInput{
 		BatchTransitInputItems: []BatchTransitInputItem{
 			{
-				Context:   nil,
-				Plaintext: plaintext1,
+				Context:	nil,
+				Plaintext:	plaintext1,
 			},
 			{
-				Context:   nil,
-				Plaintext: plaintext2,
+				Context:	nil,
+				Plaintext:	plaintext2,
 			},
 		},
 	}
@@ -505,8 +505,8 @@ func TestVaultBatchDecrypt_Error(t *testing.T) {
 			"POST",
 			mustURLf("%s/v1/transit/decrypt/%s", client.Remote.String(), key),
 			&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       io.NopCloser(bytes.NewBuffer(batchDecryptResultBytes)),
+				StatusCode:	http.StatusOK,
+				Body:		io.NopCloser(bytes.NewBuffer(batchDecryptResultBytes)),
 			},
 		)
 	client.Client = m
@@ -533,8 +533,8 @@ func TestVaultHmac(t *testing.T) {
 			"POST",
 			mustURLf("%s/v1/transit/hmac/%s/sha2-256", client.Remote.String(), key),
 			&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       io.NopCloser(bytes.NewBuffer([]byte(result))),
+				StatusCode:	http.StatusOK,
+				Body:		io.NopCloser(bytes.NewBuffer([]byte(result))),
 			},
 		)
 	client.Client = m
@@ -560,8 +560,8 @@ func TestVaultHmacError(t *testing.T) {
 			"POST",
 			mustURLf("%s/v1/transit/hmac/%s/sha2-256", client.Remote.String(), key),
 			&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       io.NopCloser(bytes.NewBuffer([]byte(result))),
+				StatusCode:	http.StatusOK,
+				Body:		io.NopCloser(bytes.NewBuffer([]byte(result))),
 			},
 		)
 	client.Client = m

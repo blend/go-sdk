@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -11,10 +11,10 @@ import "github.com/blend/go-sdk/ex"
 
 // Error Classes
 const (
-	ErrParseInvalidUUIDInput = ex.Class("parse uuid: existing uuid is invalid")
+	ErrParseInvalidUUIDInput	= ex.Class("parse uuid: existing uuid is invalid")
 	// ErrParseEmpty            = ex.Class("parse uuid: input is empty")
-	ErrParseInvalidLength    = ex.Class("parse uuid: input is an invalid length")
-	ErrParseIllegalCharacter = ex.Class("parse uuid: illegal character")
+	ErrParseInvalidLength		= ex.Class("parse uuid: input is an invalid length")
+	ErrParseIllegalCharacter	= ex.Class("parse uuid: illegal character")
 )
 
 // MustParse parses a uuid and will panic if there is an error.
@@ -42,7 +42,7 @@ func Parse(corpus string) (UUID, error) {
 // ParseExisting parses into an existing UUID.
 func ParseExisting(uuid *UUID, corpus string) error {
 	if len(corpus) == 0 {
-		return nil // ex.New(ErrParseEmpty)
+		return nil	// ex.New(ErrParseEmpty)
 	}
 	if len(corpus)%2 == 1 {
 		return ex.New(ErrParseInvalidLength)

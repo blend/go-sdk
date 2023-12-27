@@ -1,53 +1,47 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
 package collections
 
-type listNode struct {
-	Next     *listNode
-	Previous *listNode
-	Value    interface{}
-}
-
 // NewLinkedList returns a new linked list instance.
-func NewLinkedList() *LinkedList {
-	return &LinkedList{}
+func NewLinkedList[T any]() *LinkedList[T] {
+	return &LinkedList[T]{}
 }
 
 // NewLinkedListFromValues creates a linked list out of a slice.
-func NewLinkedListFromValues(values []interface{}) *LinkedList {
-	list := new(LinkedList)
+func NewLinkedListFromValues[T any](values []T) *LinkedList[T] {
+	list := new(LinkedList[T])
 	for _, v := range values {
 		list.Enqueue(v)
 	}
 	return list
 }
 
-// LinkedList is an implementation of a fifo buffer using nodes and poitners.
-// Remarks; it is not threadsafe. It is constant(ish) time in all ops.
-type LinkedList struct {
-	head   *listNode
-	tail   *listNode
-	length int
+// LinkedList is an implementation of a fifo buffer using nodes and pointers.
+// Remarks; it is not thread safe. It is constant(ish) time in all ops.
+type LinkedList[T any] struct {
+	head	*listNode[T]
+	tail	*listNode[T]
+	length	int
 }
 
 // Len returns the length of the queue in constant time.
-func (q *LinkedList) Len() int {
+func (q *LinkedList[T]) Len() int {
 	return q.length
 }
 
 // Enqueue adds a new value to the queue.
-func (q *LinkedList) Enqueue(value interface{}) {
-	node := &listNode{Value: value}
+func (q *LinkedList[T]) Enqueue(value T) {
+	node := &listNode[T]{Value: value}
 
-	if q.head == nil { //the queue is empty, that is to say head is nil
+	if q.head == nil {	// the queue is empty, that is to say head is nil
 		q.head = node
 		q.tail = node
-	} else { //the queue is not empty, we have a (valid) tail pointer
+	} else {	// the queue is not empty, we have a (valid) tail pointer
 		q.tail.Previous = node
 		node.Next = q.tail
 		q.tail = node
@@ -57,9 +51,10 @@ func (q *LinkedList) Enqueue(value interface{}) {
 }
 
 // Dequeue removes an item from the front of the queue and returns it.
-func (q *LinkedList) Dequeue() interface{} {
+func (q *LinkedList[T]) Dequeue() T {
+	var res T
 	if q.head == nil {
-		return nil
+		return res
 	}
 
 	headValue := q.head.Value
@@ -79,9 +74,10 @@ func (q *LinkedList) Dequeue() interface{} {
 }
 
 // DequeueBack pops the _last_ element off the linked list.
-func (q *LinkedList) DequeueBack() interface{} {
+func (q *LinkedList[T]) DequeueBack() T {
+	var res T
 	if q.tail == nil {
-		return nil
+		return res
 	}
 	tailValue := q.tail.Value
 
@@ -100,37 +96,39 @@ func (q *LinkedList) DequeueBack() interface{} {
 }
 
 // Peek returns the first element of the queue but does not remove it.
-func (q *LinkedList) Peek() interface{} {
+func (q *LinkedList[T]) Peek() T {
+	var res T
 	if q.head == nil {
-		return nil
+		return res
 	}
 	return q.head.Value
 }
 
 // PeekBack returns the last element of the queue.
-func (q *LinkedList) PeekBack() interface{} {
+func (q *LinkedList[T]) PeekBack() T {
+	var res T
 	if q.tail == nil {
-		return nil
+		return res
 	}
 	return q.tail.Value
 }
 
 // Clear clears the linked list.
-func (q *LinkedList) Clear() {
+func (q *LinkedList[T]) Clear() {
 	q.tail = nil
 	q.head = nil
 	q.length = 0
 }
 
 // Drain calls the consumer for each element of the linked list.
-func (q *LinkedList) Drain() []interface{} {
+func (q *LinkedList[T]) Drain() []T {
 	if q.head == nil {
 		return nil
 	}
 
-	contents := make([]interface{}, q.length)
+	contents := make([]T, q.length)
 	nodePtr := q.head
-	var index int
+	index := 0
 	for nodePtr != nil {
 		contents[index] = nodePtr.Value
 		nodePtr = nodePtr.Previous
@@ -143,7 +141,7 @@ func (q *LinkedList) Drain() []interface{} {
 }
 
 // Each calls the consumer for each element of the linked list.
-func (q *LinkedList) Each(consumer func(value interface{})) {
+func (q *LinkedList[T]) Each(consumer func(value T)) {
 	if q.head == nil {
 		return
 	}
@@ -156,7 +154,7 @@ func (q *LinkedList) Each(consumer func(value interface{})) {
 }
 
 // Consume calls the consumer for each element of the linked list, removing it.
-func (q *LinkedList) Consume(consumer func(value interface{})) {
+func (q *LinkedList[T]) Consume(consumer func(value T)) {
 	if q.head == nil {
 		return
 	}
@@ -172,7 +170,7 @@ func (q *LinkedList) Consume(consumer func(value interface{})) {
 }
 
 // EachUntil calls the consumer for each element of the linked list, but can abort.
-func (q *LinkedList) EachUntil(consumer func(value interface{}) bool) {
+func (q *LinkedList[T]) EachUntil(consumer func(value T) bool) {
 	if q.head == nil {
 		return
 	}
@@ -187,7 +185,7 @@ func (q *LinkedList) EachUntil(consumer func(value interface{}) bool) {
 }
 
 // ReverseEachUntil calls the consumer for each element of the linked list, but can abort.
-func (q *LinkedList) ReverseEachUntil(consumer func(value interface{}) bool) {
+func (q *LinkedList[T]) ReverseEachUntil(consumer func(value T) bool) {
 	if q.head == nil {
 		return
 	}
@@ -202,16 +200,22 @@ func (q *LinkedList) ReverseEachUntil(consumer func(value interface{}) bool) {
 }
 
 // Contents returns the full contents of the queue as a slice.
-func (q *LinkedList) Contents() []interface{} {
+func (q *LinkedList[T]) Contents() []T {
 	if q.head == nil {
-		return []interface{}{}
+		return nil
 	}
 
-	values := []interface{}{}
+	var values []T
 	nodePtr := q.head
 	for nodePtr != nil {
 		values = append(values, nodePtr.Value)
 		nodePtr = nodePtr.Previous
 	}
 	return values
+}
+
+type listNode[T any] struct {
+	Next		*listNode[T]
+	Previous	*listNode[T]
+	Value		T
 }

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -18,7 +18,7 @@ func PutOnClose(buffer *bytes.Buffer, pool *Pool) *PutOnCloser {
 // PutOnCloser is a helper wrapper that will return a buffer to a given pool.
 type PutOnCloser struct {
 	*bytes.Buffer
-	Pool *Pool
+	Pool	*Pool
 }
 
 // Close returns the buffer to the pool.

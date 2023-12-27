@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -11,12 +11,12 @@ import "github.com/blend/go-sdk/ex"
 
 // Int64 errors
 const (
-	ErrInt64Min      ex.Class = "int64 should be above a minimum value"
-	ErrInt64Max      ex.Class = "int64 should be below a maximum value"
-	ErrInt64Positive ex.Class = "int64 should be positive"
-	ErrInt64Negative ex.Class = "int64 should be negative"
-	ErrInt64Zero     ex.Class = "int64 should be zero"
-	ErrInt64NotZero  ex.Class = "int64 should not be zero"
+	ErrInt64Min		ex.Class	= "int64 should be above a minimum value"
+	ErrInt64Max		ex.Class	= "int64 should be below a maximum value"
+	ErrInt64Positive	ex.Class	= "int64 should be positive"
+	ErrInt64Negative	ex.Class	= "int64 should be negative"
+	ErrInt64Zero		ex.Class	= "int64 should be zero"
+	ErrInt64NotZero		ex.Class	= "int64 should not be zero"
 )
 
 // Int64 returns validators for int64s.

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -22,17 +22,17 @@ import (
 
 // Invocation is a specific operation against a context.
 type Invocation struct {
-	DB                   DB
-	Label                string
-	Context              context.Context
-	Cancel               func()
-	Config               Config
-	Log                  logger.Triggerable
-	BufferPool           *bufferutil.Pool
-	StatementInterceptor StatementInterceptor
-	Tracer               Tracer
-	StartTime            time.Time
-	TraceFinisher        TraceFinisher
+	DB			DB
+	Label			string
+	Context			context.Context
+	Cancel			func()
+	Config			Config
+	Log			logger.Triggerable
+	BufferPool		*bufferutil.Pool
+	StatementInterceptor	StatementInterceptor
+	Tracer			Tracer
+	StartTime		time.Time
+	TraceFinisher		TraceFinisher
 }
 
 // Exec executes a sql statement with a given set of arguments and returns the rows affected.
@@ -54,8 +54,8 @@ func (i *Invocation) Exec(statement string, args ...interface{}) (res sql.Result
 // Query returns a new query object for a given sql query and arguments.
 func (i *Invocation) Query(statement string, args ...interface{}) *Query {
 	q := &Query{
-		Invocation: i,
-		Args:       args,
+		Invocation:	i,
+		Args:		args,
 	}
 	q.Statement, q.Err = i.start(statement)
 	return q

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -30,8 +30,8 @@ var (
 )
 
 const (
-	dbDefaultUsername = "postgres"
-	ipv4Loopback      = "127.0.0.1"
+	dbDefaultUsername	= "postgres"
+	ipv4Loopback		= "127.0.0.1"
 )
 
 func TestResolveDBConfig_InvalidEnv(t *testing.T) {
@@ -259,10 +259,10 @@ func getRandomPort() int {
 // uses environment variables to populate the rest.
 func defaultConfig(it *assert.Assertions, ev env.Vars) db.Config {
 	c := db.Config{
-		Schema:   db.DefaultSchema,
-		Username: dbDefaultUsername,
-		Password: "s33kr1t",
-		SSLMode:  db.SSLModeDisable,
+		Schema:		db.DefaultSchema,
+		Username:	dbDefaultUsername,
+		Password:	"s33kr1t",
+		SSLMode:	db.SSLModeDisable,
 	}
 	ctx := env.WithVars(context.TODO(), ev)
 	err := c.Resolve(ctx)

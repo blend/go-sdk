@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -22,9 +22,9 @@ import (
 // New returns a new job manager.
 func New(options ...JobManagerOption) *JobManager {
 	jm := JobManager{
-		Latch:       async.NewLatch(),
-		BaseContext: context.Background(),
-		Jobs:        make(map[string]*JobScheduler),
+		Latch:		async.NewLatch(),
+		BaseContext:	context.Background(),
+		Jobs:		make(map[string]*JobScheduler),
 	}
 	for _, option := range options {
 		option(&jm)
@@ -35,13 +35,13 @@ func New(options ...JobManagerOption) *JobManager {
 // JobManager is the main orchestration and job management object.
 type JobManager struct {
 	sync.Mutex
-	Latch       *async.Latch
-	BaseContext context.Context
-	Tracer      Tracer
-	Log         logger.Log
-	Started     time.Time
-	Stopped     time.Time
-	Jobs        map[string]*JobScheduler
+	Latch		*async.Latch
+	BaseContext	context.Context
+	Tracer		Tracer
+	Log		logger.Log
+	Started		time.Time
+	Stopped		time.Time
+	Jobs		map[string]*JobScheduler
 }
 
 // Background returns the BaseContext or context.Background().

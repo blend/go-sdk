@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -16,68 +16,68 @@ import (
 
 func TestReplacePathParameters(t *testing.T) {
 	testCases := []struct {
-		name   string
-		path   string
-		params map[string]string
+		name	string
+		path	string
+		params	map[string]string
 
-		expectRes string
-		expectErr error
+		expectRes	string
+		expectErr	error
 	}{
 		{
-			name: "happy case",
-			path: "/resource/:resource_id/children/:child_id",
+			name:	"happy case",
+			path:	"/resource/:resource_id/children/:child_id",
 			params: map[string]string{
-				"resource_id": "123",
-				"child_id":    "456",
+				"resource_id":	"123",
+				"child_id":	"456",
 			},
 
-			expectRes: "/resource/123/children/456",
+			expectRes:	"/resource/123/children/456",
 		},
 		{
-			name: "does not lead with '/'",
-			path: "resource/:resource_id/children/:child_id",
+			name:	"does not lead with '/'",
+			path:	"resource/:resource_id/children/:child_id",
 			params: map[string]string{
-				"resource_id": "123",
-				"child_id":    "456",
+				"resource_id":	"123",
+				"child_id":	"456",
 			},
 
-			expectRes: "resource/123/children/456",
+			expectRes:	"resource/123/children/456",
 		},
 		{
-			name: "params include colon prefix",
-			path: "/resource/:resource_id/children/:child_id",
+			name:	"params include colon prefix",
+			path:	"/resource/:resource_id/children/:child_id",
+			params: map[string]string{
+				":resource_id":	"123",
+				":child_id":	"456",
+			},
+
+			expectRes:	"/resource/123/children/456",
+		},
+		{
+			name:	"more params than needed",
+			path:	"/resource/:resource_id/children/:child_id",
+			params: map[string]string{
+				":resource_id":	"123",
+				":child_id":	"456",
+				":other_id":	"789",
+			},
+
+			expectRes:	"/resource/123/children/456",
+		},
+		{
+			name:	"needed params are missing",
+			path:	"/resource/:resource_id/children/:child_id",
 			params: map[string]string{
 				":resource_id": "123",
-				":child_id":    "456",
 			},
 
-			expectRes: "/resource/123/children/456",
+			expectErr:	ErrMissingRouteParameters,
 		},
 		{
-			name: "more params than needed",
-			path: "/resource/:resource_id/children/:child_id",
-			params: map[string]string{
-				":resource_id": "123",
-				":child_id":    "456",
-				":other_id":    "789",
-			},
+			name:	"nil params map",
+			path:	"/resource/:resource_id/children/:child_id",
 
-			expectRes: "/resource/123/children/456",
-		},
-		{
-			name: "needed params are missing",
-			path: "/resource/:resource_id/children/:child_id",
-			params: map[string]string{
-				":resource_id": "123",
-			},
-
-			expectErr: ErrMissingRouteParameters,
-		},
-		{
-			name: "nil params map",
-			path: "/resource/:resource_id/children/:child_id",
-
-			expectErr: ErrMissingRouteParameters,
+			expectErr:	ErrMissingRouteParameters,
 		},
 	}
 

@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
-Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
+Blend Confidential - Restricted
 
 */
 
@@ -19,23 +19,23 @@ import (
 )
 
 // NOTE: Ensure
-//       - `extractJustURI` satisfies `envoyutil.IdentityProvider`.
-//       - `extractFailure` satisfies `envoyutil.IdentityProvider`.
+//   - `extractJustURI` satisfies `envoyutil.IdentityProvider`.
+//   - `extractFailure` satisfies `envoyutil.IdentityProvider`.
 var (
-	_ envoyutil.IdentityProvider = extractJustURI
-	_ envoyutil.IdentityProvider = extractFailure
+	_	envoyutil.IdentityProvider	= extractJustURI
+	_	envoyutil.IdentityProvider	= extractFailure
 )
 
 func TestExtractAndVerifyClientIdentity(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	type testCase struct {
-		XFCC           string
-		ClientIdentity string
-		ErrorType      string
-		Class          ex.Class
-		Extract        envoyutil.IdentityProvider
-		Verifiers      []envoyutil.VerifyXFCC
+		XFCC		string
+		ClientIdentity	string
+		ErrorType	string
+		Class		ex.Class
+		Extract		envoyutil.IdentityProvider
+		Verifiers	[]envoyutil.VerifyXFCC
 	}
 	testCases := []testCase{
 		{ErrorType: "XFCCFatalError", Class: envoyutil.ErrMissingExtractFunction},
@@ -43,36 +43,36 @@ func TestExtractAndVerifyClientIdentity(t *testing.T) {
 		{XFCC: `""`, ErrorType: "XFCCExtractionError", Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
 		{XFCC: "something=bad", ErrorType: "XFCCExtractionError", Class: envoyutil.ErrInvalidXFCC, Extract: extractJustURI},
 		{
-			XFCC:      "By=first,URI=second",
-			ErrorType: "XFCCValidationError",
-			Class:     envoyutil.ErrInvalidXFCC,
-			Extract:   extractJustURI,
+			XFCC:		"By=first,URI=second",
+			ErrorType:	"XFCCValidationError",
+			Class:		envoyutil.ErrInvalidXFCC,
+			Extract:	extractJustURI,
 		},
 		{
-			XFCC:           "By=spiffe://cluster.local/ns/blend/sa/idea;URI=spiffe://cluster.local/ns/light/sa/bulb",
-			ClientIdentity: "spiffe://cluster.local/ns/light/sa/bulb",
-			Extract:        extractJustURI,
+			XFCC:		"By=spiffe://cluster.local/ns/blend/sa/idea;URI=spiffe://cluster.local/ns/light/sa/bulb",
+			ClientIdentity:	"spiffe://cluster.local/ns/light/sa/bulb",
+			Extract:	extractJustURI,
 		},
 		{XFCC: "By=x;URI=y", ErrorType: "XFCCExtractionError", Class: "extractFailure", Extract: extractFailure},
 		{
-			XFCC:      "By=abc;URI=def",
-			ErrorType: "XFCCValidationError",
-			Class:     `verifyFailure: expected "xyz"`,
-			Extract:   extractJustURI,
-			Verifiers: []envoyutil.VerifyXFCC{makeVerifyXFCC("xyz")},
+			XFCC:		"By=abc;URI=def",
+			ErrorType:	"XFCCValidationError",
+			Class:		`verifyFailure: expected "xyz"`,
+			Extract:	extractJustURI,
+			Verifiers:	[]envoyutil.VerifyXFCC{makeVerifyXFCC("xyz")},
 		},
 		{
-			XFCC:           "By=abc;URI=def",
-			ClientIdentity: "def",
-			Extract:        extractJustURI,
-			Verifiers:      []envoyutil.VerifyXFCC{makeVerifyXFCC("abc")},
+			XFCC:		"By=abc;URI=def",
+			ClientIdentity:	"def",
+			Extract:	extractJustURI,
+			Verifiers:	[]envoyutil.VerifyXFCC{makeVerifyXFCC("abc")},
 		},
 		{
-			XFCC:      "By=abc;URI=def",
-			ErrorType: "XFCCFatalError",
-			Class:     envoyutil.ErrVerifierNil,
-			Extract:   extractJustURI,
-			Verifiers: []envoyutil.VerifyXFCC{nil},
+			XFCC:		"By=abc;URI=def",
+			ErrorType:	"XFCCFatalError",
+			Class:		envoyutil.ErrVerifierNil,
+			Extract:	extractJustURI,
+			Verifiers:	[]envoyutil.VerifyXFCC{nil},
 		},
 	}
 
@@ -109,59 +109,59 @@ func TestSPIFFEClientIdentityProvider(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	type testCase struct {
-		XFCC           string
-		TrustDomain    string
-		ClientIdentity string
-		ErrorType      string
-		Class          ex.Class
-		Metadata       interface{}
-		Denied         []string
+		XFCC		string
+		TrustDomain	string
+		ClientIdentity	string
+		ErrorType	string
+		Class		ex.Class
+		Metadata	interface{}
+		Denied		[]string
 	}
 	testCases := []testCase{
 		{
-			XFCC:      "URI=not-spiffe",
-			ErrorType: "XFCCExtractionError",
-			Class:     envoyutil.ErrInvalidClientIdentity,
+			XFCC:		"URI=not-spiffe",
+			ErrorType:	"XFCCExtractionError",
+			Class:		envoyutil.ErrInvalidClientIdentity,
 		},
 		{
-			XFCC:           "URI=spiffe://cluster.local/ns/light1/sa/bulb",
-			TrustDomain:    "cluster.local",
-			ClientIdentity: "bulb.light1",
+			XFCC:		"URI=spiffe://cluster.local/ns/light1/sa/bulb",
+			TrustDomain:	"cluster.local",
+			ClientIdentity:	"bulb.light1",
 		},
 		{
-			XFCC:        "URI=spiffe://cluster.local/ns/light2/sa/bulb",
-			TrustDomain: "k8s.local",
-			ErrorType:   "XFCCValidationError",
-			Class:       envoyutil.ErrInvalidClientIdentity,
-			Metadata:    map[string]string{"trustDomain": "cluster.local"},
+			XFCC:		"URI=spiffe://cluster.local/ns/light2/sa/bulb",
+			TrustDomain:	"k8s.local",
+			ErrorType:	"XFCCValidationError",
+			Class:		envoyutil.ErrInvalidClientIdentity,
+			Metadata:	map[string]string{"trustDomain": "cluster.local"},
 		},
 		{
-			XFCC:        "URI=spiffe://cluster.local/ns/light3/sa/bulb/extra",
-			TrustDomain: "cluster.local",
-			ErrorType:   "XFCCExtractionError",
-			Class:       envoyutil.ErrInvalidClientIdentity,
+			XFCC:		"URI=spiffe://cluster.local/ns/light3/sa/bulb/extra",
+			TrustDomain:	"cluster.local",
+			ErrorType:	"XFCCExtractionError",
+			Class:		envoyutil.ErrInvalidClientIdentity,
 		},
 		{
-			XFCC:        "URI=spiffe://cluster.local/ns/light4/sa/bulb",
-			TrustDomain: "cluster.local",
-			ErrorType:   "XFCCValidationError",
-			Class:       envoyutil.ErrDeniedClientIdentity,
-			Metadata:    map[string]string{"clientIdentity": "bulb.light4"},
-			Denied:      []string{"bulb.light4"},
+			XFCC:		"URI=spiffe://cluster.local/ns/light4/sa/bulb",
+			TrustDomain:	"cluster.local",
+			ErrorType:	"XFCCValidationError",
+			Class:		envoyutil.ErrDeniedClientIdentity,
+			Metadata:	map[string]string{"clientIdentity": "bulb.light4"},
+			Denied:		[]string{"bulb.light4"},
 		},
 		{
-			XFCC:           "URI=spiffe://cluster.local/ns/light5/sa/bulb",
-			TrustDomain:    "cluster.local",
-			ClientIdentity: "bulb.light5",
-			Denied:         []string{"not.me"},
+			XFCC:		"URI=spiffe://cluster.local/ns/light5/sa/bulb",
+			TrustDomain:	"cluster.local",
+			ClientIdentity:	"bulb.light5",
+			Denied:		[]string{"not.me"},
 		},
 		{
-			XFCC:        "URI=spiffe://cluster.local/ns/light6/sa/bulb",
-			TrustDomain: "cluster.local",
-			ErrorType:   "XFCCValidationError",
-			Class:       envoyutil.ErrDeniedClientIdentity,
-			Metadata:    map[string]string{"clientIdentity": "bulb.light6"},
-			Denied:      []string{"not.me", "bulb.light6", "also.not-me"},
+			XFCC:		"URI=spiffe://cluster.local/ns/light6/sa/bulb",
+			TrustDomain:	"cluster.local",
+			ErrorType:	"XFCCValidationError",
+			Class:		envoyutil.ErrDeniedClientIdentity,
+			Metadata:	map[string]string{"clientIdentity": "bulb.light6"},
+			Denied:		[]string{"not.me", "bulb.light6", "also.not-me"},
 		},
 	}
 
@@ -208,8 +208,8 @@ func TestSPIFFEServerIdentityProvider(t *testing.T) {
 	err = verifier(xfcc)
 	assert.True(envoyutil.IsExtractionError(err))
 	var expected error = &envoyutil.XFCCExtractionError{
-		Class: envoyutil.ErrInvalidServerIdentity,
-		XFCC:  xfcc.String(),
+		Class:	envoyutil.ErrInvalidServerIdentity,
+		XFCC:	xfcc.String(),
 	}
 	assert.Equal(expected, err)
 
@@ -221,9 +221,9 @@ func TestSPIFFEServerIdentityProvider(t *testing.T) {
 	err = verifier(xfcc)
 	assert.True(envoyutil.IsValidationError(err))
 	expected = &envoyutil.XFCCValidationError{
-		Class:    envoyutil.ErrDeniedServerIdentity,
-		XFCC:     xfcc.String(),
-		Metadata: map[string]string{"serverIdentity": "line.time"},
+		Class:		envoyutil.ErrDeniedServerIdentity,
+		XFCC:		xfcc.String(),
+		Metadata:	map[string]string{"serverIdentity": "line.time"},
 	}
 	assert.Equal(expected, err)
 }
