@@ -6,12 +6,14 @@ require (
 	github.com/DataDog/datadog-go/v5 v5.1.0
 	github.com/aws/aws-sdk-go v1.42.34
 	github.com/blend/sentry-go v1.0.1
-	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/golang/protobuf v1.5.2
 	github.com/jackc/pgconn v1.10.1
 	github.com/jackc/pgx/v4 v4.14.1
 	github.com/mediocregopher/radix/v4 v4.0.0
 	github.com/opentracing/opentracing-go v1.2.0
+	github.com/russellhaering/gosaml2 v0.9.1
+	github.com/russellhaering/goxmldsig v1.4.0
 	github.com/spf13/cobra v1.3.0
 	github.com/tinylib/msgp v1.1.6
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
@@ -29,6 +31,7 @@ require (
 	cloud.google.com/go v0.99.0 // indirect
 	github.com/DataDog/datadog-go v4.8.3+incompatible // indirect
 	github.com/Microsoft/go-winio v0.5.1 // indirect
+	github.com/beevik/etree v1.1.0 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
@@ -38,6 +41,8 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/pgtype v1.9.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/jonboulle/clockwork v0.3.0 // indirect
+	github.com/mattermost/xml-roundtrip-validator v0.1.0 // indirect
 	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/tilinna/clock v1.0.2 // indirect

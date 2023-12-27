@@ -5,13 +5,6 @@ Use of this source code is governed by a MIT license that can be found in the LI
 
 */
 
-/*
-
-Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
-Blend Confidential - Restricted
-
-*/
-
 package ex
 
 // ClassProvider is a type that can return an exception class.

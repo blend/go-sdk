@@ -6,13 +6,6 @@ Use of this source code is governed by a MIT license that can be found in the LI
 */
 
 /*
-
-Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
-Blend Confidential - Restricted
-
-*/
-
-/*
 Package async provides synchronization primitives and background workers.
 This is a core package that is used by a lot of other packages.
 */

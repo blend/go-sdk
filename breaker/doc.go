@@ -6,13 +6,6 @@ Use of this source code is governed by a MIT license that can be found in the LI
 */
 
 /*
-
-Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
-Blend Confidential - Restricted
-
-*/
-
-/*
 Package breaker provides a circuitbraker mechanism for dealing with flaky or unreliable counterparties.
 
 The algorithm used for the state machine is described by Microsoft https://docs.microsoft.com/en-us/previous-versions/msp-n-p/dn589784(v=pandp.10)

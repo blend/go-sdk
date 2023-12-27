@@ -6,13 +6,6 @@ Use of this source code is governed by a MIT license that can be found in the LI
 */
 
 /*
-
-Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
-Blend Confidential - Restricted
-
-*/
-
-/*
 Package consistenthash contains helpers for mapping items to buckets using consistent hashing.
 
 Methods (AddBucket, Assignment etc.) typically run in `log2(N*M)` time where N is the number

@@ -6,13 +6,6 @@ Use of this source code is governed by a MIT license that can be found in the LI
 */
 
 /*
-
-Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
-Blend Confidential - Restricted
-
-*/
-
-/*
 Package r2test provides helpers for writing tests involving calls with sdk/r2.
 
 The most common example is to add a mock response as an option to a default set of options.

@@ -6,13 +6,6 @@ Use of this source code is governed by a MIT license that can be found in the LI
 */
 
 /*
-
-Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
-Blend Confidential - Restricted
-
-*/
-
-/*
 Package web implements a model view controller system for building http servers.
 It is meant to be composed with other packages to form everything from small api servers
 to fully formed web view applications.

@@ -6,13 +6,6 @@ Use of this source code is governed by a MIT license that can be found in the LI
 */
 
 /*
-
-Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
-Blend Confidential - Restricted
-
-*/
-
-/*
 Package configmeta provides a configutil metadata type to provide a canonical location to hold common config variables.
 
 It provides a couple common variables to set with ldflags on build, namely `configmeta.Version` and `configmeta.GitRef`.

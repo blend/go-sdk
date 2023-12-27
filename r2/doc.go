@@ -6,13 +6,6 @@ Use of this source code is governed by a MIT license that can be found in the LI
 */
 
 /*
-
-Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
-Blend Confidential - Restricted
-
-*/
-
-/*
 Package r2 is a rewrite of the sdk http request package that eschews fluent apis in favor of the options pattern.
 
 The request returned by `r2.New()` i.e. `*r2.Request` holds everything required to send the request, including the http client reference, and a transport reference. If neither are specified, defaults are used (http.DefaultClient for the client, etc.)

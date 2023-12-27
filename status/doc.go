@@ -6,13 +6,6 @@ Use of this source code is governed by a MIT license that can be found in the LI
 */
 
 /*
-
-Copyright (c) 2021 - Present. Blend Labs, Inc. All rights reserved
-Blend Confidential - Restricted
-
-*/
-
-/*
 Package status provides helpers for building standardized sla status endpoints in web services.
 
 It provides types to wrap existing actions to track the success and error history of those actions
