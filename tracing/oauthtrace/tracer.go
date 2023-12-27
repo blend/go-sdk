@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -12,6 +12,8 @@ import (
 	"time"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	opentracingExt "github.com/opentracing/opentracing-go/ext"
+
 	"golang.org/x/oauth2"
 
 	"github.com/blend/go-sdk/oauth"
@@ -34,11 +36,12 @@ type oauthTracer struct {
 
 func (t oauthTracer) Start(ctx context.Context, config *oauth2.Config) oauth.TraceFinisher {
 	startOptions := []opentracing.StartSpanOption{
+		opentracingExt.SpanKindRPCClient,
 		opentracing.Tag{Key: tracing.TagKeySpanType, Value: tracing.SpanTypeHTTP},
 		tracing.TagMeasured(),
 		opentracing.StartTime(time.Now().UTC()),
 	}
-	span, _ := tracing.StartSpanFromContext(ctx, t.tracer, tracing.OperationHTTPRequest, startOptions...)
+	span, _ := tracing.StartSpanFromContext(ctx, t.tracer, tracing.OperationHTTPRequestOutgoing, startOptions...)
 	return oauthTraceFinisher{span: span}
 }
 

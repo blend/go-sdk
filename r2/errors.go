@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -30,7 +30,7 @@ const (
 	// ErrInvalidMethod is an error that is returned from `r2.Request.Do()` if a method
 	// is specified on the request that violates the valid charset for HTTP methods.
 	ErrInvalidMethod ex.Class = "r2; invalid http method"
-	// ErrMismatchedPathParameters is an error that is returned from `OptParameterizedPath()` if
+	// ErrMismatchedPathParameters is an error that is returned from `OptPathParameterized()` if
 	// the parameterized path string has a different number of parameters than what was passed as
 	// variadic arguments.
 	ErrMismatchedPathParameters ex.Class = "r2; route parameters provided don't match parameters needed in path"

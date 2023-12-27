@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -8,11 +8,14 @@ Use of this source code is governed by a MIT license that can be found in the LI
 package webtrace
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	opentracingExt "github.com/opentracing/opentracing-go/ext"
 
+	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/tracing"
 	"github.com/blend/go-sdk/tracing/httptrace"
 	"github.com/blend/go-sdk/web"
@@ -25,13 +28,28 @@ var (
 	_ web.ViewTraceFinisher = (*webViewTraceFinisher)(nil)
 )
 
+// TracerOption is a tracer option.
+type TracerOption func(*webTracer)
+
+// OptIncludeCtxLabels toggles the option to include ctx labels in DD APM trace spans.
+func OptIncludeCtxLabels(includeCtxLabels bool) TracerOption {
+	return func(tracer *webTracer) {
+		tracer.logLabelsToCtx = includeCtxLabels
+	}
+}
+
 // Tracer returns a web tracer.
-func Tracer(tracer opentracing.Tracer) web.Tracer {
-	return &webTracer{tracer: tracer}
+func Tracer(tracer opentracing.Tracer, options ...TracerOption) web.Tracer {
+	wt := &webTracer{tracer: tracer, logLabelsToCtx: false}
+	for _, opt := range options {
+		opt(wt)
+	}
+	return wt
 }
 
 type webTracer struct {
-	tracer opentracing.Tracer
+	logLabelsToCtx bool
+	tracer         opentracing.Tracer
 }
 
 func (wt webTracer) Start(ctx *web.Ctx) web.TraceFinisher {
@@ -53,11 +71,12 @@ func (wt webTracer) Start(ctx *web.Ctx) web.TraceFinisher {
 	)
 	ctx.Request = newReq
 	ctx.WithContext(newReq.Context())
-	return &webTraceFinisher{span: span}
+	return &webTraceFinisher{span: span, logLabelsToCtx: wt.logLabelsToCtx}
 }
 
 type webTraceFinisher struct {
-	span opentracing.Span
+	logLabelsToCtx bool
+	span           opentracing.Span
 }
 
 func (wtf webTraceFinisher) Finish(ctx *web.Ctx, err error) {
@@ -66,12 +85,21 @@ func (wtf webTraceFinisher) Finish(ctx *web.Ctx, err error) {
 	}
 	tracing.SpanError(wtf.span, err)
 	wtf.span.SetTag(tracing.TagKeyHTTPCode, strconv.Itoa(ctx.Response.StatusCode()))
+	// Initially defaulted to false to allow opt-in by initial apps
+	// to bake in the new behavior.
+	if wtf.logLabelsToCtx {
+		// Add explicit log labels as context for DD trace spans.
+		for label, labelValue := range logger.GetLabels(ctx.Context()) {
+			wtf.span.SetTag(fmt.Sprintf("%s.%s", tracing.TagKeyCtx, label), labelValue)
+		}
+	}
 	wtf.span.Finish()
 }
 
 func (wt webTracer) StartView(ctx *web.Ctx, vr *web.ViewResult) web.ViewTraceFinisher {
 	// set up basic start options (these are mostly tags).
 	startOptions := []opentracing.StartSpanOption{
+		opentracingExt.SpanKindRPCServer,
 		tracing.TagMeasured(),
 		opentracing.Tag{Key: tracing.TagKeyResourceName, Value: vr.ViewName},
 		opentracing.Tag{Key: tracing.TagKeySpanType, Value: tracing.SpanTypeWeb},

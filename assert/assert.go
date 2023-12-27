@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -78,7 +78,7 @@ func (a *Assertions) assertion() {
 // NonFatal assertions are useful when you want to check many properties during a test, but only on an informational basis.
 // They will typically return a bool to indicate if the assertion succeeded, or if you should consider the overall
 // test to still be a success.
-func (a *Assertions) NonFatal() *Assertions { //golint you can bite me.
+func (a *Assertions) NonFatal() *Assertions {
 	return &Assertions{
 		T:            a.T,
 		Output:       a.Output,

@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -9,6 +9,8 @@ package tracing
 
 // These constants are mostly lifted from the datadog/tracing/ext tag values.
 const (
+	// TagKeyCtx is the ctx prefix used in DD APM trace metadata.  Named specifically for standardized trace filtering.
+	TagKeyCtx = "ctx"
 	// TagKeyEnvironment is the environment (web, dev, etc.)
 	TagKeyEnvironment = "env"
 	// TagKeySpanType defines the Span type (web, db, cache).
@@ -37,12 +39,8 @@ const (
 	TagKeyHTTPURL = "http.url"
 	// TagKeyDBApplication is the application that uses a database.
 	TagKeyDBApplication = "db.application"
-	// TagKeyDBName is the database name.
-	TagKeyDBName = "db.name"
 	// TagKeyDBRowsAffected is the number of rows affected.
 	TagKeyDBRowsAffected = "db.rows_affected"
-	// TagKeyDBUser is the user on the database connection.
-	TagKeyDBUser = "db.user"
 	// TagKeyJobName is the job name.
 	TagKeyJobName = "job.name"
 	// TagKeyGRPCRemoteAddr is the grpc remote addr (i.e. the remote addr).
@@ -85,8 +83,10 @@ const (
 // Operations are actions represented by spans.
 const (
 	OperationHTTPRouteLookup = "http.route_lookup"
-	// OperationHTTPRequest is the http request tracing operation name.
+	// OperationHTTPRequest is the http request tracing operation name incoming requests.
 	OperationHTTPRequest = "http.request"
+	// OperationHTTPRequestOutgoing is the http request tracing operation name for outgoing requests.
+	OperationHTTPRequestOutgoing = "http.request.outgoing"
 	// OperationHTTPRender is the operation name for rendering a server side view.
 	OperationHTTPRender = "http.render"
 	// OperationDBPing is the db ping tracing operation.

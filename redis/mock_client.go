@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -8,17 +8,6 @@ Use of this source code is governed by a MIT license that can be found in the LI
 package redis
 
 import "context"
-
-// MockClientFunc is a function that implements Client.
-type MockClientFunc func(context.Context, interface{}, string, ...string) error
-
-// Do implements Client.Do.
-func (mcf MockClientFunc) Do(ctx context.Context, out interface{}, op string, args ...string) error {
-	return mcf(ctx, out, op, args...)
-}
-
-// Close is a no-op.
-func (mcf MockClientFunc) Close() error { return nil }
 
 // NewMockClient returns a new mock client with a given capacity.
 func NewMockClient(capacity int) *MockClient {
@@ -34,12 +23,24 @@ var (
 
 // MockClient is a mocked client.
 type MockClient struct {
-	Ops chan MockClientOp
+	DoMock func(context.Context, interface{}, string, ...string) error
+	Ops    chan MockClientOp
 }
 
 // Do applies a command.
-func (mc *MockClient) Do(_ context.Context, out interface{}, op string, args ...string) error {
+func (mc *MockClient) Do(ctx context.Context, out interface{}, op string, args ...string) error {
 	mc.Ops <- MockClientOp{Out: out, Op: op, Args: args}
+	if mc.DoMock != nil {
+		return mc.DoMock(ctx, out, op, args...)
+	}
+	return nil
+}
+
+// Pipeline applies commands in a piipeline.
+func (mc *MockClient) Pipeline(_ context.Context, pipelineName string, ops ...Operation) error {
+	for _, op := range ops {
+		mc.Ops <- MockClientOp{Out: op.Out, Op: op.Command, Args: op.Args}
+	}
 	return nil
 }
 

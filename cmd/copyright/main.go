@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -145,6 +145,10 @@ func main() {
 
 	if flagExcludeDefaults {
 		flagExcludes = append(flagExcludes, flagStrings(copyright.DefaultExcludes)...)
+	}
+	if _, err := os.Stat(copyright.DefaultImplicitConfigFile); err == nil {
+		fmt.Fprintf(os.Stdout, "Including implicit glob exclusion file: %q\n", copyright.DefaultImplicitConfigFile)
+		flagExcludesFrom = append(flagExcludesFrom, copyright.DefaultImplicitConfigFile)
 	}
 	for _, excludesFrom := range flagExcludesFrom {
 		excludes, err := readExcludesFile(excludesFrom)

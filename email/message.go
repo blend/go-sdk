@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -27,7 +27,7 @@ const (
 // has just the `Subject`field set, and message C also has the
 // `To` field set, the result of:
 //
-//    MergeMessages(a,b,c)
+//	MergeMessages(a,b,c)
 //
 // Will be `To` of C, and `Subject` of B, with C overwriting
 // the `To` of A.

@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -123,8 +123,9 @@ func (jw JSONOutputFormatter) CombineFields(fields ...map[string]interface{}) ma
 // GetScopeFields gets scope fields from a context.
 func (jw JSONOutputFormatter) GetScopeFields(ctx context.Context, e Event) map[string]interface{} {
 	output := map[string]interface{}{
-		FieldFlag:      e.GetFlag(),
-		FieldTimestamp: GetEventTimestamp(ctx, e),
+		FieldFlag:       e.GetFlag(),
+		FieldTimestamp:  GetEventTimestamp(ctx, e),
+		FieldRestricted: GetRestricted(ctx),
 	}
 	if path := GetPath(ctx); len(path) > 0 {
 		output[FieldScopePath] = path

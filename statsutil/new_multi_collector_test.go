@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -27,7 +27,7 @@ func Test_NewMultiCollector(t *testing.T) {
 			ServiceName: "test-service",
 			ServiceEnv:  "test-service-env",
 			Version:     "test-service-version",
-			Hostname:    "test-service-hostname",
+			ClusterName: "test-cluster.centrio.com",
 		}),
 		OptDatadogConfig(datadog.Config{}),
 		OptPrinter(true),
@@ -40,8 +40,8 @@ func Test_NewMultiCollector(t *testing.T) {
 	its.Len(typed, 2)
 	its.True(typed.HasTagKey(stats.TagService))
 	its.True(typed.HasTagKey(stats.TagEnv))
-	its.True(typed.HasTagKey(stats.TagHostname))
 	its.True(typed.HasTagKey(stats.TagVersion))
+	its.True(typed.HasTagKey(stats.TagClusterName))
 
 	defaultTags := typed.DefaultTags()
 	its.Any(defaultTags, func(v interface{}) bool {
@@ -51,9 +51,9 @@ func Test_NewMultiCollector(t *testing.T) {
 		return v.(string) == stats.Tag(stats.TagEnv, "test-service-env")
 	})
 	its.Any(defaultTags, func(v interface{}) bool {
-		return v.(string) == stats.Tag(stats.TagHostname, "test-service-hostname")
+		return v.(string) == stats.Tag(stats.TagVersion, "test-service-version")
 	})
 	its.Any(defaultTags, func(v interface{}) bool {
-		return v.(string) == stats.Tag(stats.TagVersion, "test-service-version")
+		return v.(string) == stats.Tag(stats.TagClusterName, "test-cluster.centrio.com")
 	})
 }

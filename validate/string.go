@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -40,12 +40,31 @@ const (
 
 // String contains helpers for string validation.
 func String(value *string) StringValidators {
-	return StringValidators{value}
+	return StringValidators{value, false}
+}
+
+// SensitiveString contains helpers for sensitive string validation, which
+// avoids including sensitive data in error messages
+func SensitiveString(value *string) StringValidators {
+	return StringValidators{value, true}
 }
 
 // StringValidators returns string validators.
 type StringValidators struct {
-	Value *string
+	Value     *string
+	Sensitive bool
+}
+
+func (s StringValidators) maybeCensoredValue() interface{} {
+	if s.Value == nil {
+		return nil
+	}
+
+	if s.Sensitive {
+		return "<sensitive>"
+	}
+
+	return *s.Value
 }
 
 // Required returns a validator that a string is set and not zero length.
@@ -79,7 +98,7 @@ func (s StringValidators) MinLen(length int) Validator {
 			return Errorf(ErrStringLengthMin, nil, "length: %d", length)
 		}
 		if len(*s.Value) < length { //if it's unset, it should fail the minimum check.
-			return Errorf(ErrStringLengthMin, *s.Value, "length: %d", length)
+			return Errorf(ErrStringLengthMin, s.maybeCensoredValue(), "length: %d", length)
 		}
 		return nil
 	}
@@ -93,7 +112,7 @@ func (s StringValidators) MaxLen(length int) Validator {
 			return nil
 		}
 		if len(*s.Value) > length {
-			return Errorf(ErrStringLengthMax, *s.Value, "length: %d", length)
+			return Errorf(ErrStringLengthMax, s.maybeCensoredValue(), "length: %d", length)
 		}
 		return nil
 	}
@@ -107,7 +126,7 @@ func (s StringValidators) Length(length int) Validator {
 			return Errorf(ErrStringLength, nil, "length: %d", length)
 		}
 		if len(*s.Value) != length {
-			return Errorf(ErrStringLength, *s.Value, "length: %d", length)
+			return Errorf(ErrStringLength, s.maybeCensoredValue(), "length: %d", length)
 		}
 		return nil
 	}
@@ -121,10 +140,10 @@ func (s StringValidators) BetweenLen(min, max int) Validator {
 			return Errorf(ErrStringLengthMin, nil, "length: %d", min)
 		}
 		if len(*s.Value) < min {
-			return Errorf(ErrStringLengthMin, *s.Value, "length: %d", min)
+			return Errorf(ErrStringLengthMin, s.maybeCensoredValue(), "length: %d", min)
 		}
 		if len(*s.Value) > max {
-			return Errorf(ErrStringLengthMax, *s.Value, "length: %d", max)
+			return Errorf(ErrStringLengthMax, s.maybeCensoredValue(), "length: %d", max)
 		}
 		return nil
 	}
@@ -142,7 +161,7 @@ func (s StringValidators) Matches(expression string) Validator {
 			return Errorf(ErrStringMatches, nil, "expression: %s", expression)
 		}
 		if !exp.MatchString(string(*s.Value)) {
-			return Errorf(ErrStringMatches, *s.Value, "expression: %s", expression)
+			return Errorf(ErrStringMatches, s.maybeCensoredValue(), "expression: %s", expression)
 		}
 		return nil
 	}
@@ -157,7 +176,7 @@ func (s StringValidators) IsUpper() Validator {
 		}
 		for _, r := range *s.Value {
 			if !unicode.IsUpper(r) {
-				return Error(ErrStringIsUpper, *s.Value)
+				return Error(ErrStringIsUpper, s.maybeCensoredValue())
 			}
 		}
 		return nil
@@ -173,7 +192,7 @@ func (s StringValidators) IsLower() Validator {
 		}
 		for _, r := range *s.Value {
 			if !unicode.IsLower(r) {
-				return Error(ErrStringIsLower, *s.Value)
+				return Error(ErrStringIsLower, s.maybeCensoredValue())
 			}
 		}
 		return nil
@@ -191,7 +210,7 @@ func (s StringValidators) IsTitle() Validator {
 		if strings.ToTitle(string(*s.Value)) == string(*s.Value) {
 			return nil
 		}
-		return Error(ErrStringIsTitle, *s.Value)
+		return Error(ErrStringIsTitle, s.maybeCensoredValue())
 	}
 }
 
@@ -203,7 +222,7 @@ func (s StringValidators) IsUUID() Validator {
 			return Error(ErrStringIsUUID, nil)
 		}
 		if _, err := uuid.Parse(string(*s.Value)); err != nil {
-			return Error(ErrStringIsUUID, *s.Value)
+			return Error(ErrStringIsUUID, s.maybeCensoredValue())
 		}
 		return nil
 	}
@@ -216,7 +235,7 @@ func (s StringValidators) IsEmail() Validator {
 			return Error(ErrStringIsEmail, nil)
 		}
 		if _, err := mail.ParseAddress(string(*s.Value)); err != nil {
-			return Error(ErrStringIsEmail, *s.Value)
+			return Error(ErrStringIsEmail, s.maybeCensoredValue())
 		}
 		return nil
 	}
@@ -230,7 +249,7 @@ func (s StringValidators) IsURI() Validator {
 			return Error(ErrStringIsURI, nil)
 		}
 		if _, err := url.ParseRequestURI(string(*s.Value)); err != nil {
-			return Error(ErrStringIsURI, *s.Value)
+			return Error(ErrStringIsURI, s.maybeCensoredValue())
 		}
 		return nil
 	}
@@ -244,7 +263,7 @@ func (s StringValidators) IsIP() Validator {
 			return Error(ErrStringIsIP, nil)
 		}
 		if addr := net.ParseIP(string(*s.Value)); addr == nil {
-			return Error(ErrStringIsIP, *s.Value)
+			return Error(ErrStringIsIP, s.maybeCensoredValue())
 		}
 		return nil
 	}
@@ -267,7 +286,7 @@ func (s StringValidators) IsSlug() Validator {
 			if c == '-' || c == '_' {
 				continue
 			}
-			return Error(ErrStringIsSlug, *s.Value)
+			return Error(ErrStringIsSlug, s.maybeCensoredValue())
 		}
 		return nil
 	}
@@ -277,13 +296,13 @@ func (s StringValidators) IsSlug() Validator {
 func (s StringValidators) IsOneOf(values ...string) Validator {
 	return func() error {
 		if s.Value == nil {
-			return Error(ErrStringIsOneOf, s.Value, strings.Join(values, ", "))
+			return Error(ErrStringIsOneOf, nil, strings.Join(values, ", "))
 		}
 		for _, value := range values {
 			if *s.Value == value {
 				return nil
 			}
 		}
-		return Error(ErrStringIsOneOf, s.Value, strings.Join(values, ", "))
+		return Error(ErrStringIsOneOf, s.maybeCensoredValue(), strings.Join(values, ", "))
 	}
 }

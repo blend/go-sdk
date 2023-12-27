@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -104,10 +104,11 @@ func (e *Ex) WithInner(err error) Exception {
 
 // Format allows for conditional expansion in printf statements
 // based on the token and flags used.
-// 	%+v : class + message + stack
-// 	%v, %c : class
-// 	%m : message
-// 	%t : stack
+//
+//	%+v : class + message + stack
+//	%v, %c : class
+//	%m : message
+//	%t : stack
 func (e *Ex) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':

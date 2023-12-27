@@ -1,50 +1,27 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
 
 package stringutil
 
-import "strings"
+import (
+	"encoding/csv"
+	"strings"
+)
 
-// SplitCSV splits a corpus by the `,`, dropping leading or trailing whitespace unless quoted.
-func SplitCSV(text string) (output []string) {
+// SplitCSV splits a corpus by the `,`.
+// Deprecated: Use `encoding/csv.Reader` directly instead.
+func SplitCSV(text string) []string {
 	if len(text) == 0 {
-		return
+		return nil
 	}
-
-	var state int
-	var word []rune
-	var opened rune
-	for _, r := range text {
-		switch state {
-		case 0: // word
-			if isQuote(r) {
-				opened = r
-				state = 1
-			} else if isCSVDelim(r) {
-				output = append(output, strings.TrimSpace(string(word)))
-				word = nil
-			} else {
-				word = append(word, r)
-			}
-		case 1: // we're in a quoted section
-			if matchesQuote(opened, r) {
-				state = 0
-				continue
-			}
-			word = append(word, r)
-		}
+	reader := csv.NewReader(strings.NewReader(text))
+	output, err := reader.Read()
+	if err != nil {
+		return nil
 	}
-
-	if len(word) > 0 {
-		output = append(output, strings.TrimSpace(string(word)))
-	}
-	return
-}
-
-func isCSVDelim(r rune) bool {
-	return r == rune(',')
+	return output
 }

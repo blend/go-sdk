@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -147,6 +147,18 @@ func GetLabels(ctx context.Context) Labels {
 	return make(Labels)
 }
 
+// GetLabel gets a label off a context by key.
+func GetLabel(ctx context.Context, key string) (string, bool) {
+	if raw := ctx.Value(labelsKey{}); raw != nil {
+		if typed, ok := raw.(Labels); ok {
+			if value, found := typed[key]; found {
+				return value, true
+			}
+		}
+	}
+	return "", false
+}
+
 type annotationsKey struct{}
 
 // WithAnnotations returns a new context with a given additional annotations.
@@ -174,6 +186,23 @@ func GetAnnotations(ctx context.Context) Annotations {
 		}
 	}
 	return make(Annotations)
+}
+
+type restrictedKey struct{}
+
+// WithRestricted returns a new context with the restricted value.
+func WithRestricted(ctx context.Context, restricted bool) context.Context {
+	return context.WithValue(ctx, restrictedKey{}, restricted)
+}
+
+// GetRestricted gets restricted value from a context.
+func GetRestricted(ctx context.Context) bool {
+	if raw := ctx.Value(restrictedKey{}); raw != nil {
+		if typed, ok := raw.(bool); ok {
+			return typed
+		}
+	}
+	return false
 }
 
 type skipTriggerKey struct{}

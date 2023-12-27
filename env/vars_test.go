@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -9,6 +9,7 @@ package env_test
 
 import (
 	"encoding/base64"
+	"errors"
 	"os"
 	"testing"
 	"time"
@@ -27,6 +28,7 @@ func TestVarsSet(t *testing.T) {
 
 	vars := env.Vars{
 		"Foo": "baz",
+		"bat": "man",
 	}
 
 	vars.Set("Foo", "bar")
@@ -34,6 +36,12 @@ func TestVarsSet(t *testing.T) {
 
 	vars.Set("NotFoo", "buzz")
 	assert.Equal("buzz", vars.String("NotFoo"))
+
+	val, err := vars.GetString("bat")
+	assert.Nil(err)
+	assert.Equal("man", val)
+	_, err = vars.GetString("NoValueKey")
+	assert.True(errors.Is(err, env.ErrNotFound{Key: "NoValueKey"}))
 }
 
 func TestEnvBool(t *testing.T) {

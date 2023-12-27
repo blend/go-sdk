@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -22,8 +22,6 @@ Example:
 	iw := NewInterval(func(ctx context.Context) error { return nil }, 500*time.Millisecond)
 	go iw.Start()
 	<-iw.Started()
-
-
 */
 func NewInterval(action ContextAction, interval time.Duration, options ...IntervalOption) *Interval {
 	i := Interval{

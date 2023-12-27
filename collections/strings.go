@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -12,9 +12,11 @@ import (
 )
 
 // Strings is a type alias for []string with some helper methods.
+// Deprecated: Use collections/generic version.
 type Strings []string
 
 // Reverse reverses the strings array in place.
+// Deprecated: Use collections/generic version.
 func (sa Strings) Reverse() (output Strings) {
 	saLen := len(sa)
 
@@ -41,6 +43,7 @@ func (sa Strings) Reverse() (output Strings) {
 }
 
 // First returns the first element of the array.
+// Deprecated: Use collections/generic version.
 func (sa Strings) First() string {
 	if len(sa) == 0 {
 		return ""
@@ -49,6 +52,7 @@ func (sa Strings) First() string {
 }
 
 // Last returns the last element of the array.
+// Deprecated: Use collections/generic version.
 func (sa Strings) Last() string {
 	if len(sa) == 0 {
 		return ""
@@ -57,6 +61,7 @@ func (sa Strings) Last() string {
 }
 
 // Contains returns if the given string is in the array.
+// Deprecated: Use collections/generic version.
 func (sa Strings) Contains(elem string) bool {
 	for _, arrayElem := range sa {
 		if arrayElem == elem {
@@ -67,6 +72,7 @@ func (sa Strings) Contains(elem string) bool {
 }
 
 // ContainsLower returns true if the `elem` is in the Strings, false otherwise.
+// Deprecated: Use collections/generic version.
 func (sa Strings) ContainsLower(elem string) bool {
 	for _, arrayElem := range sa {
 		if strings.ToLower(arrayElem) == elem {
@@ -77,6 +83,7 @@ func (sa Strings) ContainsLower(elem string) bool {
 }
 
 // GetByLower returns an element from the array that matches the input.
+// Deprecated: Use collections/generic version.
 func (sa Strings) GetByLower(elem string) string {
 	for _, arrayElem := range sa {
 		if strings.ToLower(arrayElem) == elem {

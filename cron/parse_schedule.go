@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -17,19 +17,23 @@ import (
 	"github.com/blend/go-sdk/ex"
 )
 
-/*ParseSchedule parses a cron formatted string into a schedule.
+/*
+ParseSchedule parses a cron formatted string into a schedule.
 
 The string must be at least 5 components, whitespace separated.
 If the string has 5 components a 0 will be prepended for the seconds component, and a * appended for the year component.
 If the string has 6 components a * appended for the year component.
 
 The components are (in short form / 5 component):
+
 	(minutes) (hours) (day of month) (month) (day of week)
 
 The components are (in medium form / 6 component):
+
 	(seconds) (hours) (day of month) (month) (day of week)
 
 The components are (in long form / 7 component):
+
 	(seconds) (minutes) (hours) (day of month) (month) (day of week) (year)
 
 The full list of possible field values:
@@ -55,7 +59,6 @@ You can also use shorthands:
 	"@immediately-then @every 500ms" is equivalent to "cron.Immediately().Then(cron.Every(500*time.Millisecond))"
 	"@once-at 2021-06-05 13:04" is "cron.OnceAtUTC(time.Date(...))"
 	"@never" is equivalent to an unset schedule (i.e., only on demand) to avoid defaults
-
 */
 func ParseSchedule(cronString string) (schedule Schedule, err error) {
 	cronString = strings.TrimSpace(cronString)

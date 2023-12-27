@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -33,6 +33,11 @@ type Config struct {
 	// Hostname is the host portion of a <host>:<port> address. It will be used in conjunction with `Port`
 	// to form the default `Address`.
 	Hostname string `json:"hostname,omitempty" yaml:"hostname,omitempty" env:"DATADOG_HOSTNAME"`
+
+	// CentralHostname is meant to replace Hostname when a central server is used for metrics collection.
+	// CentralHostname is the host portion of <host>:<port> address. It will be used in conjunction with `Port`
+	// to form the default `Address`.
+	CentralHostname string `json:"centralHostname,omitempty" yaml:"centralHostname,omitempty" env:"DATADOG_CENTRAL_HOSTNAME"`
 	// Port is the port portion of a <host>:<port> address. It will be used in conjunction with `Host`
 	// to form the default `Address`.
 	Port string `json:"port,omitempty" yaml:"port,omitempty" env:"DATADOG_PORT"`
@@ -76,6 +81,9 @@ func (c Config) IsZero() bool {
 
 // GetAddress returns the datadog collector address string.
 func (c Config) GetAddress() string {
+	if c.CentralHostname != "" {
+		return fmt.Sprintf("%s:%s", c.CentralHostname, c.PortOrDefault())
+	}
 	if c.Address != "" {
 		return c.Address
 	}

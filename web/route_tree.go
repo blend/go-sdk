@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -20,13 +20,12 @@ import (
 //
 // A very simple example:
 //
-//    rt := new(web.RouteTree)
-//    rt.Handle(http.MethodGet, "/", func(w http.ResponseWriter, req *http.Request, route *web.Route, params web.Params) {
-//        w.WriteHeader(http.StatusOK)
-//        fmt.Fprintf(w, "OK!")
-//    })
-//    (&http.Server{Addr: "127.0.0.1:8080", Handler: rt}).ListenAndServe()
-//
+//	rt := new(web.RouteTree)
+//	rt.Handle(http.MethodGet, "/", func(w http.ResponseWriter, req *http.Request, route *web.Route, params web.Params) {
+//	    w.WriteHeader(http.StatusOK)
+//	    fmt.Fprintf(w, "OK!")
+//	})
+//	(&http.Server{Addr: "127.0.0.1:8080", Handler: rt}).ListenAndServe()
 type RouteTree struct {
 	// Routes is a map between canonicalized http method
 	// (i.e. `GET` vs. `get`) and individual method

@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -31,10 +31,14 @@ func Parse(s string) (Vars, error) {
 // We define the grammar as such (in BNF notation):
 // <expr> ::= (<pair> <sep>)* <pair>
 // <sep> ::= ';'
-//        |  ','
+//
+//	|  ','
+//
 // <pair> ::= <term> = <term>
 // <term> ::= <literal>
-//         |  "[<literal>|<space>|<escape_quote>]*"
+//
+//	|  "[<literal>|<space>|<escape_quote>]*"
+//
 // <literal> ::= [-A-Za-z_0-9]+
 // <space> ::= ' '
 // <escape_quote> ::= '\"'

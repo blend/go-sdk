@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -32,6 +32,7 @@ func TestNewErrorEvent(t *testing.T) {
 	assert.Equal(Fatal, ee.GetFlag())
 	assert.Equal("not a test", ee.Err.Error())
 	assert.NotNil(ee.State)
+	assert.Equal(ee.Restricted, false)
 	assert.Equal("POST", ee.State.(*http.Request).Method)
 
 	buf := new(bytes.Buffer)
@@ -46,9 +47,10 @@ func TestNewErrorEvent(t *testing.T) {
 	assert.Nil(err)
 	assert.Contains(string(contents), "not a test")
 
-	ee = NewErrorEvent(Fatal, ex.New("this is only a test"))
+	ee = NewErrorEvent(Fatal, ex.New("this is only a test"), OptErrorEventRestricted(true))
 	contents, err = json.Marshal(ee.Decompose())
 	assert.Nil(err)
+	assert.Equal(ee.Restricted, true)
 	assert.Contains(string(contents), "this is only a test")
 }
 

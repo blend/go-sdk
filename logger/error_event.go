@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -74,11 +74,19 @@ func OptErrorEventState(state interface{}) ErrorEventOption {
 	}
 }
 
+// OptErrorEventRestricted sets the restricted field on an error event.
+func OptErrorEventRestricted(restricted bool) ErrorEventOption {
+	return func(ee *ErrorEvent) {
+		ee.Restricted = restricted
+	}
+}
+
 // ErrorEvent is an event that wraps an error.
 type ErrorEvent struct {
-	Flag  string
-	Err   error
-	State interface{}
+	Flag       string
+	Err        error
+	State      interface{}
+	Restricted bool
 }
 
 // GetFlag implements Event.
@@ -99,10 +107,12 @@ func (ee ErrorEvent) Decompose() map[string]interface{} {
 
 	if _, ok := ee.Err.(json.Marshaler); ok {
 		return map[string]interface{}{
-			"err": ee.Err,
+			"err":           ee.Err,
+			FieldRestricted: ee.Restricted,
 		}
 	}
 	return map[string]interface{}{
-		"err": ee.Err.Error(),
+		"err":           ee.Err.Error(),
+		FieldRestricted: ee.Restricted,
 	}
 }

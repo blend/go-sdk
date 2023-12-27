@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -10,7 +10,7 @@ Package web implements a model view controller system for building http servers.
 It is meant to be composed with other packages to form everything from small api servers
 to fully formed web view applications.
 
-Basics
+# Basics
 
 To create a web server:
 

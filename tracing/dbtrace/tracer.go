@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -14,6 +14,7 @@ import (
 	"time"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	opentracingExt "github.com/opentracing/opentracing-go/ext"
 
 	"github.com/blend/go-sdk/db"
 	"github.com/blend/go-sdk/tracing"
@@ -34,11 +35,13 @@ type dbTracer struct {
 
 func (dbt dbTracer) Prepare(ctx context.Context, cfg db.Config, statement string) db.TraceFinisher {
 	startOptions := []opentracing.StartSpanOption{
+		opentracingExt.SpanKindRPCClient,
 		opentracing.Tag{Key: tracing.TagKeySpanType, Value: tracing.SpanTypeSQL},
-		opentracing.Tag{Key: tracing.TagKeyDBName, Value: cfg.DatabaseOrDefault()},
-		opentracing.Tag{Key: tracing.TagKeyDBUser, Value: cfg.Username},
-		opentracing.Tag{Key: TagKeyQuery, Value: statement},
-		opentracing.Tag{Key: TagKeySQLCommand, Value: statement},
+		// Ensure lib is using expected DB span tags for this DB span
+		// https://docs.datadoghq.com/tracing/trace_collection/tracing_naming_convention/#database
+		opentracing.Tag{Key: string(opentracingExt.DBInstance), Value: cfg.DatabaseOrDefault()},
+		opentracing.Tag{Key: string(opentracingExt.DBUser), Value: cfg.Username},
+		opentracing.Tag{Key: string(opentracingExt.DBStatement), Value: statement},
 		tracing.TagMeasured(),
 		opentracing.StartTime(time.Now().UTC()),
 	}
@@ -48,12 +51,14 @@ func (dbt dbTracer) Prepare(ctx context.Context, cfg db.Config, statement string
 
 func (dbt dbTracer) Query(ctx context.Context, cfg db.Config, label, statement string) db.TraceFinisher {
 	startOptions := []opentracing.StartSpanOption{
+		opentracingExt.SpanKindRPCClient,
 		opentracing.Tag{Key: tracing.TagKeyResourceName, Value: label},
 		opentracing.Tag{Key: tracing.TagKeySpanType, Value: tracing.SpanTypeSQL},
-		opentracing.Tag{Key: tracing.TagKeyDBName, Value: cfg.DatabaseOrDefault()},
-		opentracing.Tag{Key: tracing.TagKeyDBUser, Value: cfg.Username},
-		opentracing.Tag{Key: TagKeyQuery, Value: statement},
-		opentracing.Tag{Key: TagKeySQLCommand, Value: statement},
+		// Ensure lib is using expected DB span tags for this DB span
+		// https://docs.datadoghq.com/tracing/trace_collection/tracing_naming_convention/#database
+		opentracing.Tag{Key: string(opentracingExt.DBInstance), Value: cfg.DatabaseOrDefault()},
+		opentracing.Tag{Key: string(opentracingExt.DBUser), Value: cfg.Username},
+		opentracing.Tag{Key: string(opentracingExt.DBStatement), Value: statement},
 		tracing.TagMeasured(),
 		opentracing.StartTime(time.Now().UTC()),
 	}

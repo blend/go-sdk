@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -48,7 +48,7 @@ func TestGetRawURLParameterized(t *testing.T) {
 			expect: "https://example.test/resource/1234",
 		},
 		{
-			name: "r2 request using OptParameterizedPath",
+			name: "r2 request using OptPathParameterized",
 			req: New("https://example.test", OptPathParameterized("resource/:resource_id/:child_id", map[string]string{
 				"resource_id": "1234",
 				"child_id":    "5678",

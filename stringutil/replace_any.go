@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -9,7 +9,8 @@ package stringutil
 
 // ReplaceAny replaces any runes in the 'replaced' list with a given replacement.
 // Example:
-//    output := ReplaceAny("foo bar_baz", '-', []rune(` _`)...)
+//
+//	output := ReplaceAny("foo bar_baz", '-', []rune(` _`)...)
 func ReplaceAny(corpus string, replacement rune, replaced ...rune) string {
 	characters := []rune(corpus)
 	var c rune

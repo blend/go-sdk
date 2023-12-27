@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -155,6 +155,33 @@ func TestLoggerE2ESubContextFields(t *testing.T) {
 	fieldKey := uuid.V4().String()
 	fieldValue := uuid.V4().String()
 	sc := log.WithLabels(Labels{fieldKey: fieldValue})
+
+	sc.Infof("this is infof")
+	sc.Errorf("this is errorf")
+	sc.Fatalf("this is fatalf")
+
+	sc.Trigger(NewMessageEvent(Info, "this is a triggered message"))
+	log.DrainContext(context.Background())
+
+	assert.Contains(output.String(), fmt.Sprintf("[info] this is infof\t%s=%s", fieldKey, fieldValue))
+	assert.Contains(output.String(), fmt.Sprintf("[error] this is errorf\t%s=%s", fieldKey, fieldValue))
+	assert.Contains(output.String(), fmt.Sprintf("[fatal] this is fatalf\t%s=%s", fieldKey, fieldValue))
+	assert.Contains(output.String(), fmt.Sprintf("[info] this is a triggered message\t%s=%s", fieldKey, fieldValue))
+}
+
+func TestLoggerAnnotations(t *testing.T) {
+	assert := assert.New(t)
+
+	output := new(bytes.Buffer)
+	log, err := New(
+		OptOutput(output),
+		OptText(OptTextHideTimestamp(), OptTextNoColor()),
+	)
+	assert.Nil(err)
+
+	fieldKey := uuid.V4().String()
+	fieldValue := uuid.V4().String()
+	sc := log.WithAnnotations(Annotations{fieldKey: fieldValue})
 
 	sc.Infof("this is infof")
 	sc.Errorf("this is errorf")

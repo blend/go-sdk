@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -27,6 +27,9 @@ const DefaultRestrictionsOpenSource = `Use of this source code is governed by a 
 // DefaultNoticeBodyTemplate is the default notice body template.
 const DefaultNoticeBodyTemplate = `Copyright (c) {{ .Year }} - Present. {{ .Company }}. All rights reserved
 {{ .Restrictions }}`
+
+// DefaultImplicitConfigFile is the file name for the default config file the `copyright` command will parse for globs, if present.
+const DefaultImplicitConfigFile = ".copyright-check-exclude-globs"
 
 // Extension
 const (
@@ -101,6 +104,7 @@ var (
 		"vendor/*",
 		"venv/*",
 		"*/venv/*",
+		"*.vault.yml",
 	}
 
 	// DefaultIncludeFiles is the default included files list.

@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -71,14 +71,15 @@ func OptCreateTransitAllowPlaintextBackup() CreateTransitKeyOption {
 }
 
 // OptCreateTransitType - specifies the type of key to create. The default type is "aes256-gcm96":
-//   aes256-gcm96 – AES-256 wrapped with GCM using a 96-bit nonce size AEAD (symmetric, supports derivation and
-//      convergent encryption)
-//   chacha20-poly1305 – ChaCha20-Poly1305 AEAD (symmetric, supports derivation and convergent encryption)
-//   ed25519 – ED25519 (asymmetric, supports derivation). When using derivation, a sign operation with the same
-//      context will derive the same key and signature; this is a signing analog to convergent_encryption.
-// 	 ecdsa-p256 – ECDSA using the P-256 elliptic curve (asymmetric)
-// 	 rsa-2048 - RSA with bit size of 2048 (asymmetric)
-//   rsa-4096 - RSA with bit size of 4096 (asymmetric)
+//
+//	  aes256-gcm96 – AES-256 wrapped with GCM using a 96-bit nonce size AEAD (symmetric, supports derivation and
+//	     convergent encryption)
+//	  chacha20-poly1305 – ChaCha20-Poly1305 AEAD (symmetric, supports derivation and convergent encryption)
+//	  ed25519 – ED25519 (asymmetric, supports derivation). When using derivation, a sign operation with the same
+//	     context will derive the same key and signature; this is a signing analog to convergent_encryption.
+//		 ecdsa-p256 – ECDSA using the P-256 elliptic curve (asymmetric)
+//		 rsa-2048 - RSA with bit size of 2048 (asymmetric)
+//	  rsa-4096 - RSA with bit size of 4096 (asymmetric)
 func OptCreateTransitType(keyType string) CreateTransitKeyOption {
 	return func(tkc *CreateTransitKeyConfig) error {
 		if _, ok := validTKTypes[keyType]; !ok {

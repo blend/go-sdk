@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -65,13 +65,13 @@ func TestOptAllowedIdentities(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	ip := &envoyutil.IdentityProcessor{
-		AllowedIdentities: collections.NewSetOfString("x.invalid", "y.invalid"),
+		AllowedIdentities: collections.NewSet("x.invalid", "y.invalid"),
 	}
 	opt := envoyutil.OptAllowedIdentities("y.invalid", "z.invalid")
 	opt(ip)
 
 	expected := &envoyutil.IdentityProcessor{
-		AllowedIdentities: collections.NewSetOfString("x.invalid", "y.invalid", "z.invalid"),
+		AllowedIdentities: collections.NewSet("x.invalid", "y.invalid", "z.invalid"),
 	}
 	assert.Equal(expected, ip)
 }
@@ -80,13 +80,13 @@ func TestOptDeniedIdentities(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	ip := &envoyutil.IdentityProcessor{
-		DeniedIdentities: collections.NewSetOfString("x.invalid", "y.invalid"),
+		DeniedIdentities: collections.NewSet("x.invalid", "y.invalid"),
 	}
 	opt := envoyutil.OptDeniedIdentities("y.invalid", "z.invalid")
 	opt(ip)
 
 	expected := &envoyutil.IdentityProcessor{
-		DeniedIdentities: collections.NewSetOfString("x.invalid", "y.invalid", "z.invalid"),
+		DeniedIdentities: collections.NewSet("x.invalid", "y.invalid", "z.invalid"),
 	}
 	assert.Equal(expected, ip)
 }
@@ -194,7 +194,7 @@ func TestIdentityProcessorIdentityProvider(t *testing.T) {
 
 	// Client identity not among allow list.
 	ip = envoyutil.IdentityProcessor{
-		AllowedIdentities: collections.NewSetOfString("ecks.why"),
+		AllowedIdentities: collections.NewSet("ecks.why"),
 	}
 	clientIdentity, err = ip.IdentityProvider(xfcc)
 	assert.Equal("", clientIdentity)
@@ -209,7 +209,7 @@ func TestIdentityProcessorIdentityProvider(t *testing.T) {
 	// Server identity not among allow list.
 	ip = envoyutil.IdentityProcessor{
 		Type:              envoyutil.ServerIdentity,
-		AllowedIdentities: collections.NewSetOfString("ecks.why"),
+		AllowedIdentities: collections.NewSet("ecks.why"),
 	}
 	serverIdentity, err := ip.IdentityProvider(xfcc)
 	assert.Equal("", serverIdentity)
@@ -223,7 +223,7 @@ func TestIdentityProcessorIdentityProvider(t *testing.T) {
 
 	// Client identity among allow list.
 	ip = envoyutil.IdentityProcessor{
-		AllowedIdentities: collections.NewSetOfString("ecks.why", "bar.foo"),
+		AllowedIdentities: collections.NewSet("ecks.why", "bar.foo"),
 	}
 	clientIdentity, err = ip.IdentityProvider(xfcc)
 	assert.Equal("bar.foo", clientIdentity)
@@ -240,7 +240,7 @@ func TestIdentityProcessorIdentityProvider(t *testing.T) {
 	// Server identity is contained in deny list.
 	ip = envoyutil.IdentityProcessor{
 		Type:             envoyutil.ServerIdentity,
-		DeniedIdentities: collections.NewSetOfString("lyric.song"),
+		DeniedIdentities: collections.NewSet("lyric.song"),
 	}
 	serverIdentity, err = ip.IdentityProvider(xfcc)
 	assert.Equal("", serverIdentity)
@@ -255,7 +255,7 @@ func TestIdentityProcessorIdentityProvider(t *testing.T) {
 	// Server identity is **not** contained in deny list.
 	ip = envoyutil.IdentityProcessor{
 		Type:             envoyutil.ServerIdentity,
-		DeniedIdentities: collections.NewSetOfString("not.music"),
+		DeniedIdentities: collections.NewSet("not.music"),
 	}
 	serverIdentity, err = ip.IdentityProvider(xfcc)
 	assert.Equal("lyric.song", serverIdentity)

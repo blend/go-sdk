@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -83,7 +83,7 @@ func (st StackPointers) String() string {
 	return fmt.Sprintf("%+v", st)
 }
 
-//MarshalJSON is a custom json marshaler.
+// MarshalJSON is a custom json marshaler.
 func (st StackPointers) MarshalJSON() ([]byte, error) {
 	return json.Marshal(st.Strings())
 }
@@ -124,7 +124,7 @@ func (ss StackStrings) String() string {
 	return fmt.Sprintf("%+v", ss)
 }
 
-//MarshalJSON is a custom json marshaler.
+// MarshalJSON is a custom json marshaler.
 func (ss StackStrings) MarshalJSON() ([]byte, error) {
 	return json.Marshal(ss)
 }
@@ -166,15 +166,15 @@ func (f Frame) Func() string {
 
 // Format formats the frame according to the fmt.Formatter interface.
 //
-//    %s    source file
-//    %d    source line
-//    %n    function name
-//    %v    equivalent to %s:%d
+//	%s    source file
+//	%d    source line
+//	%n    function name
+//	%v    equivalent to %s:%d
 //
 // Format accepts flags that alter the printing of some verbs, as follows:
 //
-//    %+s   path of source file relative to the compile time GOPATH
-//    %+v   equivalent to %+s:%d
+//	%+s   path of source file relative to the compile time GOPATH
+//	%+v   equivalent to %+s:%d
 func (f Frame) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 's':

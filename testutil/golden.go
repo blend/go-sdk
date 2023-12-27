@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -100,8 +100,9 @@ func MarkUpdateGoldenFlag(opts ...FixtureOption) {
 // golden files should be updated.
 //
 // NOTE: This function is careful not to re-define a flag that has already
-//       been set. This can also be checked in `flag.CommandLine.`
-//       See: https://github.com/golang/go/blob/go1.17.1/src/flag/flag.go#L879
+//
+//	been set. This can also be checked in `flag.CommandLine.`
+//	See: https://github.com/golang/go/blob/go1.17.1/src/flag/flag.go#L879
 func getUpdateGoldenFlag(it *assert.Assertions, name string) bool {
 	goldenFileFlagsLock.Lock()
 	defer goldenFileFlagsLock.Unlock()

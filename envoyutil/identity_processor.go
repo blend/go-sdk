@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -17,8 +17,8 @@ import (
 )
 
 // NOTE: Ensure that
-//       - `IdentityProcessor.KubernetesIdentityFormatter` satisfies `IdentityFormatter`
-//       - `IdentityProcessor.IdentityProvider` satisfies `IdentityProvider`
+//   - `IdentityProcessor.KubernetesIdentityFormatter` satisfies `IdentityFormatter`
+//   - `IdentityProcessor.IdentityProvider` satisfies `IdentityProvider`
 var (
 	_ IdentityFormatter = IdentityProcessor{}.KubernetesIdentityFormatter
 	_ IdentityProvider  = IdentityProcessor{}.IdentityProvider
@@ -52,7 +52,7 @@ func OptDeniedTrustDomains(trustDomains ...string) IdentityProcessorOption {
 func OptAllowedIdentities(identities ...string) IdentityProcessorOption {
 	return func(ip *IdentityProcessor) {
 		ip.AllowedIdentities = ip.AllowedIdentities.Union(
-			collections.NewSetOfString(identities...),
+			collections.NewSet(identities...),
 		)
 	}
 }
@@ -61,7 +61,7 @@ func OptAllowedIdentities(identities ...string) IdentityProcessorOption {
 func OptDeniedIdentities(identities ...string) IdentityProcessorOption {
 	return func(ip *IdentityProcessor) {
 		ip.DeniedIdentities = ip.DeniedIdentities.Union(
-			collections.NewSetOfString(identities...),
+			collections.NewSet(identities...),
 		)
 	}
 }
@@ -96,8 +96,8 @@ type IdentityProcessor struct {
 	Type                IdentityType
 	AllowedTrustDomains []string
 	DeniedTrustDomains  []string
-	AllowedIdentities   collections.SetOfString
-	DeniedIdentities    collections.SetOfString
+	AllowedIdentities   collections.Set[string]
+	DeniedIdentities    collections.Set[string]
 	FormatIdentity      IdentityFormatter
 }
 

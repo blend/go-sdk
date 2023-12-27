@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -36,7 +36,7 @@ func New(handler Action, options ...Option) *Buffer {
 	for _, option := range options {
 		option(&afb)
 	}
-	afb.contents = collections.NewRingBufferWithCapacity(afb.MaxLen)
+	afb.contents = collections.NewRingBufferWithCapacity[any](afb.MaxLen)
 	return &afb
 }
 
@@ -134,7 +134,7 @@ type Buffer struct {
 	ShutdownGracePeriod time.Duration
 
 	contentsMu sync.Mutex
-	contents   *collections.RingBuffer
+	contents   *collections.RingBuffer[any]
 
 	Handler Action
 	Errors  chan error
@@ -153,7 +153,7 @@ func (ab *Buffer) Background() context.Context {
 	return context.Background()
 }
 
-//Start starts the auto-flush buffer.
+// Start starts the auto-flush buffer.
 /*
 This call blocks. To call it asynchronously:
 

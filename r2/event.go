@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -101,9 +101,8 @@ func (e Event) Decompose() map[string]interface{} {
 			url = e.Request.URL.String()
 		}
 		output["req"] = map[string]interface{}{
-			"method":  e.Request.Method,
-			"url":     url,
-			"headers": e.Request.Header,
+			"method": e.Request.Method,
+			"url":    url,
 		}
 	}
 	if e.Response != nil {
@@ -112,7 +111,6 @@ func (e Event) Decompose() map[string]interface{} {
 			"contentLength":   e.Response.ContentLength,
 			"contentType":     tryHeader(e.Response.Header, "Content-Type", "content-type"),
 			"contentEncoding": tryHeader(e.Response.Header, "Content-Encoding", "content-encoding"),
-			"headers":         e.Response.Header,
 			"cert":            webutil.ParseCertInfo(e.Response),
 			"elapsed":         timeutil.Milliseconds(e.Elapsed),
 		}

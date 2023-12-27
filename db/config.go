@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -75,24 +75,24 @@ func NewConfigFromDSN(dsn string) (config Config, err error) {
 
 // NewConfigFromEnv returns a new config from the environment.
 // The environment variable mappings are as follows:
-//  -  DB_ENGINE            = Engine
-//  -  DATABASE_URL         = DSN     //note that this has precedence over other vars (!!)
-//  -  DB_HOST              = Host
-//  -  DB_PORT              = Port
-//  -  DB_NAME              = Database
-//  -  DB_SCHEMA            = Schema
-//  -  DB_APPLICATION_NAME  = ApplicationName
-//  -  DB_USER              = Username
-//  -  DB_PASSWORD          = Password
-//  -  DB_CONNECT_TIMEOUT   = ConnectTimeout
-//  -  DB_LOCK_TIMEOUT      = LockTimeout
-//  -  DB_STATEMENT_TIMEOUT = StatementTimeout
-//  -  DB_SSLMODE           = SSLMode
-//  -  DB_IDLE_CONNECTIONS  = IdleConnections
-//  -  DB_MAX_CONNECTIONS   = MaxConnections
-//  -  DB_MAX_LIFETIME      = MaxLifetime
-//  -  DB_BUFFER_POOL_SIZE  = BufferPoolSize
-//  -  DB_DIALECT           = Dialect
+//   - DB_ENGINE            = Engine
+//   - DATABASE_URL         = DSN     //note that this has precedence over other vars (!!)
+//   - DB_HOST              = Host
+//   - DB_PORT              = Port
+//   - DB_NAME              = Database
+//   - DB_SCHEMA            = Schema
+//   - DB_APPLICATION_NAME  = ApplicationName
+//   - DB_USER              = Username
+//   - DB_PASSWORD          = Password
+//   - DB_CONNECT_TIMEOUT   = ConnectTimeout
+//   - DB_LOCK_TIMEOUT      = LockTimeout
+//   - DB_STATEMENT_TIMEOUT = StatementTimeout
+//   - DB_SSLMODE           = SSLMode
+//   - DB_IDLE_CONNECTIONS  = IdleConnections
+//   - DB_MAX_CONNECTIONS   = MaxConnections
+//   - DB_MAX_LIFETIME      = MaxLifetime
+//   - DB_BUFFER_POOL_SIZE  = BufferPoolSize
+//   - DB_DIALECT           = Dialect
 func NewConfigFromEnv() (config Config, err error) {
 	if err = (&config).Resolve(env.WithVars(context.Background(), env.Env())); err != nil {
 		return
@@ -434,34 +434,34 @@ func (c Config) ValidateProduction() error {
 // and "d" and the value should be between 0 and 2147483647ms. We explicitly
 // cast to milliseconds but leave validation on the value to PostgreSQL.
 //
-//   blend=> BEGIN;
-//   BEGIN
-//   blend=> SET LOCAL lock_timeout TO '4000ms';
-//   SET
-//   blend=> SHOW lock_timeout;
-//    lock_timeout
-//   --------------
-//    4s
-//   (1 row)
-//   --
-//   blend=> SET LOCAL lock_timeout TO '4500ms';
-//   SET
-//   blend=> SHOW lock_timeout;
-//    lock_timeout
-//   --------------
-//    4500ms
-//   (1 row)
-//   --
-//   blend=> SET LOCAL lock_timeout = 'go';
-//   ERROR:  invalid value for parameter "lock_timeout": "go"
-//   blend=> SET LOCAL lock_timeout = '1ns';
-//   ERROR:  invalid value for parameter "lock_timeout": "1ns"
-//   HINT:  Valid units for this parameter are "ms", "s", "min", "h", and "d".
-//   blend=> SET LOCAL lock_timeout = '-1ms';
-//   ERROR:  -1 is outside the valid range for parameter "lock_timeout" (0 .. 2147483647)
-//   --
-//   blend=> COMMIT;
-//   COMMIT
+//	blend=> BEGIN;
+//	BEGIN
+//	blend=> SET LOCAL lock_timeout TO '4000ms';
+//	SET
+//	blend=> SHOW lock_timeout;
+//	 lock_timeout
+//	--------------
+//	 4s
+//	(1 row)
+//	--
+//	blend=> SET LOCAL lock_timeout TO '4500ms';
+//	SET
+//	blend=> SHOW lock_timeout;
+//	 lock_timeout
+//	--------------
+//	 4500ms
+//	(1 row)
+//	--
+//	blend=> SET LOCAL lock_timeout = 'go';
+//	ERROR:  invalid value for parameter "lock_timeout": "go"
+//	blend=> SET LOCAL lock_timeout = '1ns';
+//	ERROR:  invalid value for parameter "lock_timeout": "1ns"
+//	HINT:  Valid units for this parameter are "ms", "s", "min", "h", and "d".
+//	blend=> SET LOCAL lock_timeout = '-1ms';
+//	ERROR:  -1 is outside the valid range for parameter "lock_timeout" (0 .. 2147483647)
+//	--
+//	blend=> COMMIT;
+//	COMMIT
 //
 // See:
 // - https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT

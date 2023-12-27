@@ -1,13 +1,13 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
 
 /*
-Package collections contains helper data structures.
+Package generic contains generic helper data structures.
 
 It is not meant to be comprehensive, but does include common structures like RingBuffer and Queue.
 */
-package collections // import "github.com/blend/go-sdk/collections"
+package collections // import "github.com/blend/go-sdk/collections/generic"

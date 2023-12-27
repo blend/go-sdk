@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -24,7 +24,7 @@ const (
 )
 
 // NewShimWriter returns a new shim writer.
-// A "Shim Writer" is mean to bridge situations where you need to pass
+// A "Shim Writer" is meant to bridge situations where you need to pass
 // an io.Writer to a given function, and want that function to write to a logger.
 // I.e. you can set `cmd.Stdout = NewShimWriter(log)` to have a
 // shell command write to a logger for standard out.

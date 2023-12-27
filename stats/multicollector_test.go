@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -212,4 +212,30 @@ func TestClose(t *testing.T) {
 	c2.CloseErrors <- expectedError
 	err = mc.Close()
 	assert.Equal(expectedError.Error(), err.Error())
+}
+
+func TestSendEvent(t *testing.T) {
+	assert := assert.New(t)
+
+	c1 := NewMockCollector(32)
+	c2 := NewMockCollector(32)
+
+	var err error
+	mc := MultiCollector{c1, c2}
+
+	err = mc.SendEvent(Event{})
+	assert.Nil(err)
+}
+
+func TestCreateEvent(t *testing.T) {
+	assert := assert.New(t)
+
+	c1 := NewMockCollector(32)
+	c2 := NewMockCollector(32)
+
+	mc := MultiCollector{c1, c2}
+
+	event := mc.CreateEvent("title", "text")
+	assert.Equal(event.Title, "title")
+	assert.Equal(event.Text, "text")
 }

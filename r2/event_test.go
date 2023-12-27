@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -67,8 +67,11 @@ type eventJSONSchema struct {
 func TestEventMarshalJSON(t *testing.T) {
 	assert := assert.New(t)
 
+	req := webutil.NewMockRequest("GET", "/foo")
+	req.Header.Set(webutil.HeaderAuthorization, "Top Secret")
+
 	e := NewEvent(Flag,
-		OptEventRequest(webutil.NewMockRequest("GET", "/foo")),
+		OptEventRequest(req),
 		OptEventResponse(&http.Response{StatusCode: http.StatusOK, ContentLength: 500}),
 		OptEventBody([]byte("foo")),
 	)
@@ -84,4 +87,7 @@ func TestEventMarshalJSON(t *testing.T) {
 	assert.Equal(http.StatusOK, jsonContents.Res.StatusCode)
 	assert.Equal(500, jsonContents.Res.ContentLength)
 	assert.Equal("foo", jsonContents.Body)
+
+	_, ok := jsonContents.Req.Headers[webutil.HeaderAuthorization]
+	assert.False(ok)
 }

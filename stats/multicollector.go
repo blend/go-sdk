@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -150,4 +150,29 @@ func (collectors MultiCollector) Close() (err error) {
 		}
 	}
 	return
+}
+
+// SendEvent send an event to all collectors supporting EventCollector interface.
+func (collectors MultiCollector) SendEvent(event Event) (err error) {
+	for _, collector := range collectors {
+		if ec, ok := collector.(EventCollector); ok {
+			err = ec.SendEvent(event)
+			if err != nil {
+				return
+			}
+		}
+	}
+	return
+}
+
+// CreateEvent creates an event from the first collector supporting EventCollector interface
+// otherwise returns a noop event. This is useful only if there is a single event collector
+// in the MultiCollector.
+func (collectors MultiCollector) CreateEvent(title, text string, tags ...string) Event {
+	for _, collector := range collectors {
+		if ec, ok := collector.(EventCollector); ok {
+			return ec.CreateEvent(title, text, tags...)
+		}
+	}
+	return Event{Title: "noop"}
 }

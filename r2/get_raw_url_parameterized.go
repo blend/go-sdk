@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -8,6 +8,7 @@ Use of this source code is governed by a MIT license that can be found in the LI
 package r2
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 )
@@ -15,16 +16,28 @@ import (
 // GetRawURLParameterized gets a URL string with named route parameters in place of
 // the raw path for a request. Useful for outbound request aggregation for
 // metrics and tracing when route parameters are involved.
-// Relies on the request's context storing the parameterized path, otherwise will default
-// to returning the request `URL`'s `String()`.
+// Relies on the request's context storing the optional hostname and/or parameterized path,
+// otherwise will default to returning the request `URL`'s `String()`.
 func GetRawURLParameterized(req *http.Request) string {
 	if req == nil || req.URL == nil {
 		return ""
 	}
 	url := req.URL
+
+	hostName := GetServiceHostName(req.Context())
 	path := GetParameterizedPath(req.Context())
-	if path == "" {
+	if path == "" && hostName == "" {
 		return url.String()
+	}
+	if hostName == "" {
+		hostName = url.Host
+	} else {
+		// Using similar formatting as DD to signal this is a parameterized value
+		// https://docs.datadoghq.com/tracing/troubleshooting/quantization/#overview
+		hostName = fmt.Sprintf("{%s}", hostName)
+	}
+	if path == "" {
+		path = url.Path
 	}
 
 	// Stripped down version of "net/url" `URL.String()`
@@ -33,12 +46,12 @@ func GetRawURLParameterized(req *http.Request) string {
 		buf.WriteString(url.Scheme)
 		buf.WriteByte(':')
 	}
-	if url.Scheme != "" || url.Host != "" {
-		if url.Host != "" || url.Path != "" {
+	if url.Scheme != "" || hostName != "" {
+		if hostName != "" || path != "" {
 			buf.WriteString("//")
 		}
-		if host := url.Host; host != "" {
-			buf.WriteString(host)
+		if hostName != "" {
+			buf.WriteString(hostName)
 		}
 	}
 	if !strings.HasPrefix(path, "/") {

@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -42,7 +42,5 @@ You can also fire and forget the request with the `.Discard()` method:
 		r2.OptPost(),
 		r2.OptHeaderValue("X-Foo", "example-string"),
 	).Discard()
-
-
 */
 package r2 // import "github.com/blend/go-sdk/r2"

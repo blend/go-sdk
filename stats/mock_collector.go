@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -22,6 +22,7 @@ var (
 func NewMockCollector(capacity int) *MockCollector {
 	return &MockCollector{
 		Metrics:     make(chan MockMetric, capacity),
+		Events:      make(chan Event, capacity),
 		Errors:      make(chan error, capacity),
 		FlushErrors: make(chan error, capacity),
 		CloseErrors: make(chan error, capacity),
@@ -36,6 +37,7 @@ type MockCollector struct {
 	}
 
 	Metrics     chan MockMetric
+	Events      chan Event
 	Errors      chan error
 	FlushErrors chan error
 	CloseErrors chan error
@@ -171,6 +173,21 @@ func (mc MockCollector) Close() error {
 		return <-mc.CloseErrors
 	}
 	return nil
+}
+
+// SendEvent sends an event.
+func (mc MockCollector) SendEvent(e Event) error {
+	mc.Events <- e
+	return nil
+}
+
+// CreateEvent creates a mock event with the default tags.
+func (mc MockCollector) CreateEvent(title, text string, tags ...string) Event {
+	return Event{
+		Title: title,
+		Text:  text,
+		Tags:  append(mc.Field.DefaultTags, tags...),
+	}
 }
 
 // MockMetric is a mock metric.

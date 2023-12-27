@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -8,13 +8,17 @@ Use of this source code is governed by a MIT license that can be found in the LI
 package webtrace
 
 import (
+	"bytes"
 	"fmt"
+	"net/http"
 	"testing"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	opentracingExt "github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/mocktracer"
 
 	"github.com/blend/go-sdk/assert"
+	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/tracing"
 	"github.com/blend/go-sdk/web"
 )
@@ -31,7 +35,8 @@ func TestStart(t *testing.T) {
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal(tracing.OperationHTTPRequest, mockSpan.OperationName)
 
-	assert.Len(mockSpan.Tags(), 8)
+	assert.Len(mockSpan.Tags(), 9)
+	assert.Equal(opentracingExt.SpanKindRPCServerEnum, mockSpan.Tags()[string(opentracingExt.SpanKind)])
 	assert.Equal("GET /test-resource", mockSpan.Tags()[tracing.TagKeyResourceName])
 	assert.Equal(tracing.SpanTypeWeb, mockSpan.Tags()[tracing.TagKeySpanType])
 	assert.Equal("GET", mockSpan.Tags()[tracing.TagKeyHTTPMethod])
@@ -57,9 +62,10 @@ func TestStartWithRoute(t *testing.T) {
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal(tracing.OperationHTTPRequest, mockSpan.OperationName)
 
-	assert.Len(mockSpan.Tags(), 9)
+	assert.Len(mockSpan.Tags(), 10)
 	assert.Equal("GET /test-resource/:id", mockSpan.Tags()[tracing.TagKeyResourceName])
 	assert.Equal(tracing.SpanTypeWeb, mockSpan.Tags()[tracing.TagKeySpanType])
+	assert.Equal(opentracingExt.SpanKindRPCServerEnum, mockSpan.Tags()[string(opentracingExt.SpanKind)])
 	assert.Equal("GET", mockSpan.Tags()[tracing.TagKeyHTTPMethod])
 	assert.Equal("/test-resource/3", mockSpan.Tags()[tracing.TagKeyHTTPURL])
 	assert.Equal("127.0.0.1", mockSpan.Tags()["http.remote_addr"])
@@ -67,6 +73,83 @@ func TestStartWithRoute(t *testing.T) {
 	assert.Equal("go-sdk test", mockSpan.Tags()["http.user_agent"])
 	assert.Equal("/test-resource/:id", mockSpan.Tags()["http.route"])
 	assert.True(mockSpan.FinishTime.IsZero())
+}
+
+func TestStartAndFinishWithRouteIncludingLabelsFalse(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	webTracer := Tracer(mockTracer, OptIncludeCtxLabels(false))
+
+	logBuffer := bytes.NewBuffer([]byte{})
+	ctx := web.MockCtx(
+		"GET", "/test-resource/3",
+		web.OptCtxRoute(&web.Route{Path: "/test-resource/:id"}),
+		web.OptCtxLog(logger.Memory(logBuffer)),
+	)
+	ctx.Response.WriteHeader(http.StatusOK)
+
+	ctx.WithContext(logger.WithLabel(ctx.Context(), "foo", "bar"))
+	labelValue, labelFound := logger.GetLabel(ctx.Context(), "foo")
+	assert.True(labelFound)
+	assert.Equal("bar", labelValue)
+	wt := webTracer.Start(ctx)
+	wt.Finish(ctx, nil)
+	span := opentracing.SpanFromContext(ctx.Context())
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal(tracing.OperationHTTPRequest, mockSpan.OperationName)
+
+	assert.Len(mockSpan.Tags(), 11)
+	assert.Equal("GET /test-resource/:id", mockSpan.Tags()[tracing.TagKeyResourceName])
+	assert.Equal(tracing.SpanTypeWeb, mockSpan.Tags()[tracing.TagKeySpanType])
+	assert.Equal(opentracingExt.SpanKindRPCServerEnum, mockSpan.Tags()[string(opentracingExt.SpanKind)])
+	assert.Equal("GET", mockSpan.Tags()[tracing.TagKeyHTTPMethod])
+	assert.Equal("/test-resource/3", mockSpan.Tags()[tracing.TagKeyHTTPURL])
+	assert.Equal("127.0.0.1", mockSpan.Tags()["http.remote_addr"])
+	assert.Equal("localhost", mockSpan.Tags()["http.host"])
+	assert.Equal("go-sdk test", mockSpan.Tags()["http.user_agent"])
+	assert.Equal("/test-resource/:id", mockSpan.Tags()["http.route"])
+	assert.Equal("200", mockSpan.Tags()[tracing.TagKeyHTTPCode])
+	assert.False(mockSpan.FinishTime.IsZero())
+}
+
+func TestStartAndFinishWithRouteIncludingLabelsTrue(t *testing.T) {
+	assert := assert.New(t)
+	mockTracer := mocktracer.New()
+	webTracer := Tracer(mockTracer, OptIncludeCtxLabels(true))
+
+	logBuffer := bytes.NewBuffer([]byte{})
+	ctx := web.MockCtx(
+		"GET", "/test-resource/3",
+		web.OptCtxRoute(&web.Route{Path: "/test-resource/:id"}),
+		web.OptCtxLog(logger.Memory(logBuffer)),
+	)
+	ctx.Response.WriteHeader(http.StatusOK)
+
+	ctx.WithContext(logger.WithLabel(ctx.Context(), "foo", "bar"))
+	labelValue, labelFound := logger.GetLabel(ctx.Context(), "foo")
+	assert.True(labelFound)
+	assert.Equal("bar", labelValue)
+
+	wt := webTracer.Start(ctx)
+	wt.Finish(ctx, nil)
+	span := opentracing.SpanFromContext(ctx.Context())
+	mockSpan := span.(*mocktracer.MockSpan)
+	assert.Equal(tracing.OperationHTTPRequest, mockSpan.OperationName)
+
+	assert.Len(mockSpan.Tags(), 13)
+	assert.Equal("GET /test-resource/:id", mockSpan.Tags()[tracing.TagKeyResourceName])
+	assert.Equal(tracing.SpanTypeWeb, mockSpan.Tags()[tracing.TagKeySpanType])
+	assert.Equal(opentracingExt.SpanKindRPCServerEnum, mockSpan.Tags()[string(opentracingExt.SpanKind)])
+	assert.Equal("GET", mockSpan.Tags()[tracing.TagKeyHTTPMethod])
+	assert.Equal("/test-resource/3", mockSpan.Tags()[tracing.TagKeyHTTPURL])
+	assert.Equal("127.0.0.1", mockSpan.Tags()["http.remote_addr"])
+	assert.Equal("localhost", mockSpan.Tags()["http.host"])
+	assert.Equal("go-sdk test", mockSpan.Tags()["http.user_agent"])
+	assert.Equal("/test-resource/:id", mockSpan.Tags()["http.route"])
+	assert.Equal("200", mockSpan.Tags()[tracing.TagKeyHTTPCode])
+	assert.Equal("bar", mockSpan.Tags()[fmt.Sprintf("%s.foo", tracing.TagKeyCtx)])
+	assert.Equal("/test-resource/:id", mockSpan.Tags()[fmt.Sprintf("%s.web.route", tracing.TagKeyCtx)])
+	assert.False(mockSpan.FinishTime.IsZero())
 }
 
 func optCtxIncomingSpan(t opentracing.Tracer, s opentracing.Span) web.CtxOption {
@@ -162,9 +245,10 @@ func TestStartView(t *testing.T) {
 	mockSpan := span.(*mocktracer.MockSpan)
 	assert.Equal(tracing.OperationHTTPRender, mockSpan.OperationName)
 
-	assert.Len(mockSpan.Tags(), 3)
+	assert.Len(mockSpan.Tags(), 4)
 	assert.Equal("test_view", mockSpan.Tags()[tracing.TagKeyResourceName])
 	assert.Equal(tracing.SpanTypeWeb, mockSpan.Tags()[tracing.TagKeySpanType])
+	assert.Equal(opentracingExt.SpanKindRPCServerEnum, mockSpan.Tags()[string(opentracingExt.SpanKind)])
 	assert.True(mockSpan.FinishTime.IsZero())
 }
 

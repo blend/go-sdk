@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -21,6 +21,12 @@ func TestContextWithTimestamp(t *testing.T) {
 	ts := time.Date(2019, 8, 16, 12, 11, 10, 9, time.UTC)
 	assert.Equal(ts, GetTimestamp(WithTimestamp(context.Background(), ts)))
 	assert.True(GetTimestamp(context.Background()).IsZero())
+}
+
+func TestContextWithRestricted(t *testing.T) {
+	assert := assert.New(t)
+
+	assert.Equal(true, GetRestricted(WithRestricted(context.Background(), true)))
 }
 
 func TestContextWithPath(t *testing.T) {

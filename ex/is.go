@@ -1,13 +1,15 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
 
 package ex
 
-import "errors"
+import (
+	"errors"
+)
 
 // Is is a helper function that returns if an error is an ex.
 //
@@ -15,6 +17,15 @@ import "errors"
 // "Isness" is evaluated by if the class of the exception matches the class of the cause
 func Is(err interface{}, cause error) bool {
 	if err == nil || cause == nil {
+		return false
+	}
+	// handle the case of multi-exceptions first.
+	if multiTyped, ok := err.(Multi); ok {
+		for _, multiErr := range multiTyped {
+			if Is(multiErr, cause) {
+				return true
+			}
+		}
 		return false
 	}
 	if typed := As(err); typed != nil {
@@ -31,16 +42,6 @@ func Is(err interface{}, cause error) bool {
 	}
 	if typed, ok := err.(ClassProvider); ok {
 		return typed.Class() == cause || (typed.Class().Error() == cause.Error()) || errors.Is(typed.Class(), cause)
-	}
-
-	// handle the case of multi-exceptions
-	if multiTyped, ok := err.(Multi); ok {
-		for _, multiErr := range multiTyped {
-			if Is(multiErr, cause) {
-				return true
-			}
-		}
-		return false
 	}
 
 	// handle regular errors

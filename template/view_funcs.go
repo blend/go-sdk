@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -508,7 +508,7 @@ func (vf ViewFuncs) Base64(v string) string {
 	return base64.StdEncoding.EncodeToString([]byte(v))
 }
 
-//Base64Decode decodes a base 64 string.
+// Base64Decode decodes a base 64 string.
 func (vf ViewFuncs) Base64Decode(v string) (string, error) {
 	result, err := base64.StdEncoding.DecodeString(v)
 	if err != nil {

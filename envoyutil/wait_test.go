@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -30,9 +30,9 @@ import (
 )
 
 // NOTE: Ensure that
-//       - `TimeoutError` satisfies `error`
-//       - `BadReadCloser` satisfies `io.ReadCloser`
-//       - `MockHTTPGetClient` satisfies `envoyutil.HTTPGetClient`
+//   - `TimeoutError` satisfies `error`
+//   - `BadReadCloser` satisfies `io.ReadCloser`
+//   - `MockHTTPGetClient` satisfies `envoyutil.HTTPGetClient`
 var (
 	_ error                   = (*TimeoutError)(nil)
 	_ io.ReadCloser           = (*BadReadCloser)(nil)

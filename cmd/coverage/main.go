@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -13,6 +13,7 @@ import (
 	"flag"
 	"fmt"
 	"go/build"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -100,6 +101,9 @@ func main() {
 	covered, total, err := parseFullCoverProfile(pwd, *coverprofile)
 	maybeFatal(err)
 	finalCoverage := (float64(covered) / float64(total)) * 100
+	if math.IsNaN(finalCoverage) {
+		finalCoverage = 0
+	}
 	maybeFatal(writeCoverage(pwd, formatCoverage(finalCoverage)))
 
 	fmt.Fprintf(os.Stdout, "final coverage: %s%%\n", colorCoverage(finalCoverage))
@@ -215,8 +219,14 @@ func getPackageCoverage(currentPath string, info os.FileInfo, err error) (string
 		return "", err
 	}
 
-	coverage := extractCoverage(string(output))
-	fmt.Fprintf(os.Stdout, "%s: %v%%\n", currentPath, colorCoverage(parseCoverage(coverage)))
+	coverageStr := extractCoverage(string(output))
+	coverage, err := parseCoverage(coverageStr)
+	if err != nil {
+		verrf("coverage run emitted invalid coverage")
+		fmt.Fprintln(os.Stderr, fmt.Sprintf("%v", err))
+		return "", err
+	}
+	fmt.Fprintf(os.Stdout, "%s: %v%%\n", currentPath, colorCoverage(coverage))
 
 	if enforce != nil && *enforce {
 		vf("enforcing coverage minimums")
@@ -228,7 +238,7 @@ func getPackageCoverage(currentPath string, info os.FileInfo, err error) (string
 
 	if update != nil && *update {
 		fmt.Fprintf(os.Stdout, "%q updating coverage\n", currentPath)
-		err = writeCoverage(currentPath, coverage)
+		err = writeCoverage(currentPath, formatCoverage(coverage))
 		if err != nil {
 			return "", err
 		}
@@ -315,17 +325,12 @@ func glob(pattern, subj string) bool {
 	return trailingGlob || strings.HasSuffix(subj, parts[end])
 }
 
-func enforceCoverage(path, actualCoverage string) error {
-	actual, err := strconv.ParseFloat(actualCoverage, 64)
-	if err != nil {
-		return err
-	}
-
+func enforceCoverage(path string, actual float64) error {
 	contents, err := os.ReadFile(filepath.Join(path, "COVERAGE"))
 	if err != nil {
 		return err
 	}
-	expected, err := strconv.ParseFloat(strings.TrimSpace(string(contents)), 64)
+	expected, err := parseCoverage(string(contents))
 	if err != nil {
 		return err
 	}
@@ -355,7 +360,7 @@ func extractCoverage(corpus string) string {
 }
 
 func writeCoverage(path, coverage string) error {
-	return os.WriteFile(filepath.Join(path, "COVERAGE"), []byte(strings.TrimSpace(coverage)), defaultFileFlags)
+	return os.WriteFile(filepath.Join(path, "COVERAGE"), []byte(strings.TrimSpace(coverage)+"\n"), defaultFileFlags)
 }
 
 func dirHasGlob(path, glob string) bool {
@@ -542,11 +547,17 @@ const (
 	colorReset ansiColor = "0m"
 )
 
-func parseCoverage(coverage string) float64 {
+func parseCoverage(coverage string) (float64, error) {
 	coverage = strings.TrimSpace(coverage)
 	coverage = strings.TrimSuffix(coverage, "%")
-	value, _ := strconv.ParseFloat(coverage, 64)
-	return value
+	value, err := strconv.ParseFloat(coverage, 64)
+	if err != nil {
+		return math.NaN(), err
+	}
+	if math.IsNaN(value) || math.IsInf(value, 0) {
+		return math.NaN(), fmt.Errorf("%q parses to an invalid coverage value: %f", coverage, value)
+	}
+	return value, nil
 }
 
 func colorCoverage(coverage float64) string {

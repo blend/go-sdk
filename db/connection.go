@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -49,7 +49,8 @@ func MustNew(options ...Option) *Connection {
 
 // Open opens a connection, testing an error and returning it if not nil, and if nil, opening the connection.
 // It's designed ot be used in conjunction with a constructor, i.e.
-//    conn, err := db.Open(db.NewFromConfig(cfg))
+//
+//	conn, err := db.Open(db.NewFromConfig(cfg))
 func Open(conn *Connection, err error) (*Connection, error) {
 	if err != nil {
 		return nil, err

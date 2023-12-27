@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -150,6 +150,70 @@ func (rc *RadixClient) Do(ctx context.Context, out interface{}, op string, args 
 		defer cancel()
 	}
 	if radixErr := rc.Client.Do(ctx, radix.Cmd(out, op, args...)); radixErr != nil {
+		err = ex.New(radixErr)
+		return
+	}
+	return
+}
+
+// Pipeline runs the given commands in a pipeline
+func (rc *RadixClient) Pipeline(ctx context.Context, pipelineName string, ops ...Operation) (err error) {
+	// Create a parent span for the entire pipeline operation
+	if rc.Tracer != nil && pipelineName != "" {
+		pipelineFinisher := rc.Tracer.Do(ctx, rc.Config, pipelineName, nil)
+		defer pipelineFinisher.Finish(ctx, err)
+	}
+
+	var logEvents []Event
+	if rc.Log != nil {
+		started := time.Now()
+		for _, op := range ops {
+			event := NewEvent(op.Command, op.Args, time.Since(started),
+				OptEventNetwork(rc.Config.Network),
+				OptEventAddr(rc.Config.Addr),
+				OptEventAuthUser(rc.Config.AuthUser),
+				OptEventDB(rc.Config.DB),
+				OptEventErr(err),
+			)
+			logEvents = append(logEvents, event)
+		}
+
+		defer func() {
+			for _, event := range logEvents {
+				rc.Log.TriggerContext(ctx, event)
+			}
+		}()
+	}
+
+	// create a child span for each op
+	var finishers []TraceFinisher
+	if rc.Tracer != nil {
+		for _, op := range ops {
+			finisher := rc.Tracer.Do(ctx, rc.Config, op.Command, op.Args)
+			finishers = append(finishers, finisher)
+		}
+
+		defer func() {
+			for _, finisher := range finishers {
+				finisher.Finish(ctx, err)
+			}
+		}()
+	}
+
+	if rc.Config.Timeout > 0 {
+		var cancel func()
+		ctx, cancel = context.WithTimeout(ctx, rc.Config.Timeout)
+		defer cancel()
+	}
+
+	p := radix.NewPipeline()
+	for _, op := range ops {
+		p.Append(radix.Cmd(op.Out, op.Command, op.Args...))
+	}
+
+	// Execute pipeline
+	radixErr := rc.Client.Do(ctx, p)
+	if radixErr != nil {
 		err = ex.New(radixErr)
 		return
 	}

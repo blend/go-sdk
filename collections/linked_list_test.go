@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -16,21 +16,21 @@ import (
 func Test_LinkedList(t *testing.T) {
 	a := assert.New(t)
 
-	q := NewLinkedList()
-	a.Nil(q.head)
-	a.Nil(q.tail)
+	q := NewLinkedList[string]()
+	a.Empty(q.head)
+	a.Empty(q.tail)
 	a.Empty(q.Contents())
-	a.Nil(q.Dequeue())
+	a.Empty(q.Dequeue())
 	a.Equal(q.head, q.tail)
-	a.Nil(q.Peek())
-	a.Nil(q.PeekBack())
+	a.Empty(q.Peek())
+	a.Empty(q.PeekBack())
 	a.Equal(0, q.Len())
 
 	q.Enqueue("foo")
 	a.NotNil(q.head)
-	a.Nil(q.head.Previous)
+	a.Empty(q.head.Previous)
 	a.NotNil(q.tail)
-	a.Nil(q.tail.Previous)
+	a.Empty(q.tail.Previous)
 	a.Equal(q.head, q.tail)
 	a.Equal(1, q.Len())
 	a.Equal("foo", q.Peek())
@@ -39,7 +39,7 @@ func Test_LinkedList(t *testing.T) {
 	q.Enqueue("bar")
 	a.NotNil(q.head)
 	a.NotNil(q.head.Previous)
-	a.Nil(q.head.Previous.Previous)
+	a.Empty(q.head.Previous.Previous)
 	a.Equal(q.head.Previous, q.tail)
 	a.NotNil(q.tail)
 	a.NotNil(q.tail.Next)
@@ -52,7 +52,7 @@ func Test_LinkedList(t *testing.T) {
 	a.NotNil(q.head)
 	a.NotNil(q.head.Previous)
 	a.NotNil(q.head.Previous.Previous)
-	a.Nil(q.head.Previous.Previous.Previous)
+	a.Empty(q.head.Previous.Previous.Previous)
 	a.Equal(q.head.Previous.Previous, q.tail)
 	a.NotNil(q.tail)
 	a.NotEqual(q.head, q.tail)
@@ -65,7 +65,7 @@ func Test_LinkedList(t *testing.T) {
 	a.NotNil(q.head.Previous)
 	a.NotNil(q.head.Previous.Previous)
 	a.NotNil(q.head.Previous.Previous.Previous)
-	a.Nil(q.head.Previous.Previous.Previous.Previous)
+	a.Empty(q.head.Previous.Previous.Previous.Previous)
 	a.Equal(q.head.Previous.Previous.Previous, q.tail)
 	a.NotNil(q.tail)
 	a.NotEqual(q.head, q.tail)
@@ -85,7 +85,7 @@ func Test_LinkedList(t *testing.T) {
 	a.NotNil(q.head)
 	a.NotNil(q.head.Previous)
 	a.NotNil(q.head.Previous.Previous)
-	a.Nil(q.head.Previous.Previous.Previous)
+	a.Empty(q.head.Previous.Previous.Previous)
 	a.Equal(q.head.Previous.Previous, q.tail)
 	a.NotNil(q.tail)
 	a.NotEqual(q.head, q.tail)
@@ -97,7 +97,7 @@ func Test_LinkedList(t *testing.T) {
 	a.Equal("bar", shouldBeBar)
 	a.NotNil(q.head)
 	a.NotNil(q.head.Previous)
-	a.Nil(q.head.Previous.Previous)
+	a.Empty(q.head.Previous.Previous)
 	a.Equal(q.head.Previous, q.tail)
 	a.NotNil(q.tail)
 	a.NotEqual(q.head, q.tail)
@@ -108,7 +108,7 @@ func Test_LinkedList(t *testing.T) {
 	shouldBeBaz := q.Dequeue()
 	a.Equal("baz", shouldBeBaz)
 	a.NotNil(q.head)
-	a.Nil(q.head.Previous)
+	a.Empty(q.head.Previous)
 	a.NotNil(q.tail)
 	a.Equal(q.head, q.tail)
 	a.Equal(1, q.Len())
@@ -117,10 +117,10 @@ func Test_LinkedList(t *testing.T) {
 
 	shouldBeFizz := q.Dequeue()
 	a.Equal("fizz", shouldBeFizz)
-	a.Nil(q.head)
-	a.Nil(q.tail)
-	a.Nil(q.Peek())
-	a.Nil(q.PeekBack())
+	a.Empty(q.head)
+	a.Empty(q.tail)
+	a.Empty(q.Peek())
+	a.Empty(q.PeekBack())
 	a.Equal(0, q.Len())
 
 	q.Enqueue("foo")
@@ -135,8 +135,8 @@ func Test_LinkedList(t *testing.T) {
 	q.Enqueue("baz")
 
 	var items []string
-	q.Each(func(v Any) {
-		items = append(items, v.(string))
+	q.Each(func(v string) {
+		items = append(items, v)
 	})
 	a.Len(items, 3)
 	a.Equal("foo", items[0])
@@ -145,8 +145,8 @@ func Test_LinkedList(t *testing.T) {
 	a.Equal(3, q.Len())
 
 	items = []string{}
-	q.Consume(func(v Any) {
-		items = append(items, v.(string))
+	q.Consume(func(v string) {
+		items = append(items, v)
 	})
 	a.Equal(0, q.Len())
 	a.Len(items, 3)
@@ -167,7 +167,7 @@ func Test_LinkedList(t *testing.T) {
 func Test_LinkedList_DequeueBack(t *testing.T) {
 	a := assert.New(t)
 
-	q := NewLinkedList()
+	q := NewLinkedList[int]()
 	q.Enqueue(1)
 	q.Enqueue(2)
 	q.Enqueue(3)
@@ -177,8 +177,8 @@ func Test_LinkedList_DequeueBack(t *testing.T) {
 	a.Equal(3, q.DequeueBack())
 	a.Equal(2, q.DequeueBack())
 	a.Equal(1, q.DequeueBack())
-	a.Nil(q.DequeueBack())
-	a.Nil(q.DequeueBack())
+	a.Empty(q.DequeueBack())
+	a.Empty(q.DequeueBack())
 
 	q.Enqueue(1)
 	q.Enqueue(2)
@@ -189,5 +189,5 @@ func Test_LinkedList_DequeueBack(t *testing.T) {
 	a.Equal(3, q.DequeueBack())
 	a.Equal(2, q.DequeueBack())
 	a.Equal(1, q.DequeueBack())
-	a.Nil(q.DequeueBack())
+	a.Empty(q.DequeueBack())
 }

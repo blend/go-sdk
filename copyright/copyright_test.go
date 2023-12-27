@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -506,8 +506,8 @@ const (
 			// goimports organizes imports for us
 			_ "golang.org/x/tools/cmd/goimports"
 		
-			// golint is an opinionated linter
-			_ "golang.org/x/lint/golint"
+			// revive is an opinionated linter
+			_ "github.com/mgechev/revive"
 		
 			// ineffassign is an opinionated linter
 			_ "github.com/gordonklaus/ineffassign"

@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -15,6 +15,12 @@ import (
 	"github.com/blend/go-sdk/ex"
 	"github.com/blend/go-sdk/uuid"
 )
+
+func assertCensoredErrorValue(its *assert.Assertions, validator Validator) {
+	verr := validator()
+	its.NotNil(verr)
+	its.Equal("<sensitive>", ErrValue(verr))
+}
 
 func TestStringRequired(t *testing.T) {
 	assert := assert.New(t)
@@ -55,8 +61,8 @@ func TestStringMin(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	bad := "large"
-	verr = String(&bad).MinLen(3)()
+	good := "large"
+	verr = String(&good).MinLen(3)()
 	assert.Nil(verr)
 
 	verr = String(nil).MinLen(3)()
@@ -64,29 +70,35 @@ func TestStringMin(t *testing.T) {
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
 	assert.Equal(ErrStringLengthMin, ErrCause(verr))
 
-	good := "a"
-	verr = String(&good).MinLen(3)()
+	bad := "a"
+	verr = String(&bad).MinLen(3)()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
 	assert.Equal(ErrStringLengthMin, ErrCause(verr))
+	assert.Equal(bad, ErrValue(verr))
+
+	assertCensoredErrorValue(assert, SensitiveString(&bad).MinLen(3))
 }
 
 func TestStringMaxlen(t *testing.T) {
 	assert := assert.New(t)
 
 	var verr error
-	bad := "a"
-	verr = String(&bad).MaxLen(3)()
+	good := "a"
+	verr = String(&good).MaxLen(3)()
 	assert.Nil(verr)
 
 	verr = String(nil).MaxLen(3)()
 	assert.Nil(verr)
 
-	good := "large"
-	verr = String(&good).MaxLen(3)()
+	bad := "large"
+	verr = String(&bad).MaxLen(3)()
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
 	assert.Equal(ErrStringLengthMax, ErrCause(verr))
+	assert.Equal(bad, ErrValue(verr))
+
+	assertCensoredErrorValue(assert, SensitiveString(&bad).MaxLen(3))
 }
 
 func TestStringBetweenLen(t *testing.T) {
@@ -113,6 +125,9 @@ func TestStringBetweenLen(t *testing.T) {
 	assert.NotNil(verr)
 	assert.Equal(ErrValidation, ex.ErrClass(verr))
 	assert.Equal(ErrStringLengthMin, ErrCause(verr))
+	assert.Equal(bad, ErrValue(verr))
+
+	assertCensoredErrorValue(assert, SensitiveString(&bad).BetweenLen(2, 5))
 }
 
 func TestStringMatches(t *testing.T) {
@@ -132,6 +147,9 @@ func TestStringMatches(t *testing.T) {
 	verr = String(&bad).Matches("foo$")()
 	assert.NotNil(verr)
 	assert.Equal(ErrStringMatches, ErrCause(verr))
+	assert.Equal(bad, ErrValue(verr))
+
+	assertCensoredErrorValue(assert, SensitiveString(&bad).Matches("foo$"))
 }
 
 func TestStringMatchesError(t *testing.T) {
@@ -161,6 +179,9 @@ func TestStringIsUpper(t *testing.T) {
 	verr = String(&bad).IsUpper()()
 	assert.NotNil(verr)
 	assert.Equal(ErrStringIsUpper, ErrCause(verr))
+	assert.Equal(bad, ErrValue(verr))
+
+	assertCensoredErrorValue(assert, SensitiveString(&bad).IsUpper())
 }
 
 func TestStringIsLower(t *testing.T) {
@@ -180,6 +201,9 @@ func TestStringIsLower(t *testing.T) {
 	verr = String(&bad).IsLower()()
 	assert.NotNil(verr)
 	assert.Equal(ErrStringIsLower, ErrCause(verr))
+	assert.Equal(bad, ErrValue(verr))
+
+	assertCensoredErrorValue(assert, SensitiveString(&bad).IsLower())
 }
 
 func TestStringIsTitle(t *testing.T) {
@@ -199,6 +223,9 @@ func TestStringIsTitle(t *testing.T) {
 	verr = String(&bad).IsTitle()()
 	assert.NotNil(verr)
 	assert.Equal(ErrStringIsTitle, ErrCause(verr))
+	assert.Equal(bad, ErrValue(verr))
+
+	assertCensoredErrorValue(assert, SensitiveString(&bad).IsTitle())
 }
 
 func TestStringIsUUID(t *testing.T) {
@@ -223,6 +250,9 @@ func TestStringIsUUID(t *testing.T) {
 	verr = String(&bad).IsUUID()()
 	assert.NotNil(verr)
 	assert.Equal(ErrStringIsUUID, ErrCause(verr))
+	assert.Equal(bad, ErrValue(verr))
+
+	assertCensoredErrorValue(assert, SensitiveString(&bad).IsUUID())
 }
 
 func TestStringIsEmail(t *testing.T) {
@@ -250,6 +280,9 @@ func TestStringIsEmail(t *testing.T) {
 	verr = String(&bad).IsEmail()()
 	assert.NotNil(verr)
 	assert.Equal(ErrStringIsEmail, ErrCause(verr))
+	assert.Equal(bad, ErrValue(verr))
+
+	assertCensoredErrorValue(assert, SensitiveString(&bad).IsEmail())
 }
 
 func TestStringIsURI(t *testing.T) {
@@ -271,6 +304,8 @@ func TestStringIsURI(t *testing.T) {
 	assert.NotNil(verr)
 	assert.Equal(bad, ErrValue(verr))
 	assert.Equal(ErrStringIsURI, ErrCause(verr))
+
+	assertCensoredErrorValue(assert, SensitiveString(&bad).IsURI())
 }
 
 func TestStringIsIP(t *testing.T) {
@@ -304,6 +339,9 @@ func TestStringIsIP(t *testing.T) {
 	verr = String(&bad).IsIP()()
 	assert.NotNil(verr)
 	assert.Equal(ErrStringIsIP, ErrCause(verr))
+	assert.Equal(bad, ErrValue(verr))
+
+	assertCensoredErrorValue(assert, SensitiveString(&bad).IsIP())
 }
 
 func TestStringIsSlug(t *testing.T) {
@@ -343,6 +381,9 @@ func TestStringIsSlug(t *testing.T) {
 	verr = String(&bad).IsSlug()()
 	assert.NotNil(verr)
 	assert.Equal(ErrStringIsSlug, ErrCause(verr))
+	assert.Equal(bad, ErrValue(verr))
+
+	assertCensoredErrorValue(assert, SensitiveString(&bad).IsSlug())
 }
 
 func TestStringIsOneOf(t *testing.T) {
@@ -362,7 +403,9 @@ func TestStringIsOneOf(t *testing.T) {
 	bad := "bad"
 	verr = String(&bad).IsOneOf("foo", "bar")()
 	assert.NotNil(verr)
-	assert.NotNil(ErrValue(verr))
 	assert.Equal(ErrStringIsOneOf, ErrCause(verr))
 	assert.Equal("foo, bar", ErrMessage(verr))
+	assert.Equal(bad, ErrValue(verr))
+
+	assertCensoredErrorValue(assert, SensitiveString(&bad).IsOneOf("foo", "bar"))
 }

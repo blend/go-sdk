@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -14,6 +14,7 @@ import (
 	"time"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	opentracingExt "github.com/opentracing/opentracing-go/ext"
 
 	"github.com/blend/go-sdk/r2"
 	"github.com/blend/go-sdk/tracing"
@@ -35,6 +36,7 @@ type r2Tracer struct {
 
 func (rt r2Tracer) Start(req *http.Request) r2.TraceFinisher {
 	startOptions := []opentracing.StartSpanOption{
+		opentracingExt.SpanKindRPCClient,
 		opentracing.Tag{Key: tracing.TagKeySpanType, Value: tracing.SpanTypeHTTP},
 		opentracing.Tag{Key: tracing.TagKeyResourceName, Value: r2.GetRawURLParameterized(req)},
 		opentracing.Tag{Key: tracing.TagKeyHTTPMethod, Value: strings.ToUpper(req.Method)},
@@ -42,7 +44,7 @@ func (rt r2Tracer) Start(req *http.Request) r2.TraceFinisher {
 		tracing.TagMeasured(),
 		opentracing.StartTime(time.Now().UTC()),
 	}
-	span, ctx := tracing.StartSpanFromContext(req.Context(), rt.tracer, tracing.OperationHTTPRequest, startOptions...)
+	span, ctx := tracing.StartSpanFromContext(req.Context(), rt.tracer, tracing.OperationHTTPRequestOutgoing, startOptions...)
 	*req = *req.WithContext(ctx)
 
 	if req.Header == nil {

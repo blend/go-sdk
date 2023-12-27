@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -14,103 +14,103 @@ import (
 )
 
 func TestSyncRingBuffer(t *testing.T) {
-	assert := assert.New(t)
+	a := assert.New(t)
 
-	buffer := NewSyncRingBuffer()
+	buffer := NewSyncRingBuffer[int]()
 
 	buffer.Enqueue(1)
-	assert.Equal(1, buffer.Len())
-	assert.Equal(1, buffer.Peek())
-	assert.Equal(1, buffer.PeekBack())
+	a.Equal(1, buffer.Len())
+	a.Equal(1, buffer.Peek())
+	a.Equal(1, buffer.PeekBack())
 
 	buffer.Enqueue(2)
-	assert.Equal(2, buffer.Len())
-	assert.Equal(1, buffer.Peek())
-	assert.Equal(2, buffer.PeekBack())
+	a.Equal(2, buffer.Len())
+	a.Equal(1, buffer.Peek())
+	a.Equal(2, buffer.PeekBack())
 
 	buffer.Enqueue(3)
-	assert.Equal(3, buffer.Len())
-	assert.Equal(1, buffer.Peek())
-	assert.Equal(3, buffer.PeekBack())
+	a.Equal(3, buffer.Len())
+	a.Equal(1, buffer.Peek())
+	a.Equal(3, buffer.PeekBack())
 
 	buffer.Enqueue(4)
-	assert.Equal(4, buffer.Len())
-	assert.Equal(1, buffer.Peek())
-	assert.Equal(4, buffer.PeekBack())
+	a.Equal(4, buffer.Len())
+	a.Equal(1, buffer.Peek())
+	a.Equal(4, buffer.PeekBack())
 
 	buffer.Enqueue(5)
-	assert.Equal(5, buffer.Len())
-	assert.Equal(1, buffer.Peek())
-	assert.Equal(5, buffer.PeekBack())
+	a.Equal(5, buffer.Len())
+	a.Equal(1, buffer.Peek())
+	a.Equal(5, buffer.PeekBack())
 
 	buffer.Enqueue(6)
-	assert.Equal(6, buffer.Len())
-	assert.Equal(1, buffer.Peek())
-	assert.Equal(6, buffer.PeekBack())
+	a.Equal(6, buffer.Len())
+	a.Equal(1, buffer.Peek())
+	a.Equal(6, buffer.PeekBack())
 
 	buffer.Enqueue(7)
-	assert.Equal(7, buffer.Len())
-	assert.Equal(1, buffer.Peek())
-	assert.Equal(7, buffer.PeekBack())
+	a.Equal(7, buffer.Len())
+	a.Equal(1, buffer.Peek())
+	a.Equal(7, buffer.PeekBack())
 
 	buffer.Enqueue(8)
-	assert.Equal(8, buffer.Len())
-	assert.Equal(1, buffer.Peek())
-	assert.Equal(8, buffer.PeekBack())
+	a.Equal(8, buffer.Len())
+	a.Equal(1, buffer.Peek())
+	a.Equal(8, buffer.PeekBack())
 
 	value := buffer.Dequeue()
-	assert.Equal(1, value)
-	assert.Equal(7, buffer.Len())
-	assert.Equal(2, buffer.Peek())
-	assert.Equal(8, buffer.PeekBack())
+	a.Equal(1, value)
+	a.Equal(7, buffer.Len())
+	a.Equal(2, buffer.Peek())
+	a.Equal(8, buffer.PeekBack())
 
 	value = buffer.Dequeue()
-	assert.Equal(2, value)
-	assert.Equal(6, buffer.Len())
-	assert.Equal(3, buffer.Peek())
-	assert.Equal(8, buffer.PeekBack())
+	a.Equal(2, value)
+	a.Equal(6, buffer.Len())
+	a.Equal(3, buffer.Peek())
+	a.Equal(8, buffer.PeekBack())
 
 	value = buffer.Dequeue()
-	assert.Equal(3, value)
-	assert.Equal(5, buffer.Len())
-	assert.Equal(4, buffer.Peek())
-	assert.Equal(8, buffer.PeekBack())
+	a.Equal(3, value)
+	a.Equal(5, buffer.Len())
+	a.Equal(4, buffer.Peek())
+	a.Equal(8, buffer.PeekBack())
 
 	value = buffer.Dequeue()
-	assert.Equal(4, value)
-	assert.Equal(4, buffer.Len())
-	assert.Equal(5, buffer.Peek())
-	assert.Equal(8, buffer.PeekBack())
+	a.Equal(4, value)
+	a.Equal(4, buffer.Len())
+	a.Equal(5, buffer.Peek())
+	a.Equal(8, buffer.PeekBack())
 
 	value = buffer.Dequeue()
-	assert.Equal(5, value)
-	assert.Equal(3, buffer.Len())
-	assert.Equal(6, buffer.Peek())
-	assert.Equal(8, buffer.PeekBack())
+	a.Equal(5, value)
+	a.Equal(3, buffer.Len())
+	a.Equal(6, buffer.Peek())
+	a.Equal(8, buffer.PeekBack())
 
 	value = buffer.Dequeue()
-	assert.Equal(6, value)
-	assert.Equal(2, buffer.Len())
-	assert.Equal(7, buffer.Peek())
-	assert.Equal(8, buffer.PeekBack())
+	a.Equal(6, value)
+	a.Equal(2, buffer.Len())
+	a.Equal(7, buffer.Peek())
+	a.Equal(8, buffer.PeekBack())
 
 	value = buffer.Dequeue()
-	assert.Equal(7, value)
-	assert.Equal(1, buffer.Len())
-	assert.Equal(8, buffer.Peek())
-	assert.Equal(8, buffer.PeekBack())
+	a.Equal(7, value)
+	a.Equal(1, buffer.Len())
+	a.Equal(8, buffer.Peek())
+	a.Equal(8, buffer.PeekBack())
 
 	value = buffer.Dequeue()
-	assert.Equal(8, value)
-	assert.Equal(0, buffer.Len())
-	assert.Nil(buffer.Peek())
-	assert.Nil(buffer.PeekBack())
+	a.Equal(8, value)
+	a.Equal(0, buffer.Len())
+	a.Empty(buffer.Peek())
+	a.Empty(buffer.PeekBack())
 }
 
 func TestSynchronizedRingBufferClear(t *testing.T) {
-	assert := assert.New(t)
+	a := assert.New(t)
 
-	buffer := NewSyncRingBuffer()
+	buffer := NewSyncRingBuffer[int]()
 	buffer.Enqueue(1)
 	buffer.Enqueue(1)
 	buffer.Enqueue(1)
@@ -120,18 +120,18 @@ func TestSynchronizedRingBufferClear(t *testing.T) {
 	buffer.Enqueue(1)
 	buffer.Enqueue(1)
 
-	assert.Equal(8, buffer.Len())
+	a.Equal(8, buffer.Len())
 
 	buffer.Clear()
-	assert.Equal(0, buffer.Len())
-	assert.Nil(buffer.Peek())
-	assert.Nil(buffer.PeekBack())
+	a.Equal(0, buffer.Len())
+	a.Empty(buffer.Peek())
+	a.Empty(buffer.PeekBack())
 }
 
 func TestSynchronizedRingBufferAsSlice(t *testing.T) {
-	assert := assert.New(t)
+	a := assert.New(t)
 
-	buffer := NewSyncRingBuffer()
+	buffer := NewSyncRingBuffer[int]()
 	buffer.Enqueue(1)
 	buffer.Enqueue(2)
 	buffer.Enqueue(3)
@@ -139,53 +139,49 @@ func TestSynchronizedRingBufferAsSlice(t *testing.T) {
 	buffer.Enqueue(5)
 
 	contents := buffer.Contents()
-	assert.Len(contents, 5)
-	assert.Equal(1, contents[0])
-	assert.Equal(2, contents[1])
-	assert.Equal(3, contents[2])
-	assert.Equal(4, contents[3])
-	assert.Equal(5, contents[4])
+	a.Len(contents, 5)
+	a.Equal(1, contents[0])
+	a.Equal(2, contents[1])
+	a.Equal(3, contents[2])
+	a.Equal(4, contents[3])
+	a.Equal(5, contents[4])
 }
 
 func TestSynchronizedRingBufferEach(t *testing.T) {
-	assert := assert.New(t)
+	a := assert.New(t)
 
-	buffer := NewSyncRingBuffer()
+	buffer := NewSyncRingBuffer[int]()
 
 	for x := 1; x < 17; x++ {
 		buffer.Enqueue(x)
 	}
 
 	var called int
-	buffer.Each(func(v interface{}) {
-		if typed, isTyped := v.(int); isTyped {
-			if typed == (called + 1) {
-				called++
-			}
-		}
-	})
-
-	assert.Equal(16, called)
-}
-
-func TestSynchronizedRingBufferDrain(t *testing.T) {
-	assert := assert.New(t)
-
-	buffer := NewSyncRingBuffer()
-
-	for x := 1; x < 17; x++ {
-		buffer.Enqueue(x)
-	}
-
-	assert.Equal(16, buffer.Len())
-
-	var called int
-	buffer.Consume(func(v interface{}) {
-		if _, isTyped := v.(int); isTyped {
+	buffer.Each(func(v int) {
+		if v == (called + 1) {
 			called++
 		}
 	})
 
-	assert.Equal(16, called)
-	assert.Zero(buffer.Len())
+	a.Equal(16, called)
+}
+
+func TestSynchronizedRingBufferDrain(t *testing.T) {
+	a := assert.New(t)
+
+	buffer := NewSyncRingBuffer[int]()
+
+	for x := 1; x < 17; x++ {
+		buffer.Enqueue(x)
+	}
+
+	a.Equal(16, buffer.Len())
+
+	var called int
+	buffer.Consume(func(v int) {
+		called++
+	})
+
+	a.Equal(16, called)
+	a.Zero(buffer.Len())
 }

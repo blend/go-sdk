@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -59,4 +59,85 @@ func Test_RadixClient_Do_timeout(t *testing.T) {
 	}
 	var foo string
 	its.NotNil(rc.Do(context.Background(), &foo, "GET", "foo"))
+}
+
+func Test_RadixClient_Pipeline(t *testing.T) {
+	its := assert.New(t)
+
+	// Mock tracer and finisher
+	mockTracerFinisher := &MockTraceFinisher{}
+	mockTracer := &MockTracer{mockTraceFinisher: mockTracerFinisher}
+	log := &MockTriggerable{}
+
+	// Mock RadixClient
+	mockRadixClient := &MockRadixClient{
+		Ops: make(chan radix.Action, 10),
+	}
+
+	rc := &redis.RadixClient{
+		Log:    log,
+		Tracer: mockTracer,
+		Client: mockRadixClient,
+	}
+
+	// Mock operations
+	ops := []redis.Operation{
+		{Command: "GET", Args: []string{"key1"}},
+		{Command: "SET", Args: []string{"key2", "value"}},
+	}
+
+	// Perform Pipeline operation
+	err := rc.Pipeline(context.TODO(), "GetSetPipeline", ops...)
+
+	// Assertions
+	its.Nil(err)
+	// 1 (for parent span) + 2 (for child spans)
+	its.Equal(3, len(mockTracer.calls))
+	its.Equal(3, len(mockTracerFinisher.calls))
+}
+
+// MockTracer is a mock of Tracer that stores calls in-memory
+type MockTracer struct {
+	calls []struct {
+		Op   string
+		Args []string
+	}
+	mockTraceFinisher *MockTraceFinisher
+}
+
+// Do implements Tracer
+func (mt *MockTracer) Do(ctx context.Context, cfg redis.Config, op string, args []string) redis.TraceFinisher {
+	mt.calls = append(mt.calls, struct {
+		Op   string
+		Args []string
+	}{op, args})
+	return mt.mockTraceFinisher
+}
+
+// MockTracerFinisher is a mock of TraceFinisher
+type MockTraceFinisher struct {
+	calls []struct {
+		Err error
+	}
+}
+
+// Finish implements Tracer
+func (mtf *MockTraceFinisher) Finish(ctx context.Context, err error) {
+	mtf.calls = append(mtf.calls, struct {
+		Err error
+	}{err})
+}
+
+// MockTriggerable is a of a mock of Triggerable that stores calls in-memory
+type MockTriggerable struct {
+	Events []struct {
+		Event logger.Event
+	}
+}
+
+// TriggerContext implements Triggerable
+func (mt *MockTriggerable) TriggerContext(ctx context.Context, e logger.Event) {
+	mt.Events = append(mt.Events, struct {
+		Event logger.Event
+	}{e})
 }

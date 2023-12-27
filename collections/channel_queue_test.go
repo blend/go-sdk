@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -16,9 +16,9 @@ import (
 func TestConcurrentQueue(t *testing.T) {
 	a := assert.New(t)
 
-	q := NewChannelQueueWithCapacity(4)
+	q := NewChannelQueueWithCapacity[string](4)
 	a.Empty(q.Contents())
-	a.Nil(q.Dequeue())
+	a.Empty(q.Dequeue())
 	a.Equal(0, q.Len())
 
 	q.Enqueue("foo")
@@ -68,8 +68,8 @@ func TestConcurrentQueue(t *testing.T) {
 	q.Enqueue("baz")
 
 	var items []string
-	q.Consume(func(v Any) {
-		items = append(items, v.(string))
+	q.Consume(func(v string) {
+		items = append(items, v)
 	})
 	a.Equal(0, q.Len())
 	a.Len(items, 3)
@@ -82,8 +82,8 @@ func TestConcurrentQueue(t *testing.T) {
 	q.Enqueue("baz")
 
 	items = []string{}
-	q.Each(func(v Any) {
-		items = append(items, v.(string))
+	q.Each(func(v string) {
+		items = append(items, v)
 	})
 	a.Equal(3, q.Len())
 	a.Len(items, 3)

@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -18,7 +18,7 @@ func NewQueue(numberOfActions int, quantum time.Duration) *Queue {
 	return &Queue{
 		NumberOfActions: numberOfActions,
 		Quantum:         quantum,
-		Limits:          map[string]collections.Queue{},
+		Limits:          map[string]collections.Queue[any]{},
 		Now:             func() time.Time { return time.Now().UTC() },
 	}
 }
@@ -27,7 +27,7 @@ func NewQueue(numberOfActions int, quantum time.Duration) *Queue {
 type Queue struct {
 	NumberOfActions int
 	Quantum         time.Duration
-	Limits          map[string]collections.Queue
+	Limits          map[string]collections.Queue[any]
 	Now             func() time.Time
 }
 
@@ -35,7 +35,7 @@ type Queue struct {
 func (q *Queue) Check(id string) bool {
 	queue, hasQueue := q.Limits[id]
 	if !hasQueue {
-		queue = collections.NewRingBufferWithCapacity(q.NumberOfActions)
+		queue = collections.NewRingBufferWithCapacity[any](q.NumberOfActions)
 		q.Limits[id] = queue
 	}
 

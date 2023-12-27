@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2022 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -96,14 +96,14 @@ func ExtractAndVerifyClientIdentity(req *http.Request, cip IdentityProvider, ver
 //
 // It delegates processing of that SPIFFE URI via the `IdentityProcessor`
 // type. The options supported can
-// - Provide an allow list for the trust domain in the SPIFFE URI.
-// - Provide a deny list for the trust domain in the SPIFFE URI.
-// - Provide a function to produce a client identity string from the SPIFFE
-//   URI (likely from the workload ID in the SPIFFE URI); if no option is
-//   provided for this the default will use
-//   `IdentityProcessor.KubernetesIdentityFormatter`.
-// - Provide an allow list for the client identity string.
-// - Provide a deny list for the client identity string.
+//   - Provide an allow list for the trust domain in the SPIFFE URI.
+//   - Provide a deny list for the trust domain in the SPIFFE URI.
+//   - Provide a function to produce a client identity string from the SPIFFE
+//     URI (likely from the workload ID in the SPIFFE URI); if no option is
+//     provided for this the default will use
+//     `IdentityProcessor.KubernetesIdentityFormatter`.
+//   - Provide an allow list for the client identity string.
+//   - Provide a deny list for the client identity string.
 func SPIFFEClientIdentityProvider(opts ...IdentityProcessorOption) IdentityProvider {
 	processor := IdentityProcessor{}
 	for _, opt := range opts {
@@ -121,14 +121,14 @@ func SPIFFEClientIdentityProvider(opts ...IdentityProcessorOption) IdentityProvi
 //
 // It delegates processing of that SPIFFE URI via the `IdentityProcessor`
 // type. The options supported can
-// - Provide an allow list for the trust domain in the SPIFFE URI.
-// - Provide a deny list for the trust domain in the SPIFFE URI.
-// - Provide a function to produce a server identity string from the SPIFFE
-//   URI (likely from the workload ID in the SPIFFE URI); if no option is
-//   provided for this the default will use
-//   `IdentityProcessor.KubernetesIdentityFormatter`.
-// - Provide an allow list for the server identity string.
-// - Provide a deny list for the server identity string.
+//   - Provide an allow list for the trust domain in the SPIFFE URI.
+//   - Provide a deny list for the trust domain in the SPIFFE URI.
+//   - Provide a function to produce a server identity string from the SPIFFE
+//     URI (likely from the workload ID in the SPIFFE URI); if no option is
+//     provided for this the default will use
+//     `IdentityProcessor.KubernetesIdentityFormatter`.
+//   - Provide an allow list for the server identity string.
+//   - Provide a deny list for the server identity string.
 func SPIFFEServerIdentityProvider(opts ...IdentityProcessorOption) VerifyXFCC {
 	processor := IdentityProcessor{}
 	for _, opt := range opts {
