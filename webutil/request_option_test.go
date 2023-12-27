@@ -23,8 +23,8 @@ import (
 )
 
 type xmlBody struct {
-	X	[]string	`xml:"x"`
-	Y	[]string	`xml:"y"`
+	X []string `xml:"x"`
+	Y []string `xml:"y"`
 }
 
 func TestRequestOptions(t *testing.T) {

@@ -17,8 +17,8 @@ import (
 
 // Shards handles communicating with many underlying databases at once.
 type Shards struct {
-	Connections	[]*db.Connection
-	Opts		[]InvocationOption
+	Connections []*db.Connection
+	Opts        []InvocationOption
 }
 
 // PartitionIndex returns a partition index for a given hashCode.

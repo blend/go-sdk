@@ -27,8 +27,8 @@ func NewPrinter(log logger.Log) *Printer {
 	p := new(Printer)
 	if log != nil {
 		p.Output = logger.ShimWriter{
-			Context:	context.Background(),
-			Log:		log,
+			Context: context.Background(),
+			Log:     log,
 			EventProvider: func(contents []byte) logger.Event {
 				return logger.NewMessageEvent("statsd", strings.TrimSpace(string(contents)))
 			},
@@ -41,11 +41,11 @@ func NewPrinter(log logger.Log) *Printer {
 
 // Printer is a collector that prints calls to a given writer.
 type Printer struct {
-	Field	struct {
-		Namespace	string
-		DefaultTags	[]string
+	Field struct {
+		Namespace   string
+		DefaultTags []string
 	}
-	Output	io.Writer
+	Output io.Writer
 }
 
 // AddDefaultTag adds a default tag.

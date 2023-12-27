@@ -18,26 +18,26 @@ import (
 // Raw returns a new raw result.
 func Raw(contents []byte) *RawResult {
 	return &RawResult{
-		StatusCode:	http.StatusOK,
-		ContentType:	http.DetectContentType(contents),
-		Response:	contents,
+		StatusCode:  http.StatusOK,
+		ContentType: http.DetectContentType(contents),
+		Response:    contents,
 	}
 }
 
 // RawWithContentType returns a binary response with a given content type.
 func RawWithContentType(contentType string, body []byte) *RawResult {
 	return &RawResult{
-		StatusCode:	http.StatusOK,
-		ContentType:	contentType,
-		Response:	body,
+		StatusCode:  http.StatusOK,
+		ContentType: contentType,
+		Response:    body,
 	}
 }
 
 // RawResult is for when you just want to dump bytes.
 type RawResult struct {
-	StatusCode	int
-	ContentType	string
-	Response	[]byte
+	StatusCode  int
+	ContentType string
+	Response    []byte
 }
 
 // Render renders the result.

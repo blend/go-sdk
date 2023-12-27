@@ -22,10 +22,10 @@ import (
 )
 
 var (
-	_	web.Tracer		= (*webTracer)(nil)
-	_	web.TraceFinisher	= (*webTraceFinisher)(nil)
-	_	web.ViewTracer		= (*webTracer)(nil)
-	_	web.ViewTraceFinisher	= (*webViewTraceFinisher)(nil)
+	_ web.Tracer            = (*webTracer)(nil)
+	_ web.TraceFinisher     = (*webTraceFinisher)(nil)
+	_ web.ViewTracer        = (*webTracer)(nil)
+	_ web.ViewTraceFinisher = (*webViewTraceFinisher)(nil)
 )
 
 // TracerOption is a tracer option.
@@ -48,8 +48,8 @@ func Tracer(tracer opentracing.Tracer, options ...TracerOption) web.Tracer {
 }
 
 type webTracer struct {
-	logLabelsToCtx	bool
-	tracer		opentracing.Tracer
+	logLabelsToCtx bool
+	tracer         opentracing.Tracer
 }
 
 func (wt webTracer) Start(ctx *web.Ctx) web.TraceFinisher {
@@ -75,8 +75,8 @@ func (wt webTracer) Start(ctx *web.Ctx) web.TraceFinisher {
 }
 
 type webTraceFinisher struct {
-	logLabelsToCtx	bool
-	span		opentracing.Span
+	logLabelsToCtx bool
+	span           opentracing.Span
 }
 
 func (wtf webTraceFinisher) Finish(ctx *web.Ctx, err error) {

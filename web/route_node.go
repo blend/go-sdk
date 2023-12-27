@@ -22,7 +22,7 @@ type RouteNodeType uint8
 
 // RouteNodeTypes
 const (
-	RouteNodeTypeStatic	RouteNodeType	= iota	// default
+	RouteNodeTypeStatic RouteNodeType = iota // default
 	RouteNodeTypeRoot
 	RouteNodeTypeParam
 	RouteNodeTypeCatchAll
@@ -32,13 +32,13 @@ const (
 type RouteNode struct {
 	RouteNodeType
 
-	Path		string
-	IsWildcard	bool
-	MaxParams	uint8
-	Indices		string
-	Children	[]*RouteNode
-	Route		*Route
-	Priority	uint32
+	Path       string
+	IsWildcard bool
+	MaxParams  uint8
+	Indices    string
+	Children   []*RouteNode
+	Route      *Route
+	Priority   uint32
 }
 
 // GetPath returns the node for a path, parameter values, and if there is a trailing slash redirect
@@ -64,9 +64,9 @@ func (n *RouteNode) incrementChildPriority(index int) int {
 
 	// build new index char string
 	if newIndex != index {
-		n.Indices = n.Indices[:newIndex] +	// unchanged prefix, might be empty
-			n.Indices[index:index+1] +	// the index char we move
-			n.Indices[newIndex:index] + n.Indices[index+1:]	// rest without char at 'pos'
+		n.Indices = n.Indices[:newIndex] + // unchanged prefix, might be empty
+			n.Indices[index:index+1] + // the index char we move
+			n.Indices[newIndex:index] + n.Indices[index+1:] // rest without char at 'pos'
 	}
 
 	return newIndex
@@ -99,13 +99,13 @@ func (n *RouteNode) AddRoute(method, path string, handler Handler) {
 			// Split edge
 			if i < len(n.Path) {
 				child := RouteNode{
-					Path:		n.Path[i:],
-					IsWildcard:	n.IsWildcard,
-					RouteNodeType:	RouteNodeTypeStatic,
-					Indices:	n.Indices,
-					Children:	n.Children,
-					Route:		n.Route,
-					Priority:	n.Priority - 1,
+					Path:          n.Path[i:],
+					IsWildcard:    n.IsWildcard,
+					RouteNodeType: RouteNodeTypeStatic,
+					Indices:       n.Indices,
+					Children:      n.Children,
+					Route:         n.Route,
+					Priority:      n.Priority - 1,
 				}
 
 				// Update maxParams (max of all Children)
@@ -181,26 +181,26 @@ func (n *RouteNode) AddRoute(method, path string, handler Handler) {
 				}
 				n.insertChild(numParams, method, path, fullPath, handler)
 				return
-			} else if i == len(path) {	// Make node a (in-path) leaf
+			} else if i == len(path) { // Make node a (in-path) leaf
 				if n.Route != nil {
 					panic("a handle is already registered for path '" + fullPath + "'")
 				}
 				n.Route = &Route{
-					Handler:	handler,
-					Path:		fullPath,
-					Method:		method,
+					Handler: handler,
+					Path:    fullPath,
+					Method:  method,
 				}
 			}
 			return
 		}
-	} else {	// Empty tree
+	} else { // Empty tree
 		n.insertChild(numParams, method, path, fullPath, handler)
 		n.RouteNodeType = RouteNodeTypeRoot
 	}
 }
 
 func (n *RouteNode) insertChild(numParams uint8, method, path, fullPath string, handler Handler) {
-	var offset int	// already handled bytes of the path
+	var offset int // already handled bytes of the path
 
 	// find prefix until first wildcard (beginning with ':'' or '*'')
 	for i, max := 0, len(path); numParams > 0; i++ {
@@ -234,7 +234,7 @@ func (n *RouteNode) insertChild(numParams uint8, method, path, fullPath string, 
 			panic("wildcards must be named with a non-empty name in path '" + fullPath + "'")
 		}
 
-		if c == ':' {	// param
+		if c == ':' { // param
 			// split path at the beginning of the wildcard
 			if i > 0 {
 				n.Path = path[offset:i]
@@ -242,8 +242,8 @@ func (n *RouteNode) insertChild(numParams uint8, method, path, fullPath string, 
 			}
 
 			child := &RouteNode{
-				RouteNodeType:	RouteNodeTypeParam,
-				MaxParams:	numParams,
+				RouteNodeType: RouteNodeTypeParam,
+				MaxParams:     numParams,
 			}
 			n.Children = []*RouteNode{child}
 			n.IsWildcard = true
@@ -258,13 +258,13 @@ func (n *RouteNode) insertChild(numParams uint8, method, path, fullPath string, 
 				offset = end
 
 				child := &RouteNode{
-					MaxParams:	numParams,
-					Priority:	1,
+					MaxParams: numParams,
+					Priority:  1,
 				}
 				n.Children = []*RouteNode{child}
 				n = child
 			}
-		} else {	// catchAll
+		} else { // catchAll
 			if end != max || numParams > 1 {
 				panic("catch-all routes are only allowed at the end of the path in path '" + fullPath + "'")
 			}
@@ -283,9 +283,9 @@ func (n *RouteNode) insertChild(numParams uint8, method, path, fullPath string, 
 
 			// first node: catchAll node with empty path
 			child := &RouteNode{
-				IsWildcard:	true,
-				RouteNodeType:	RouteNodeTypeCatchAll,
-				MaxParams:	1,
+				IsWildcard:    true,
+				RouteNodeType: RouteNodeTypeCatchAll,
+				MaxParams:     1,
 			}
 			n.Children = []*RouteNode{child}
 			n.Indices = string(path[i])
@@ -294,15 +294,15 @@ func (n *RouteNode) insertChild(numParams uint8, method, path, fullPath string, 
 
 			// second node: node holding the variable
 			child = &RouteNode{
-				Path:		path[i:],
-				RouteNodeType:	RouteNodeTypeCatchAll,
-				MaxParams:	1,
+				Path:          path[i:],
+				RouteNodeType: RouteNodeTypeCatchAll,
+				MaxParams:     1,
 				Route: &Route{
-					Handler:	handler,
-					Path:		fullPath,
-					Method:		method,
+					Handler: handler,
+					Path:    fullPath,
+					Method:  method,
 				},
-				Priority:	1,
+				Priority: 1,
 			}
 			n.Children = []*RouteNode{child}
 
@@ -313,9 +313,9 @@ func (n *RouteNode) insertChild(numParams uint8, method, path, fullPath string, 
 	// insert remaining path part and handle to the leaf
 	n.Path = path[offset:]
 	n.Route = &Route{
-		Handler:	handler,
-		Path:		fullPath,
-		Method:		method,
+		Handler: handler,
+		Path:    fullPath,
+		Method:  method,
 	}
 }
 
@@ -325,7 +325,7 @@ func (n *RouteNode) insertChild(numParams uint8, method, path, fullPath string, 
 // made if a handle exists with an extra (without the) trailing slash for the
 // given path.
 func (n *RouteNode) getValue(path string) (route *Route, p RouteParameters, tsr bool) {
-walk:	// outer loop for walking the tree
+walk: // outer loop for walking the tree
 	for {
 		if len(path) > len(n.Path) {
 			if path[:len(n.Path)] == n.Path {
@@ -451,8 +451,8 @@ func (n *RouteNode) findCaseInsensitivePath(path string, fixTrailingSlash bool) 
 	return n.findCaseInsensitivePathRec(
 		path,
 		strings.ToLower(path),
-		make([]byte, 0, len(path)+1),	// preallocate enough memory for new path
-		[4]byte{},			// empty rune buffer
+		make([]byte, 0, len(path)+1), // preallocate enough memory for new path
+		[4]byte{},                    // empty rune buffer
 		fixTrailingSlash,
 	)
 }
@@ -477,7 +477,7 @@ func shiftNRuneBytes(rb [4]byte, n int) [4]byte {
 func (n *RouteNode) findCaseInsensitivePathRec(path, loPath string, ciPath []byte, rb [4]byte, fixTrailingSlash bool) ([]byte, bool) {
 	loNPath := strings.ToLower(n.Path)
 
-walk:	// outer loop for walking the tree
+walk: // outer loop for walking the tree
 	for len(loPath) >= len(loNPath) && (len(loNPath) == 0 || loPath[1:len(loNPath)] == loNPath[1:]) {
 		// add common path to result
 		ciPath = append(ciPath, n.Path...)

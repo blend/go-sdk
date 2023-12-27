@@ -26,7 +26,7 @@ func NewInterlockedWriter(output io.Writer) *InterlockedWriter {
 type InterlockedWriter struct {
 	sync.Mutex
 
-	Output	io.Writer
+	Output io.Writer
 }
 
 // Write writes the given bytes to the inner writer.

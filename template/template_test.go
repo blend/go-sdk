@@ -689,8 +689,8 @@ func TestTemplateViewFuncSemverPatch(t *testing.T) {
 }
 
 type label struct {
-	Name	string	`yaml:"name"`
-	Vaue	string	`yaml:"value"`
+	Name string `yaml:"name"`
+	Vaue string `yaml:"value"`
 }
 
 func TestTemplateViewFuncYAML(t *testing.T) {
@@ -739,8 +739,8 @@ func TestTemplateWithVars(t *testing.T) {
 	assert := assert.New(t)
 
 	temp := New().WithVars(map[string]interface{}{
-		"foo":	"baz",
-		"bar":	"buz",
+		"foo": "baz",
+		"bar": "buz",
 	})
 	assert.True(temp.HasVar("foo"))
 	assert.True(temp.HasVar("bar"))

@@ -14,8 +14,8 @@ import (
 
 // NotIn returns if a key does not match a set of values.
 type NotIn struct {
-	Key	string
-	Values	[]string
+	Key    string
+	Values []string
 }
 
 // Matches returns the selector result.

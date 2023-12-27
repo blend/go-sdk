@@ -17,7 +17,7 @@ import (
 
 var (
 	// ReservedDatabaseNames are names you cannot use to create a database with.
-	ReservedDatabaseNames	= []string{
+	ReservedDatabaseNames = []string{
 		"postgres",
 		"defaultdb",
 		"template0",
@@ -25,24 +25,24 @@ var (
 	}
 
 	// DatabaseNameMaxLength is the maximum length of a database name.
-	DatabaseNameMaxLength	= 63
+	DatabaseNameMaxLength = 63
 )
 
 const (
 	// ErrDatabaseNameReserved is a validation failure.
-	ErrDatabaseNameReserved	ex.Class	= "dbutil; database name is reserved"
+	ErrDatabaseNameReserved ex.Class = "dbutil; database name is reserved"
 
 	// ErrDatabaseNameEmpty is a validation failure.
-	ErrDatabaseNameEmpty	ex.Class	= "dbutil; database name is empty"
+	ErrDatabaseNameEmpty ex.Class = "dbutil; database name is empty"
 
 	// ErrDatabaseNameInvalidFirstRune is a validation failure.
-	ErrDatabaseNameInvalidFirstRune	ex.Class	= "dbutil; database name must start with a letter or underscore"
+	ErrDatabaseNameInvalidFirstRune ex.Class = "dbutil; database name must start with a letter or underscore"
 
 	// ErrDatabaseNameInvalid is a validation failure.
-	ErrDatabaseNameInvalid	ex.Class	= "dbutil; database name must be composed of (in regex form) [a-zA-Z0-9_]"
+	ErrDatabaseNameInvalid ex.Class = "dbutil; database name must be composed of (in regex form) [a-zA-Z0-9_]"
 
 	// ErrDatabaseNameTooLong is a validation failure.
-	ErrDatabaseNameTooLong	ex.Class	= "dbutil; database name must be 63 characters or fewer"
+	ErrDatabaseNameTooLong ex.Class = "dbutil; database name must be 63 characters or fewer"
 )
 
 // ValidateDatabaseName validates a database name.

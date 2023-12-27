@@ -24,22 +24,22 @@ import (
 
 // CopyRewriter copies a source to a destination, and applies rewrite rules to the file(s) it copies.
 type CopyRewriter struct {
-	Source			string
-	Destination		string
-	SkipGlobs		[]string
-	GoImportVisitors	[]GoImportVisitor
-	GoAstVistiors		[]GoAstVisitor
-	StringSubstitutions	[]StringSubstitution
-	DryRun			bool
-	RemoveDestination	bool
-	KeepTemporary		bool
+	Source              string
+	Destination         string
+	SkipGlobs           []string
+	GoImportVisitors    []GoImportVisitor
+	GoAstVistiors       []GoAstVisitor
+	StringSubstitutions []StringSubstitution
+	DryRun              bool
+	RemoveDestination   bool
+	KeepTemporary       bool
 
-	Quiet	*bool
-	Verbose	*bool
-	Debug	*bool
+	Quiet   *bool
+	Verbose *bool
+	Debug   *bool
 
-	Stdout	io.Writer
-	Stderr	io.Writer
+	Stdout io.Writer
+	Stderr io.Writer
 }
 
 // Execute is the command body.
@@ -156,9 +156,9 @@ func (cr CopyRewriter) rewriteGoAst(ctx context.Context, sourcePath string, cont
 		return err
 	}
 
-	for importIndex := range fileAst.Imports {	// foreach file import
+	for importIndex := range fileAst.Imports { // foreach file import
 		cr.Debugf("processing import %s", fileAst.Imports[importIndex].Path.Value)
-		for _, rewriteRule := range cr.GoImportVisitors {	// foreach import rule
+		for _, rewriteRule := range cr.GoImportVisitors { // foreach import rule
 			if err := rewriteRule(ctx, fileAst.Imports[importIndex]); err != nil {
 				return err
 			}
@@ -272,4 +272,4 @@ type nopWriteCloser struct {
 	io.Writer
 }
 
-func (nopWriteCloser) Close() error	{ return nil }
+func (nopWriteCloser) Close() error { return nil }

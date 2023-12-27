@@ -11,15 +11,15 @@ import "github.com/blend/go-sdk/ex"
 
 const (
 	// ErrJobNotLoaded is a common error.
-	ErrJobNotLoaded	ex.Class	= "job not loaded"
+	ErrJobNotLoaded ex.Class = "job not loaded"
 	// ErrJobAlreadyLoaded is a common error.
-	ErrJobAlreadyLoaded	ex.Class	= "job already loaded"
+	ErrJobAlreadyLoaded ex.Class = "job already loaded"
 	// ErrJobNotFound is a common error.
-	ErrJobNotFound	ex.Class	= "job not found"
+	ErrJobNotFound ex.Class = "job not found"
 	// ErrJobCanceled is a common error.
-	ErrJobCanceled	ex.Class	= "job canceled"
+	ErrJobCanceled ex.Class = "job canceled"
 	// ErrJobAlreadyRunning is a common error.
-	ErrJobAlreadyRunning	ex.Class	= "job already running"
+	ErrJobAlreadyRunning ex.Class = "job already running"
 )
 
 // IsJobNotLoaded returns if the error is a job not loaded error.

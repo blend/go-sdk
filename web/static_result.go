@@ -18,17 +18,17 @@ func Static(filePath string) *StaticResult {
 	file := path.Base(filePath)
 	root := path.Dir(filePath)
 	return &StaticResult{
-		FilePath:	file,
-		FileSystem:	http.Dir(root),
+		FilePath:   file,
+		FileSystem: http.Dir(root),
 	}
 }
 
 // StaticResult represents a static output.
 type StaticResult struct {
-	FilePath	string
-	FileSystem	http.FileSystem
-	RewriteRules	[]RewriteRule
-	Headers		http.Header
+	FilePath     string
+	FileSystem   http.FileSystem
+	RewriteRules []RewriteRule
+	Headers      http.Header
 }
 
 // Render renders a static result.

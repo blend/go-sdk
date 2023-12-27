@@ -25,8 +25,8 @@ import (
 
 // Result is a json thingy.
 type Result struct {
-	ID	int	`json:"id"`
-	Name	string	`json:"name"`
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 func createUpstreamCaller(opts ...r2.Option) breaker.Actioner {

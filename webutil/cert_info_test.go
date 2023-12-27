@@ -35,9 +35,9 @@ func TestParseCertInfo(t *testing.T) {
 					Issuer: pkix.Name{
 						CommonName: "example-string dog",
 					},
-					DNSNames:	[]string{"foo.local"},
-					NotAfter:	time.Now().UTC().AddDate(0, 1, 0),
-					NotBefore:	time.Now().UTC().AddDate(0, -1, 0),
+					DNSNames:  []string{"foo.local"},
+					NotAfter:  time.Now().UTC().AddDate(0, 1, 0),
+					NotBefore: time.Now().UTC().AddDate(0, -1, 0),
 				},
 			},
 		},

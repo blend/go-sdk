@@ -17,12 +17,12 @@ func TestAnd(t *testing.T) {
 	assert := assert.New(t)
 
 	valid := Labels{
-		"foo":	"far",
-		"moo":	"lar",
+		"foo": "far",
+		"moo": "lar",
 	}
 	invalid := Labels{
-		"foo":	"far",
-		"moo":	"bar",
+		"foo": "far",
+		"moo": "bar",
 	}
 
 	selector := And([]Selector{Equals{Key: "foo", Value: "far"}, Equals{Key: "moo", Value: "lar"}})

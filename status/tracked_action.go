@@ -50,11 +50,11 @@ type TrackedAction struct {
 	TrackedActionConfig
 	sync.Mutex
 
-	ServiceName	string
+	ServiceName string
 
-	nowProvider	func() time.Time
-	errors		[]ErrorInfo
-	requests	[]RequestInfo
+	nowProvider func() time.Time
+	errors      []ErrorInfo
+	requests    []RequestInfo
 }
 
 // Intercept implements async.Interceptor.
@@ -94,9 +94,9 @@ func (t *TrackedAction) GetStatus() (info Info) {
 		}
 	}
 	info.Details = Details{
-		ErrorCount:	len(t.errors),
-		RequestCount:	len(t.requests),
-		ErrorBreakdown:	errorBreakdown,
+		ErrorCount:     len(t.errors),
+		RequestCount:   len(t.requests),
+		ErrorBreakdown: errorBreakdown,
 	}
 	return
 }
@@ -118,7 +118,7 @@ func (t *TrackedAction) AddErroredRequest(args interface{}) {
 	t.Lock()
 	defer t.Unlock()
 	t.errors = append(t.errors, ErrorInfo{
-		Args:	args,
+		Args: args,
 		RequestInfo: RequestInfo{
 			RequestTime: t.now(),
 		},

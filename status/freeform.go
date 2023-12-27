@@ -50,13 +50,13 @@ func OptFreeformLog(log logger.Log) FreeformOption {
 type Freeform struct {
 	// Timeout serves as an overall timeout, but is
 	// enforced per action.
-	Timeout	time.Duration
+	Timeout time.Duration
 	// ServiceChecks are the individual checks
 	// we'll try as part of the status.
-	ServiceChecks	map[string]Checker
+	ServiceChecks map[string]Checker
 	// Log is a reference to a logger for
 	// situations where there are errors.
-	Log	logger.Log
+	Log logger.Log
 }
 
 // Endpoint implements the handler for a given list of services.

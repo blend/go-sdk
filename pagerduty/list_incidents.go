@@ -130,21 +130,21 @@ type ListIncidentOption func(*ListIncidentsOptions)
 
 // ListIncidentsOptions are all the options for a list incidents call.
 type ListIncidentsOptions struct {
-	DateRange	string
-	IncidentKey	string
-	Include		[]Include
-	Limit		int
-	Offset		int
-	ServiceIDs	[]string
-	Since		string
-	SortBy		string
-	Statuses	[]IncidentStatus
-	TeamIDs		[]string
-	TimeZone	string
-	Total		*bool
-	Until		string
-	Urgencies	[]string
-	UserIDs		[]string
+	DateRange   string
+	IncidentKey string
+	Include     []Include
+	Limit       int
+	Offset      int
+	ServiceIDs  []string
+	Since       string
+	SortBy      string
+	Statuses    []IncidentStatus
+	TeamIDs     []string
+	TimeZone    string
+	Total       *bool
+	Until       string
+	Urgencies   []string
+	UserIDs     []string
 }
 
 // Options yields the r2 options for the options.
@@ -213,9 +213,9 @@ func (lio ListIncidentsOptions) Options() (output []r2.Option) {
 
 // ListIncidentsOutput is the output of a list incidents call.
 type ListIncidentsOutput struct {
-	Offset		int		`json:"offset"`
-	Limit		int		`json:"limit"`
-	More		bool		`json:"more"`
-	Total		*int		`json:"total"`
-	Incidents	[]Incident	`json:"incidents"`
+	Offset    int        `json:"offset"`
+	Limit     int        `json:"limit"`
+	More      bool       `json:"more"`
+	Total     *int       `json:"total"`
+	Incidents []Incident `json:"incidents"`
 }

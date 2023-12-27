@@ -14,10 +14,10 @@ import (
 
 // UUID errors
 const (
-	ErrUUIDRequired		ex.Class	= "uuid should be set"
-	ErrUUIDForbidden	ex.Class	= "uuid should not be set"
-	ErrUUIDV4		ex.Class	= "uuid should be version 4"
-	ErrUUIDVersion		ex.Class	= "uuid should be a given version"
+	ErrUUIDRequired  ex.Class = "uuid should be set"
+	ErrUUIDForbidden ex.Class = "uuid should not be set"
+	ErrUUIDV4        ex.Class = "uuid should be version 4"
+	ErrUUIDVersion   ex.Class = "uuid should be a given version"
 )
 
 // UUID returns a uuid.UUID validator.

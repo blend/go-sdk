@@ -20,7 +20,7 @@ import (
 )
 
 func TestOptProxyTransformRequest(t *testing.T) {
-	t.Skip()	// test is flaky
+	t.Skip() // test is flaky
 	it := assert.New(t)
 
 	var requests []*http.Request

@@ -18,16 +18,16 @@ import (
 )
 
 var (
-	flagPath	string
-	flagGithubURL	string
-	flagGithubToken	string
+	flagPath        string
+	flagGithubURL   string
+	flagGithubToken string
 
-	flagValidate	bool
-	flagGenerate	bool
+	flagValidate bool
+	flagGenerate bool
 
-	flagQuiet	bool
-	flagVerbose	bool
-	flagDebug	bool
+	flagQuiet   bool
+	flagVerbose bool
+	flagDebug   bool
 )
 
 func init() {
@@ -72,12 +72,12 @@ func main() {
 
 	engine := codeowners.Codeowners{
 		Config: codeowners.Config{
-			Path:		flagPath,
-			GithubURL:	flagGithubURL,
-			GithubToken:	flagGithubToken,
-			Quiet:		&flagQuiet,
-			Verbose:	&flagVerbose,
-			Debug:		&flagDebug,
+			Path:        flagPath,
+			GithubURL:   flagGithubURL,
+			GithubToken: flagGithubToken,
+			Quiet:       &flagQuiet,
+			Verbose:     &flagVerbose,
+			Debug:       &flagDebug,
 		},
 	}
 
@@ -95,7 +95,7 @@ func main() {
 	} else if flagValidate {
 		actionLabel = "validate"
 		err = engine.ValidateFile(ctx)
-	} else {	// the default
+	} else { // the default
 		actionLabel = "validate"
 		err = engine.ValidateFile(ctx)
 	}

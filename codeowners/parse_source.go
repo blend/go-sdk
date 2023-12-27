@@ -35,7 +35,7 @@ func ParseSource(repoRoot, sourcePath string) (*Source, error) {
 	var line string
 	for scanner.Scan() {
 		line = strings.TrimSpace(scanner.Text())
-		if strings.HasPrefix(strings.TrimSpace(line), "#") {	// ignore comments
+		if strings.HasPrefix(strings.TrimSpace(line), "#") { // ignore comments
 			continue
 		}
 		if strings.Contains(line, "#") {
@@ -53,8 +53,8 @@ func ParseSource(repoRoot, sourcePath string) (*Source, error) {
 			return nil, err
 		}
 		output.Paths = append(output.Paths, Path{
-			PathGlob:	pathGlob,
-			Owners:		pieces[1:],
+			PathGlob: pathGlob,
+			Owners:   pieces[1:],
 		})
 	}
 	return &output, nil

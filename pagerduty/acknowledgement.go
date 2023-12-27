@@ -11,6 +11,6 @@ import "time"
 
 // Acknowledgement is an api type.
 type Acknowledgement struct {
-	At		time.Time	`json:"at,omitempty"`
-	Acknowledger	APIObject	`json:"acknowledger,omitempty"`
+	At           time.Time `json:"at,omitempty"`
+	Acknowledger APIObject `json:"acknowledger,omitempty"`
 }

@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package codeowners includes github codeowners management utilities
 */
-package codeowners	// import "github.com/blend/go-sdk/codeowners"
+package codeowners // import "github.com/blend/go-sdk/codeowners"

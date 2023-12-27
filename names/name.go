@@ -9,11 +9,11 @@ package names
 
 // Name is a structured/parsed name.
 type Name struct {
-	Salutation	string
-	FirstName	string
-	MiddleName	string
-	LastName	string
-	Suffix		string
+	Salutation string
+	FirstName  string
+	MiddleName string
+	LastName   string
+	Suffix     string
 }
 
 // String returns the string representation of a name.

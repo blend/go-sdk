@@ -30,10 +30,10 @@ func MutexAt(path string) *Mutex {
 type Mutex struct {
 	// we still have a sync.Mutex on this to guard against race-prone use cases
 	// within the same process.
-	mu	sync.Mutex
+	mu sync.Mutex
 
 	// Path is the file path to use as the lock.
-	Path	string
+	Path string
 }
 
 // RLock creates a reader lock and returns an unlock function.

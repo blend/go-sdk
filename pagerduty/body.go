@@ -9,6 +9,6 @@ package pagerduty
 
 // Body is an api type.
 type Body struct {
-	Type	string	`json:"type"`
-	Details	string	`json:"details,omitempty"`
+	Type    string `json:"type"`
+	Details string `json:"details,omitempty"`
 }

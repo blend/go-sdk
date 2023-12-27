@@ -81,8 +81,8 @@ func mustOpen(t *testing.T, name string) *os.File {
 }
 
 const (
-	quiescent		= 10 * time.Millisecond
-	probablyStillBlocked	= 10 * time.Second
+	quiescent            = 10 * time.Millisecond
+	probablyStillBlocked = 10 * time.Second
 )
 
 func mustBlock(t *testing.T, op string, f *os.File) (wait func(*testing.T)) {

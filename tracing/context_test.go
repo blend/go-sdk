@@ -23,7 +23,7 @@ type spanContextWithoutGetters struct {
 
 type spanContextWithSpanID struct {
 	opentracing.SpanContext
-	spanID	uint64
+	spanID uint64
 }
 
 func (c spanContextWithSpanID) SpanID() uint64 {
@@ -32,7 +32,7 @@ func (c spanContextWithSpanID) SpanID() uint64 {
 
 type spanContextWithTraceID struct {
 	opentracing.SpanContext
-	traceID	uint64
+	traceID uint64
 }
 
 func (c spanContextWithTraceID) TraceID() uint64 {
@@ -41,8 +41,8 @@ func (c spanContextWithTraceID) TraceID() uint64 {
 
 type spanContextWithAllGetters struct {
 	opentracing.SpanContext
-	spanID	uint64
-	traceID	uint64
+	spanID  uint64
+	traceID uint64
 }
 
 func (c spanContextWithAllGetters) SpanID() uint64 {
@@ -66,8 +66,8 @@ func TestWithTraceAnnotations_AllGetters(t *testing.T) {
 
 	ctx := context.Background()
 	ctx = WithTraceAnnotations(ctx, spanContextWithAllGetters{
-		spanID:		123,
-		traceID:	456,
+		spanID:  123,
+		traceID: 456,
 	})
 
 	annotations := logger.GetAnnotations(ctx)

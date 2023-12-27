@@ -15,15 +15,15 @@ import (
 
 const (
 	// ErrSessionIDEmpty is thrown if a session id is empty.
-	ErrSessionIDEmpty	ex.Class	= "auth session id is empty"
+	ErrSessionIDEmpty ex.Class = "auth session id is empty"
 	// ErrSecureSessionIDEmpty is an error that is thrown if a given secure session id is invalid.
-	ErrSecureSessionIDEmpty	ex.Class	= "auth secure session id is empty"
+	ErrSecureSessionIDEmpty ex.Class = "auth secure session id is empty"
 	// ErrUnsetViewTemplate is an error that is thrown if a given secure session id is invalid.
-	ErrUnsetViewTemplate	ex.Class	= "view result template is unset"
+	ErrUnsetViewTemplate ex.Class = "view result template is unset"
 	// ErrParameterMissing is an error on request validation.
-	ErrParameterMissing	ex.Class	= "parameter is missing"
+	ErrParameterMissing ex.Class = "parameter is missing"
 	// ErrParameterInvalid is an error on request validation.
-	ErrParameterInvalid	ex.Class	= "parameter is invalid"
+	ErrParameterInvalid ex.Class = "parameter is invalid"
 )
 
 // NewParameterMissingError returns a new parameter missing error.

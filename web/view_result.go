@@ -22,11 +22,11 @@ import (
 
 // ViewResult is a result that renders a view.
 type ViewResult struct {
-	ViewName	string
-	StatusCode	int
-	ViewModel	interface{}
-	Views		*ViewCache
-	Template	*template.Template
+	ViewName   string
+	StatusCode int
+	ViewModel  interface{}
+	Views      *ViewCache
+	Template   *template.Template
 }
 
 // Render renders the result to the given response writer.
@@ -58,13 +58,13 @@ func (vr *ViewResult) Render(ctx *Ctx) (err error) {
 	}
 
 	err = vr.Template.Execute(buffer, &ViewModel{
-		Env:	env.Env(),
-		Ctx:	ctx,
+		Env: env.Env(),
+		Ctx: ctx,
 		Status: ViewStatus{
-			Text:	http.StatusText(vr.StatusCode),
-			Code:	vr.StatusCode,
+			Text: http.StatusText(vr.StatusCode),
+			Code: vr.StatusCode,
 		},
-		ViewModel:	vr.ViewModel,
+		ViewModel: vr.ViewModel,
 	})
 	if err != nil {
 		err = ex.New(err)

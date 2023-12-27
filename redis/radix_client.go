@@ -22,8 +22,8 @@ import (
 )
 
 var (
-	_	async.Checker	= (*RadixClient)(nil)
-	_	Client		= (*RadixClient)(nil)
+	_ async.Checker = (*RadixClient)(nil)
+	_ Client        = (*RadixClient)(nil)
 )
 
 // New returns a new client.
@@ -50,10 +50,10 @@ func New(ctx context.Context, opts ...Option) (*RadixClient, error) {
 		rc.Client, err = (radix.SentinelConfig{
 			PoolConfig: radix.PoolConfig{
 				Dialer: radix.Dialer{
-					SelectDB:	rc.Config.DB,
-					AuthUser:	rc.Config.AuthUser,
-					AuthPass:	rc.Config.AuthPassword,
-					NetDialer:	dialer,
+					SelectDB:  rc.Config.DB,
+					AuthUser:  rc.Config.AuthUser,
+					AuthPass:  rc.Config.AuthPassword,
+					NetDialer: dialer,
 				},
 			},
 		}).New(ctx, rc.Config.SentinelPrimaryName, rc.Config.SentinelAddrs)
@@ -61,20 +61,20 @@ func New(ctx context.Context, opts ...Option) (*RadixClient, error) {
 		rc.Client, err = (radix.ClusterConfig{
 			PoolConfig: radix.PoolConfig{
 				Dialer: radix.Dialer{
-					SelectDB:	rc.Config.DB,
-					AuthUser:	rc.Config.AuthUser,
-					AuthPass:	rc.Config.AuthPassword,
-					NetDialer:	dialer,
+					SelectDB:  rc.Config.DB,
+					AuthUser:  rc.Config.AuthUser,
+					AuthPass:  rc.Config.AuthPassword,
+					NetDialer: dialer,
 				},
 			},
 		}).New(ctx, rc.Config.ClusterAddrs)
 	} else {
 		rc.Client, err = (radix.PoolConfig{
 			Dialer: radix.Dialer{
-				SelectDB:	rc.Config.DB,
-				AuthUser:	rc.Config.AuthUser,
-				AuthPass:	rc.Config.AuthPassword,
-				NetDialer:	dialer,
+				SelectDB:  rc.Config.DB,
+				AuthUser:  rc.Config.AuthUser,
+				AuthPass:  rc.Config.AuthPassword,
+				NetDialer: dialer,
 			},
 		}).New(ctx, rc.Config.Network, rc.Config.Addr)
 	}
@@ -102,10 +102,10 @@ type RadixDoCloser interface {
 
 // RadixClient is a wrapping client for the underling radix redis driver.
 type RadixClient struct {
-	Config	Config
-	Log	logger.Triggerable
-	Tracer	Tracer
-	Client	RadixDoCloser
+	Config Config
+	Log    logger.Triggerable
+	Tracer Tracer
+	Client RadixDoCloser
 }
 
 // Ping sends an echo to the server and validates the response.

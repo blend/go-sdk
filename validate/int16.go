@@ -11,12 +11,12 @@ import "github.com/blend/go-sdk/ex"
 
 // Int16 errors
 const (
-	ErrInt16Min		ex.Class	= "int16 should be above a minimum value"
-	ErrInt16Max		ex.Class	= "int16 should be below a maximum value"
-	ErrInt16Positive	ex.Class	= "int16 should be positive"
-	ErrInt16Negative	ex.Class	= "int16 should be negative"
-	ErrInt16Zero		ex.Class	= "int16 should be zero"
-	ErrInt16NotZero		ex.Class	= "int16 should not be zero"
+	ErrInt16Min      ex.Class = "int16 should be above a minimum value"
+	ErrInt16Max      ex.Class = "int16 should be below a maximum value"
+	ErrInt16Positive ex.Class = "int16 should be positive"
+	ErrInt16Negative ex.Class = "int16 should be negative"
+	ErrInt16Zero     ex.Class = "int16 should be zero"
+	ErrInt16NotZero  ex.Class = "int16 should not be zero"
 )
 
 // Int16 returns validators for int16s.

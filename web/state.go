@@ -21,7 +21,7 @@ type State interface {
 // SyncState is the collection of state objects on a context.
 type SyncState struct {
 	sync.RWMutex
-	Values	map[string]interface{}
+	Values map[string]interface{}
 }
 
 // Keys returns

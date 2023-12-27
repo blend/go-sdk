@@ -18,8 +18,8 @@ func TestSyncState(t *testing.T) {
 
 	state := &SyncState{
 		Values: map[string]interface{}{
-			"foo":	"bar",
-			"buzz":	"fuzz",
+			"foo":  "bar",
+			"buzz": "fuzz",
 		},
 	}
 

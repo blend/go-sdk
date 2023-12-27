@@ -14,23 +14,23 @@ import (
 // NewSyncRingBuffer returns a new synchronized ring buffer.
 func NewSyncRingBuffer[T any]() *SyncRingBuffer[T] {
 	return &SyncRingBuffer[T]{
-		innerBuffer:	NewRingBuffer[T](),
-		syncRoot:	&sync.Mutex{},
+		innerBuffer: NewRingBuffer[T](),
+		syncRoot:    &sync.Mutex{},
 	}
 }
 
 // NewSyncRingBufferWithCapacity returns a new synchronized ring buffer.
 func NewSyncRingBufferWithCapacity[T any](capacity int) *SyncRingBuffer[T] {
 	return &SyncRingBuffer[T]{
-		innerBuffer:	NewRingBufferWithCapacity[T](capacity),
-		syncRoot:	&sync.Mutex{},
+		innerBuffer: NewRingBufferWithCapacity[T](capacity),
+		syncRoot:    &sync.Mutex{},
 	}
 }
 
 // SyncRingBuffer is a ring buffer wrapper that adds synchronization.
 type SyncRingBuffer[T any] struct {
-	innerBuffer	*RingBuffer[T]
-	syncRoot	*sync.Mutex
+	innerBuffer *RingBuffer[T]
+	syncRoot    *sync.Mutex
 }
 
 // SyncRoot returns the mutex used to synchronize the collection.

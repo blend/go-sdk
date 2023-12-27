@@ -19,12 +19,12 @@ import (
 // NewQueue returns a new parallel queue.
 func NewQueue(action WorkAction, options ...QueueOption) *Queue {
 	q := Queue{
-		Latch:			NewLatch(),
-		Action:			action,
-		Context:		context.Background(),
-		MaxWork:		DefaultQueueMaxWork,
-		Parallelism:		runtime.NumCPU(),
-		ShutdownGracePeriod:	DefaultShutdownGracePeriod,
+		Latch:               NewLatch(),
+		Action:              action,
+		Context:             context.Background(),
+		MaxWork:             DefaultQueueMaxWork,
+		Parallelism:         runtime.NumCPU(),
+		ShutdownGracePeriod: DefaultShutdownGracePeriod,
 	}
 	for _, option := range options {
 		option(&q)
@@ -67,17 +67,17 @@ func OptQueueContext(ctx context.Context) QueueOption {
 type Queue struct {
 	*Latch
 
-	Action			WorkAction
-	Context			context.Context
-	Errors			chan error
-	Parallelism		int
-	MaxWork			int
-	ShutdownGracePeriod	time.Duration
+	Action              WorkAction
+	Context             context.Context
+	Errors              chan error
+	Parallelism         int
+	MaxWork             int
+	ShutdownGracePeriod time.Duration
 
 	// these will typically be set by Start
-	AvailableWorkers	chan *Worker
-	Workers			[]*Worker
-	Work			chan interface{}
+	AvailableWorkers chan *Worker
+	Workers          []*Worker
+	Work             chan interface{}
 }
 
 // Background returns a background context.
@@ -165,8 +165,8 @@ func (q *Queue) Stop() error {
 	if !q.Latch.CanStop() {
 		return ex.New(ErrCannotStop)
 	}
-	q.Latch.WaitStopped()	// wait for the dispatch loop to exit
-	defer q.Latch.Reset()	// reset the latch in case we have to start again
+	q.Latch.WaitStopped() // wait for the dispatch loop to exit
+	defer q.Latch.Reset() // reset the latch in case we have to start again
 
 	timeoutContext, cancel := context.WithTimeout(q.Background(), q.ShutdownGracePeriod)
 	defer cancel()

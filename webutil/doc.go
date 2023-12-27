@@ -12,4 +12,4 @@ It includes things like a webhook sender and helpers to parse the remote address
 
 It is used by other packages in the repository like `web` and `r2`.
 */
-package webutil	// import "github.com/blend/go-sdk/webutil"
+package webutil // import "github.com/blend/go-sdk/webutil"

@@ -28,8 +28,8 @@ func TestXMLResultRender(t *testing.T) {
 	r := NewCtx(w, webutil.NewMockRequest("GET", "/"))
 
 	xr := &XMLResult{
-		StatusCode:	http.StatusOK,
-		Response:	xmltest{Foo: "bar"},
+		StatusCode: http.StatusOK,
+		Response:   xmltest{Foo: "bar"},
 	}
 
 	assert.Nil(xr.Render(r))
@@ -45,8 +45,8 @@ func TestXMLResultRenderStatusCode(t *testing.T) {
 	r := NewCtx(w, webutil.NewMockRequest("GET", "/"))
 
 	xr := &XMLResult{
-		StatusCode:	http.StatusBadRequest,
-		Response:	xmltest{Foo: "bar"},
+		StatusCode: http.StatusBadRequest,
+		Response:   xmltest{Foo: "bar"},
 	}
 
 	assert.Nil(xr.Render(r))

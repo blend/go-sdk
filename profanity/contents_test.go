@@ -67,8 +67,8 @@ buzz foo baz
 	rule := Contents{
 		Contains: &ContainsFilter{
 			Filter: Filter{
-				Include:	[]string{"foo baz"},
-				Exclude:	[]string{"buzz"},
+				Include: []string{"foo baz"},
+				Exclude: []string{"buzz"},
 			},
 		},
 	}

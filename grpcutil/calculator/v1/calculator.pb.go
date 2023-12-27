@@ -24,9 +24,9 @@ import (
 
 const (
 	// Verify that this generated code is sufficiently up-to-date.
-	_	= protoimpl.EnforceVersion(20 - protoimpl.MinVersion)
+	_ = protoimpl.EnforceVersion(20 - protoimpl.MinVersion)
 	// Verify that runtime/protoimpl is sufficiently up-to-date.
-	_	= protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
+	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
 // This is a compile-time assertion that a sufficiently up-to-date version
@@ -34,11 +34,11 @@ const (
 const _ = proto.ProtoPackageIsVersion4
 
 type Numbers struct {
-	state		protoimpl.MessageState
-	sizeCache	protoimpl.SizeCache
-	unknownFields	protoimpl.UnknownFields
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 
-	Values	[]float64	`protobuf:"fixed64,1,rep,packed,name=Values,proto3" json:"Values,omitempty"`
+	Values []float64 `protobuf:"fixed64,1,rep,packed,name=Values,proto3" json:"Values,omitempty"`
 }
 
 func (x *Numbers) Reset() {
@@ -54,7 +54,7 @@ func (x *Numbers) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Numbers) ProtoMessage()	{}
+func (*Numbers) ProtoMessage() {}
 
 func (x *Numbers) ProtoReflect() protoreflect.Message {
 	mi := &file_calculator_proto_msgTypes[0]
@@ -81,11 +81,11 @@ func (x *Numbers) GetValues() []float64 {
 }
 
 type Number struct {
-	state		protoimpl.MessageState
-	sizeCache	protoimpl.SizeCache
-	unknownFields	protoimpl.UnknownFields
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 
-	Value	float64	`protobuf:"fixed64,1,opt,name=value,proto3" json:"value,omitempty"`
+	Value float64 `protobuf:"fixed64,1,opt,name=value,proto3" json:"value,omitempty"`
 }
 
 func (x *Number) Reset() {
@@ -101,7 +101,7 @@ func (x *Number) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Number) ProtoMessage()	{}
+func (*Number) ProtoMessage() {}
 
 func (x *Number) ProtoReflect() protoreflect.Message {
 	mi := &file_calculator_proto_msgTypes[1]
@@ -161,8 +161,8 @@ var file_calculator_proto_rawDesc = []byte{
 }
 
 var (
-	file_calculator_proto_rawDescOnce	sync.Once
-	file_calculator_proto_rawDescData	= file_calculator_proto_rawDesc
+	file_calculator_proto_rawDescOnce sync.Once
+	file_calculator_proto_rawDescData = file_calculator_proto_rawDesc
 )
 
 func file_calculator_proto_rawDescGZIP() []byte {
@@ -174,34 +174,34 @@ func file_calculator_proto_rawDescGZIP() []byte {
 
 var file_calculator_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_calculator_proto_goTypes = []interface{}{
-	(*Numbers)(nil),	// 0: v1.Numbers
-	(*Number)(nil),		// 1: v1.Number
+	(*Numbers)(nil), // 0: v1.Numbers
+	(*Number)(nil),  // 1: v1.Number
 }
 var file_calculator_proto_depIdxs = []int32{
-	0,	// 0: v1.Calculator.Add:input_type -> v1.Numbers
-	1,	// 1: v1.Calculator.AddStream:input_type -> v1.Number
-	0,	// 2: v1.Calculator.Subtract:input_type -> v1.Numbers
-	1,	// 3: v1.Calculator.SubtractStream:input_type -> v1.Number
-	0,	// 4: v1.Calculator.Multiply:input_type -> v1.Numbers
-	1,	// 5: v1.Calculator.MultiplyStream:input_type -> v1.Number
-	0,	// 6: v1.Calculator.Divide:input_type -> v1.Numbers
-	1,	// 7: v1.Calculator.DivideStream:input_type -> v1.Number
-	1,	// 8: v1.Calculator.Add:output_type -> v1.Number
-	1,	// 9: v1.Calculator.AddStream:output_type -> v1.Number
-	1,	// 10: v1.Calculator.Subtract:output_type -> v1.Number
-	1,	// 11: v1.Calculator.SubtractStream:output_type -> v1.Number
-	1,	// 12: v1.Calculator.Multiply:output_type -> v1.Number
-	1,	// 13: v1.Calculator.MultiplyStream:output_type -> v1.Number
-	1,	// 14: v1.Calculator.Divide:output_type -> v1.Number
-	1,	// 15: v1.Calculator.DivideStream:output_type -> v1.Number
-	8,	// [8:16] is the sub-list for method output_type
-	0,	// [0:8] is the sub-list for method input_type
-	0,	// [0:0] is the sub-list for extension type_name
-	0,	// [0:0] is the sub-list for extension extendee
-	0,	// [0:0] is the sub-list for field type_name
+	0, // 0: v1.Calculator.Add:input_type -> v1.Numbers
+	1, // 1: v1.Calculator.AddStream:input_type -> v1.Number
+	0, // 2: v1.Calculator.Subtract:input_type -> v1.Numbers
+	1, // 3: v1.Calculator.SubtractStream:input_type -> v1.Number
+	0, // 4: v1.Calculator.Multiply:input_type -> v1.Numbers
+	1, // 5: v1.Calculator.MultiplyStream:input_type -> v1.Number
+	0, // 6: v1.Calculator.Divide:input_type -> v1.Numbers
+	1, // 7: v1.Calculator.DivideStream:input_type -> v1.Number
+	1, // 8: v1.Calculator.Add:output_type -> v1.Number
+	1, // 9: v1.Calculator.AddStream:output_type -> v1.Number
+	1, // 10: v1.Calculator.Subtract:output_type -> v1.Number
+	1, // 11: v1.Calculator.SubtractStream:output_type -> v1.Number
+	1, // 12: v1.Calculator.Multiply:output_type -> v1.Number
+	1, // 13: v1.Calculator.MultiplyStream:output_type -> v1.Number
+	1, // 14: v1.Calculator.Divide:output_type -> v1.Number
+	1, // 15: v1.Calculator.DivideStream:output_type -> v1.Number
+	8, // [8:16] is the sub-list for method output_type
+	0, // [0:8] is the sub-list for method input_type
+	0, // [0:0] is the sub-list for extension type_name
+	0, // [0:0] is the sub-list for extension extendee
+	0, // [0:0] is the sub-list for field type_name
 }
 
-func init()	{ file_calculator_proto_init() }
+func init() { file_calculator_proto_init() }
 func file_calculator_proto_init() {
 	if File_calculator_proto != nil {
 		return
@@ -235,16 +235,16 @@ func file_calculator_proto_init() {
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
-			GoPackagePath:	reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor:	file_calculator_proto_rawDesc,
-			NumEnums:	0,
-			NumMessages:	2,
-			NumExtensions:	0,
-			NumServices:	1,
+			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
+			RawDescriptor: file_calculator_proto_rawDesc,
+			NumEnums:      0,
+			NumMessages:   2,
+			NumExtensions: 0,
+			NumServices:   1,
 		},
-		GoTypes:		file_calculator_proto_goTypes,
-		DependencyIndexes:	file_calculator_proto_depIdxs,
-		MessageInfos:		file_calculator_proto_msgTypes,
+		GoTypes:           file_calculator_proto_goTypes,
+		DependencyIndexes: file_calculator_proto_depIdxs,
+		MessageInfos:      file_calculator_proto_msgTypes,
 	}.Build()
 	File_calculator_proto = out.File
 	file_calculator_proto_rawDesc = nil

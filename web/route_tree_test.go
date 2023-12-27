@@ -94,7 +94,7 @@ func Test_RouteTree_Route(t *testing.T) {
 	rt.Handle(http.MethodGet, "/slash/", handlerNoOp)
 
 	req := &http.Request{
-		Method:	http.MethodGet,
+		Method: http.MethodGet,
 		URL: &url.URL{
 			Path: "/",
 		},
@@ -106,7 +106,7 @@ func Test_RouteTree_Route(t *testing.T) {
 	its.Equal("/", req.URL.Path)
 
 	req = &http.Request{
-		Method:	http.MethodGet,
+		Method: http.MethodGet,
 		URL: &url.URL{
 			Path: "/foo",
 		},
@@ -119,7 +119,7 @@ func Test_RouteTree_Route(t *testing.T) {
 	its.Equal("/foo", req.URL.Path)
 
 	req = &http.Request{
-		Method:	http.MethodPost,
+		Method: http.MethodPost,
 		URL: &url.URL{
 			Path: "/foo",
 		},
@@ -133,7 +133,7 @@ func Test_RouteTree_Route(t *testing.T) {
 
 	// explicitly test matching with an extra slash
 	req = &http.Request{
-		Method:	http.MethodGet,
+		Method: http.MethodGet,
 		URL: &url.URL{
 			Path: "/foo/",
 		},
@@ -145,7 +145,7 @@ func Test_RouteTree_Route(t *testing.T) {
 	its.Equal("/foo/", req.URL.Path)
 
 	req = &http.Request{
-		Method:	http.MethodGet,
+		Method: http.MethodGet,
 		URL: &url.URL{
 			Path: "/foo/test",
 		},
@@ -158,7 +158,7 @@ func Test_RouteTree_Route(t *testing.T) {
 	its.Equal("/foo/test", req.URL.Path)
 
 	req = &http.Request{
-		Method:	http.MethodGet,
+		Method: http.MethodGet,
 		URL: &url.URL{
 			Path: "/bar",
 		},
@@ -170,7 +170,7 @@ func Test_RouteTree_Route(t *testing.T) {
 	its.Equal("/bar", req.URL.Path)
 
 	req = &http.Request{
-		Method:	http.MethodGet,
+		Method: http.MethodGet,
 		URL: &url.URL{
 			Path: "/slash",
 		},
@@ -182,7 +182,7 @@ func Test_RouteTree_Route(t *testing.T) {
 	its.Equal("/slash", req.URL.Path)
 
 	req = &http.Request{
-		Method:	http.MethodConnect,
+		Method: http.MethodConnect,
 		URL: &url.URL{
 			Path: "/slash",
 		},
@@ -193,7 +193,7 @@ func Test_RouteTree_Route(t *testing.T) {
 	its.Equal("/slash", req.URL.Path)
 
 	req = &http.Request{
-		Method:	http.MethodGet,
+		Method: http.MethodGet,
 		URL: &url.URL{
 			Path: "/slash",
 		},
@@ -211,7 +211,7 @@ func Test_RouteTree_Route_slash(t *testing.T) {
 	rt := new(RouteTree)
 
 	req := &http.Request{
-		Method:	http.MethodGet,
+		Method: http.MethodGet,
 		URL: &url.URL{
 			Path: "/",
 		},

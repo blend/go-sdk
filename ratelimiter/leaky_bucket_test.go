@@ -17,7 +17,7 @@ import (
 func TestLeakyBucket_Check(t *testing.T) {
 	it := assert.New(t)
 
-	rl := NewLeakyBucket(5, time.Second)	// 5 actions per second
+	rl := NewLeakyBucket(5, time.Second) // 5 actions per second
 
 	now := time.Now()
 

@@ -18,16 +18,16 @@ import (
 )
 
 var (
-	_	Cache	= (*LocalCache)(nil)
-	_	Locker	= (*LocalCache)(nil)
+	_ Cache  = (*LocalCache)(nil)
+	_ Locker = (*LocalCache)(nil)
 )
 
 // New returns a new LocalLocalCache.
 // It defaults to 500ms sweep intervals and an LRU queue for invalidation.
 func New(options ...LocalCacheOption) *LocalCache {
 	c := LocalCache{
-		Data:	make(map[interface{}]*Value),
-		LRU:	NewLRUQueue(),
+		Data: make(map[interface{}]*Value),
+		LRU:  NewLRUQueue(),
 	}
 	c.Sweeper = async.NewInterval(c.Sweep, 500*time.Millisecond)
 	for _, opt := range options {
@@ -56,9 +56,9 @@ func OptLRU(lruImplementation LRU) LocalCacheOption {
 // LocalCache is a memory LocalCache.
 type LocalCache struct {
 	sync.RWMutex
-	Data	map[interface{}]*Value
-	LRU	LRU
-	Sweeper	*async.Interval
+	Data    map[interface{}]*Value
+	LRU     LRU
+	Sweeper *async.Interval
 }
 
 // Start starts the sweeper.
@@ -82,8 +82,8 @@ func (lc *LocalCache) NotifyStopped() <-chan struct{} {
 }
 
 type removeHandler struct {
-	Key	interface{}
-	Handler	func(interface{}, RemovalReason)
+	Key     interface{}
+	Handler func(interface{}, RemovalReason)
 }
 
 // Sweep checks keys for expired ttls.
@@ -100,8 +100,8 @@ func (lc *LocalCache) Sweep(ctx context.Context) error {
 			keysToRemove = append(keysToRemove, v.Key)
 			if v.OnRemove != nil {
 				handlers = append(handlers, removeHandler{
-					Key:		v.Key,
-					Handler:	v.OnRemove,
+					Key:     v.Key,
+					Handler: v.OnRemove,
 				})
 			}
 			return true
@@ -132,9 +132,9 @@ func (lc *LocalCache) Set(key, value interface{}, options ...ValueOption) {
 	}
 
 	v := Value{
-		Timestamp:	time.Now().UTC(),
-		Key:		key,
-		Value:		value,
+		Timestamp: time.Now().UTC(),
+		Key:       key,
+		Value:     value,
 	}
 
 	for _, opt := range options {
@@ -214,9 +214,9 @@ func (lc *LocalCache) GetOrSet(key interface{}, valueProvider func() (interface{
 
 	// set up the value
 	v := Value{
-		Timestamp:	time.Now().UTC(),
-		Key:		key,
-		Value:		value,
+		Timestamp: time.Now().UTC(),
+		Key:       key,
+		Value:     value,
 	}
 	// apply options
 	for _, opt := range options {
@@ -277,8 +277,8 @@ func (lc *LocalCache) Reset() {
 			removed = append(removed, value)
 		}
 	}
-	lc.LRU.Reset()				// reset the lru queue
-	lc.Data = make(map[interface{}]*Value)	// reset the map
+	lc.LRU.Reset()                         // reset the lru queue
+	lc.Data = make(map[interface{}]*Value) // reset the map
 	lc.Unlock()
 
 	// call the remove handlers

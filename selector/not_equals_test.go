@@ -17,8 +17,8 @@ func TestNotEquals(t *testing.T) {
 	assert := assert.New(t)
 
 	valid := Labels{
-		"foo":	"far",
-		"moo":	"bar",
+		"foo": "far",
+		"moo": "bar",
 	}
 	assert.False(NotEquals{Key: "foo", Value: "far"}.Matches(valid))
 	assert.True(NotEquals{Key: "zoo", Value: "buzz"}.Matches(valid))

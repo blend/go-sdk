@@ -13,46 +13,46 @@ import "time"
 type Config struct {
 	// NoticeBodyTemplate is the notice body template that will be processed and
 	// injected to the relevant extension specific notice template.
-	NoticeBodyTemplate	string	`yaml:"noticeBodyTemplate"`
+	NoticeBodyTemplate string `yaml:"noticeBodyTemplate"`
 	// Year is the year to insert into the templates as `{{ .Year }}`
-	Year	int	`yaml:"year"`
+	Year int `yaml:"year"`
 	// Company is the company name to insert into the templates as `{{ .Company }}`
-	Company	string	`yaml:"company"`
+	Company string `yaml:"company"`
 	// License is the open source license to insert into in templates as `{{ .License }}`
-	License	string	`yaml:"openSourceLicense"`
+	License string `yaml:"openSourceLicense"`
 
 	// Restrictions an optional template to clarify copyright restrictions or
 	// visibility modifiers, which is available in the `NoticeBodyTemplate` as `{{ .Restrictions }}`
-	Restrictions	string	`yaml:"restrictionTemplate"`
+	Restrictions string `yaml:"restrictionTemplate"`
 
 	// Excludes are a list of globs to exclude, they can
 	// match both files and directories.
 	// This can be populated with `.gitignore` and the like.
-	Excludes	[]string	`yaml:"excludes"`
+	Excludes []string `yaml:"excludes"`
 	// IncludeFiles are a list of globs to match files to include.
-	IncludeFiles	[]string	`yaml:"includeFiles"`
+	IncludeFiles []string `yaml:"includeFiles"`
 
 	// ExtensionNoticeTemplates is a map between file extension (including dot prefix)
 	// to the relevant full notice template for the file. It can include a template variable
 	// {{ .Notice }} that will insert the compiled `NoticyBodyTemplate`.
-	ExtensionNoticeTemplates	map[string]string
+	ExtensionNoticeTemplates map[string]string
 
 	// FallbackNoticeTemplate is a full notice template that will be used if there is no extension
 	// specific notice template.
 	// It can include the template variable {{ .Notice }} that will instert the compiled `NoticeBodyTemplate`.
-	FallbackNoticeTemplate	string
+	FallbackNoticeTemplate string
 
 	// ExitFirst indicates if we should return after the first failure.
-	ExitFirst	*bool	`yaml:"exitFirst"`
+	ExitFirst *bool `yaml:"exitFirst"`
 	// Quiet controls whether output is suppressed.
-	Quiet	*bool	`yaml:"quiet"`
+	Quiet *bool `yaml:"quiet"`
 	// Verbose controls whether verbose output is shown.
-	Verbose	*bool	`yaml:"verbose"`
+	Verbose *bool `yaml:"verbose"`
 	// Debug controls whether debug output is shown.
-	Debug	*bool	`yaml:"debug"`
+	Debug *bool `yaml:"debug"`
 
 	// ShowDiff shows shows the diffs on verification failues.
-	ShowDiff	*bool	`yaml:"verifyDiff"`
+	ShowDiff *bool `yaml:"verifyDiff"`
 }
 
 // NoticeBodyTemplateOrDefault returns the notice body template or a default.

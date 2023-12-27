@@ -18,10 +18,10 @@ import (
 )
 
 var (
-	flagExclusive	= flag.Bool("exclusive", false, "If the lock is exclusive or not")
-	flagRemove	= flag.Bool("remove", false, "If the lock file should be removed when complete")
-	flagWaitFor	= flag.Duration("wait-for", 10*time.Second, "The duration to hold the lock for")
-	flagHoldFor	= flag.Duration("hold-for", 10*time.Second, "The duration to hold the lock for")
+	flagExclusive = flag.Bool("exclusive", false, "If the lock is exclusive or not")
+	flagRemove    = flag.Bool("remove", false, "If the lock file should be removed when complete")
+	flagWaitFor   = flag.Duration("wait-for", 10*time.Second, "The duration to hold the lock for")
+	flagHoldFor   = flag.Duration("hold-for", 10*time.Second, "The duration to hold the lock for")
 )
 
 func init() {

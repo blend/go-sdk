@@ -23,14 +23,14 @@ func Test_PostedFiles(t *testing.T) {
 	its := assert.New(t)
 
 	file0 := PostedFile{
-		Key:		"file0",
-		FileName:	"file0.txt",
-		Contents:	[]byte("file0-contents"),
+		Key:      "file0",
+		FileName: "file0.txt",
+		Contents: []byte("file0-contents"),
 	}
 	file1 := PostedFile{
-		Key:		"file1",
-		FileName:	"file1.txt",
-		Contents:	[]byte(strings.Repeat("a", 1<<20)),
+		Key:      "file1",
+		FileName: "file1.txt",
+		Contents: []byte(strings.Repeat("a", 1<<20)),
 	}
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -93,14 +93,14 @@ func Test_PostedFiles_onlyParseForm(t *testing.T) {
 	its := assert.New(t)
 
 	file0 := PostedFile{
-		Key:		"file0",
-		FileName:	"file0.txt",
-		Contents:	[]byte("file0-contents"),
+		Key:      "file0",
+		FileName: "file0.txt",
+		Contents: []byte("file0-contents"),
 	}
 	file1 := PostedFile{
-		Key:		"file1",
-		FileName:	"file1.txt",
-		Contents:	[]byte(strings.Repeat("a", 1<<20)),
+		Key:      "file1",
+		FileName: "file1.txt",
+		Contents: []byte(strings.Repeat("a", 1<<20)),
 	}
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -138,14 +138,14 @@ func Test_PostedFiles_maxMemory(t *testing.T) {
 	its := assert.New(t)
 
 	file0 := PostedFile{
-		Key:		"file0",
-		FileName:	"file0.txt",
-		Contents:	[]byte("file0-contents"),
+		Key:      "file0",
+		FileName: "file0.txt",
+		Contents: []byte("file0-contents"),
 	}
 	file1 := PostedFile{
-		Key:		"file1",
-		FileName:	"file1.txt",
-		Contents:	[]byte(strings.Repeat("a", 1<<20)),
+		Key:      "file1",
+		FileName: "file1.txt",
+		Contents: []byte(strings.Repeat("a", 1<<20)),
 	}
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {

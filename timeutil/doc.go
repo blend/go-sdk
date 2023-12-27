@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package timeutil includes helpers for working with timestamps.
 */
-package timeutil	// import "github.com/blend/go-sdk/timeutil"
+package timeutil // import "github.com/blend/go-sdk/timeutil"

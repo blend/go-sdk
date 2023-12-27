@@ -9,6 +9,6 @@ package codeowners
 
 // Path is a path in the codeowners file.
 type Path struct {
-	PathGlob	string
-	Owners		[]string
+	PathGlob string
+	Owners   []string
 }

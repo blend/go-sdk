@@ -34,4 +34,4 @@ and close the server gracefully if they're received, letting requests finish.
 
 There are many more examples in the github.com/blend/go-sdk/examples/web directory.
 */
-package web	// import "github.com/blend/go-sdk/web"
+package web // import "github.com/blend/go-sdk/web"

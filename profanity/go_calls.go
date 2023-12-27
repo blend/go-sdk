@@ -66,22 +66,22 @@ func (gc GoCalls) Check(filename string, contents []byte) RuleResult {
 							message = fmt.Sprintf("go file includes function call: %q", fn.Func)
 						}
 						results = append(results, RuleResult{
-							File:		filename,
-							Line:		fset.Position(ft.Pos()).Line,
-							Message:	message,
+							File:    filename,
+							Line:    fset.Position(ft.Pos()).Line,
+							Message: message,
 						})
 						return false
 					}
 				}
 				return false
-			case *ast.Ident:	// check package local functions and built-ins
+			case *ast.Ident: // check package local functions and built-ins
 				for _, fn := range gc {
 					if fn.Package == "" {
 						if isIdent(ft, fn.Func) {
 							results = append(results, RuleResult{
-								File:		filename,
-								Line:		fset.Position(ft.Pos()).Line,
-								Message:	fmt.Sprintf("go file includes function call: %q", fn.Func),
+								File:    filename,
+								Line:    fset.Position(ft.Pos()).Line,
+								Message: fmt.Sprintf("go file includes function call: %q", fn.Func),
 							})
 							return false
 						}
@@ -117,8 +117,8 @@ func (gc GoCalls) String() string {
 // If package is empty string, it is assumed that the function
 // is local to the calling package or a builtin.
 type GoCall struct {
-	Package	string	`yaml:"package"`
-	Func	string	`yaml:"func"`
+	Package string `yaml:"package"`
+	Func    string `yaml:"func"`
 }
 
 // String implements fmt.Stringer

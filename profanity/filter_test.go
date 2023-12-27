@@ -19,14 +19,14 @@ func Test_Filter_IsZero(t *testing.T) {
 
 	its.True(Filter{}.IsZero())
 	its.False(Filter{
-		Include: []string{"foo", "bar"},	// any of these
+		Include: []string{"foo", "bar"}, // any of these
 	}.IsZero())
 	its.False(Filter{
-		Exclude: []string{"foo", "bar"},	// any of these
+		Exclude: []string{"foo", "bar"}, // any of these
 	}.IsZero())
 	its.False(Filter{
-		Include:	[]string{"foo", "bar"},	// any of these
-		Exclude:	[]string{"foo", "bar"},	// any of these
+		Include: []string{"foo", "bar"}, // any of these
+		Exclude: []string{"foo", "bar"}, // any of these
 	}.IsZero())
 }
 
@@ -34,7 +34,7 @@ func Test_Filter_Match_Include(t *testing.T) {
 	its := assert.New(t)
 
 	f := Filter{
-		Include: []string{"foo", "bar"},	// any of these
+		Include: []string{"foo", "bar"}, // any of these
 	}
 
 	var includeMatch, excludeMatch string
@@ -47,8 +47,8 @@ func Test_Filter_Match_Include_Exclude(t *testing.T) {
 	its := assert.New(t)
 
 	f := Filter{
-		Include:	[]string{"foo", "bar"},		// any of these
-		Exclude:	[]string{"buzz", "wuzz"},	// but not these
+		Include: []string{"foo", "bar"},   // any of these
+		Exclude: []string{"buzz", "wuzz"}, // but not these
 	}
 
 	var includeMatch, excludeMatch string
@@ -61,8 +61,8 @@ func Test_Filter_Match_EmptyInput(t *testing.T) {
 	its := assert.New(t)
 
 	f := Filter{
-		Include:	[]string{"foo", "bar"},		// any of these
-		Exclude:	[]string{"buzz", "wuzz"},	// but not these
+		Include: []string{"foo", "bar"},   // any of these
+		Exclude: []string{"buzz", "wuzz"}, // but not these
 	}
 
 	var includeMatch, excludeMatch string
@@ -75,8 +75,8 @@ func Test_Filter_AllowMatch_IncludeExclude(t *testing.T) {
 	its := assert.New(t)
 
 	f := Filter{
-		Include:	[]string{"foo", "bar"},		// any of these
-		Exclude:	[]string{"buzz", "wuzz"},	// but not these
+		Include: []string{"foo", "bar"},   // any of these
+		Exclude: []string{"buzz", "wuzz"}, // but not these
 	}
 
 	its.True(f.AllowMatch("test", ""))
@@ -88,7 +88,7 @@ func Test_Filter_AllowMatch_Include(t *testing.T) {
 	its := assert.New(t)
 
 	f := Filter{
-		Include: []string{"foo", "bar"},	// any of these
+		Include: []string{"foo", "bar"}, // any of these
 	}
 
 	its.True(f.AllowMatch("test", ""))
@@ -100,7 +100,7 @@ func Test_Filter_AllowMatch_Exclude(t *testing.T) {
 	its := assert.New(t)
 
 	f := Filter{
-		Exclude: []string{"foo", "bar"},	// any of these
+		Exclude: []string{"foo", "bar"}, // any of these
 	}
 
 	its.True(f.AllowMatch("test", ""))

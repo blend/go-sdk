@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	_log		*Logger
-	_logInit	sync.Once
+	_log     *Logger
+	_logInit sync.Once
 )
 
 func ensureLog() {

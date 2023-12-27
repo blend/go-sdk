@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package statsd implements a client and a debugging server for UDP statsd datagrams.
 */
-package statsd	// import "github.com/blend/go-sdk/statsd"
+package statsd // import "github.com/blend/go-sdk/statsd"

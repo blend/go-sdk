@@ -11,25 +11,25 @@ import "sort"
 
 var (
 	// LowerLetters is a runset of lowercase letters.
-	LowerLetters	Runeset	= []rune("abcdefghijklmnopqrstuvwxyz")
+	LowerLetters Runeset = []rune("abcdefghijklmnopqrstuvwxyz")
 
 	// UpperLetters is a runset of uppercase letters.
-	UpperLetters	Runeset	= []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	UpperLetters Runeset = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 	// Letters is a runset of both lower and uppercase letters.
-	Letters	= append(LowerLetters, UpperLetters...)
+	Letters = append(LowerLetters, UpperLetters...)
 
 	// Numbers is a runset of numeric characters.
-	Numbers	Runeset	= []rune("0123456789")
+	Numbers Runeset = []rune("0123456789")
 
 	// LettersAndNumbers is a runset of letters and numeric characters.
-	LettersAndNumbers	= append(Letters, Numbers...)
+	LettersAndNumbers = append(Letters, Numbers...)
 
 	// Symbols is a runset of symbol characters.
-	Symbols	Runeset	= []rune(`!@#$%^&*()_+-=[]{}\|:;`)
+	Symbols Runeset = []rune(`!@#$%^&*()_+-=[]{}\|:;`)
 
 	// LettersNumbersAndSymbols is a runset of letters, numbers and symbols.
-	LettersNumbersAndSymbols	= append(LettersAndNumbers, Symbols...)
+	LettersNumbersAndSymbols = append(LettersAndNumbers, Symbols...)
 )
 
 // CombineRunsets combines given runsets into a single runset.

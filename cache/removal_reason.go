@@ -24,6 +24,6 @@ func (rr RemovalReason) String() string {
 
 // RemovalReasons
 const (
-	Expired	RemovalReason	= iota
-	Removed	RemovalReason	= iota
+	Expired RemovalReason = iota
+	Removed RemovalReason = iota
 )

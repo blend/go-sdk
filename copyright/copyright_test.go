@@ -156,12 +156,12 @@ baz
 func Test_Copyright_goBuildTagsMatch(t *testing.T) {
 	its := assert.New(t)
 
-	file := []byte(goBuildTags1)	// testutil.GetTestFixture(its, "buildtags1.go")
+	file := []byte(goBuildTags1) // testutil.GetTestFixture(its, "buildtags1.go")
 	its.True(goBuildTagMatch.Match(file))
 	found := goBuildTagMatch.Find(file)
 	its.Equal("//go:build tag1\n// +build tag1\n\n", string(found))
 
-	file2 := []byte(goBuildTags2)	// testutil.GetTestFixture(its, "buildtags2.go")
+	file2 := []byte(goBuildTags2) // testutil.GetTestFixture(its, "buildtags2.go")
 	its.True(goBuildTagMatch.Match(file2))
 	found2 := goBuildTagMatch.Find(file2)
 
@@ -173,7 +173,7 @@ func Test_Copyright_goBuildTagsMatch(t *testing.T) {
 `
 	its.Equal(expected, string(found2))
 
-	file3 := []byte(goBuildTags3)	// testutil.GetTestFixture(its, "buildtags3.go")
+	file3 := []byte(goBuildTags3) // testutil.GetTestFixture(its, "buildtags3.go")
 	its.True(goBuildTagMatch.Match(file3))
 	found3 := goBuildTagMatch.Find(file3)
 	its.Equal("//go:build tag1 & tag2\n\n", string(found3))
@@ -225,26 +225,26 @@ func Test_Copyright_goInjectNotice_goBuildTags(t *testing.T) {
 	t.Parallel()
 
 	type testCase struct {
-		Name	string
-		Input	string
-		Expect	string
+		Name   string
+		Input  string
+		Expect string
 	}
 
 	cases := []testCase{
 		{
-			Name:	"standard build tags",
-			Input:	goBuildTags1,	// "buildtags1.go",
-			Expect:	goldenGoBuildTags1,
+			Name:   "standard build tags",
+			Input:  goBuildTags1, // "buildtags1.go",
+			Expect: goldenGoBuildTags1,
 		},
 		{
-			Name:	"multiple build tags",
-			Input:	goBuildTags2,	// "buildtags2.go",
-			Expect:	goldenGoBuildTags2,
+			Name:   "multiple build tags",
+			Input:  goBuildTags2, // "buildtags2.go",
+			Expect: goldenGoBuildTags2,
 		},
 		{
-			Name:	"build tags split across file",
-			Input:	goBuildTags3,	// "buildtags3.go",
-			Expect:	goldenGoBuildTags3,
+			Name:   "build tags split across file",
+			Input:  goBuildTags3, // "buildtags3.go",
+			Expect: goldenGoBuildTags3,
 		},
 	}
 
@@ -258,7 +258,7 @@ func Test_Copyright_goInjectNotice_goBuildTags(t *testing.T) {
 			it.Nil(err)
 
 			output := c.goInjectNotice("foo.go", []byte(tc.Input), notice)
-			it.Equal(string(output), tc.Expect)	// testutil.AssertGoldenFile(it, output, tc.TestFile)
+			it.Equal(string(output), tc.Expect) // testutil.AssertGoldenFile(it, output, tc.TestFile)
 
 			outputRepeat := c.goInjectNotice("foo.go", output, notice)
 			it.Empty(outputRepeat)
@@ -270,26 +270,26 @@ func Test_Copyright_tsInjectNotice_tsReferenceTags(t *testing.T) {
 	t.Parallel()
 
 	type testCase struct {
-		Name	string
-		Input	string
-		Expect	string
+		Name   string
+		Input  string
+		Expect string
 	}
 
 	cases := []testCase{
 		{
-			Name:	"single reference tag",
-			Input:	tsReferenceTag,
-			Expect:	goldenTsReferenceTag,
+			Name:   "single reference tag",
+			Input:  tsReferenceTag,
+			Expect: goldenTsReferenceTag,
 		},
 		{
-			Name:	"multiple reference tags",
-			Input:	tsReferenceTags,
-			Expect:	goldenTsReferenceTags,
+			Name:   "multiple reference tags",
+			Input:  tsReferenceTags,
+			Expect: goldenTsReferenceTags,
 		},
 		{
-			Name:	"no reference tags",
-			Input:	tsTest,	// "buildtags3.go",
-			Expect:	goldenTs,
+			Name:   "no reference tags",
+			Input:  tsTest, // "buildtags3.go",
+			Expect: goldenTs,
 		},
 	}
 
@@ -437,31 +437,31 @@ func Test_Copyright_GetNoticeTemplate(t *testing.T) {
 
 type mockInfoDir string
 
-func (mid mockInfoDir) Name() string		{ return string(mid) }
-func (mid mockInfoDir) Size() int64		{ return 1 << 8 }
-func (mid mockInfoDir) Mode() fs.FileMode	{ return fs.FileMode(0755) }
-func (mid mockInfoDir) ModTime() time.Time	{ return time.Now().UTC() }
-func (mid mockInfoDir) IsDir() bool		{ return true }
-func (mid mockInfoDir) Sys() interface{}	{ return nil }
+func (mid mockInfoDir) Name() string       { return string(mid) }
+func (mid mockInfoDir) Size() int64        { return 1 << 8 }
+func (mid mockInfoDir) Mode() fs.FileMode  { return fs.FileMode(0755) }
+func (mid mockInfoDir) ModTime() time.Time { return time.Now().UTC() }
+func (mid mockInfoDir) IsDir() bool        { return true }
+func (mid mockInfoDir) Sys() interface{}   { return nil }
 
 type mockInfoFile string
 
-func (mif mockInfoFile) Name() string		{ return string(mif) }
-func (mif mockInfoFile) Size() int64		{ return 1 << 8 }
-func (mif mockInfoFile) Mode() fs.FileMode	{ return fs.FileMode(0755) }
-func (mif mockInfoFile) ModTime() time.Time	{ return time.Now().UTC() }
-func (mif mockInfoFile) IsDir() bool		{ return false }
-func (mif mockInfoFile) Sys() interface{}	{ return nil }
+func (mif mockInfoFile) Name() string       { return string(mif) }
+func (mif mockInfoFile) Size() int64        { return 1 << 8 }
+func (mif mockInfoFile) Mode() fs.FileMode  { return fs.FileMode(0755) }
+func (mif mockInfoFile) ModTime() time.Time { return time.Now().UTC() }
+func (mif mockInfoFile) IsDir() bool        { return false }
+func (mif mockInfoFile) Sys() interface{}   { return nil }
 
 func Test_Copyright_includeOrExclude(t *testing.T) {
 	t.Parallel()
 	its := assert.New(t)
 
 	testCases := [...]struct {
-		Config		Config
-		Path		string
-		Info		fs.FileInfo
-		Expected	error
+		Config   Config
+		Path     string
+		Info     fs.FileInfo
+		Expected error
 	}{
 		/*0*/ {Config: Config{}, Path: ".", Info: mockInfoDir("."), Expected: ErrWalkSkip},
 		/*1*/ {Config: Config{Excludes: []string{"/foo/**"}}, Path: "/foo/bar", Info: mockInfoDir("bar"), Expected: filepath.SkipDir},
@@ -479,8 +479,8 @@ func Test_Copyright_includeOrExclude(t *testing.T) {
 }
 
 const (
-	tsFile0	= `import * as axios from 'axios';`
-	tsFile1	= `/// <reference path="../types/testing.d.ts" />
+	tsFile0 = `import * as axios from 'axios';`
+	tsFile1 = `/// <reference path="../types/testing.d.ts" />
 /// <reference path="../types/something.d.ts" />
 /// <reference path="../types/somethingElse.d.ts" />
 /// <reference path="../types/somethingMore.d.ts" />
@@ -489,7 +489,7 @@ const (
 	import * as axios from 'axios';
 `
 
-	pyFile0	= `from __future__ import print_function
+	pyFile0 = `from __future__ import print_function
 	
 		import logging
 		import os
@@ -499,7 +499,7 @@ const (
 		import uuid
 		import json`
 
-	goFile0	= `// +build tools
+	goFile0 = `// +build tools
 		package tools
 		
 		import (
@@ -823,9 +823,9 @@ func Test_Copyright_Verify_Shebang(t *testing.T) {
 
 	// Verify present
 	cfg := Config{
-		ShowDiff:	ref.Bool(false),
-		Quiet:		ref.Bool(true),
-		IncludeFiles:	[]string{"*shift.py"},
+		ShowDiff:     ref.Bool(false),
+		Quiet:        ref.Bool(true),
+		IncludeFiles: []string{"*shift.py"},
 	}
 	c := New(OptConfig(cfg))
 	err = c.Verify(context.TODO(), tempDir)
@@ -957,9 +957,9 @@ func Test_Copyright_Walk_singleFileRoot(t *testing.T) {
 
 func expectedNoticePrefix(its *assert.Assertions) string {
 	vars := map[string]string{
-		"Year":		fmt.Sprintf("%d", time.Now().UTC().Year()),
-		"Company":	DefaultCompany,
-		"Restrictions":	"",
+		"Year":         fmt.Sprintf("%d", time.Now().UTC().Year()),
+		"Company":      DefaultCompany,
+		"Restrictions": "",
 	}
 	tmpl := template.New("output")
 	_, err := tmpl.Parse(DefaultNoticeBodyTemplate)

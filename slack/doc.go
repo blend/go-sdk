@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package slack includes helpers for sending slack webhooks.
 */
-package slack	// import "github.com/blend/go-sdk/slack"
+package slack // import "github.com/blend/go-sdk/slack"

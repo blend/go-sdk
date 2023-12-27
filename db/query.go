@@ -20,10 +20,10 @@ import (
 
 // Query is the intermediate result of a query.
 type Query struct {
-	Invocation	*Invocation
-	Statement	string
-	Err		error
-	Args		[]interface{}
+	Invocation *Invocation
+	Statement  string
+	Err        error
+	Args       []interface{}
 }
 
 // Do runs a given query, yielding the raw results.

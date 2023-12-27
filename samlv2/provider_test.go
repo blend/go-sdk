@@ -26,9 +26,9 @@ func NewSAMLProvider(audience string) (*samlv2.SAMLProvider, error) {
 		return nil, err
 	}
 	config := &samlv2.SAMLConfig{
-		AssertionConsumerServiceURL:	"http://localhost:8080/saml?redirect_uri=localhost:8081/saml",
-		AudienceURI:			"Audience",
-		Metadata:			string(metadataRaw),
+		AssertionConsumerServiceURL: "http://localhost:8080/saml?redirect_uri=localhost:8081/saml",
+		AudienceURI:                 "Audience",
+		Metadata:                    string(metadataRaw),
 	}
 
 	provider, err := samlv2.New(
@@ -115,10 +115,10 @@ func Test_ExclusiveCanonicalizer(t *testing.T) {
 	metadataRaw, err := os.ReadFile("testdata/metadata.xml")
 	its.Nil(err)
 	config := &samlv2.SAMLConfig{
-		AssertionConsumerServiceURL:	"http://localhost:8080/saml?redirect_uri=localhost:8081/saml",
-		AudienceURI:			"Audience",
-		Metadata:			string(metadataRaw),
-		SigningXMLCanonicalizer:	samlv2.CanonicalXML10ExclusiveAlgorithmID,
+		AssertionConsumerServiceURL: "http://localhost:8080/saml?redirect_uri=localhost:8081/saml",
+		AudienceURI:                 "Audience",
+		Metadata:                    string(metadataRaw),
+		SigningXMLCanonicalizer:     samlv2.CanonicalXML10ExclusiveAlgorithmID,
 	}
 
 	provider, err := samlv2.New(
@@ -135,10 +135,10 @@ func Test_InclusiveCanonicalizer(t *testing.T) {
 	metadataRaw, err := os.ReadFile("testdata/metadata.xml")
 	its.Nil(err)
 	config := &samlv2.SAMLConfig{
-		AssertionConsumerServiceURL:	"http://localhost:8080/saml?redirect_uri=localhost:8081/saml",
-		AudienceURI:			"Audience",
-		Metadata:			string(metadataRaw),
-		SigningXMLCanonicalizer:	samlv2.CanonicalXML11AlgorithmID,
+		AssertionConsumerServiceURL: "http://localhost:8080/saml?redirect_uri=localhost:8081/saml",
+		AudienceURI:                 "Audience",
+		Metadata:                    string(metadataRaw),
+		SigningXMLCanonicalizer:     samlv2.CanonicalXML11AlgorithmID,
 	}
 
 	provider, err := samlv2.New(
@@ -155,10 +155,10 @@ func Test_UnsupportCanonicalizer(t *testing.T) {
 	metadataRaw, err := os.ReadFile("testdata/metadata.xml")
 	its.Nil(err)
 	config := &samlv2.SAMLConfig{
-		AssertionConsumerServiceURL:	"http://localhost:8080/saml?redirect_uri=localhost:8081/saml",
-		AudienceURI:			"Audience",
-		Metadata:			string(metadataRaw),
-		SigningXMLCanonicalizer:	"Unsupported Canonicalizer",
+		AssertionConsumerServiceURL: "http://localhost:8080/saml?redirect_uri=localhost:8081/saml",
+		AudienceURI:                 "Audience",
+		Metadata:                    string(metadataRaw),
+		SigningXMLCanonicalizer:     "Unsupported Canonicalizer",
 	}
 
 	provider, err := samlv2.New(

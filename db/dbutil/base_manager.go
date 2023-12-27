@@ -16,8 +16,8 @@ import (
 // NewBaseManager creates a new manager.
 func NewBaseManager(conn *db.Connection, opts ...db.InvocationOption) BaseManager {
 	return BaseManager{
-		Conn:		conn,
-		Options:	opts,
+		Conn:    conn,
+		Options: opts,
 	}
 }
 
@@ -27,8 +27,8 @@ func NewBaseManager(conn *db.Connection, opts ...db.InvocationOption) BaseManage
 // that provides an `Invoke` method that will add default
 // invocation options to a given invocation.
 type BaseManager struct {
-	Conn	*db.Connection
-	Options	[]db.InvocationOption
+	Conn    *db.Connection
+	Options []db.InvocationOption
 }
 
 // Invoke runs a command with a given set of options merged with the manager defaults.

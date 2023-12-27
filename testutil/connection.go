@@ -22,8 +22,8 @@ import (
 )
 
 const (
-	passwordText		= "..password-redacted.."
-	requireDBErrorTemplate	= `%s
+	passwordText           = "..password-redacted.."
+	requireDBErrorTemplate = `%s
 %s
 Connection String:
   %q
@@ -89,7 +89,7 @@ func envResolveError(err error, ev env.Vars) error {
 		lines = append(lines, found...)
 	}
 
-	lines = append(lines, "")	// Trailing newline
+	lines = append(lines, "") // Trailing newline
 	template := strings.Join(lines, "\n")
 	errString := fmt.Sprintf("%v", err)
 	return ex.Class(fmt.Sprintf(template, indentTwo(errString)))

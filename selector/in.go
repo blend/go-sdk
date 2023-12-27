@@ -14,8 +14,8 @@ import (
 
 // In returns if a key matches a set of values.
 type In struct {
-	Key	string
-	Values	[]string
+	Key    string
+	Values []string
 }
 
 // Matches returns the selector result.

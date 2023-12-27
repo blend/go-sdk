@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package cache provides caching primitives for in-memory caches, including LRU eviction.
 */
-package cache	// import "github.com/blend/go-sdk/cache"
+package cache // import "github.com/blend/go-sdk/cache"

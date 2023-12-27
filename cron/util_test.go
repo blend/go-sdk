@@ -56,7 +56,7 @@ func Test_Const(t *testing.T) {
 	its.Equal(123, ConstInt(123)())
 	its.Equal(6*time.Hour, ConstDuration(6*time.Hour)())
 	its.Equal("foo", ConstLabels(map[string]string{
-		"bar":	"buzz",
-		"moo":	"foo",
+		"bar": "buzz",
+		"moo": "foo",
 	})()["moo"])
 }

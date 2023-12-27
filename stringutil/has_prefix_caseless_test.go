@@ -24,5 +24,5 @@ func TestHasPrefixCaseless(t *testing.T) {
 
 	assert.False(HasPrefixCaseless("hello world", "butters"))
 	assert.False(HasPrefixCaseless("hello world", "hello world boy is this long"))
-	assert.False(HasPrefixCaseless("hello world", "world"))	//this would pass suffix
+	assert.False(HasPrefixCaseless("hello world", "world")) //this would pass suffix
 }

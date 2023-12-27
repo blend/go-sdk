@@ -13,38 +13,38 @@ import (
 )
 
 const (
-	ringBufferMinimumGrow		= 4
-	ringBufferGrowFactor		= 200
-	ringBufferDefaultCapacity	= 4
+	ringBufferMinimumGrow     = 4
+	ringBufferGrowFactor      = 200
+	ringBufferDefaultCapacity = 4
 )
 
 // NewRingBuffer creates a new, empty, RingBuffer.
 func NewRingBuffer[T any]() *RingBuffer[T] {
 	return &RingBuffer[T]{
-		slice:	make([]T, ringBufferDefaultCapacity),
-		head:	0,
-		tail:	0,
-		size:	0,
+		slice: make([]T, ringBufferDefaultCapacity),
+		head:  0,
+		tail:  0,
+		size:  0,
 	}
 }
 
 // NewRingBufferWithCapacity creates a new ring buffer with a given capacity.
 func NewRingBufferWithCapacity[T any](capacity int) *RingBuffer[T] {
 	return &RingBuffer[T]{
-		slice:	make([]T, capacity),
-		head:	0,
-		tail:	0,
-		size:	0,
+		slice: make([]T, capacity),
+		head:  0,
+		tail:  0,
+		size:  0,
 	}
 }
 
 // NewRingBufferFromValues creates a new ring buffer out of a slice.
 func NewRingBufferFromValues[T any](values []T) *RingBuffer[T] {
 	return &RingBuffer[T]{
-		slice:	values,
-		head:	0,
-		tail:	len(values) - 1,
-		size:	len(values),
+		slice: values,
+		head:  0,
+		tail:  len(values) - 1,
+		size:  len(values),
 	}
 }
 
@@ -52,10 +52,10 @@ func NewRingBufferFromValues[T any](values []T) *RingBuffer[T] {
 // a whole new node object for each element (which saves GC churn).
 // Enqueue can be O(n), Dequeue can be O(1).
 type RingBuffer[T any] struct {
-	slice	[]T
-	head	int
-	tail	int
-	size	int
+	slice []T
+	head  int
+	tail  int
+	size  int
 }
 
 // Len returns the length of the ring buffer (as it is currently populated).

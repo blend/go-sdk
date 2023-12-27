@@ -15,8 +15,8 @@ import (
 
 func Test_PathUUIDs(t *testing.T) {
 	testCases := [...]struct {
-		Input		string
-		Expected	string
+		Input    string
+		Expected string
 	}{
 		{Input: "", Expected: ""},
 		{Input: "/", Expected: "/"},

@@ -20,7 +20,7 @@ func CheckName(value string) (err error) {
 	for pos := 0; pos < valueLen; pos += width {
 		ch, width = utf8.DecodeRuneInString(value[pos:])
 		switch state {
-		case 0:	//check prefix/suffix
+		case 0: //check prefix/suffix
 			if !isAlpha(ch) {
 				err = ErrLabelInvalidCharacter
 				return

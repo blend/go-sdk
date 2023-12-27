@@ -18,7 +18,7 @@ func PutOnClose(buffer *bytes.Buffer, pool *Pool) *PutOnCloser {
 // PutOnCloser is a helper wrapper that will return a buffer to a given pool.
 type PutOnCloser struct {
 	*bytes.Buffer
-	Pool	*Pool
+	Pool *Pool
 }
 
 // Close returns the buffer to the pool.

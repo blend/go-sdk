@@ -16,11 +16,11 @@ import (
 
 // TrackedActionConfig is the configuration for the tracker.
 type TrackedActionConfig struct {
-	YellowRequestCount	int
-	YellowRequestPercentage	float64
-	RedRequestCount		int
-	RedRequestPercentage	float64
-	Expiration		time.Duration
+	YellowRequestCount      int
+	YellowRequestPercentage float64
+	RedRequestCount         int
+	RedRequestPercentage    float64
+	Expiration              time.Duration
 }
 
 // Resolve resolves the config.

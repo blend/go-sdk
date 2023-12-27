@@ -53,54 +53,54 @@ func TestAs(t *testing.T) {
 	multiErrorWithSentinelFirst := Append(exSentinelErr, baseSentinelAlt)
 
 	tests := []struct {
-		name		string
-		candidate	error
-		expectedEx	*Ex
+		name       string
+		candidate  error
+		expectedEx *Ex
 	}{
 		{
-			name:		"stdlib error is not Ex pointer",
-			candidate:	stdLibSentinelErr,
-			expectedEx:	nil,
+			name:       "stdlib error is not Ex pointer",
+			candidate:  stdLibSentinelErr,
+			expectedEx: nil,
 		},
 		{
-			name:		"error from New is Ex pointer",
-			candidate:	exSentinelErr,
-			expectedEx:	baseSentinel,
+			name:       "error from New is Ex pointer",
+			candidate:  exSentinelErr,
+			expectedEx: baseSentinel,
 		},
 		{
-			name:		"non pointer Ex is resolved to Ex pointer",
-			candidate:	&nonPointerExErr,
-			expectedEx:	baseSentinel,
+			name:       "non pointer Ex is resolved to Ex pointer",
+			candidate:  &nonPointerExErr,
+			expectedEx: baseSentinel,
 		},
 		{
-			name:		"Handles custom errors that wrap Ex pointer",
-			candidate:	&customErrWrappingEx,
-			expectedEx:	baseSentinel,
+			name:       "Handles custom errors that wrap Ex pointer",
+			candidate:  &customErrWrappingEx,
+			expectedEx: baseSentinel,
 		},
 		{
-			name:		"wrapped stdlib error is no Ex pointer",
-			candidate:	&customErrWrappingstdLibErr,
-			expectedEx:	nil,
+			name:       "wrapped stdlib error is no Ex pointer",
+			candidate:  &customErrWrappingstdLibErr,
+			expectedEx: nil,
 		},
 		{
-			name:		"deeply nested Ex pointer is extracted",
-			candidate:	&customDeepWrappedErr,
-			expectedEx:	baseSentinel,
+			name:       "deeply nested Ex pointer is extracted",
+			candidate:  &customDeepWrappedErr,
+			expectedEx: baseSentinel,
 		},
 		{
-			name:		"Returns first Ex in Multi error chain",
-			candidate:	multiErrorWithAltFirst,
-			expectedEx:	baseSentinelAlt,
+			name:       "Returns first Ex in Multi error chain",
+			candidate:  multiErrorWithAltFirst,
+			expectedEx: baseSentinelAlt,
 		},
 		{
-			name:		"Returns first Ex in Multi error chain alt",
-			candidate:	multiErrorWithSentinelFirst,
-			expectedEx:	baseSentinel,
+			name:       "Returns first Ex in Multi error chain alt",
+			candidate:  multiErrorWithSentinelFirst,
+			expectedEx: baseSentinel,
 		},
 		{
-			name:		"Returns first error as Ex in Multi error chain",
-			candidate:	multiErrorWithStdLibFirst,
-			expectedEx:	baseSentinel,
+			name:       "Returns first error as Ex in Multi error chain",
+			candidate:  multiErrorWithStdLibFirst,
+			expectedEx: baseSentinel,
 		},
 	}
 

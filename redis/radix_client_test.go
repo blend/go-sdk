@@ -37,8 +37,8 @@ func Test_RadixClient_Do(t *testing.T) {
 	}
 
 	rc := &redis.RadixClient{
-		Log:	log,
-		Client:	mockRadixClient,
+		Log:    log,
+		Client: mockRadixClient,
 	}
 
 	var foo string
@@ -55,7 +55,7 @@ func Test_RadixClient_Do_timeout(t *testing.T) {
 		Config: redis.Config{
 			Timeout: time.Millisecond,
 		},
-		Client:	mockRadixClient,
+		Client: mockRadixClient,
 	}
 	var foo string
 	its.NotNil(rc.Do(context.Background(), &foo, "GET", "foo"))
@@ -75,9 +75,9 @@ func Test_RadixClient_Pipeline(t *testing.T) {
 	}
 
 	rc := &redis.RadixClient{
-		Log:	log,
-		Tracer:	mockTracer,
-		Client:	mockRadixClient,
+		Log:    log,
+		Tracer: mockTracer,
+		Client: mockRadixClient,
 	}
 
 	// Mock operations
@@ -98,18 +98,18 @@ func Test_RadixClient_Pipeline(t *testing.T) {
 
 // MockTracer is a mock of Tracer that stores calls in-memory
 type MockTracer struct {
-	calls	[]struct {
-		Op	string
-		Args	[]string
+	calls []struct {
+		Op   string
+		Args []string
 	}
-	mockTraceFinisher	*MockTraceFinisher
+	mockTraceFinisher *MockTraceFinisher
 }
 
 // Do implements Tracer
 func (mt *MockTracer) Do(ctx context.Context, cfg redis.Config, op string, args []string) redis.TraceFinisher {
 	mt.calls = append(mt.calls, struct {
-		Op	string
-		Args	[]string
+		Op   string
+		Args []string
 	}{op, args})
 	return mt.mockTraceFinisher
 }

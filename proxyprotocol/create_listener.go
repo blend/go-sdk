@@ -22,8 +22,8 @@ func CreateListener(network, addr string, opts ...CreateListenerOption) (net.Lis
 		return nil, err
 	}
 	options := CreateListenerOptions{
-		KeepAlive:		true,
-		KeepAlivePeriod:	3 * time.Minute,
+		KeepAlive:       true,
+		KeepAlivePeriod: 3 * time.Minute,
 	}
 	for _, opt := range opts {
 		if err := opt(&options); err != nil {

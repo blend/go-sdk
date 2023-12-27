@@ -23,8 +23,8 @@ import (
 )
 
 var (
-	_	webutil.HTTPTracer		= (*mockHTTPTracer)(nil)
-	_	webutil.HTTPTraceFinisher	= (*mockHTTPTraceFinisher)(nil)
+	_ webutil.HTTPTracer        = (*mockHTTPTracer)(nil)
+	_ webutil.HTTPTraceFinisher = (*mockHTTPTraceFinisher)(nil)
 )
 
 func Test_Proxy(t *testing.T) {
@@ -169,9 +169,9 @@ func TestReverseProxyWebSocket(t *testing.T) {
 }
 
 type mockHTTPTracer struct {
-	Request		*http.Request
-	StatusCode	int
-	Error		error
+	Request    *http.Request
+	StatusCode int
+	Error      error
 }
 
 func (mht *mockHTTPTracer) Start(req *http.Request) (webutil.HTTPTraceFinisher, *http.Request) {

@@ -9,10 +9,10 @@ package slant
 
 // Slant is the default font.
 var Slant = Font{
-	Height:		6,	// the nominal letter height in rows.
-	Baseline:	5,	// the baseline does something cool with font alightment but ???.
-	Width:		16,	// this is mostly unused, but kept for legacy reasons.
-	Hardblank:	'$',
+	Height:    6,  // the nominal letter height in rows.
+	Baseline:  5,  // the baseline does something cool with font alightment but ???.
+	Width:     16, // this is mostly unused, but kept for legacy reasons.
+	Hardblank: '$',
 	Letters: [][]string{
 		{
 			"     $$",

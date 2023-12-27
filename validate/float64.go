@@ -15,13 +15,13 @@ import (
 
 // Float64 errors
 const (
-	ErrFloat64Min		ex.Class	= "float64 should be above a minimum value"
-	ErrFloat64Max		ex.Class	= "float64 should be below a maximum value"
-	ErrFloat64Positive	ex.Class	= "float64 should be positive"
-	ErrFloat64Negative	ex.Class	= "float64 should be negative"
-	ErrFloat64Epsilon	ex.Class	= "float64 should be within an epsilon of a value"
-	ErrFloat64Zero		ex.Class	= "float64 should be zero"
-	ErrFloat64NotZero	ex.Class	= "float64 should not be zero"
+	ErrFloat64Min      ex.Class = "float64 should be above a minimum value"
+	ErrFloat64Max      ex.Class = "float64 should be below a maximum value"
+	ErrFloat64Positive ex.Class = "float64 should be positive"
+	ErrFloat64Negative ex.Class = "float64 should be negative"
+	ErrFloat64Epsilon  ex.Class = "float64 should be within an epsilon of a value"
+	ErrFloat64Zero     ex.Class = "float64 should be zero"
+	ErrFloat64NotZero  ex.Class = "float64 should not be zero"
 )
 
 // Float64 returns validators for float64s.

@@ -14,10 +14,10 @@ import (
 )
 
 type tokenizeTestCase struct {
-	corpus		string
-	tokens		map[string]string
-	expected	string
-	message		string
+	corpus   string
+	tokens   map[string]string
+	expected string
+	message  string
 }
 
 func TestStringTokenize(t *testing.T) {

@@ -11,13 +11,13 @@ import "strconv"
 
 const (
 	// Kilobyte represents the bytes in a kilobyte.
-	Kilobyte	int64	= 1 << 10
+	Kilobyte int64 = 1 << 10
 	// Megabyte represents the bytes in a megabyte.
-	Megabyte	int64	= Kilobyte << 10
+	Megabyte int64 = Kilobyte << 10
 	// Gigabyte represents the bytes in a gigabyte.
-	Gigabyte	int64	= Megabyte << 10
+	Gigabyte int64 = Megabyte << 10
 	// Terabyte represents the bytes in a terabyte.
-	Terabyte	int64	= Gigabyte << 10
+	Terabyte int64 = Gigabyte << 10
 )
 
 // FormatFileSize returns a string representation of a file size in bytes.

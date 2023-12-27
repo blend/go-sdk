@@ -19,4 +19,4 @@ An example of using a circuit breaker for an http call might be:
 
 In the above, `phoneHome` now will be wrapped with circuit breaker mechanics. You would call it with `phoneHome.Action(ctx, nil)` etc.
 */
-package breaker	// import "github.com/blend/go-sdk/breaker"
+package breaker // import "github.com/blend/go-sdk/breaker"

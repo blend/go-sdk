@@ -30,11 +30,11 @@ const (
 // It failes if any of the expressions match.
 type Contents struct {
 	// Contains is a filter set that uses `strings.Contains` as the predicate.
-	Contains	*ContainsFilter	`yaml:"contains,omitempty"`
+	Contains *ContainsFilter `yaml:"contains,omitempty"`
 	// Glob is a filter set that uses `Glob` as the predicate.
-	Glob	*GlobFilter	`yaml:"glob,omitempty"`
+	Glob *GlobFilter `yaml:"glob,omitempty"`
 	// Regex is a filter set that uses `regexp.MustMatch` as the predicate
-	Regex	*RegexFilter	`yaml:"regex,omitempty"`
+	Regex *RegexFilter `yaml:"regex,omitempty"`
 }
 
 // Validate returns validators.
@@ -106,9 +106,9 @@ func (cm Contents) Check(filename string, contents []byte) (result RuleResult) {
 		}
 		if notOK {
 			result = RuleResult{
-				File:		filename,
-				Line:		line,
-				Message:	strings.Join(tokens, ", "),
+				File:    filename,
+				Line:    line,
+				Message: strings.Join(tokens, ", "),
 			}
 			return
 		}

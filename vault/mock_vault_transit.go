@@ -14,8 +14,8 @@ import (
 
 // Assert MockTransitClient implements TransitClient
 var (
-	_	Client		= MockTransitClient{}
-	_	TransitClient	= MockTransitClient{}
+	_ Client        = MockTransitClient{}
+	_ TransitClient = MockTransitClient{}
 )
 
 // MockTransitClient skips interactions with the vault for encryption/decryption

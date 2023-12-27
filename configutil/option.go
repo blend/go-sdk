@@ -46,8 +46,8 @@ func OptContents(contents ...ConfigContents) Option {
 func OptAddContent(ext string, content io.Reader) Option {
 	return func(co *ConfigOptions) error {
 		co.Contents = append(co.Contents, ConfigContents{
-			Ext:		ext,
-			Contents:	content,
+			Ext:      ext,
+			Contents: content,
 		})
 		return nil
 	}
@@ -57,8 +57,8 @@ func OptAddContent(ext string, content io.Reader) Option {
 func OptAddContentString(ext string, contents string) Option {
 	return func(co *ConfigOptions) error {
 		co.Contents = append(co.Contents, ConfigContents{
-			Ext:		ext,
-			Contents:	bytes.NewReader([]byte(contents)),
+			Ext:      ext,
+			Contents: bytes.NewReader([]byte(contents)),
 		})
 		return nil
 	}

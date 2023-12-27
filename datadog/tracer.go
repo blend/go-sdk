@@ -27,10 +27,10 @@ import (
 // It defaults the sample rate to the sample rate as returned by the configuration.
 func NewTracer(opts ...TracerOption) opentracing.Tracer {
 	options := TracerOptions{
-		ServiceName:	env.Env().ServiceName(),
-		ServiceEnv:	env.Env().ServiceEnv(),
-		Hostname:	env.Env().Hostname(),
-		SampleRate:	DefaultTraceSampleRate,
+		ServiceName: env.Env().ServiceName(),
+		ServiceEnv:  env.Env().ServiceEnv(),
+		Hostname:    env.Env().Hostname(),
+		SampleRate:  DefaultTraceSampleRate,
 	}
 	for _, opt := range opts {
 		opt(&options)
@@ -118,15 +118,15 @@ type TracerOption func(*TracerOptions)
 
 // TracerOptions are all the options we can set when creating a tracer.
 type TracerOptions struct {
-	Addr		string
-	StatsAddr	string
-	ServiceName	string
-	ServiceEnv	string
-	Version		string
-	Hostname	string
-	SampleRate	float64
-	Tags		map[string]string
-	Log		logger.Triggerable
+	Addr        string
+	StatsAddr   string
+	ServiceName string
+	ServiceEnv  string
+	Version     string
+	Hostname    string
+	SampleRate  float64
+	Tags        map[string]string
+	Log         logger.Triggerable
 }
 
 var (

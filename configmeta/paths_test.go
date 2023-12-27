@@ -35,8 +35,8 @@ func Test_Paths_fallbacks_project(t *testing.T) {
 	var opts configutil.ConfigOptions
 
 	vars := env.Vars{
-		env.VarServiceName:	"bar",
-		env.VarProjectName:	"bar-proj",
+		env.VarServiceName: "bar",
+		env.VarProjectName: "bar-proj",
 	}
 	ctx := env.WithVars(context.Background(), vars)
 	its.Nil(PathsFileContext(ctx, "foo.yml")(&opts))
@@ -49,9 +49,9 @@ func Test_Paths_env_projectPath(t *testing.T) {
 	var opts configutil.ConfigOptions
 
 	vars := env.Vars{
-		env.VarServiceName:		"bar",
-		env.VarProjectName:		"bar-proj",
-		EnvVarProjectConfigPath:	"/var/project/secrets/bar/foo.yml",
+		env.VarServiceName:      "bar",
+		env.VarProjectName:      "bar-proj",
+		EnvVarProjectConfigPath: "/var/project/secrets/bar/foo.yml",
 	}
 	ctx := env.WithVars(context.Background(), vars)
 	its.Nil(PathsFileContext(ctx, "foo.yml")(&opts))
@@ -64,10 +64,10 @@ func Test_Paths_env_configPath(t *testing.T) {
 	var opts configutil.ConfigOptions
 
 	vars := env.Vars{
-		env.VarServiceName:		"bar",
-		env.VarProjectName:		"bar-proj",
-		EnvVarProjectConfigPath:	"/var/project/secrets/bar/foo.yml",
-		EnvVarConfigPath:		"/var/not-secrets/foo.yml",
+		env.VarServiceName:      "bar",
+		env.VarProjectName:      "bar-proj",
+		EnvVarProjectConfigPath: "/var/project/secrets/bar/foo.yml",
+		EnvVarConfigPath:        "/var/not-secrets/foo.yml",
 	}
 	ctx := env.WithVars(context.Background(), vars)
 	its.Nil(PathsFileContext(ctx, "foo.yml")(&opts))

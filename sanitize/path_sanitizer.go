@@ -22,4 +22,4 @@ func (psf PathSanitizerFunc) SanitizePath(path string) string {
 
 // DefaultPathSanitizerFunc is a default implementation of a path
 // sanitizer func that just returns the original path.
-func DefaultPathSanitizerFunc(p string) string	{ return p }
+func DefaultPathSanitizerFunc(p string) string { return p }

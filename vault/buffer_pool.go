@@ -20,8 +20,8 @@ func NewBufferPool(bufferSize int) *BufferPool {
 	bp.Pool = sync.Pool{
 		New: func() interface{} {
 			b := &Buffer{
-				Buffer:	bytes.NewBuffer(make([]byte, bufferSize)),
-				pool:	bp,
+				Buffer: bytes.NewBuffer(make([]byte, bufferSize)),
+				pool:   bp,
 			}
 			return b
 		},
@@ -50,7 +50,7 @@ func (bp *BufferPool) Put(b *Buffer) {
 // It returns itself to the pool on close.
 type Buffer struct {
 	*bytes.Buffer
-	pool	*BufferPool
+	pool *BufferPool
 }
 
 // Close returns the buffer to the pool.

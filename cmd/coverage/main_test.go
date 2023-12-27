@@ -16,9 +16,9 @@ import (
 )
 
 type coverProfileTestCase struct {
-	BaseDir		string
-	FileName	string
-	Expected	string
+	BaseDir  string
+	FileName string
+	Expected string
 }
 
 func TestGlob(t *testing.T) {

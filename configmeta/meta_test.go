@@ -19,15 +19,15 @@ func Test_Meta_Resolve_envOverrides(t *testing.T) {
 	its := assert.New(t)
 
 	bareCfg := &Meta{
-		ServiceName:	"not-mock-test",
-		ServiceEnv:	"not-mock-test-env",
-		Hostname:	"not-mock-hostname",
+		ServiceName: "not-mock-test",
+		ServiceEnv:  "not-mock-test-env",
+		Hostname:    "not-mock-hostname",
 	}
 
 	vars := env.Vars{
-		env.VarServiceName:	"mock-test",
-		env.VarServiceEnv:	"mock-test-env",
-		env.VarHostname:	"mock-test-hostname",
+		env.VarServiceName: "mock-test",
+		env.VarServiceEnv:  "mock-test-env",
+		env.VarHostname:    "mock-test-hostname",
 	}
 	ctx := env.WithVars(context.Background(), vars)
 	err := bareCfg.Resolve(ctx)

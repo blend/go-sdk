@@ -43,16 +43,16 @@ func (hc HTTPClient) CreateIncident(ctx context.Context, incident CreateIncident
 
 // CreateIncidentInput is the input to create|update incident.
 type CreateIncidentInput struct {
-	Type			string			`json:"type"`		// required
-	Title			string			`json:"title"`		// required
-	Service			APIObject		`json:"service"`	/// required
-	Priority		*APIObject		`json:"priority,omitempty"`
-	Body			*Body			`json:"body,omitempty"`
-	IncidentKey		string			`json:"incident_key,omitempty"`
-	Assignments		[]Assignment		`json:"assignments,omitempty"`
-	EscalationPolicy	*APIObject		`json:"escalation_policy,omitempty"`
-	Urgency			Urgency			`json:"urgency,omitempty"`
-	ConferenceBridge	*ConferenceBridge	`json:"conference_bridge,omitempty"`
+	Type             string            `json:"type"`    // required
+	Title            string            `json:"title"`   // required
+	Service          APIObject         `json:"service"` /// required
+	Priority         *APIObject        `json:"priority,omitempty"`
+	Body             *Body             `json:"body,omitempty"`
+	IncidentKey      string            `json:"incident_key,omitempty"`
+	Assignments      []Assignment      `json:"assignments,omitempty"`
+	EscalationPolicy *APIObject        `json:"escalation_policy,omitempty"`
+	Urgency          Urgency           `json:"urgency,omitempty"`
+	ConferenceBridge *ConferenceBridge `json:"conference_bridge,omitempty"`
 }
 
 // createIncidentInputWrapper wraps the input to satisfy the input schema.

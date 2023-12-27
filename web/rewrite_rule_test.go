@@ -22,8 +22,8 @@ func TestRewriteRuleApply(t *testing.T) {
 	expression := regexp.MustCompile(regex)
 
 	rr := &RewriteRule{
-		MatchExpression:	regex,
-		expr:			expression,
+		MatchExpression: regex,
+		expr:            expression,
 		Action: func(path string, pieces ...string) string {
 			assert.NotEmpty(path)
 			assert.NotEmpty(pieces)

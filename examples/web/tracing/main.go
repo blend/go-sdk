@@ -15,8 +15,8 @@ import (
 
 // ShimTracer is a basic tracer.
 type ShimTracer struct {
-	OnStart		func(*web.Ctx)
-	OnFinish	func(*web.Ctx, error)
+	OnStart  func(*web.Ctx)
+	OnFinish func(*web.Ctx, error)
 }
 
 // Start begins the trace.
@@ -44,8 +44,8 @@ func main() {
 		web.OptBindAddr(":8080"),
 		web.OptLog(log),
 		web.OptTracer(ShimTracer{
-			OnStart:	func(_ *web.Ctx) { log.Infof("Trace Started") },
-			OnFinish:	func(_ *web.Ctx, _ error) { log.Infof("Trace Finished") },
+			OnStart:  func(_ *web.Ctx) { log.Infof("Trace Started") },
+			OnFinish: func(_ *web.Ctx, _ error) { log.Infof("Trace Finished") },
 		}),
 	)
 	app.GET("/", func(r *web.Ctx) web.Result {

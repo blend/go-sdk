@@ -27,13 +27,13 @@ func Test_ParamTokensCSV(t *testing.T) {
 }
 
 type SimpleType struct {
-	ID	int
-	Name	string
+	ID   int
+	Name string
 }
 
 type SimpleTypeWithName struct {
-	ID	int
-	Name	string
+	ID   int
+	Name string
 }
 
 func (st SimpleTypeWithName) TableName() string {
@@ -41,8 +41,8 @@ func (st SimpleTypeWithName) TableName() string {
 }
 
 type EmbeddedSimpleTypeMeta struct {
-	ID	int
-	Name	string
+	ID   int
+	Name string
 }
 
 type EmbeddedSimpleType struct {

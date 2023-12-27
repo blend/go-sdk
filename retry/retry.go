@@ -36,9 +36,9 @@ func New(opts ...Option) *Retrier {
 
 // Retrier is the retry agent.
 type Retrier struct {
-	MaxAttempts		uint
-	DelayProvider		DelayProvider
-	ShouldRetryProvider	ShouldRetryProvider
+	MaxAttempts         uint
+	DelayProvider       DelayProvider
+	ShouldRetryProvider ShouldRetryProvider
 }
 
 // Intercept calls a function and retries on error or if a should retry provider

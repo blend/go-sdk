@@ -18,8 +18,8 @@ func TestNewCertBundleFromLiterals(t *testing.T) {
 	assert := assert.New(t)
 
 	bundle, err := NewCertBundle(KeyPair{
-		Cert:	string(certLiteral),
-		Key:	string(keyLiteral),
+		Cert: string(certLiteral),
+		Key:  string(keyLiteral),
 	})
 
 	assert.Nil(err)
@@ -33,8 +33,8 @@ func TestNewCertBundleFromFiles(t *testing.T) {
 	assert := assert.New(t)
 
 	bundle, err := NewCertBundle(KeyPair{
-		CertPath:	"testdata/client.cert.pem",
-		KeyPath:	"testdata/client.key.pem",
+		CertPath: "testdata/client.cert.pem",
+		KeyPath:  "testdata/client.key.pem",
 	})
 	assert.Nil(err)
 	assert.NotNil(bundle.PrivateKey)
@@ -47,8 +47,8 @@ func TestCertBundleWriteCertPem(t *testing.T) {
 	assert := assert.New(t)
 
 	bundle, err := NewCertBundle(KeyPair{
-		CertPath:	"testdata/client.cert.pem",
-		KeyPath:	"testdata/client.key.pem",
+		CertPath: "testdata/client.cert.pem",
+		KeyPath:  "testdata/client.key.pem",
 	})
 	assert.Nil(err)
 
@@ -61,8 +61,8 @@ func TestCertBundleWriteKeyPem(t *testing.T) {
 	assert := assert.New(t)
 
 	bundle, err := NewCertBundle(KeyPair{
-		CertPath:	"testdata/client.cert.pem",
-		KeyPath:	"testdata/client.key.pem",
+		CertPath: "testdata/client.cert.pem",
+		KeyPath:  "testdata/client.key.pem",
 	})
 	assert.Nil(err)
 
@@ -75,8 +75,8 @@ func TestCertBundleCommonNames(t *testing.T) {
 	assert := assert.New(t)
 
 	bundle, err := NewCertBundle(KeyPair{
-		Cert:	string(certLiteral),
-		Key:	string(keyLiteral),
+		Cert: string(certLiteral),
+		Key:  string(keyLiteral),
 	})
 	assert.Nil(err)
 
@@ -89,8 +89,8 @@ func TestCertBundle_ServerConfig(t *testing.T) {
 	assert := assert.New(t)
 
 	bundle, err := NewCertBundle(KeyPair{
-		Cert:	string(certLiteral),
-		Key:	string(keyLiteral),
+		Cert: string(certLiteral),
+		Key:  string(keyLiteral),
 	})
 	assert.Nil(err)
 

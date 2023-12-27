@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package bitflag contains utilities for working with bit flags (or bit masks).
 */
-package bitflag	// import "github.com/blend/go-sdk/bitflag"
+package bitflag // import "github.com/blend/go-sdk/bitflag"

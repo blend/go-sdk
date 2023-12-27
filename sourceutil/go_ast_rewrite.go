@@ -33,12 +33,12 @@ func GoIsPackageCall(pkg, fn string) GoAstRewriteOption {
 			if nt, ok := n.(*ast.CallExpr); ok {
 				if ft, ok := nt.Fun.(*ast.SelectorExpr); ok {
 					if exprIsName(ft.X, pkg) && exprIsName(ft.Sel, fn) {
-						return true, false	// visit, do not recurse
+						return true, false // visit, do not recurse
 					}
 				}
-				return false, false	// do not visit, do not recurse
+				return false, false // do not visit, do not recurse
 			}
-			return false, true	// do not visit, do recurse
+			return false, true // do not visit, do recurse
 		}
 	}
 }
@@ -53,12 +53,12 @@ func GoIsCall(fn string) GoAstRewriteOption {
 			if nt, ok := n.(*ast.CallExpr); ok {
 				if ft, ok := nt.Fun.(*ast.Ident); ok {
 					if exprIsName(ft, fn) {
-						return true, false	// visit, do not recurse
+						return true, false // visit, do not recurse
 					}
 				}
-				return false, false	// do not visit, do not recurse
+				return false, false // do not visit, do not recurse
 			}
-			return false, true	// do not visit, do recurse
+			return false, true // do not visit, do recurse
 		}
 	}
 }
@@ -106,8 +106,8 @@ type GoAstNodeVisitor func(context.Context, ast.Node)
 
 // GoAstRewriteOptions breaks the mutator out into field specific mutators.
 type GoAstRewriteOptions struct {
-	Filter		GoAstFilter
-	NodeVisitor	GoAstNodeVisitor
+	Filter      GoAstFilter
+	NodeVisitor GoAstNodeVisitor
 }
 
 // Apply applies the options to the ast node.
@@ -124,7 +124,7 @@ func (opts GoAstRewriteOptions) Apply(ctx context.Context, node ast.Node) bool {
 	if opts.NodeVisitor != nil {
 		opts.NodeVisitor(ctx, node)
 	}
-	return true	// if no filter, always recurse
+	return true // if no filter, always recurse
 }
 
 func exprIsName(expr ast.Expr, name string) bool {

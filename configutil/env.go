@@ -15,11 +15,11 @@ import (
 )
 
 var (
-	_	StringSource	= (*EnvVars)(nil)
-	_	BoolSource	= (*EnvVars)(nil)
-	_	IntSource	= (*EnvVars)(nil)
-	_	Float64Source	= (*EnvVars)(nil)
-	_	DurationSource	= (*EnvVars)(nil)
+	_ StringSource   = (*EnvVars)(nil)
+	_ BoolSource     = (*EnvVars)(nil)
+	_ IntSource      = (*EnvVars)(nil)
+	_ Float64Source  = (*EnvVars)(nil)
+	_ DurationSource = (*EnvVars)(nil)
 )
 
 // Env returns a new environment value provider.

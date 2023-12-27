@@ -18,8 +18,8 @@ func TestFlagTextColor(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := [...]struct {
-		Flag		string
-		Expected	ansi.Color
+		Flag     string
+		Expected ansi.Color
 	}{
 		{Info, ansi.ColorLightWhite},
 		{Debug, ansi.ColorLightYellow},

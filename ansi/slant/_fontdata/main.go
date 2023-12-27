@@ -39,8 +39,8 @@ func main() {
 		}
 		if line < letterHeight {
 			lineText = strings.TrimSuffix(strings.TrimSuffix(lineText, "@"), "@")
-			lineText = strings.ReplaceAll(lineText, "\"", "\\\"")	// escape quotes
-			lineText = strings.ReplaceAll(lineText, "\\", "\\\\")	// escape slashes
+			lineText = strings.ReplaceAll(lineText, "\"", "\\\"") // escape quotes
+			lineText = strings.ReplaceAll(lineText, "\\", "\\\\") // escape slashes
 			fmt.Fprintf(os.Stdout, "\t\t\"%s\",\n", lineText)
 			line++
 		}

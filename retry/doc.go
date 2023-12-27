@@ -24,4 +24,4 @@ You can also add additional parameters to the retry:
 		return http.Get(args.(string))
 	}, "https://google.com", retry.OptMaxAttempts(10), retry.OptExponentialBackoff(time.Second))
 */
-package retry	// import "github.com/blend/go-sdk/retry"
+package retry // import "github.com/blend/go-sdk/retry"

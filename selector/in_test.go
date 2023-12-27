@@ -17,20 +17,20 @@ func TestIn(t *testing.T) {
 	assert := assert.New(t)
 
 	valid := Labels{
-		"foo":	"far",
-		"moo":	"lar",
+		"foo": "far",
+		"moo": "lar",
 	}
 	valid2 := Labels{
-		"foo":	"bar",
-		"moo":	"lar",
+		"foo": "bar",
+		"moo": "lar",
 	}
 	missing := Labels{
-		"loo":	"mar",
-		"moo":	"lar",
+		"loo": "mar",
+		"moo": "lar",
 	}
 	invalid := Labels{
-		"foo":	"mar",
-		"moo":	"lar",
+		"foo": "mar",
+		"moo": "lar",
 	}
 
 	selector := In{Key: "foo", Values: []string{"bar", "far"}}

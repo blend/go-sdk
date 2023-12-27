@@ -258,7 +258,7 @@ func (*UnimplementedCalculatorServer) Divide(context.Context, *Numbers) (*Number
 func (*UnimplementedCalculatorServer) DivideStream(Calculator_DivideStreamServer) error {
 	return status.Errorf(codes.Unimplemented, "method DivideStream not implemented")
 }
-func (*UnimplementedCalculatorServer) mustEmbedUnimplementedCalculatorServer()	{}
+func (*UnimplementedCalculatorServer) mustEmbedUnimplementedCalculatorServer() {}
 
 func RegisterCalculatorServer(s *grpc.Server, srv CalculatorServer) {
 	s.RegisterService(&_Calculator_serviceDesc, srv)
@@ -273,8 +273,8 @@ func _Calculator_Add_Handler(srv interface{}, ctx context.Context, dec func(inte
 		return srv.(CalculatorServer).Add(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
-		Server:		srv,
-		FullMethod:	"/v1.Calculator/Add",
+		Server:     srv,
+		FullMethod: "/v1.Calculator/Add",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CalculatorServer).Add(ctx, req.(*Numbers))
@@ -317,8 +317,8 @@ func _Calculator_Subtract_Handler(srv interface{}, ctx context.Context, dec func
 		return srv.(CalculatorServer).Subtract(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
-		Server:		srv,
-		FullMethod:	"/v1.Calculator/Subtract",
+		Server:     srv,
+		FullMethod: "/v1.Calculator/Subtract",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CalculatorServer).Subtract(ctx, req.(*Numbers))
@@ -361,8 +361,8 @@ func _Calculator_Multiply_Handler(srv interface{}, ctx context.Context, dec func
 		return srv.(CalculatorServer).Multiply(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
-		Server:		srv,
-		FullMethod:	"/v1.Calculator/Multiply",
+		Server:     srv,
+		FullMethod: "/v1.Calculator/Multiply",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CalculatorServer).Multiply(ctx, req.(*Numbers))
@@ -405,8 +405,8 @@ func _Calculator_Divide_Handler(srv interface{}, ctx context.Context, dec func(i
 		return srv.(CalculatorServer).Divide(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
-		Server:		srv,
-		FullMethod:	"/v1.Calculator/Divide",
+		Server:     srv,
+		FullMethod: "/v1.Calculator/Divide",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CalculatorServer).Divide(ctx, req.(*Numbers))
@@ -441,47 +441,47 @@ func (x *calculatorDivideStreamServer) Recv() (*Number, error) {
 }
 
 var _Calculator_serviceDesc = grpc.ServiceDesc{
-	ServiceName:	"v1.Calculator",
-	HandlerType:	(*CalculatorServer)(nil),
+	ServiceName: "v1.Calculator",
+	HandlerType: (*CalculatorServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName:	"Add",
-			Handler:	_Calculator_Add_Handler,
+			MethodName: "Add",
+			Handler:    _Calculator_Add_Handler,
 		},
 		{
-			MethodName:	"Subtract",
-			Handler:	_Calculator_Subtract_Handler,
+			MethodName: "Subtract",
+			Handler:    _Calculator_Subtract_Handler,
 		},
 		{
-			MethodName:	"Multiply",
-			Handler:	_Calculator_Multiply_Handler,
+			MethodName: "Multiply",
+			Handler:    _Calculator_Multiply_Handler,
 		},
 		{
-			MethodName:	"Divide",
-			Handler:	_Calculator_Divide_Handler,
+			MethodName: "Divide",
+			Handler:    _Calculator_Divide_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:	"AddStream",
-			Handler:	_Calculator_AddStream_Handler,
-			ClientStreams:	true,
+			StreamName:    "AddStream",
+			Handler:       _Calculator_AddStream_Handler,
+			ClientStreams: true,
 		},
 		{
-			StreamName:	"SubtractStream",
-			Handler:	_Calculator_SubtractStream_Handler,
-			ClientStreams:	true,
+			StreamName:    "SubtractStream",
+			Handler:       _Calculator_SubtractStream_Handler,
+			ClientStreams: true,
 		},
 		{
-			StreamName:	"MultiplyStream",
-			Handler:	_Calculator_MultiplyStream_Handler,
-			ClientStreams:	true,
+			StreamName:    "MultiplyStream",
+			Handler:       _Calculator_MultiplyStream_Handler,
+			ClientStreams: true,
 		},
 		{
-			StreamName:	"DivideStream",
-			Handler:	_Calculator_DivideStream_Handler,
-			ClientStreams:	true,
+			StreamName:    "DivideStream",
+			Handler:       _Calculator_DivideStream_Handler,
+			ClientStreams: true,
 		},
 	},
-	Metadata:	"calculator.proto",
+	Metadata: "calculator.proto",
 }

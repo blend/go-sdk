@@ -11,9 +11,9 @@ import "github.com/blend/go-sdk/logger"
 
 // Constants
 const (
-	Platform	= "go"
-	SDK		= "sentry.go"
-	ListenerName	= "sentry"
+	Platform     = "go"
+	SDK          = "sentry.go"
+	ListenerName = "sentry"
 )
 
 var (

@@ -17,15 +17,15 @@ import (
 // NewStep returns a new Step, given a GuardFunc and an Action
 func NewStep(guard GuardFunc, action Action) *Step {
 	return &Step{
-		Guard:	guard,
-		Body:	action,
+		Guard: guard,
+		Body:  action,
 	}
 }
 
 // Step is a guarded action. The GuardFunc will decide whether to execute this Action
 type Step struct {
-	Guard	GuardFunc
-	Body	Action
+	Guard GuardFunc
+	Body  Action
 }
 
 // Action implements the Actionable interface and runs the body if the provided guard passes.

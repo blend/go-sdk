@@ -272,7 +272,7 @@ func Test_Query_PanicHandling(t *testing.T) {
 	err = defaultDB().Invoke(OptTx(tx)).Query("select * from bench_object").Each(func(r Rows) error {
 		panic("THIS IS A TEST PANIC")
 	})
-	its.NotNil(err)	// this should have the result of the panic
+	its.NotNil(err) // this should have the result of the panic
 
 	// we now test to see if the connection is still in a good state, i.e. that we recovered from the panic
 	// and closed the connection / rows / statement
@@ -413,13 +413,13 @@ func Test_Query_PopulateByname(t *testing.T) {
 }
 
 type benchWithPointer struct {
-	ID		int		`db:"id,pk,auto"`
-	UUID		string		`db:"uuid,nullable,uk"`
-	Name		string		`db:"name"`
-	Timestamp	*time.Time	`db:"timestamp_utc"`
-	Amount		float32		`db:"amount"`
-	Pending		bool		`db:"pending"`
-	Category	string		`db:"category"`
+	ID        int        `db:"id,pk,auto"`
+	UUID      string     `db:"uuid,nullable,uk"`
+	Name      string     `db:"name"`
+	Timestamp *time.Time `db:"timestamp_utc"`
+	Amount    float32    `db:"amount"`
+	Pending   bool       `db:"pending"`
+	Category  string     `db:"category"`
 }
 
 func (t benchWithPointer) TableName() string {
@@ -446,12 +446,12 @@ func Test_Query_Out_WithDirtyStructs(t *testing.T) {
 	timeObj := time.Now()
 
 	dirty := benchWithPointer{
-		ID:		192,
-		UUID:		uuid.V4().ToFullString(),
-		Name:		"Widget",
-		Timestamp:	&timeObj,
-		Amount:		4.99,
-		Category:	"Baz",
+		ID:        192,
+		UUID:      uuid.V4().ToFullString(),
+		Name:      "Widget",
+		Timestamp: &timeObj,
+		Amount:    4.99,
+		Category:  "Baz",
 	}
 
 	b, err := defaultDB().Invoke(OptTx(tx)).Query("SELECT * FROM bench_object WHERE uuid = $1", uniq).Out(&dirty)

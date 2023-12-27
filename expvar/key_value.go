@@ -9,6 +9,6 @@ package expvar
 
 // KeyValue represents a single entry in a Map.
 type KeyValue struct {
-	Key	string
-	Value	Var
+	Key   string
+	Value Var
 }

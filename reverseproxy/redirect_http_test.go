@@ -22,8 +22,8 @@ func TestRedirectHost(t *testing.T) {
 	assert := assert.New(t)
 
 	redirect := HTTPRedirect{
-		RedirectScheme:	"spdy",
-		RedirectHost:	"redirect-host",
+		RedirectScheme: "spdy",
+		RedirectHost:   "redirect-host",
 	}
 	mockedRedirect := httptest.NewServer(redirect)
 

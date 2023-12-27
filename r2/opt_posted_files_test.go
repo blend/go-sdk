@@ -19,14 +19,14 @@ func TestOptPostedFiles(t *testing.T) {
 
 	r := New(TestURL, OptPostedFiles(
 		webutil.PostedFile{
-			Key:		"form-key",
-			FileName:	"file.txt",
-			Contents:	[]byte("this is a test"),
+			Key:      "form-key",
+			FileName: "file.txt",
+			Contents: []byte("this is a test"),
 		},
 		webutil.PostedFile{
-			Key:		"form-key-2",
-			FileName:	"file2.txt",
-			Contents:	[]byte("this is a test2"),
+			Key:      "form-key-2",
+			FileName: "file2.txt",
+			Contents: []byte("this is a test2"),
 		},
 	))
 	its.NotNil(r.Request.Body)

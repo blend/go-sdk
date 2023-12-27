@@ -70,12 +70,12 @@ func TestErrorEventListener(t *testing.T) {
 
 func TestScopedErrorEventListener(t *testing.T) {
 	testCases := []struct {
-		scopes			*Scopes
-		enabledContexts		[]context.Context
-		disabledContexts	[]context.Context
+		scopes           *Scopes
+		enabledContexts  []context.Context
+		disabledContexts []context.Context
 	}{
 		{
-			scopes:	NewScopes("*"),
+			scopes: NewScopes("*"),
 			enabledContexts: []context.Context{
 				WithPath(context.Background(), "test0", "test1"),
 				WithPath(context.Background(), "test0"),
@@ -83,7 +83,7 @@ func TestScopedErrorEventListener(t *testing.T) {
 			},
 		},
 		{
-			scopes:	NewScopes("-*"),
+			scopes: NewScopes("-*"),
 			disabledContexts: []context.Context{
 				WithPath(context.Background(), "test0", "test1"),
 				WithPath(context.Background(), "test0"),
@@ -91,7 +91,7 @@ func TestScopedErrorEventListener(t *testing.T) {
 			},
 		},
 		{
-			scopes:	NewScopes("test0/test1"),
+			scopes: NewScopes("test0/test1"),
 			enabledContexts: []context.Context{
 				WithPath(context.Background(), "test0", "test1"),
 			},

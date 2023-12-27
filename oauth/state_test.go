@@ -18,9 +18,9 @@ func TestSerializeState(t *testing.T) {
 	assert := assert.New(t)
 
 	state := State{
-		RedirectURI:	"https://foo.com/bar",
-		Token:		stringutil.Random(stringutil.Letters, 32),
-		SecureToken:	stringutil.Random(stringutil.Letters, 64),
+		RedirectURI: "https://foo.com/bar",
+		Token:       stringutil.Random(stringutil.Letters, 32),
+		SecureToken: stringutil.Random(stringutil.Letters, 64),
 	}
 
 	contents, err := SerializeState(state)

@@ -19,8 +19,8 @@ import (
 
 // Assert that the datadog collector implements stats.Collector and stats.EventCollector.
 var (
-	_	stats.Collector		= (*Collector)(nil)
-	_	stats.EventCollector	= (*Collector)(nil)
+	_ stats.Collector      = (*Collector)(nil)
+	_ stats.EventCollector = (*Collector)(nil)
 )
 
 // New returns a new stats collector from a config.
@@ -41,8 +41,8 @@ func New(cfg Config, opts ...dogstatsd.Option) (*Collector, error) {
 	}
 
 	collector := &Collector{
-		client:		client,
-		defaultTags:	cfg.DefaultTags,
+		client:      client,
+		defaultTags: cfg.DefaultTags,
 	}
 	return collector, nil
 }
@@ -58,8 +58,8 @@ func MustNew(cfg Config) *Collector {
 
 // Collector is a class that wraps the statsd collector we're using.
 type Collector struct {
-	client		*dogstatsd.Client
-	defaultTags	[]string
+	client      *dogstatsd.Client
+	defaultTags []string
 }
 
 // AddDefaultTag adds a new default tag.
@@ -136,9 +136,9 @@ func (dc *Collector) SendEvent(event stats.Event) error {
 // CreateEvent makes a new Event with the collectors default tags.
 func (dc *Collector) CreateEvent(title, text string, tags ...string) stats.Event {
 	return stats.Event{
-		Title:	title,
-		Text:	text,
-		Tags:	dc.tagsWithDefaults(tags...),
+		Title: title,
+		Text:  text,
+		Tags:  dc.tagsWithDefaults(tags...),
 	}
 }
 
@@ -150,14 +150,14 @@ func (dc *Collector) tagsWithDefaults(tags ...string) []string {
 // ConvertEvent converts a stats event to a statsd (datadog) event.
 func ConvertEvent(e stats.Event) *dogstatsd.Event {
 	return &dogstatsd.Event{
-		Title:		e.Title,
-		Text:		e.Text,
-		Timestamp:	e.Timestamp,
-		Hostname:	e.Hostname,
-		AggregationKey:	e.AggregationKey,
-		Priority:	dogstatsd.EventPriority(e.Priority),
-		SourceTypeName:	e.SourceTypeName,
-		AlertType:	dogstatsd.EventAlertType(e.AlertType),
-		Tags:		e.Tags,
+		Title:          e.Title,
+		Text:           e.Text,
+		Timestamp:      e.Timestamp,
+		Hostname:       e.Hostname,
+		AggregationKey: e.AggregationKey,
+		Priority:       dogstatsd.EventPriority(e.Priority),
+		SourceTypeName: e.SourceTypeName,
+		AlertType:      dogstatsd.EventAlertType(e.AlertType),
+		Tags:           e.Tags,
 	}
 }

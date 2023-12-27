@@ -49,19 +49,19 @@ func TestEventWriteString(t *testing.T) {
 
 // eventJSONSchema is the json schema of the logger event.
 type eventJSONSchema struct {
-	Req	struct {
-		StartTime	time.Time		`json:"startTime"`
-		Method		string			`json:"method"`
-		URL		string			`json:"url"`
-		Headers		map[string][]string	`json:"headers"`
-	}	`json:"req"`
-	Res	struct {
-		CompleteTime	time.Time		`json:"completeTime"`
-		StatusCode	int			`json:"statusCode"`
-		ContentLength	int			`json:"contentLength"`
-		Headers		map[string][]string	`json:"headers"`
-	}	`json:"res"`
-	Body	string	`json:"body"`
+	Req struct {
+		StartTime time.Time           `json:"startTime"`
+		Method    string              `json:"method"`
+		URL       string              `json:"url"`
+		Headers   map[string][]string `json:"headers"`
+	} `json:"req"`
+	Res struct {
+		CompleteTime  time.Time           `json:"completeTime"`
+		StatusCode    int                 `json:"statusCode"`
+		ContentLength int                 `json:"contentLength"`
+		Headers       map[string][]string `json:"headers"`
+	} `json:"res"`
+	Body string `json:"body"`
 }
 
 func TestEventMarshalJSON(t *testing.T) {

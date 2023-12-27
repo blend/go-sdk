@@ -44,9 +44,9 @@ func (gi GoImports) Check(filename string, contents []byte) RuleResult {
 		fileImportPath = strings.ReplaceAll(fileImport.Path.Value, "\"", "")
 		if includeGlob, excludeGlob = gi.Match(fileImportPath); includeGlob != "" && excludeGlob == "" {
 			return RuleResult{
-				File:		filename,
-				Line:		fset.Position(fileImport.Pos()).Line,
-				Message:	fmt.Sprintf("go imports glob: \"%s\"", includeGlob),
+				File:    filename,
+				Line:    fset.Position(fileImport.Pos()).Line,
+				Message: fmt.Sprintf("go imports glob: \"%s\"", includeGlob),
 			}
 		}
 	}

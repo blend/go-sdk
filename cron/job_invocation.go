@@ -17,9 +17,9 @@ import (
 // NewJobInvocation returns a new job invocation.
 func NewJobInvocation(jobName string) *JobInvocation {
 	return &JobInvocation{
-		ID:		NewJobInvocationID(),
-		Status:		JobInvocationStatusIdle,
-		JobName:	jobName,
+		ID:      NewJobInvocationID(),
+		Status:  JobInvocationStatusIdle,
+		JobName: jobName,
 	}
 }
 
@@ -47,18 +47,18 @@ func NewJobInvocationID() string {
 
 // JobInvocation is metadata for a job invocation (or instance of a job running).
 type JobInvocation struct {
-	ID	string	`json:"id"`
-	JobName	string	`json:"jobName"`
+	ID      string `json:"id"`
+	JobName string `json:"jobName"`
 
-	Started		time.Time	`json:"started"`
-	Complete	time.Time	`json:"complete"`
-	Err		error		`json:"err"`
+	Started  time.Time `json:"started"`
+	Complete time.Time `json:"complete"`
+	Err      error     `json:"err"`
 
-	Parameters	JobParameters		`json:"parameters"`
-	Status		JobInvocationStatus	`json:"status"`
-	State		interface{}		`json:"-"`
+	Parameters JobParameters       `json:"parameters"`
+	Status     JobInvocationStatus `json:"status"`
+	State      interface{}         `json:"-"`
 
-	Cancel	context.CancelFunc	`json:"-"`
+	Cancel context.CancelFunc `json:"-"`
 }
 
 // Elapsed returns the elapsed time for the invocation.
@@ -75,17 +75,17 @@ func (ji *JobInvocation) Elapsed() time.Duration {
 // Clone clones the job invocation.
 func (ji *JobInvocation) Clone() *JobInvocation {
 	return &JobInvocation{
-		ID:		ji.ID,
-		JobName:	ji.JobName,
+		ID:      ji.ID,
+		JobName: ji.JobName,
 
-		Started:	ji.Started,
-		Complete:	ji.Complete,
-		Err:		ji.Err,
+		Started:  ji.Started,
+		Complete: ji.Complete,
+		Err:      ji.Err,
 
-		Parameters:	ji.Parameters,
-		Status:		ji.Status,
-		State:		ji.State,
+		Parameters: ji.Parameters,
+		Status:     ji.Status,
+		State:      ji.State,
 
-		Cancel:	ji.Cancel,
+		Cancel: ji.Cancel,
 	}
 }

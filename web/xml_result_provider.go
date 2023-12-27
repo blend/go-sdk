@@ -13,10 +13,10 @@ import (
 
 var (
 	// XML is a static singleton xml result provider.
-	XML	XMLResultProvider
+	XML XMLResultProvider
 
 	// assert xml implements result provider.
-	_	ResultProvider	= XML
+	_ ResultProvider = XML
 )
 
 // XMLResultProvider are context results for api methods.
@@ -25,24 +25,24 @@ type XMLResultProvider struct{}
 // NotFound returns a service response.
 func (xrp XMLResultProvider) NotFound() Result {
 	return &XMLResult{
-		StatusCode:	http.StatusNotFound,
-		Response:	"Not Found",
+		StatusCode: http.StatusNotFound,
+		Response:   "Not Found",
 	}
 }
 
 // NotAuthorized returns a service response.
 func (xrp XMLResultProvider) NotAuthorized() Result {
 	return &XMLResult{
-		StatusCode:	http.StatusUnauthorized,
-		Response:	"Not Authorized",
+		StatusCode: http.StatusUnauthorized,
+		Response:   "Not Authorized",
 	}
 }
 
 // InternalError returns a service response.
 func (xrp XMLResultProvider) InternalError(err error) Result {
 	return ResultWithLoggedError(&XMLResult{
-		StatusCode:	http.StatusInternalServerError,
-		Response:	err,
+		StatusCode: http.StatusInternalServerError,
+		Response:   err,
 	}, err)
 }
 
@@ -50,36 +50,36 @@ func (xrp XMLResultProvider) InternalError(err error) Result {
 func (xrp XMLResultProvider) BadRequest(err error) Result {
 	if err != nil {
 		return &XMLResult{
-			StatusCode:	http.StatusBadRequest,
-			Response:	err,
+			StatusCode: http.StatusBadRequest,
+			Response:   err,
 		}
 	}
 	return &XMLResult{
-		StatusCode:	http.StatusBadRequest,
-		Response:	"Bad Request",
+		StatusCode: http.StatusBadRequest,
+		Response:   "Bad Request",
 	}
 }
 
 // OK returns a service response.
 func (xrp XMLResultProvider) OK() Result {
 	return &XMLResult{
-		StatusCode:	http.StatusOK,
-		Response:	"OK!",
+		StatusCode: http.StatusOK,
+		Response:   "OK!",
 	}
 }
 
 // Status returns a plaintext result.
 func (xrp XMLResultProvider) Status(statusCode int, response interface{}) Result {
 	return &XMLResult{
-		StatusCode:	statusCode,
-		Response:	ResultOrDefault(response, http.StatusText(statusCode)),
+		StatusCode: statusCode,
+		Response:   ResultOrDefault(response, http.StatusText(statusCode)),
 	}
 }
 
 // Result returns an xml response.
 func (xrp XMLResultProvider) Result(result interface{}) Result {
 	return &XMLResult{
-		StatusCode:	http.StatusOK,
-		Response:	result,
+		StatusCode: http.StatusOK,
+		Response:   result,
 	}
 }

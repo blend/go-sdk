@@ -34,8 +34,8 @@ func main() {
 	logger := log.New(os.Stdout, "traces|", log.LstdFlags)
 
 	server := traceserver.Server{
-		Addr:	*flagBindAddr,
-		Log:	logger,
+		Addr: *flagBindAddr,
+		Log:  logger,
 		Handler: func(_ context.Context, spans ...*traceserver.Span) {
 			printer := json.NewEncoder(os.Stdout)
 			printer.SetIndent("", "  ")

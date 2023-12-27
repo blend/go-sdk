@@ -73,8 +73,8 @@ func Test_TrackedAction_GetStatus(t *testing.T) {
 
 	now := time.Now().UTC()
 	ta := &TrackedAction{
-		ServiceName:	"test-tracked-action",
-		nowProvider:	func() time.Time { return now },
+		ServiceName: "test-tracked-action",
+		nowProvider: func() time.Time { return now },
 		TrackedActionConfig: TrackedActionConfig{
 			Expiration: 5 * time.Second,
 		},
@@ -114,10 +114,10 @@ func Test_TrackedAction_getStatusSignalUnsafe(t *testing.T) {
 	its := assert.New(t)
 
 	testCases := [...]struct {
-		RequestCount	int
-		ErrorCount	int
-		Expected	Signal
-		Message		string
+		RequestCount int
+		ErrorCount   int
+		Expected     Signal
+		Message      string
 	}{
 		{0, 0, SignalGreen, "should return green with no requests"},
 		{0, 10, SignalYellow, "should return yellow when 10 requests fail"},
@@ -135,7 +135,7 @@ func Test_TrackedAction_cleanOldRequestsUnsafe(t *testing.T) {
 
 	now := time.Now().UTC()
 	ta := &TrackedAction{
-		nowProvider:	func() time.Time { return now },
+		nowProvider: func() time.Time { return now },
 		TrackedActionConfig: TrackedActionConfig{
 			Expiration: 5 * time.Second,
 		},
@@ -171,8 +171,8 @@ func Test_TrackedAction_redErrorCount(t *testing.T) {
 	lessThanRequestCount, _ := lessThanPercentage(DefaultRedRequestCount, DefaultRedRequestPercentage)
 	moreThanRequestCount, moreThanExpected := moreThanPercentage(DefaultRedRequestCount, DefaultRedRequestPercentage)
 	testCases := [...]struct {
-		RequestCount	int
-		Expected	float64
+		RequestCount int
+		Expected     float64
 	}{
 		{lessThanRequestCount, DefaultRedRequestCount},
 		{moreThanRequestCount, moreThanExpected},
@@ -190,8 +190,8 @@ func Test_TrackedAction_yellowErrorCount(t *testing.T) {
 	lessThanRequestCount, _ := lessThanPercentage(DefaultYellowRequestCount, DefaultYellowRequestPercentage)
 	moreThanRequestCount, moreThanExpected := moreThanPercentage(DefaultYellowRequestCount, DefaultYellowRequestPercentage)
 	testCases := [...]struct {
-		RequestCount	int
-		Expected	float64
+		RequestCount int
+		Expected     float64
 	}{
 		{lessThanRequestCount, DefaultYellowRequestCount},
 		{moreThanRequestCount, moreThanExpected},

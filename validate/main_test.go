@@ -7,6 +7,6 @@ Use of this source code is governed by a MIT license that can be found in the LI
 
 package validate
 
-func none() error	{ return nil }
+func none() error { return nil }
 
-func some(err error) func() error	{ return func() error { return err } }
+func some(err error) func() error { return func() error { return err } }

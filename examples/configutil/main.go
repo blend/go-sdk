@@ -18,16 +18,16 @@ import (
 )
 
 var (
-	flagTarget	= flag.String("target", "", "The target URL")
-	flagEnvironment	= flag.String("env", "", "The current environment")
+	flagTarget      = flag.String("target", "", "The target URL")
+	flagEnvironment = flag.String("env", "", "The current environment")
 )
 
 // Config is a sample config.
 type Config struct {
-	Target		string	`yaml:"target"`
-	DebugEnabled	*bool	`yaml:"debugEnabled"`
-	MaxCount	int	`yaml:"maxCount"`
-	Environment	string	`yaml:"env"`
+	Target       string `yaml:"target"`
+	DebugEnabled *bool  `yaml:"debugEnabled"`
+	MaxCount     int    `yaml:"maxCount"`
+	Environment  string `yaml:"env"`
 }
 
 // Resolve parses the config and sets values from predefined sources.

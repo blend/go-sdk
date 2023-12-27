@@ -17,15 +17,15 @@ import (
 
 type timestampProvider time.Time
 
-func (tsp timestampProvider) GetFlag() string	{ return "timestamp_provider" }
+func (tsp timestampProvider) GetFlag() string { return "timestamp_provider" }
 
 func (tsp timestampProvider) GetTimestamp() time.Time {
 	return time.Time(tsp)
 }
 
 var (
-	_	Event			= (*timestampProvider)(nil)
-	_	TimestampProvider	= (*timestampProvider)(nil)
+	_ Event             = (*timestampProvider)(nil)
+	_ TimestampProvider = (*timestampProvider)(nil)
 )
 
 func TestGetEventTimestamp(t *testing.T) {

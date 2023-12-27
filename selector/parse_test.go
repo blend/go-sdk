@@ -101,12 +101,12 @@ func TestParseEquals(t *testing.T) {
 	assert := assert.New(t)
 
 	valid := Labels{
-		"foo":	"bar",
-		"moo":	"lar",
+		"foo": "bar",
+		"moo": "lar",
 	}
 	invalid := Labels{
-		"zoo":	"mar",
-		"moo":	"lar",
+		"zoo": "mar",
+		"moo": "lar",
 	}
 
 	selector, err := Parse("foo == bar")
@@ -119,16 +119,16 @@ func TestParseNotEquals(t *testing.T) {
 	assert := assert.New(t)
 
 	valid := Labels{
-		"foo":	"far",
-		"moo":	"lar",
+		"foo": "far",
+		"moo": "lar",
 	}
 	invalidPresent := Labels{
-		"foo":	"bar",
-		"moo":	"lar",
+		"foo": "bar",
+		"moo": "lar",
 	}
 	invalidMissing := Labels{
-		"zoo":	"mar",
-		"moo":	"lar",
+		"zoo": "mar",
+		"moo": "lar",
 	}
 
 	selector, err := Parse("foo != bar")
@@ -142,20 +142,20 @@ func TestParseIn(t *testing.T) {
 	assert := assert.New(t)
 
 	valid := Labels{
-		"foo":	"far",
-		"moo":	"lar",
+		"foo": "far",
+		"moo": "lar",
 	}
 	valid2 := Labels{
-		"foo":	"bar",
-		"moo":	"lar",
+		"foo": "bar",
+		"moo": "lar",
 	}
 	invalid := Labels{
-		"foo":	"mar",
-		"moo":	"lar",
+		"foo": "mar",
+		"moo": "lar",
 	}
 	invalidMissing := Labels{
-		"zoo":	"mar",
-		"moo":	"lar",
+		"zoo": "mar",
+		"moo": "lar",
 	}
 
 	selector, err := Parse("foo in (bar,far)")
@@ -170,19 +170,19 @@ func TestParseGroup(t *testing.T) {
 	assert := assert.New(t)
 
 	valid := Labels{
-		"zoo":		"mar",
-		"moo":		"lar",
-		"thing":	"map",
+		"zoo":   "mar",
+		"moo":   "lar",
+		"thing": "map",
 	}
 	invalid := Labels{
-		"zoo":		"mar",
-		"moo":		"something",
-		"thing":	"map",
+		"zoo":   "mar",
+		"moo":   "something",
+		"thing": "map",
 	}
 	invalid2 := Labels{
-		"zoo":		"mar",
-		"moo":		"lar",
-		"!thing":	"map",
+		"zoo":    "mar",
+		"moo":    "lar",
+		"!thing": "map",
 	}
 	selector, err := Parse("zoo=mar, moo=lar, thing")
 	assert.Nil(err)
@@ -199,9 +199,9 @@ func TestParseGroup(t *testing.T) {
 func TestParseGroupComplicated(t *testing.T) {
 	assert := assert.New(t)
 	valid := Labels{
-		"zoo":		"mar",
-		"moo":		"lar",
-		"thing":	"map",
+		"zoo":   "mar",
+		"moo":   "lar",
+		"thing": "map",
 	}
 	complicated, err := Parse("zoo in (mar,lar,dar),moo,thing == map,!thingy")
 	assert.Nil(err)
@@ -224,9 +224,9 @@ func TestParseSubdomainKey(t *testing.T) {
 	assert.NotNil(sel)
 	assert.Equal("example.com/failure-domain == primary", sel.String())
 	assert.True(sel.Matches(map[string]string{
-		"bar":				"foo",
-		"example.com/failure-domain":	"primary",
-		"foo":				"bar",
+		"bar":                        "foo",
+		"example.com/failure-domain": "primary",
+		"foo":                        "bar",
 	}))
 }
 
@@ -292,7 +292,7 @@ func TestParseRegressionIn(t *testing.T) {
 func TestParseMultiByte(t *testing.T) {
 	assert := assert.New(t)
 
-	selector, err := Parse("함=수,목=록")	// number=number, number=rock
+	selector, err := Parse("함=수,목=록") // number=number, number=rock
 	assert.Nil(err)
 	assert.NotNil(selector)
 
@@ -306,8 +306,8 @@ func TestParseOptions(t *testing.T) {
 
 	selQuery := "bar=foo@bar"
 	labels := Labels{
-		"foo":	"bar",
-		"bar":	"foo@bar",
+		"foo": "bar",
+		"bar": "foo@bar",
 	}
 
 	sel, err := Parse(selQuery)
@@ -323,9 +323,9 @@ func TestParseOptions(t *testing.T) {
 
 func BenchmarkParse(b *testing.B) {
 	valid := Labels{
-		"zoo":		"mar",
-		"moo":		"lar",
-		"thing":	"map",
+		"zoo":   "mar",
+		"moo":   "lar",
+		"thing": "map",
 	}
 
 	for i := 0; i < b.N; i++ {
@@ -369,12 +369,12 @@ func TestParse_InRegression(t *testing.T) {
 	its := assert.New(t)
 
 	good0 := Labels{
-		"role":	"job",
-		"team":	"internal-engineering",
+		"role": "job",
+		"team": "internal-engineering",
 	}
 	good1 := Labels{
-		"role":	"job-worker",
-		"team":	"internal-engineering",
+		"role": "job-worker",
+		"team": "internal-engineering",
 	}
 	bad0 := Labels{
 		"role": "not-job",

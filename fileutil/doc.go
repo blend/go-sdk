@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package fileutil provides helpers for reading and writing files.
 */
-package fileutil	// import "github.com/blend/go-sdk/fileutil"
+package fileutil // import "github.com/blend/go-sdk/fileutil"

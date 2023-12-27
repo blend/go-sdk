@@ -18,8 +18,8 @@ import (
 type lockType int16
 
 const (
-	readLock	lockType	= syscall.LOCK_SH
-	writeLock	lockType	= syscall.LOCK_EX
+	readLock  lockType = syscall.LOCK_SH
+	writeLock lockType = syscall.LOCK_EX
 )
 
 func lock(f File, lt lockType) (err error) {
@@ -31,9 +31,9 @@ func lock(f File, lt lockType) (err error) {
 	}
 	if err != nil {
 		return &fs.PathError{
-			Op:	lt.String(),
-			Path:	f.Name(),
-			Err:	err,
+			Op:   lt.String(),
+			Path: f.Name(),
+			Err:  err,
 		}
 	}
 	return nil

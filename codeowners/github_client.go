@@ -20,8 +20,8 @@ import (
 
 // GithubClient is a client to make requests to github via the api.
 type GithubClient struct {
-	Addr	string
-	Token	string
+	Addr  string
+	Token string
 }
 
 // CreateURL creates a fully qualified url with a given path.

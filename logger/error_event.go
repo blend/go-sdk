@@ -16,16 +16,16 @@ import (
 
 // these are compile time assertions
 var (
-	_	Event		= (*ErrorEvent)(nil)
-	_	TextWritable	= (*ErrorEvent)(nil)
-	_	JSONWritable	= (*ErrorEvent)(nil)
+	_ Event        = (*ErrorEvent)(nil)
+	_ TextWritable = (*ErrorEvent)(nil)
+	_ JSONWritable = (*ErrorEvent)(nil)
 )
 
 // NewErrorEvent returns a new error event.
 func NewErrorEvent(flag string, err error, options ...ErrorEventOption) ErrorEvent {
 	ee := ErrorEvent{
-		Flag:	flag,
-		Err:	err,
+		Flag: flag,
+		Err:  err,
 	}
 	for _, opt := range options {
 		opt(&ee)
@@ -83,14 +83,14 @@ func OptErrorEventRestricted(restricted bool) ErrorEventOption {
 
 // ErrorEvent is an event that wraps an error.
 type ErrorEvent struct {
-	Flag		string
-	Err		error
-	State		interface{}
-	Restricted	bool
+	Flag       string
+	Err        error
+	State      interface{}
+	Restricted bool
 }
 
 // GetFlag implements Event.
-func (ee ErrorEvent) GetFlag() string	{ return ee.Flag }
+func (ee ErrorEvent) GetFlag() string { return ee.Flag }
 
 // WriteText writes the text version of an error.
 func (ee ErrorEvent) WriteText(formatter TextFormatter, output io.Writer) {
@@ -107,12 +107,12 @@ func (ee ErrorEvent) Decompose() map[string]interface{} {
 
 	if _, ok := ee.Err.(json.Marshaler); ok {
 		return map[string]interface{}{
-			"err":			ee.Err,
-			FieldRestricted:	ee.Restricted,
+			"err":           ee.Err,
+			FieldRestricted: ee.Restricted,
 		}
 	}
 	return map[string]interface{}{
-		"err":			ee.Err.Error(),
-		FieldRestricted:	ee.Restricted,
+		"err":           ee.Err.Error(),
+		FieldRestricted: ee.Restricted,
 	}
 }

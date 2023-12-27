@@ -18,9 +18,9 @@ import (
 
 // FailureCodes
 const (
-	SuiteFailureTests	= 1
-	SuiteFailureBefore	= 2
-	SuiteFailureAfter	= 3
+	SuiteFailureTests  = 1
+	SuiteFailureBefore = 2
+	SuiteFailureAfter  = 3
 )
 
 // New returns a new test suite.
@@ -42,10 +42,10 @@ type SuiteAction func(context.Context) error
 
 // Suite is a set of before and after actions for a given package tests.
 type Suite struct {
-	M	*testing.M
-	Log	logger.Log
-	Before	[]SuiteAction
-	After	[]SuiteAction
+	M      *testing.M
+	Log    logger.Log
+	Before []SuiteAction
+	After  []SuiteAction
 }
 
 // Run runs tests and calls os.Exit(...) with the exit code.

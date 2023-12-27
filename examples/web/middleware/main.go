@@ -22,8 +22,8 @@ type Any = interface{}
 
 // APIController implements a simple controller.
 type APIController struct {
-	db	map[string]Any
-	dbLock	sync.Mutex
+	db     map[string]Any
+	dbLock sync.Mutex
 }
 
 // Register adds routes for the controller to the app.

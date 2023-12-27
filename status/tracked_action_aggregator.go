@@ -30,8 +30,8 @@ func NewTrackedActionAggregator(trackedActions ...*TrackedAction) *TrackedAction
 
 // TrackedActionAggregator aggregates tracker results.
 type TrackedActionAggregator struct {
-	TrackedActions	map[string]*TrackedAction
-	Log		logger.Log
+	TrackedActions map[string]*TrackedAction
+	Log            logger.Log
 }
 
 // Interceptor returns a new tracked action.
@@ -56,8 +56,8 @@ func (taa *TrackedActionAggregator) Endpoint(servicesToCheck ...string) web.Acti
 			statusCode = http.StatusServiceUnavailable
 		}
 		return web.JSON.Status(statusCode, TrackedActionsResult{
-			Status:		status,
-			SubSystems:	statuses,
+			Status:     status,
+			SubSystems: statuses,
 		})
 	}
 }

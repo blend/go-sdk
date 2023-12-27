@@ -62,7 +62,7 @@ func main() {
 				GoRewritePackageCall("fmt", "Printf"),
 			),
 		},
-		Debug:	ref.Bool(true),
+		Debug: ref.Bool(true),
 	}
 	var buf bytes.Buffer
 	if err := cr.rewriteGoAst(ctx, "main.go", []byte(file), &buf); err != nil {

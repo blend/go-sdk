@@ -20,10 +20,10 @@ import (
 )
 
 var (
-	addr		= flag.String("addr", "127.0.0.1:8125", "The statsd server address")
-	dialTimeout	= flag.Duration("dial-timeout", time.Second, "The client dial timeout")
-	bufferSize	= flag.Int("buffer-size", 64, "The client buffer size")
-	workers		= flag.Int("workers", runtime.NumCPU(), "The number of workers to use")
+	addr        = flag.String("addr", "127.0.0.1:8125", "The statsd server address")
+	dialTimeout = flag.Duration("dial-timeout", time.Second, "The client dial timeout")
+	bufferSize  = flag.Int("buffer-size", 64, "The client buffer size")
+	workers     = flag.Int("workers", runtime.NumCPU(), "The number of workers to use")
 )
 
 var metrics = []statsd.Metric{

@@ -25,9 +25,9 @@ func Test_Controller_getStatus(t *testing.T) {
 
 	statusController := NewController(
 		OptConfig(configmeta.Meta{
-			ServiceEnv:	"test",
-			ServiceName:	"test-service",
-			Version:	"1.2.3",
+			ServiceEnv:  "test",
+			ServiceName: "test-service",
+			Version:     "1.2.3",
 		}),
 	)
 	app := web.MustNew()

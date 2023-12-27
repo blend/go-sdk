@@ -9,6 +9,6 @@ package sourceutil
 
 // Defaults
 const (
-	DefaultFilePerms	= 0644
-	DefaultDirPerms		= 0755
+	DefaultFilePerms = 0644
+	DefaultDirPerms  = 0755
 )

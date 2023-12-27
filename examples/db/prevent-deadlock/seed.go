@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	dropTable	= "DROP TABLE IF EXISTS might_deadlock;"
-	createTable	= "CREATE TABLE might_deadlock ( counter INTEGER NOT NULL, key TEXT NOT NULL );"
-	tableSeedData	= "INSERT INTO might_deadlock (counter, key) VALUES (4, 'hello'), (7, 'world'), (10, 'hello'), (5, 'world'), (3, 'world');"
+	dropTable     = "DROP TABLE IF EXISTS might_deadlock;"
+	createTable   = "CREATE TABLE might_deadlock ( counter INTEGER NOT NULL, key TEXT NOT NULL );"
+	tableSeedData = "INSERT INTO might_deadlock (counter, key) VALUES (4, 'hello'), (7, 'world'), (10, 'hello'), (5, 'world'), (3, 'world');"
 )
 
 func seedDatabase(ctx context.Context, pool *db.Connection) error {

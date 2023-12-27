@@ -20,18 +20,18 @@ func TestSanitizeRequest(t *testing.T) {
 
 	req := &http.Request{
 		Header: http.Header{
-			"Accept":		{"application/json"},
-			"Authorization":	{"Bearer foo", "Bearer bar"},
-			"X-Secret-Token":	{"super_secret_token"},
+			"Accept":         {"application/json"},
+			"Authorization":  {"Bearer foo", "Bearer bar"},
+			"X-Secret-Token": {"super_secret_token"},
 		},
 		URL: &url.URL{
-			Scheme:	"http",
-			Host:	"example.com",
-			Path:	"/api/sensitive",
+			Scheme: "http",
+			Host:   "example.com",
+			Path:   "/api/sensitive",
 			RawQuery: (url.Values{
-				"ok":		{"ok0", "ok1"},
-				"access_token":	{"super_secret"},
-				"sensitive":	{"sensitive0", "sensitive1"},
+				"ok":           {"ok0", "ok1"},
+				"access_token": {"super_secret"},
+				"sensitive":    {"sensitive0", "sensitive1"},
 			}).Encode(),
 		},
 	}

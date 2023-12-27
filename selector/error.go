@@ -31,10 +31,10 @@ func (e Error) MarshalJSON() ([]byte, error) {
 
 // ParseError is a specific parse error.
 type ParseError struct {
-	Err		error
-	Input		string
-	Position	int
-	Message		string
+	Err      error
+	Input    string
+	Position int
+	Message  string
 }
 
 // Class implements ex.ClassProvider.

@@ -14,10 +14,10 @@ import (
 )
 
 type replaceAnyTestCase struct {
-	expected	string
-	corpus		string
-	with		rune
-	toReplace	[]rune
+	expected  string
+	corpus    string
+	with      rune
+	toReplace []rune
 }
 
 func TestReplaceAny(t *testing.T) {

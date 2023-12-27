@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package stringutil includes string utility functions and helpers.
 */
-package stringutil	// import "github.com/blend/go-sdk/stringutil"
+package stringutil // import "github.com/blend/go-sdk/stringutil"

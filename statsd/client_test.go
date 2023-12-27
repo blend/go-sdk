@@ -27,7 +27,7 @@ type noOpWriteCloser struct {
 }
 
 // Close is a no-op.
-func (n noOpWriteCloser) Close() error	{ return nil }
+func (n noOpWriteCloser) Close() error { return nil }
 
 func Test_Client_Options(t *testing.T) {
 	assert := assert.New(t)
@@ -50,15 +50,15 @@ func Test_Client_Options(t *testing.T) {
 	assert.Equal(512, c.MaxBufferSize)
 
 	cfg := Config{
-		Addr:		"127.0.0.1:0",
-		DialTimeout:	500 * time.Millisecond,
-		MaxPacketSize:	1024,
-		MaxBufferSize:	64,
+		Addr:          "127.0.0.1:0",
+		DialTimeout:   500 * time.Millisecond,
+		MaxPacketSize: 1024,
+		MaxBufferSize: 64,
 		DefaultTags: map[string]string{
-			"foo":	"bar",
-			"env":	"sandbox",
+			"foo": "bar",
+			"env": "sandbox",
 		},
-		SampleRate:	0.8,
+		SampleRate: 0.8,
 	}
 
 	configClient := new(Client)
@@ -104,7 +104,7 @@ func Test_ClientCount_Sampling(t *testing.T) {
 		SampleProvider: func() bool {
 			return rand.Float64() < 0.5
 		},
-		conn:	noOpWriteCloser{buffer},
+		conn: noOpWriteCloser{buffer},
 	}
 
 	for x := 0; x < 512; x++ {
@@ -125,7 +125,7 @@ func Test_ClientGauge_Sampling(t *testing.T) {
 		SampleProvider: func() bool {
 			return rand.Float64() < 0.5
 		},
-		conn:	noOpWriteCloser{buffer},
+		conn: noOpWriteCloser{buffer},
 	}
 
 	for x := 0; x < 512; x++ {
@@ -148,7 +148,7 @@ func Test_ClientCount_Unbuffered(t *testing.T) {
 
 	metrics := make(chan Metric, 10)
 	mock := &Server{
-		Listener:	listener,
+		Listener: listener,
 		Handler: func(ms ...Metric) {
 			defer wg.Done()
 			for _, m := range ms {
@@ -196,7 +196,7 @@ func Test_ClientGauge_Unbuffered(t *testing.T) {
 
 	metrics := make(chan Metric, 10)
 	mock := &Server{
-		Listener:	listener,
+		Listener: listener,
 		Handler: func(ms ...Metric) {
 			defer wg.Done()
 			for _, m := range ms {
@@ -240,11 +240,11 @@ func Test_ClientCount_Buffered(t *testing.T) {
 	assert.Nil(err)
 
 	wg := sync.WaitGroup{}
-	wg.Add(5)	// 10/2 flushes
+	wg.Add(5) // 10/2 flushes
 
 	metrics := make(chan Metric, 10)
 	mock := &Server{
-		Listener:	listener,
+		Listener: listener,
 		Handler: func(ms ...Metric) {
 			defer wg.Done()
 			for _, m := range ms {
@@ -280,7 +280,7 @@ func Test_ClientGauge_Buffered(t *testing.T) {
 
 	metrics := make(chan Metric, 10)
 	mock := &Server{
-		Listener:	listener,
+		Listener: listener,
 		Handler: func(ms ...Metric) {
 			defer wg.Done()
 			for _, m := range ms {
@@ -316,7 +316,7 @@ func Test_ClientTimeInMilliseconds_Buffered(t *testing.T) {
 
 	metrics := make(chan Metric, 10)
 	mock := &Server{
-		Listener:	listener,
+		Listener: listener,
 		Handler: func(ms ...Metric) {
 			defer wg.Done()
 			for _, m := range ms {
@@ -352,7 +352,7 @@ func Test_ClientIncrement_Buffered(t *testing.T) {
 
 	metrics := make(chan Metric, 10)
 	mock := &Server{
-		Listener:	listener,
+		Listener: listener,
 		Handler: func(ms ...Metric) {
 			defer wg.Done()
 			for _, m := range ms {
@@ -395,7 +395,7 @@ func Test_ClientHistogram_Buffered(t *testing.T) {
 
 	metrics := make(chan Metric, 10)
 	mock := &Server{
-		Listener:	listener,
+		Listener: listener,
 		Handler: func(ms ...Metric) {
 			defer wg.Done()
 			for _, m := range ms {

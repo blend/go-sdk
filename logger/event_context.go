@@ -11,5 +11,5 @@ package logger
 // It is used when a sub-context triggers or writes an event.
 type EventContext struct {
 	Event
-	ContextPath	[]string
+	ContextPath []string
 }

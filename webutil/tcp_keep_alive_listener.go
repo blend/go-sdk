@@ -25,8 +25,8 @@ var (
 type TCPKeepAliveListener struct {
 	*net.TCPListener
 
-	KeepAlive	bool
-	KeepAlivePeriod	time.Duration
+	KeepAlive       bool
+	KeepAlivePeriod time.Duration
 }
 
 // Accept implements net.Listener

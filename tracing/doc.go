@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package tracing implements some helpers and constants for open tracing.
 */
-package tracing	// import "github.com/blend/go-sdk/tracing"
+package tracing // import "github.com/blend/go-sdk/tracing"

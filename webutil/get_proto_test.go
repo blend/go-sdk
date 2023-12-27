@@ -20,16 +20,16 @@ func TestGetProto(t *testing.T) {
 	headers := http.Header{}
 	headers.Set(HeaderXForwardedProto, SchemeHTTPS)
 	r := http.Request{
-		Proto:	SchemeHTTP + "/1.0",
-		Header:	headers,
+		Proto:  SchemeHTTP + "/1.0",
+		Header: headers,
 	}
 	assert.Equal(SchemeHTTPS, GetProto(&r))
 
 	headers = http.Header{}
 	headers.Set(HeaderXForwardedProto, SchemeSPDY+","+SchemeHTTPS)
 	r = http.Request{
-		Proto:	SchemeHTTP + "/1.0",
-		Header:	headers,
+		Proto:  SchemeHTTP + "/1.0",
+		Header: headers,
 	}
 	assert.Equal(SchemeHTTPS, GetProto(&r))
 

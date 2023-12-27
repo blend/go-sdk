@@ -28,4 +28,4 @@ The package provides a `status.Controller` type that is created with the `status
 
 The app will now have `/status/sla` and `/status/details` endpoints registered.
 */
-package status	// import "github.com/blend/go-sdk/status"
+package status // import "github.com/blend/go-sdk/status"

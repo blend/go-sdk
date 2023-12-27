@@ -21,8 +21,8 @@ import (
 //   - `AlwaysFailDB` satisfies `db.DB`.
 //   - `PseudoQueryDB` satisfies `db.DB`.
 var (
-	_	db.DB	= (*AlwaysFailDB)(nil)
-	_	db.DB	= (*PseudoQueryDB)(nil)
+	_ db.DB = (*AlwaysFailDB)(nil)
+	_ db.DB = (*PseudoQueryDB)(nil)
 )
 
 // AlwaysFailDB implements the `db.DB` interface, but each method always fails.
@@ -50,9 +50,9 @@ func (afd *AlwaysFailDB) QueryRowContext(context.Context, string, ...interface{}
 // `QueryContext` and replaces the `query` / `args` arguments with custom
 // values.
 type PseudoQueryDB struct {
-	DB	*sql.DB
-	Query	string
-	Args	[]interface{}
+	DB    *sql.DB
+	Query string
+	Args  []interface{}
 }
 
 // ExecContext implements the `db.DB` interface; this is not supported in

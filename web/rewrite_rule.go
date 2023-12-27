@@ -14,9 +14,9 @@ type RewriteAction func(filePath string, matchedPieces ...string) string
 
 // RewriteRule is a rule for re-writing incoming static urls.
 type RewriteRule struct {
-	MatchExpression	string
-	expr		*regexp.Regexp
-	Action		RewriteAction
+	MatchExpression string
+	expr            *regexp.Regexp
+	Action          RewriteAction
 }
 
 // Apply runs the filter, returning a bool if it matched, and the resulting path.

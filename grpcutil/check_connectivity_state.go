@@ -38,9 +38,9 @@ type ConnectionStateProvider interface {
 
 // RetryCheckConnectivityStateOptions are options for checking the connectivity state.
 type RetryCheckConnectivityStateOptions struct {
-	RetryTimeout	time.Duration
-	RetryBackoff	time.Duration
-	MaxRetries	uint
+	RetryTimeout time.Duration
+	RetryBackoff time.Duration
+	MaxRetries   uint
 }
 
 // RetryCheckConnectivityStateOption mutates CheckConnectivityStateOptions.
@@ -73,9 +73,9 @@ const ErrConnectionNotReady ex.Class = "grpc connection not ready"
 // RetryCheckConnectivityState implements a retry checker for connectivity state.
 func RetryCheckConnectivityState(ctx context.Context, client ConnectionStateProvider, opts ...RetryCheckConnectivityStateOption) (state connectivity.State, err error) {
 	options := RetryCheckConnectivityStateOptions{
-		RetryTimeout:	5 * time.Second,
-		RetryBackoff:	200 * time.Millisecond,
-		MaxRetries:	30,
+		RetryTimeout: 5 * time.Second,
+		RetryBackoff: 200 * time.Millisecond,
+		MaxRetries:   30,
 	}
 	for _, opt := range opts {
 		opt(&options)

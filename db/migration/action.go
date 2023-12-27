@@ -28,7 +28,7 @@ func (a ActionFunc) Action(ctx context.Context, conn *db.Connection, tx *sql.Tx)
 }
 
 // NoOp performs no action.
-func NoOp(_ context.Context, _ *db.Connection, _ *sql.Tx) error	{ return nil }
+func NoOp(_ context.Context, _ *db.Connection, _ *sql.Tx) error { return nil }
 
 // Statements returns a body func that executes the statments serially.
 func Statements(statements ...string) Action {

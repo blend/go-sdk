@@ -61,7 +61,7 @@ func NewCertManager(options ...CertManagerOption) *CertManager {
 		TLSConfig: &tls.Config{
 			ClientAuth: tls.RequireAndVerifyClientCert,
 		},
-		ClientCerts:	map[string][]byte{},
+		ClientCerts: map[string][]byte{},
 	}
 	certManager.TLSConfig.GetConfigForClient = certManager.GetConfigForClient
 
@@ -92,8 +92,8 @@ func OptCertManagerClientCerts(client *x509.CertPool) CertManagerOption {
 // CertManager is a pool of client certs.
 type CertManager struct {
 	sync.RWMutex
-	TLSConfig	*tls.Config
-	ClientCerts	map[string][]byte
+	TLSConfig   *tls.Config
+	ClientCerts map[string][]byte
 }
 
 // ClientCertUIDs returns all the client cert uids.

@@ -23,20 +23,20 @@ var (
 
 type (
 	// OnStateChangeHandler is called when the state changes.
-	OnStateChangeHandler	func(ctx context.Context, from, to State, generation int64)
+	OnStateChangeHandler func(ctx context.Context, from, to State, generation int64)
 	// ShouldOpenProvider returns if the breaker should open.
-	ShouldOpenProvider	func(ctx context.Context, counts Counts) bool
+	ShouldOpenProvider func(ctx context.Context, counts Counts) bool
 	// NowProvider returns the current time.
-	NowProvider	func() time.Time
+	NowProvider func() time.Time
 )
 
 // New creates a new breaker with the given options.
 func New(options ...Option) *Breaker {
 	b := Breaker{
-		ClosedExpiryInterval:	DefaultClosedExpiryInterval,
-		OpenExpiryInterval:	DefaultOpenExpiryInterval,
-		HalfOpenMaxActions:	DefaultHalfOpenMaxActions,
-		OpenFailureThreshold:	DefaultOpenFailureThreshold,
+		ClosedExpiryInterval: DefaultClosedExpiryInterval,
+		OpenExpiryInterval:   DefaultOpenExpiryInterval,
+		HalfOpenMaxActions:   DefaultHalfOpenMaxActions,
+		OpenFailureThreshold: DefaultOpenFailureThreshold,
 	}
 	for _, opt := range options {
 		opt(&b)
@@ -49,39 +49,39 @@ type Breaker struct {
 	sync.Mutex
 	// OpenAction is an optional actioner to be called when the breaker is open (i.e. preventing calls
 	// to intercepted action(er)s)
-	OpenAction	Actioner
+	OpenAction Actioner
 	// OnStateChange is an optional handler called when the breaker transitions state.
-	OnStateChange	OnStateChangeHandler
+	OnStateChange OnStateChangeHandler
 	// ShouldOpenProvider is called optionally to determine if we should open the breaker.
-	ShouldOpenProvider	ShouldOpenProvider
+	ShouldOpenProvider ShouldOpenProvider
 	// NowProvider lets you optionally inject the current time for testing.
-	NowProvider	NowProvider
+	NowProvider NowProvider
 
 	// OpenFailureThreshold is the default failure threshold
 	// before the breaker enters the open state. It is how many actions
 	// have to fail consecutively.
-	OpenFailureThreshold	int64
+	OpenFailureThreshold int64
 	// HalfOpenMaxActions is the maximum number of requests
 	// we can make when the state is HalfOpen.
-	HalfOpenMaxActions	int64
+	HalfOpenMaxActions int64
 	// ClosedExpiryInterval is the cyclic period of the closed state for the CircuitBreaker to clear the internal Counts.
 	// If Interval is 0, the CircuitBreaker doesn't clear internal Counts during the closed state.
-	ClosedExpiryInterval	time.Duration
+	ClosedExpiryInterval time.Duration
 	// OpenExpiryInterval is the period of the open state,
 	// after which the state of the CircuitBreaker becomes half-open.
 	// If Timeout is 0, the timeout value of the CircuitBreaker is set to 60 seconds.
-	OpenExpiryInterval	time.Duration
+	OpenExpiryInterval time.Duration
 	// Counts are stats for the breaker.
-	Counts	Counts
+	Counts Counts
 
 	// state is the current Breaker state (Closed, HalfOpen, Open etc.)
-	state	State
+	state State
 	// generation is the current state generation.
-	generation	int64
+	generation int64
 	// stateExpiresAt is the time when the current state will expire.
 	// It is set when we change state according to the interval
 	// and the current time.
-	stateExpiresAt	time.Time
+	stateExpiresAt time.Time
 }
 
 // Intercept implements the breaker by returning a wrapper for a given action(er).

@@ -18,19 +18,19 @@ const (
 
 // Tag names are names for tags, either on metrics or traces.
 const (
-	TagClass	string	= "class"
-	TagClusterName	string	= "cluster_name"
-	TagEnv		string	= "env"
-	TagError	string	= "error"
-	TagHostname	string	= "hostname"
-	TagJob		string	= "job"
-	TagService	string	= "service"
-	TagSeverity	string	= "severity"
-	TagVersion	string	= "version"
+	TagClass       string = "class"
+	TagClusterName string = "cluster_name"
+	TagEnv         string = "env"
+	TagError       string = "error"
+	TagHostname    string = "hostname"
+	TagJob         string = "job"
+	TagService     string = "service"
+	TagSeverity    string = "severity"
+	TagVersion     string = "version"
 )
 
 // Specialized / default values
 const (
-	FilterNameSanitization		= "sanitization"
-	ListenerNameStats	string	= "stats"
+	FilterNameSanitization        = "sanitization"
+	ListenerNameStats      string = "stats"
 )

@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package dbtrace contains db tracing helpers.
 */
-package dbtrace	// import "github.com/blend/go-sdk/tracing/dbtrace"
+package dbtrace // import "github.com/blend/go-sdk/tracing/dbtrace"

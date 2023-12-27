@@ -30,7 +30,7 @@ var (
 	_ graceful.Graceful = (*App)(nil)
 )
 
-func controllerNoOp(_ *Ctx) Result	{ return nil }
+func controllerNoOp(_ *Ctx) Result { return nil }
 
 type testController struct {
 	callback func(app *App)
@@ -56,19 +56,19 @@ func TestAppNewFromConfig(t *testing.T) {
 	assert := assert.New(t)
 
 	app, err := New(OptConfig(Config{
-		BindAddr:		":5555",
-		Port:			5000,
-		HandleMethodNotAllowed:	true,
-		HandleOptions:		true,
-		DisablePanicRecovery:	true,
+		BindAddr:               ":5555",
+		Port:                   5000,
+		HandleMethodNotAllowed: true,
+		HandleOptions:          true,
+		DisablePanicRecovery:   true,
 
-		MaxHeaderBytes:		128,
-		ReadHeaderTimeout:	5 * time.Second,
-		ReadTimeout:		6 * time.Second,
-		IdleTimeout:		7 * time.Second,
-		WriteTimeout:		8 * time.Second,
+		MaxHeaderBytes:    128,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       6 * time.Second,
+		IdleTimeout:       7 * time.Second,
+		WriteTimeout:      8 * time.Second,
 
-		CookieName:	"A GOOD ONE",
+		CookieName: "A GOOD ONE",
 		Views: ViewCacheConfig{
 			LiveReload: true,
 		},
@@ -414,7 +414,7 @@ func TestAppWritesLogsByDefault(t *testing.T) {
 	assert.NotZero(buffer.Len())
 	assert.NotEmpty(buffer.String())
 
-	assert.Matches(`\[http.request\] 127\.0\.0\.1 GET \/ 200 (.*) text\/plain; charset=utf-8 3B	web.route=\/\n`, buffer.String(), "buffer should contain the non-zero status code")	// we use a prefix here because the elapsed time is variable.
+	assert.Matches(`\[http.request\] 127\.0\.0\.1 GET \/ 200 (.*) text\/plain; charset=utf-8 3B	web.route=\/\n`, buffer.String(), "buffer should contain the non-zero status code") // we use a prefix here because the elapsed time is variable.
 }
 
 func TestAppBindAddr(t *testing.T) {
@@ -531,16 +531,16 @@ func TestAppHandlesPanics(t *testing.T) {
 }
 
 var (
-	_	Tracer		= (*mockTracer)(nil)
-	_	ViewTracer	= (*mockTracer)(nil)
+	_ Tracer     = (*mockTracer)(nil)
+	_ ViewTracer = (*mockTracer)(nil)
 )
 
 type mockTracer struct {
-	OnStart		func(*Ctx)
-	OnFinish	func(*Ctx, error)
+	OnStart  func(*Ctx)
+	OnFinish func(*Ctx, error)
 
-	OnViewStart	func(*Ctx, *ViewResult)
-	OnViewFinish	func(*Ctx, *ViewResult, error)
+	OnViewStart  func(*Ctx, *ViewResult)
+	OnViewFinish func(*Ctx, *ViewResult, error)
 }
 
 func (mt mockTracer) Start(ctx *Ctx) TraceFinisher {
@@ -573,10 +573,10 @@ func (mvf mockViewTraceFinisher) FinishView(ctx *Ctx, vr *ViewResult, err error)
 	mvf.parent.OnViewFinish(ctx, vr, err)
 }
 
-func ok(_ *Ctx) Result			{ return JSON.OK() }
-func doPanic(_ *Ctx) Result		{ panic("this is only a test") }
-func internalError(_ *Ctx) Result	{ return JSON.InternalError(fmt.Errorf("only a test")) }
-func viewOK(ctx *Ctx) Result		{ return ctx.Views.View("ok", nil) }
+func ok(_ *Ctx) Result            { return JSON.OK() }
+func doPanic(_ *Ctx) Result       { panic("this is only a test") }
+func internalError(_ *Ctx) Result { return JSON.InternalError(fmt.Errorf("only a test")) }
+func viewOK(ctx *Ctx) Result      { return ctx.Views.View("ok", nil) }
 
 func TestAppTracer(t *testing.T) {
 	assert := assert.New(t)
@@ -651,8 +651,8 @@ func TestAppViewTracer(t *testing.T) {
 	app.GET("/", ok)
 	app.GET("/view", viewOK)
 	app.Tracer = mockTracer{
-		OnStart:	func(_ *Ctx) { wg.Done() },
-		OnFinish:	func(_ *Ctx, _ error) { wg.Done() },
+		OnStart:  func(_ *Ctx) { wg.Done() },
+		OnFinish: func(_ *Ctx, _ error) { wg.Done() },
 		OnViewStart: func(ctx *Ctx, vr *ViewResult) {
 			defer wg.Done()
 			hasValue = vr.ViewName == "ok"
@@ -683,7 +683,7 @@ func TestAppViewTracerError(t *testing.T) {
 	app.Views.AddLiterals("{{ define \"ok\" }}{{template \"fake\"}}ok{{end}}")
 	app.GET("/view", viewOK)
 	app.Tracer = mockTracer{
-		OnStart:	func(_ *Ctx) { wg.Done() },
+		OnStart: func(_ *Ctx) { wg.Done() },
 		OnFinish: func(_ *Ctx, err error) {
 			defer wg.Done()
 			hasError = err != nil

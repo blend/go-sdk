@@ -39,12 +39,12 @@ func ParseCertInfo(res *http.Response) *CertInfo {
 	}
 
 	return &CertInfo{
-		SubjectCommonName:	firstCert.Subject.CommonName,
-		IssuerNames:		issuerNames,
-		IssuerCommonName:	firstCert.Issuer.CommonName,
-		DNSNames:		firstCert.DNSNames,
-		NotAfter:		earliestNotAfter,
-		NotBefore:		latestNotBefore,
+		SubjectCommonName: firstCert.Subject.CommonName,
+		IssuerNames:       issuerNames,
+		IssuerCommonName:  firstCert.Issuer.CommonName,
+		DNSNames:          firstCert.DNSNames,
+		NotAfter:          earliestNotAfter,
+		NotBefore:         latestNotBefore,
 	}
 }
 
@@ -60,23 +60,23 @@ func NewCertInfo(cert *tls.Certificate) (*CertInfo, error) {
 	}
 
 	return &CertInfo{
-		SubjectCommonName:	leaf.Subject.CommonName,
-		IssuerNames:		issuerNames,
-		IssuerCommonName:	leaf.Issuer.CommonName,
-		DNSNames:		leaf.DNSNames,
-		NotAfter:		leaf.NotAfter,
-		NotBefore:		leaf.NotBefore,
+		SubjectCommonName: leaf.Subject.CommonName,
+		IssuerNames:       issuerNames,
+		IssuerCommonName:  leaf.Issuer.CommonName,
+		DNSNames:          leaf.DNSNames,
+		NotAfter:          leaf.NotAfter,
+		NotBefore:         leaf.NotBefore,
 	}, nil
 }
 
 // CertInfo is the information for a certificate.
 type CertInfo struct {
-	SubjectCommonName	string		`json:"subjectCommonName" yaml:"subjectCommonName"`
-	IssuerCommonName	string		`json:"issuerCommonName" yaml:"issuerCommonName"`
-	IssuerNames		[]string	`json:"issuerNames" yaml:"issuerNames"`
-	DNSNames		[]string	`json:"dnsNames" yaml:"dnsNames"`
-	NotAfter		time.Time	`json:"notAfter" yaml:"notAfter"`
-	NotBefore		time.Time	`json:"notBefore" yaml:"notBefore"`
+	SubjectCommonName string    `json:"subjectCommonName" yaml:"subjectCommonName"`
+	IssuerCommonName  string    `json:"issuerCommonName" yaml:"issuerCommonName"`
+	IssuerNames       []string  `json:"issuerNames" yaml:"issuerNames"`
+	DNSNames          []string  `json:"dnsNames" yaml:"dnsNames"`
+	NotAfter          time.Time `json:"notAfter" yaml:"notAfter"`
+	NotBefore         time.Time `json:"notBefore" yaml:"notBefore"`
 }
 
 // IsExpired returns if the certificate is strictly expired

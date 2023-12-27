@@ -26,34 +26,34 @@ import (
 //   - `http.Client` satisfies `HTTPGetClient`
 //   - `WaitForAdmin.executeOnce` satisfies `retry.Action`
 var (
-	_	HTTPGetClient		= (*http.Client)(nil)
-	_	retry.ActionerFunc	= (*WaitForAdmin)(nil).executeOnce
+	_ HTTPGetClient      = (*http.Client)(nil)
+	_ retry.ActionerFunc = (*WaitForAdmin)(nil).executeOnce
 )
 
 var (
 	// ErrFailedAttempt is an error class returned when Envoy fails to be
 	// ready on a single attempt.
-	ErrFailedAttempt	= ex.Class("Envoy not yet ready")
+	ErrFailedAttempt = ex.Class("Envoy not yet ready")
 	// ErrTimedOut is an error class returned when Envoy fails to be ready
 	// after exhausting all attempts.
-	ErrTimedOut	= ex.Class("Timed out waiting for Envoy to be ready")
+	ErrTimedOut = ex.Class("Timed out waiting for Envoy to be ready")
 )
 
 const (
 	// EnvVarWaitFlag is an environment variable which specifies whether
 	// a wait function should wait for the Envoy Admin API to be ready.
-	EnvVarWaitFlag	= "WAIT_FOR_ENVOY"
+	EnvVarWaitFlag = "WAIT_FOR_ENVOY"
 	// EnvVarAdminPort is an environment variable which provides an override
 	// for the Envoy Admin API port.
-	EnvVarAdminPort	= "ENVOY_ADMIN_PORT"
+	EnvVarAdminPort = "ENVOY_ADMIN_PORT"
 	// DefaultAdminPort is the default port used for the Envoy Admin API.
-	DefaultAdminPort	= "15000"
+	DefaultAdminPort = "15000"
 	// EnumStateLive is a `envoy.admin.v3.ServerInfo.State` value indicating
 	// the Envoy server is LIVE. Other possible values of this enum are
 	// DRAINING, PRE_INITIALIZING and INITIALIZING, but they are not used
 	// here.
 	// See: https://github.com/envoyproxy/envoy/blob/b867a4dfae32e600ea0a4087dc7925ded5e2ab2a/api/envoy/admin/v3/server_info.proto#L24-L36
-	EnumStateLive	= "LIVE"
+	EnumStateLive = "LIVE"
 )
 
 // HTTPGetClient captures a small part of the `http.Client` interface needed
@@ -66,18 +66,18 @@ type HTTPGetClient interface {
 // API is ready.
 type WaitForAdmin struct {
 	// Port is the port (on localhost) where the Envoy Admin API is running.
-	Port	string
+	Port string
 	// Sleep is the amount of time to sleep in between failed liveness
 	// checks for the Envoy API.
-	Sleep	time.Duration
+	Sleep time.Duration
 	// HTTPClient is the HTTP client to use when sending requests.
-	HTTPClient	HTTPGetClient
+	HTTPClient HTTPGetClient
 	// Log is an optional logger to be used when executing.
-	Log	logger.Log
+	Log logger.Log
 	// Attempt is a counter for the number of attempts that have been made
 	// to `executeOnce()`. This makes no attempt at "resetting" or guarding
 	// against concurrent usage or re-usage of a `WaitForAdmin` struct.
-	Attempt	uint32
+	Attempt uint32
 }
 
 // IsReady makes a single request to the Envoy Admin API and checks if
@@ -153,11 +153,11 @@ func MaybeWaitForAdmin(log logger.Log) error {
 
 	hc := &http.Client{Timeout: time.Second}
 	wfa := WaitForAdmin{
-		Port:		env.Env().String(EnvVarAdminPort, DefaultAdminPort),
-		Sleep:		time.Second,
-		HTTPClient:	hc,
-		Log:		log,
-		Attempt:	0,
+		Port:       env.Env().String(EnvVarAdminPort, DefaultAdminPort),
+		Sleep:      time.Second,
+		HTTPClient: hc,
+		Log:        log,
+		Attempt:    0,
 	}
 
 	ctx := context.Background()

@@ -21,7 +21,7 @@ type Client interface {
 
 // Operation encapsulates a redis command to be made to the client
 type Operation struct {
-	Out	interface{}
-	Command	string
-	Args	[]string
+	Out     interface{}
+	Command string
+	Args    []string
 }

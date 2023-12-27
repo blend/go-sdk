@@ -17,8 +17,8 @@ func TestSplitLines(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := [...]struct {
-		Input		string
-		Expected	[]string
+		Input    string
+		Expected []string
 	}{
 		{"", nil},
 		{"\n", nil},
@@ -49,8 +49,8 @@ func TestSplitLinesIncludeNewLine(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := [...]struct {
-		Input		string
-		Expected	[]string
+		Input    string
+		Expected []string
 	}{
 		{"", nil},
 		{"\n", nil},
@@ -81,8 +81,8 @@ func TestSplitLinesIncludeEmptyLines(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := [...]struct {
-		Input		string
-		Expected	[]string
+		Input    string
+		Expected []string
 	}{
 		{"", nil},
 		{"\n", []string{""}},
@@ -113,8 +113,8 @@ func TestSplitLinesIncludeAll(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := [...]struct {
-		Input		string
-		Expected	[]string
+		Input    string
+		Expected []string
 	}{
 		{"", nil},
 		{"\n", []string{"\n"}},

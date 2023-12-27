@@ -20,8 +20,8 @@ import (
 )
 
 var (
-	bindAddr	= flag.String("bind-addr", "127.0.0.1:0", "The bind address, defautls to a random local port")
-	verbose		= flag.Bool("verbose", false, "If we should print each metric the server receives")
+	bindAddr = flag.String("bind-addr", "127.0.0.1:0", "The bind address, defautls to a random local port")
+	verbose  = flag.Bool("verbose", false, "If we should print each metric the server receives")
 )
 
 func main() {
@@ -34,8 +34,8 @@ func main() {
 	}
 
 	srv := &statsd.Server{
-		Listener:	listener,
-		Handler:	handleMetrics,
+		Listener: listener,
+		Handler:  handleMetrics,
 	}
 
 	go printMetricCounts()
@@ -47,8 +47,8 @@ func main() {
 }
 
 var (
-	metricRates	= map[string]*rate{}
-	metricRatesMu	sync.Mutex
+	metricRates   = map[string]*rate{}
+	metricRatesMu sync.Mutex
 )
 
 func printMetricCounts() {
@@ -74,8 +74,8 @@ func handleMetrics(ms ...statsd.Metric) {
 		_, ok := metricRates[m.Name]
 		if !ok {
 			metricRates[m.Name] = &rate{
-				Count:	1,
-				Time:	time.Now(),
+				Count: 1,
+				Time:  time.Now(),
 			}
 			return
 		}
@@ -85,8 +85,8 @@ func handleMetrics(ms ...statsd.Metric) {
 
 // rate
 type rate struct {
-	Count	int
-	Time	time.Time
+	Count int
+	Time  time.Time
 }
 
 func (r rate) String() string {

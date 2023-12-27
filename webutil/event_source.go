@@ -31,7 +31,7 @@ func NewEventSource(output http.ResponseWriter) *EventSource {
 // EventSource is a helper for writing event source info.
 type EventSource struct {
 	sync.Mutex
-	output	http.ResponseWriter
+	output http.ResponseWriter
 }
 
 // StartSession starts an event source session.

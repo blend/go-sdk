@@ -21,8 +21,8 @@ var (
 
 // mockWriter is a stub for a io.WriteCloser.
 type mockWriter struct {
-	WriteHandler	func([]byte) (int, error)
-	CloseHandler	func() error
+	WriteHandler func([]byte) (int, error)
+	CloseHandler func() error
 }
 
 // Write implements io.Writer

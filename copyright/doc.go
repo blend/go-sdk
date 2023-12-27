@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package copyright includes copyright header management utilities
 */
-package copyright	// import "github.com/blend/go-sdk/copyright"
+package copyright // import "github.com/blend/go-sdk/copyright"

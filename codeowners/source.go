@@ -15,8 +15,8 @@ import (
 
 // Source is a set of ownership entries.
 type Source struct {
-	Source	string
-	Paths	[]Path
+	Source string
+	Paths  []Path
 }
 
 // WriteTo writes the owners to a given file.

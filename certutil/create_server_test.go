@@ -19,8 +19,8 @@ func TestCreateServer(t *testing.T) {
 	assert := assert.New(t)
 
 	caKeyPair := KeyPair{
-		Cert:	string(caCertLiteral),
-		Key:	string(caKeyLiteral),
+		Cert: string(caCertLiteral),
+		Key:  string(caKeyLiteral),
 	}
 	authority, err := NewCertBundle(caKeyPair)
 	assert.Nil(err)

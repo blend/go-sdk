@@ -15,7 +15,7 @@ import (
 // FileInfo extends os.FileInfo with the full path.
 type FileInfo struct {
 	os.FileInfo
-	FullPath	string
+	FullPath string
 }
 
 // LS returns a list of files for a given path.
@@ -25,8 +25,8 @@ func LS(root string) (output []FileInfo, err error) {
 			return nil
 		}
 		output = append(output, FileInfo{
-			FileInfo:	info,
-			FullPath:	path,
+			FileInfo: info,
+			FullPath: path,
 		})
 		if info.IsDir() {
 			return filepath.SkipDir

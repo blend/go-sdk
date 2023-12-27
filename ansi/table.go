@@ -19,18 +19,18 @@ import (
 
 // Table character constants.
 const (
-	TableTopLeft		= "┌"
-	TableTopRight		= "┐"
-	TableBottomLeft		= "└"
-	TableBottomRight	= "┘"
-	TableMidLeft		= "├"
-	TableMidRight		= "┤"
-	TableVertBar		= "│"
-	TableHorizBar		= "─"
-	TableTopSep		= "┬"
-	TableBottomSep		= "┴"
-	TableMidSep		= "┼"
-	NewLine			= "\n"
+	TableTopLeft     = "┌"
+	TableTopRight    = "┐"
+	TableBottomLeft  = "└"
+	TableBottomRight = "┘"
+	TableMidLeft     = "├"
+	TableMidRight    = "┤"
+	TableVertBar     = "│"
+	TableHorizBar    = "─"
+	TableTopSep      = "┬"
+	TableBottomSep   = "┴"
+	TableMidSep      = "┼"
+	NewLine          = "\n"
 )
 
 // TableForSlice prints a table for a given slice.

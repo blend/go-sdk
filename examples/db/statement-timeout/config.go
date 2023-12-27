@@ -21,9 +21,9 @@ const (
 )
 
 type config struct {
-	StatementTimeout	time.Duration
-	PGSleep			time.Duration
-	ContextTimeout		time.Duration
+	StatementTimeout time.Duration
+	PGSleep          time.Duration
+	ContextTimeout   time.Duration
 }
 
 func (c *config) SetEnvironment() error {
@@ -54,15 +54,15 @@ func getConfig() *config {
 	viaGoContext := env.Env().String("VIA_GO_CONTEXT")
 	if strings.EqualFold(viaGoContext, "true") {
 		return &config{
-			StatementTimeout:	10 * time.Second,
-			PGSleep:		200 * time.Millisecond,
-			ContextTimeout:		100 * time.Millisecond,
+			StatementTimeout: 10 * time.Second,
+			PGSleep:          200 * time.Millisecond,
+			ContextTimeout:   100 * time.Millisecond,
 		}
 	}
 
 	return &config{
-		StatementTimeout:	10 * time.Millisecond,
-		PGSleep:		200 * time.Millisecond,
-		ContextTimeout:		400 * time.Millisecond,
+		StatementTimeout: 10 * time.Millisecond,
+		PGSleep:          200 * time.Millisecond,
+		ContextTimeout:   400 * time.Millisecond,
 	}
 }

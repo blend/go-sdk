@@ -11,4 +11,4 @@ package validate
 type NoOp struct{}
 
 // Validate implements the no op.
-func (no NoOp) Validate() error	{ return nil }
+func (no NoOp) Validate() error { return nil }

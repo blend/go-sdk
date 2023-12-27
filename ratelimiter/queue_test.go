@@ -17,7 +17,7 @@ import (
 func TestQueue_Check(t *testing.T) {
 	it := assert.New(t)
 
-	rl := NewQueue(5, time.Second)	// 5 actions per second
+	rl := NewQueue(5, time.Second) // 5 actions per second
 
 	now := time.Now()
 

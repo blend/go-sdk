@@ -17,7 +17,7 @@ import (
 func Test_DailyAtUTC(t *testing.T) {
 	t.Parallel()
 	its := assert.New(t)
-	schedule := DailyAtUTC(12, 0, 0)	//noon
+	schedule := DailyAtUTC(12, 0, 0) //noon
 	now := time.Now().UTC()
 	beforenoon := time.Date(now.Year(), now.Month(), now.Day(), 11, 0, 0, 0, time.UTC)
 	afternoon := time.Date(now.Year(), now.Month(), now.Day(), 13, 0, 0, 0, time.UTC)
@@ -31,11 +31,11 @@ func Test_DailyAtUTC(t *testing.T) {
 func Test_WeeklyAtUTC(t *testing.T) {
 	t.Parallel()
 	its := assert.New(t)
-	schedule := WeeklyAtUTC(12, 0, 0, time.Monday)			//every monday at noon
-	beforenoon := time.Date(2016, 01, 11, 11, 0, 0, 0, time.UTC)	//these are both a monday
-	afternoon := time.Date(2016, 01, 11, 13, 0, 0, 0, time.UTC)	//these are both a monday
+	schedule := WeeklyAtUTC(12, 0, 0, time.Monday)               //every monday at noon
+	beforenoon := time.Date(2016, 01, 11, 11, 0, 0, 0, time.UTC) //these are both a monday
+	afternoon := time.Date(2016, 01, 11, 13, 0, 0, 0, time.UTC)  //these are both a monday
 
-	sundayBeforeNoon := time.Date(2016, 01, 17, 11, 0, 0, 0, time.UTC)	//to gut check that it's monday
+	sundayBeforeNoon := time.Date(2016, 01, 17, 11, 0, 0, 0, time.UTC) //to gut check that it's monday
 
 	todayAtNoon := schedule.Next(beforenoon)
 	nextWeekAtNoon := schedule.Next(afternoon)

@@ -68,8 +68,8 @@ func TestParserReadWord(t *testing.T) {
 	assert.True(l.done())
 
 	l = &Parser{
-		s:	"foo ==",
-		pos:	6,
+		s:   "foo ==",
+		pos: 6,
 	}
 	word, err = l.readWord()
 	assert.NotNil(err)

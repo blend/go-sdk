@@ -13,7 +13,7 @@ import (
 
 // These constants are states of CircuitBreaker.
 const (
-	StateClosed	State	= iota
+	StateClosed State = iota
 	StateHalfOpen
 	StateOpen
 )

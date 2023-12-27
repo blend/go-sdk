@@ -21,11 +21,11 @@ const (
 
 // CopyOptions are options for the throttled copy.
 type CopyOptions struct {
-	RateBytes	int64
-	RateQuantum	time.Duration
-	ChunkSize	int
-	Buffer		[]byte
-	OnWrite		func(int, time.Duration)
+	RateBytes   int64
+	RateQuantum time.Duration
+	ChunkSize   int
+	Buffer      []byte
+	OnWrite     func(int, time.Duration)
 }
 
 // CopyOption mutates CopyOptions.
@@ -68,10 +68,10 @@ var errCopyInvalidOnWrite = errors.New("throttled copy; invalid on write handler
 // Copy copies from the src reader to the dst writer.
 func Copy(ctx context.Context, dst io.Writer, src io.Reader, opts ...CopyOption) (written int64, err error) {
 	options := CopyOptions{
-		RateBytes:	10 * (1 << 27),	// 10gbit in bytes, or (10*(2^30))/8
-		RateQuantum:	time.Second,
-		ChunkSize:	DefaultCopyChunkSizeBytes,
-		OnWrite:	func(_ int, _ time.Duration) {},
+		RateBytes:   10 * (1 << 27), // 10gbit in bytes, or (10*(2^30))/8
+		RateQuantum: time.Second,
+		ChunkSize:   DefaultCopyChunkSizeBytes,
+		OnWrite:     func(_ int, _ time.Duration) {},
 	}
 	for _, opt := range opts {
 		opt(&options)
@@ -102,8 +102,8 @@ func Copy(ctx context.Context, dst io.Writer, src io.Reader, opts ...CopyOption)
 	var er, ew error
 	var ts time.Time
 	wait := Wait{
-		NumberOfActions:	options.RateBytes,
-		Quantum:		options.RateQuantum,
+		NumberOfActions: options.RateBytes,
+		Quantum:         options.RateQuantum,
 	}
 	var after *time.Timer
 	for {

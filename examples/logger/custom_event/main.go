@@ -19,21 +19,21 @@ import (
 // It is helpful to use a constructor syou can initialize the event meta.
 func NewCustomEvent(userID, sessionID, context string) CustomEvent {
 	return CustomEvent{
-		UserID:		userID,
-		SessionID:	sessionID,
-		Context:	context,
+		UserID:    userID,
+		SessionID: sessionID,
+		Context:   context,
 	}
 }
 
 // CustomEvent is a custom logger event.
 type CustomEvent struct {
-	UserID		string	// something domain specific
-	SessionID	string	// something domain specific
-	Context		string	// something domain specific
+	UserID    string // something domain specific
+	SessionID string // something domain specific
+	Context   string // something domain specific
 }
 
 // GetFlag implements logger.Event.
-func (ce CustomEvent) GetFlag() string	{ return "custom_event" }
+func (ce CustomEvent) GetFlag() string { return "custom_event" }
 
 // WriteText implements logger.TextWritable.
 // It is optional, but very much encouraged.
@@ -52,9 +52,9 @@ func (ce CustomEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
 // to be serialized with the rest of the fields.
 func (ce CustomEvent) Decompose() map[string]interface{} {
 	return map[string]interface{}{
-		"userID":	ce.UserID,
-		"sessionID":	ce.SessionID,
-		"context":	ce.Context,
+		"userID":    ce.UserID,
+		"sessionID": ce.SessionID,
+		"context":   ce.Context,
 	}
 }
 

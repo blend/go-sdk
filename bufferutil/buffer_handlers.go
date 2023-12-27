@@ -17,7 +17,7 @@ import (
 // BufferHandlers is a synchronized map of listeners for new lines to a line buffer.
 type BufferHandlers struct {
 	sync.RWMutex
-	Handlers	map[string]*async.Worker
+	Handlers map[string]*async.Worker
 }
 
 // Add adds a handler.
@@ -72,6 +72,6 @@ func (bl *BufferHandlers) Close() {
 	defer bl.Unlock()
 
 	for _, queue := range bl.Handlers {
-		_ = queue.Stop()	// blocks until stop signal received
+		_ = queue.Stop() // blocks until stop signal received
 	}
 }

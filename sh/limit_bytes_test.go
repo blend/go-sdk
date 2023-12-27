@@ -45,16 +45,16 @@ func makeChunk(len int) []byte {
 }
 
 var (
-	provider	= rand.New(rand.NewSource(time.Now().UnixNano()))
+	provider = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	// LowerLetters is a runset of lowercase letters.
-	lowerLetters	= []byte("abcdefghijklmnopqrstuvwxyz")
+	lowerLetters = []byte("abcdefghijklmnopqrstuvwxyz")
 
 	// UpperLetters is a runset of uppercase letters.
-	upperLetters	= []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	upperLetters = []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 	// Letters is a runset of both lower and uppercase letters.
-	letters	= append(lowerLetters, upperLetters...)
+	letters = append(lowerLetters, upperLetters...)
 )
 
 func randomLetter() byte {

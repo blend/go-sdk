@@ -22,13 +22,13 @@ func CompressSpace(text string) (output string) {
 	var state int
 	for _, r := range text {
 		switch state {
-		case 0:	// non-whitespace
+		case 0: // non-whitespace
 			if unicode.IsSpace(r) {
 				state = 1
 			} else {
 				output = output + string(r)
 			}
-		case 1:	// whitespace
+		case 1: // whitespace
 			if !unicode.IsSpace(r) {
 				output = output + " " + string(r)
 				state = 0

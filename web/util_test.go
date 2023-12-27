@@ -47,18 +47,18 @@ func TestMergeHeaders(t *testing.T) {
 	assert := assert.New(t)
 
 	a := map[string][]string{
-		"Foo":	{"foo1a", "foo2a"},
-		"Bar":	{"bar1a", "bar2a"},
+		"Foo": {"foo1a", "foo2a"},
+		"Bar": {"bar1a", "bar2a"},
 	}
 
 	b := map[string][]string{
-		"Foo":			{"foo1b", "foo2b", "foo3b"},
-		"example-string":	{"dog"},
+		"Foo":            {"foo1b", "foo2b", "foo3b"},
+		"example-string": {"dog"},
 	}
 
 	c := map[string][]string{
-		"Bar":	{"bar1c", "bar2c"},
-		"Buzz":	{"fuzz"},
+		"Bar":  {"bar1c", "bar2c"},
+		"Buzz": {"fuzz"},
 	}
 
 	merged := MergeHeaders(a, b, c)

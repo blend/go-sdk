@@ -13,31 +13,31 @@ import (
 )
 
 var (
-	_	ResponseWriter		= (*GZipResponseWriter)(nil)
-	_	http.ResponseWriter	= (*GZipResponseWriter)(nil)
-	_	http.Flusher		= (*GZipResponseWriter)(nil)
+	_ ResponseWriter      = (*GZipResponseWriter)(nil)
+	_ http.ResponseWriter = (*GZipResponseWriter)(nil)
+	_ http.Flusher        = (*GZipResponseWriter)(nil)
 )
 
 // NewGZipResponseWriter returns a new gzipped response writer.
 func NewGZipResponseWriter(w http.ResponseWriter) *GZipResponseWriter {
 	if typed, ok := w.(ResponseWriter); ok {
 		return &GZipResponseWriter{
-			innerResponse:	typed.InnerResponse(),
-			gzipWriter:	gzip.NewWriter(typed.InnerResponse()),
+			innerResponse: typed.InnerResponse(),
+			gzipWriter:    gzip.NewWriter(typed.InnerResponse()),
 		}
 	}
 	return &GZipResponseWriter{
-		innerResponse:	w,
-		gzipWriter:	gzip.NewWriter(w),
+		innerResponse: w,
+		gzipWriter:    gzip.NewWriter(w),
 	}
 }
 
 // GZipResponseWriter is a response writer that compresses output.
 type GZipResponseWriter struct {
-	gzipWriter	*gzip.Writer
-	innerResponse	http.ResponseWriter
-	statusCode	int
-	contentLength	int
+	gzipWriter    *gzip.Writer
+	innerResponse http.ResponseWriter
+	statusCode    int
+	contentLength int
 }
 
 // InnerResponse returns the underlying response.

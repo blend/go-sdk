@@ -20,8 +20,8 @@ import (
 )
 
 var (
-	_	grpcutil.ClientTracer	= (*tracer)(nil)
-	_	grpcutil.ServerTracer	= (*tracer)(nil)
+	_ grpcutil.ClientTracer = (*tracer)(nil)
+	_ grpcutil.ServerTracer = (*tracer)(nil)
 )
 
 // Tracer returns a tracer.
@@ -167,9 +167,9 @@ func (t tracer) StartServerStream(ctx context.Context, method string) (context.C
 
 // TraceFinisher finishes traces.
 type TraceFinisher struct {
-	startTime	time.Time
-	ctx		context.Context
-	span		opentracing.Span
+	startTime time.Time
+	ctx       context.Context
+	span      opentracing.Span
 }
 
 // Finish implements TraceFinisher.

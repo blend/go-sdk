@@ -17,16 +17,16 @@ func TestNotIn(t *testing.T) {
 	assert := assert.New(t)
 
 	valid := Labels{
-		"foo":	"mar",
-		"moo":	"lar",
+		"foo": "mar",
+		"moo": "lar",
 	}
 	invalid := Labels{
-		"foo":	"far",
-		"moo":	"lar",
+		"foo": "far",
+		"moo": "lar",
 	}
 	missing := Labels{
-		"loo":	"mar",
-		"moo":	"lar",
+		"loo": "mar",
+		"moo": "lar",
 	}
 
 	selector := NotIn{Key: "foo", Values: []string{"bar", "far"}}

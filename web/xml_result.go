@@ -11,8 +11,8 @@ import "github.com/blend/go-sdk/webutil"
 
 // XMLResult is a json result.
 type XMLResult struct {
-	StatusCode	int
-	Response	interface{}
+	StatusCode int
+	Response   interface{}
 }
 
 // Render renders the result

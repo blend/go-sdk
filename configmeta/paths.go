@@ -17,8 +17,8 @@ import (
 
 // EnvVars
 const (
-	EnvVarProjectConfigPath	= "PROJECT_CONFIG_PATH"
-	EnvVarConfigPath	= "CONFIG_PATH"
+	EnvVarProjectConfigPath = "PROJECT_CONFIG_PATH"
+	EnvVarConfigPath        = "CONFIG_PATH"
 )
 
 // Defaults

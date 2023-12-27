@@ -96,8 +96,8 @@ func (a *AWSAuth) GetCallerIdentitySignedRequest(roleARN, service, region string
 
 	stsSession, err := session.NewSessionWithOptions(session.Options{
 		Config: aws.Config{
-			Credentials:	credentials,
-			Region:		&region,
+			Credentials: credentials,
+			Region:      &region,
 		},
 	})
 	if err != nil {
@@ -132,11 +132,11 @@ func createVaultLoginRequest(roleName string, baseURL url.URL, request *http.Req
 	}
 
 	body := map[string]string{
-		"role":				roleName,
-		"iam_http_request_method":	MethodPost,
-		"iam_request_url":		base64.StdEncoding.EncodeToString([]byte(request.URL.String())),
-		"iam_request_body":		base64.StdEncoding.EncodeToString([]byte(STSGetIdentityBody)),
-		"iam_request_headers":		base64.StdEncoding.EncodeToString(stsHeaders),
+		"role":                    roleName,
+		"iam_http_request_method": MethodPost,
+		"iam_request_url":         base64.StdEncoding.EncodeToString([]byte(request.URL.String())),
+		"iam_request_body":        base64.StdEncoding.EncodeToString([]byte(STSGetIdentityBody)),
+		"iam_request_headers":     base64.StdEncoding.EncodeToString(stsHeaders),
 	}
 
 	contents, err := json.Marshal(body)
@@ -145,9 +145,9 @@ func createVaultLoginRequest(roleName string, baseURL url.URL, request *http.Req
 	}
 
 	req := &http.Request{
-		URL:	&baseURL,
-		Method:	MethodPost,
-		Body:	io.NopCloser(bytes.NewReader(contents)),
+		URL:    &baseURL,
+		Method: MethodPost,
+		Body:   io.NopCloser(bytes.NewReader(contents)),
 	}
 
 	req.GetBody = func() (io.ReadCloser, error) {

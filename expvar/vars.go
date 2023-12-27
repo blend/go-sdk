@@ -17,9 +17,9 @@ import (
 
 // Vars is a collection of expvars.
 type Vars struct {
-	vars		sync.Map	// map[string]Var
-	varKeysMu	sync.RWMutex
-	varKeys		[]string	// sorted
+	vars      sync.Map // map[string]Var
+	varKeysMu sync.RWMutex
+	varKeys   []string // sorted
 }
 
 // Get retrieves a named exported variable. It returns nil if the name has

@@ -24,9 +24,9 @@ func NewAddListenerOptions(opts ...AddListenerOption) AddListenerOptions {
 
 // AddListenerOptions are options for adding listeners.
 type AddListenerOptions struct {
-	IncludeLoggerLabelsAsTags	bool
-	RequestSanitizeDefaults		[]sanitize.RequestOption
-	DefaultTags			map[string]string
+	IncludeLoggerLabelsAsTags bool
+	RequestSanitizeDefaults   []sanitize.RequestOption
+	DefaultTags               map[string]string
 }
 
 // GetLoggerLabelsAsTags gets the logger tags from a context if they're set to be included.

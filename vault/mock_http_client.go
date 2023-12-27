@@ -39,8 +39,8 @@ func (mh *MockHTTPClient) With(verb string, url *url.URL, response *http.Respons
 // WithString adds a mocked endpoint.
 func (mh *MockHTTPClient) WithString(verb string, url *url.URL, contents string) *MockHTTPClient {
 	mh.contents[fmt.Sprintf("%s_%s", verb, url.String())] = &http.Response{
-		StatusCode:	http.StatusOK,
-		Body:		io.NopCloser(bytes.NewBuffer([]byte(contents))),
+		StatusCode: http.StatusOK,
+		Body:       io.NopCloser(bytes.NewBuffer([]byte(contents))),
 	}
 	return mh
 }

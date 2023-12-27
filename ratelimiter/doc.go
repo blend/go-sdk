@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package ratelimiter implements two common rate limiters; queue and token/leaky bucket.
 */
-package ratelimiter	// import "github.com/blend/go-sdk/ratelimiter"
+package ratelimiter // import "github.com/blend/go-sdk/ratelimiter"

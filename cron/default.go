@@ -10,8 +10,8 @@ package cron
 import "sync"
 
 var (
-	_default	*JobManager
-	_defaultLock	sync.Mutex
+	_default     *JobManager
+	_defaultLock sync.Mutex
 )
 
 // Default returns a shared instance of a JobManager.

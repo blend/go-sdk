@@ -36,17 +36,17 @@ func NewGroupWithAction(guard GuardFunc, action Action, options ...GroupOption) 
 // setting the SkipTransaction flag to true. This allows the use of CONCURRENT index creation and other operations that
 // postgres will not allow within a transaction.
 type Group struct {
-	Actions		[]Action
-	Tx		*sql.Tx
-	SkipTransaction	bool
+	Actions         []Action
+	Tx              *sql.Tx
+	SkipTransaction bool
 }
 
 // Action runs the groups actions within a transaction.
 func (ga *Group) Action(ctx context.Context, c *db.Connection) (err error) {
 	var tx *sql.Tx
-	if ga.Tx != nil {	// if we have a transaction provided to us
+	if ga.Tx != nil { // if we have a transaction provided to us
 		tx = ga.Tx
-	} else if !ga.SkipTransaction {	// if we aren't told to skip transactions
+	} else if !ga.SkipTransaction { // if we aren't told to skip transactions
 		tx, err = c.Begin()
 		if err != nil {
 			return

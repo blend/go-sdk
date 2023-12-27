@@ -20,8 +20,8 @@ func Test_ValidateDatabaseName(t *testing.T) {
 	its := assert.New(t)
 
 	testCases := [...]struct {
-		Input	string
-		Err	error
+		Input string
+		Err   error
 	}{
 		{Input: "my_table"},
 		{Input: "my_2nd_table"},

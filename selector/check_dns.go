@@ -34,9 +34,9 @@ func CheckDNS(value string) (err error) {
 	var width int
 
 	const (
-		statePrefixSuffix	= 0
-		stateAlpha		= 1
-		stateDotDash		= 2
+		statePrefixSuffix = 0
+		stateAlpha        = 1
+		stateDotDash      = 2
 	)
 
 	for pos := 0; pos < valueLen; pos += width {

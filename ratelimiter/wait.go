@@ -15,8 +15,8 @@ import (
 // Wait is a type that allows you to throttle actions
 // with sleeps based on a desired rate.
 type Wait struct {
-	NumberOfActions	int64
-	Quantum		time.Duration
+	NumberOfActions int64
+	Quantum         time.Duration
 }
 
 // Wait waits for a calculated throttling time based on the input options.

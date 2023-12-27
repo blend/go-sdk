@@ -11,6 +11,6 @@ import "time"
 
 // Assignment is an assignment.
 type Assignment struct {
-	At		time.Time	`json:"at,omitempty"`
-	Assignee	*APIObject	`json:"assignee"`
+	At       time.Time  `json:"at,omitempty"`
+	Assignee *APIObject `json:"assignee"`
 }

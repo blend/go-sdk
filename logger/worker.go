@@ -17,18 +17,18 @@ import (
 // NewWorker returns a new worker.
 func NewWorker(listener Listener) *Worker {
 	return &Worker{
-		Latch:		async.NewLatch(),
-		Listener:	listener,
-		Work:		make(chan EventWithContext, DefaultWorkerQueueDepth),
+		Latch:    async.NewLatch(),
+		Listener: listener,
+		Work:     make(chan EventWithContext, DefaultWorkerQueueDepth),
 	}
 }
 
 // Worker is an agent that processes a listener.
 type Worker struct {
 	*async.Latch
-	Errors		chan error
-	Listener	Listener
-	Work		chan EventWithContext
+	Errors   chan error
+	Listener Listener
+	Work     chan EventWithContext
 }
 
 // Start starts the worker.

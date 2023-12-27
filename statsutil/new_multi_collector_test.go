@@ -24,10 +24,10 @@ func Test_NewMultiCollector(t *testing.T) {
 
 	collector, err := NewMultiCollector(log,
 		OptMetaConfig(configmeta.Meta{
-			ServiceName:	"test-service",
-			ServiceEnv:	"test-service-env",
-			Version:	"test-service-version",
-			ClusterName:	"test-cluster.centrio.com",
+			ServiceName: "test-service",
+			ServiceEnv:  "test-service-env",
+			Version:     "test-service-version",
+			ClusterName: "test-cluster.centrio.com",
 		}),
 		OptDatadogConfig(datadog.Config{}),
 		OptPrinter(true),

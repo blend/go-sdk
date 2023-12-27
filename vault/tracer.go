@@ -17,8 +17,8 @@ const errNilConfig ex.Class = "config cannot be nil"
 
 // SecretTraceConfig are the options for sending trace messages for the secrets package
 type SecretTraceConfig struct {
-	VaultOperation	string
-	KeyName		string
+	VaultOperation string
+	KeyName        string
 }
 
 // TraceOption is an option type for secret trace

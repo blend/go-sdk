@@ -15,10 +15,10 @@ import (
 
 const (
 	// ErrConfigPathUnset is a common error.
-	ErrConfigPathUnset	= ex.Class("config path unset")
+	ErrConfigPathUnset = ex.Class("config path unset")
 
 	// ErrInvalidConfigExtension is a common error.
-	ErrInvalidConfigExtension	= ex.Class("config extension invalid")
+	ErrInvalidConfigExtension = ex.Class("config extension invalid")
 )
 
 // IsIgnored returns if we should ignore the config read error.

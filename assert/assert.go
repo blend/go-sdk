@@ -28,8 +28,8 @@ import (
 // Empty returns an empty assertions handler; useful when you want to apply assertions w/o hooking into the testing framework.
 func Empty(opts ...Option) *Assertions {
 	a := Assertions{
-		OutputFormat:	OutputFormatFromEnv(),
-		Context:	WithContextID(context.Background(), randomString(8)),
+		OutputFormat: OutputFormatFromEnv(),
+		Context:      WithContextID(context.Background(), randomString(8)),
 	}
 	for _, opt := range opts {
 		opt(&a)
@@ -40,9 +40,9 @@ func Empty(opts ...Option) *Assertions {
 // New returns a new instance of `Assertions`.
 func New(t *testing.T, opts ...Option) *Assertions {
 	a := Assertions{
-		T:		t,
-		OutputFormat:	OutputFormatFromEnv(),
-		Context:	WithContextID(context.Background(), randomString(8)),
+		T:            t,
+		OutputFormat: OutputFormatFromEnv(),
+		Context:      WithContextID(context.Background(), randomString(8)),
 	}
 	if t != nil {
 		a.Context = WithTestName(a.Context, t.Name())
@@ -55,12 +55,12 @@ func New(t *testing.T, opts ...Option) *Assertions {
 
 // Assertions is the main entry point for using the assertions library.
 type Assertions struct {
-	Output		io.Writer
-	OutputFormat	OutputFormat
-	T		*testing.T
-	Context		context.Context
-	Optional	bool
-	Count		int32
+	Output       io.Writer
+	OutputFormat OutputFormat
+	T            *testing.T
+	Context      context.Context
+	Optional     bool
+	Count        int32
 }
 
 // Background returns the assertions context.
@@ -80,10 +80,10 @@ func (a *Assertions) assertion() {
 // test to still be a success.
 func (a *Assertions) NonFatal() *Assertions {
 	return &Assertions{
-		T:		a.T,
-		Output:		a.Output,
-		OutputFormat:	a.OutputFormat,
-		Optional:	true,
+		T:            a.T,
+		Output:       a.Output,
+		OutputFormat: a.OutputFormat,
+		Optional:     true,
 	}
 }
 
@@ -510,13 +510,13 @@ func callerInfoStrings(frames []stackFrame) []string {
 }
 
 type stackFrame struct {
-	PC		uintptr
-	FileFull	string
-	Dir		string
-	File		string
-	Name		string
-	Line		int
-	OK		bool
+	PC       uintptr
+	FileFull string
+	Dir      string
+	File     string
+	Name     string
+	Line     int
+	OK       bool
 }
 
 func (sf stackFrame) String() string {
@@ -571,7 +571,7 @@ func isTest(name, prefix string) bool {
 	if !strings.HasPrefix(name, prefix) {
 		return false
 	}
-	if len(name) == len(prefix) {	// "Test" is ok
+	if len(name) == len(prefix) { // "Test" is ok
 		return true
 	}
 	rune, _ := utf8.DecodeRuneInString(name[len(prefix):])

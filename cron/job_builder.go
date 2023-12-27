@@ -17,11 +17,11 @@ import (
 
 // Interface assertions.
 var (
-	_	Job			= (*JobBuilder)(nil)
-	_	ScheduleProvider	= (*JobBuilder)(nil)
-	_	LifecycleProvider	= (*JobBuilder)(nil)
-	_	BackgroundProvider	= (*JobBuilder)(nil)
-	_	ConfigProvider		= (*JobBuilder)(nil)
+	_ Job                = (*JobBuilder)(nil)
+	_ ScheduleProvider   = (*JobBuilder)(nil)
+	_ LifecycleProvider  = (*JobBuilder)(nil)
+	_ BackgroundProvider = (*JobBuilder)(nil)
+	_ ConfigProvider     = (*JobBuilder)(nil)
 )
 
 // NewJob returns a new job builder.
@@ -141,12 +141,12 @@ func OptJobBackground(provider func(context.Context) context.Context) JobBuilder
 
 // JobBuilder allows for job creation w/o a fully formed struct.
 type JobBuilder struct {
-	JobName			string
-	JobConfig		JobConfig
-	JobLifecycle		JobLifecycle
-	JobAction		Action
-	JobScheduleProvider	func() Schedule
-	BackgroundProvider	func(context.Context) context.Context
+	JobName             string
+	JobConfig           JobConfig
+	JobLifecycle        JobLifecycle
+	JobAction           Action
+	JobScheduleProvider func() Schedule
+	BackgroundProvider  func(context.Context) context.Context
 }
 
 // Name returns the job name.

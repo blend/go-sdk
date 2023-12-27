@@ -42,4 +42,4 @@ In the above, the environment variable `BIND_ADDR` takes precedence over the str
 
 Note, we also "resolve" each of the attached configs first, in case they also have environment variables they read from etc.
 */
-package configutil	// import "github.com/blend/go-sdk/configutil"
+package configutil // import "github.com/blend/go-sdk/configutil"

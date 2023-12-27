@@ -16,8 +16,8 @@ import (
 )
 
 type MockTracer struct {
-	StartHandler	func(*http.Request)
-	FinishHandler	func(*http.Request, *http.Response, time.Time, error)
+	StartHandler  func(*http.Request)
+	FinishHandler func(*http.Request, *http.Response, time.Time, error)
 }
 
 func (mt MockTracer) Start(req *http.Request) TraceFinisher {

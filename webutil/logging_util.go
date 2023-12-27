@@ -36,7 +36,7 @@ func FormatHeaders(tf logger.TextFormatter, keyColor ansi.Color, header http.Hea
 
 // ColorizeByStatusCode returns a value colored by an http status code.
 func ColorizeByStatusCode(statusCode int, value string) string {
-	if statusCode >= http.StatusOK && statusCode < 300 {	//the http 2xx range is ok
+	if statusCode >= http.StatusOK && statusCode < 300 { //the http 2xx range is ok
 		return ansi.ColorGreen.Apply(value)
 	} else if statusCode == http.StatusInternalServerError {
 		return ansi.ColorRed.Apply(value)
@@ -46,7 +46,7 @@ func ColorizeByStatusCode(statusCode int, value string) string {
 
 // ColorizeByStatusCodeWithFormatter returns a value colored by an http status code with a given formatter.
 func ColorizeByStatusCodeWithFormatter(tf logger.TextFormatter, statusCode int, value string) string {
-	if statusCode >= http.StatusOK && statusCode < 300 {	//the http 2xx range is ok
+	if statusCode >= http.StatusOK && statusCode < 300 { //the http 2xx range is ok
 		return tf.Colorize(value, ansi.ColorGreen)
 	} else if statusCode == http.StatusInternalServerError {
 		return tf.Colorize(value, ansi.ColorRed)

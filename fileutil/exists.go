@@ -17,8 +17,8 @@ import (
 // - Can we stat the file / path? (i.e. does it exist?)
 // - Is the file mode a directory?
 type pathInfo struct {
-	Exists	bool
-	IsDir	bool
+	Exists bool
+	IsDir  bool
 }
 
 func pathExists(path string) (*pathInfo, error) {

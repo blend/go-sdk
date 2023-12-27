@@ -33,8 +33,8 @@ func main() {
 `
 	rule := GoCalls([]GoCall{
 		{
-			Package:	"fmt",
-			Func:		"Printf",
+			Package: "fmt",
+			Func:    "Printf",
 		},
 	})
 
@@ -63,8 +63,8 @@ func main() {
 `
 	rule := GoCalls([]GoCall{
 		{
-			Package:	"fmt",
-			Func:		"Println",
+			Package: "fmt",
+			Func:    "Println",
 		},
 	})
 

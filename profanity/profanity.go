@@ -32,9 +32,9 @@ func New(options ...Option) *Profanity {
 // Profanity parses rules from the filesystem and applies them to a given root path.
 // Creating a full rules set.
 type Profanity struct {
-	Config	Config
-	Stdout	io.Writer
-	Stderr	io.Writer
+	Config Config
+	Stdout io.Writer
+	Stderr io.Writer
 }
 
 // Process processes the profanity rules.

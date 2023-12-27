@@ -33,8 +33,8 @@ func main() {
 	logger := log.New(os.Stdout, "statsd|", log.LstdFlags)
 
 	server := &statsd.Server{
-		Addr:	*flagBindAddr,
-		Log:	logger,
+		Addr: *flagBindAddr,
+		Log:  logger,
 		Handler: func(metrics ...statsd.Metric) {
 			printer := json.NewEncoder(os.Stdout)
 			printer.SetIndent("", "  ")

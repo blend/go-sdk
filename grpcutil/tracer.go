@@ -83,7 +83,7 @@ func TracedServerStream(tracer ServerTracer) grpc.StreamServerInterceptor {
 // add tracing handling for individual stream calls.
 type contextServerStream struct {
 	grpc.ServerStream
-	ctx	context.Context
+	ctx context.Context
 }
 
 func (cs *contextServerStream) Context() context.Context {

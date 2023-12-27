@@ -38,12 +38,12 @@ func TestWebhookSend(t *testing.T) {
 	defer ts.Close()
 
 	wh := Webhook{
-		URL:	ts.URL,
-		Method:	"POST",
+		URL:    ts.URL,
+		Method: "POST",
 		Headers: map[string]string{
 			"X-Test-Value": "foo",
 		},
-		Body:	"this is only a test",
+		Body: "this is only a test",
 	}
 
 	res, err := wh.Send()

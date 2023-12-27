@@ -34,7 +34,7 @@ func NewTemp(contents []byte) (*Temp, error) {
 type Temp struct {
 	sync.Mutex
 
-	file	*os.File
+	file *os.File
 }
 
 // Name returns the fully qualified file path.

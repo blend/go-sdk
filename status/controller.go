@@ -20,8 +20,8 @@ import (
 // NewController returns a new controller
 func NewController(opts ...ControllerOption) *Controller {
 	controller := Controller{
-		Checks:		NewFreeform(),
-		TrackedActions:	NewTrackedActionAggregator(),
+		Checks:         NewFreeform(),
+		TrackedActions: NewTrackedActionAggregator(),
 	}
 	for _, opt := range opts {
 		opt(&controller)
@@ -85,11 +85,11 @@ func OptMiddleware(middleware ...web.Middleware) ControllerOption {
 // It will register `/status/sla` and `/status/details` routes
 // on the given app.
 type Controller struct {
-	Config		configmeta.Meta
-	Checks		*Freeform
-	TrackedActions	*TrackedActionAggregator
-	Middleware	[]web.Middleware
-	UseBareMethods	bool
+	Config         configmeta.Meta
+	Checks         *Freeform
+	TrackedActions *TrackedActionAggregator
+	Middleware     []web.Middleware
+	UseBareMethods bool
 }
 
 // Register adds the controller's routes to the app.

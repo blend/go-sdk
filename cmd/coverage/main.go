@@ -25,9 +25,9 @@ import (
 )
 
 const (
-	star			= "*"
-	defaultFileFlags	= 0644
-	expand			= "/..."
+	star             = "*"
+	defaultFileFlags = 0644
+	expand           = "/..."
 )
 
 var reportOutputPath = flag.String("output", "coverage.html", "the path to write the full html coverage report")
@@ -42,8 +42,8 @@ var v = flag.Bool("v", false, "show verbose output")
 var exitFirst = flag.Bool("exit-first", true, "exit on first coverage failure; when disabled this will produce full coverage reports even on coverage failures")
 
 var (
-	includes	Paths
-	excludes	Paths
+	includes Paths
+	excludes Paths
 )
 
 func main() {
@@ -192,7 +192,7 @@ func getPackageCoverage(currentPath string, info os.FileInfo, err error) (string
 	}
 
 	for _, include := range includes {
-		if matches := glob(include, currentPath); !matches {	// note the !
+		if matches := glob(include, currentPath); !matches { // note the !
 			vf("%q skipping dir; include no match: %s", currentPath, include)
 			return "", nil
 		}
@@ -536,15 +536,15 @@ func (acc ansiColor) Apply(text string) string {
 
 const (
 	// ColorGray is the posix escape code fragment for black.
-	colorGray	ansiColor	= "90m"
+	colorGray ansiColor = "90m"
 	// ColorRed is the posix escape code fragment for red.
-	colorRed	ansiColor	= "31m"
+	colorRed ansiColor = "31m"
 	// ColorYellow is the posix escape code fragment for yellow.
-	colorYellow	ansiColor	= "33m"
+	colorYellow ansiColor = "33m"
 	// ColorGreen is the posix escape code fragment for green.
-	colorGreen	ansiColor	= "32m"
+	colorGreen ansiColor = "32m"
 	// ColorReset is the posix escape code fragment to reset all formatting.
-	colorReset	ansiColor	= "0m"
+	colorReset ansiColor = "0m"
 )
 
 func parseCoverage(coverage string) (float64, error) {

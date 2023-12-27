@@ -26,8 +26,8 @@ import (
 
 // X509KeyStore is a store keeping references to public/private signing keys
 type X509KeyStore struct {
-	privateKey	*rsa.PrivateKey
-	cert		[]byte
+	privateKey *rsa.PrivateKey
+	cert       []byte
 }
 
 // GetKeyPair returns public/private key pair from a store
@@ -39,17 +39,17 @@ func (ks *X509KeyStore) GetKeyPair() (*rsa.PrivateKey, []byte, error) {
 // verification and validation of SAML assertion documents.
 type SAMLProvider struct {
 	//Config references SAML configuration
-	Config	*SAMLConfig
+	Config *SAMLConfig
 	//Log is the default logger
-	Log	logger.Logger
+	Log logger.Logger
 	//SkipSignatureValidation skips validating SAML response signature
-	SkipSignatureValidation	bool
+	SkipSignatureValidation bool
 	//ValidateEncryptionCert validates signature certificates if set to true
-	ValidateEncryptionCert	bool
+	ValidateEncryptionCert bool
 	//Provider is SAMLv2 service provider
-	Provider	*saml2.SAMLServiceProvider
+	Provider *saml2.SAMLServiceProvider
 	//ClientKeyStore to sign Authn requests
-	ClientKeyStore	dsig.X509KeyStore
+	ClientKeyStore dsig.X509KeyStore
 }
 
 // ParseMetadata parses SAML IDP metadata, extracts basic SAML attributes
@@ -91,8 +91,8 @@ func New(opts ...Option) (*SAMLProvider, error) {
 	// creates SAMLV2 service provider with default signature validation
 	// set to true
 	p := &SAMLProvider{
-		ValidateEncryptionCert:		true,
-		SkipSignatureValidation:	false,
+		ValidateEncryptionCert:  true,
+		SkipSignatureValidation: false,
 	}
 
 	for _, opt := range opts {
@@ -152,8 +152,8 @@ func New(opts ...Option) (*SAMLProvider, error) {
 		//Note: we overwrite client key store in a config here
 		//in case public/private key pair is defined in a config
 		p.ClientKeyStore = &X509KeyStore{
-			privateKey:	privKey,
-			cert:		pubCertBytes,
+			privateKey: privKey,
+			cert:       pubCertBytes,
 		}
 	}
 
@@ -171,17 +171,17 @@ func New(opts ...Option) (*SAMLProvider, error) {
 	}
 
 	p.Provider = &saml2.SAMLServiceProvider{
-		IdentityProviderSSOURL:		p.Config.IdentityProviderSSOURL,
-		IdentityProviderIssuer:		p.Config.IdentityProviderIssuer,
-		ServiceProviderIssuer:		p.Config.IdentityProviderIssuer,
-		AssertionConsumerServiceURL:	p.Config.AssertionConsumerServiceURL,
-		SignAuthnRequests:		true,
-		SignAuthnRequestsCanonicalizer:	xmlCanonicalizer,
-		AudienceURI:			p.Config.AudienceURI,
-		IDPCertificateStore:		certStore,
-		SPKeyStore:			clientKeyStore,
-		ValidateEncryptionCert:		p.ValidateEncryptionCert,
-		SkipSignatureValidation:	p.SkipSignatureValidation,
+		IdentityProviderSSOURL:         p.Config.IdentityProviderSSOURL,
+		IdentityProviderIssuer:         p.Config.IdentityProviderIssuer,
+		ServiceProviderIssuer:          p.Config.IdentityProviderIssuer,
+		AssertionConsumerServiceURL:    p.Config.AssertionConsumerServiceURL,
+		SignAuthnRequests:              true,
+		SignAuthnRequestsCanonicalizer: xmlCanonicalizer,
+		AudienceURI:                    p.Config.AudienceURI,
+		IDPCertificateStore:            certStore,
+		SPKeyStore:                     clientKeyStore,
+		ValidateEncryptionCert:         p.ValidateEncryptionCert,
+		SkipSignatureValidation:        p.SkipSignatureValidation,
 	}
 
 	return p, nil

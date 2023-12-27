@@ -60,10 +60,10 @@ func OptJSONPrettyIndent(prettyIndent string) JSONOutputFormatterOption {
 
 // JSONOutputFormatter is a json output formatter.
 type JSONOutputFormatter struct {
-	BufferPool	*bufferutil.Pool
-	Pretty		bool
-	PrettyPrefix	string
-	PrettyIndent	string
+	BufferPool   *bufferutil.Pool
+	Pretty       bool
+	PrettyPrefix string
+	PrettyIndent string
 }
 
 // PrettyPrefixOrDefault returns the pretty prefix or a default.
@@ -123,9 +123,9 @@ func (jw JSONOutputFormatter) CombineFields(fields ...map[string]interface{}) ma
 // GetScopeFields gets scope fields from a context.
 func (jw JSONOutputFormatter) GetScopeFields(ctx context.Context, e Event) map[string]interface{} {
 	output := map[string]interface{}{
-		FieldFlag:		e.GetFlag(),
-		FieldTimestamp:		GetEventTimestamp(ctx, e),
-		FieldRestricted:	GetRestricted(ctx),
+		FieldFlag:       e.GetFlag(),
+		FieldTimestamp:  GetEventTimestamp(ctx, e),
+		FieldRestricted: GetRestricted(ctx),
 	}
 	if path := GetPath(ctx); len(path) > 0 {
 		output[FieldScopePath] = path

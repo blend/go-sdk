@@ -21,11 +21,11 @@ import (
 
 // Server is a server for handling traces.
 type Server struct {
-	Addr		string
-	Log		*log.Logger
-	Listener	net.Listener
-	Server		*http.Server
-	Handler		func(context.Context, ...*Span)
+	Addr     string
+	Log      *log.Logger
+	Listener net.Listener
+	Server   *http.Server
+	Handler  func(context.Context, ...*Span)
 }
 
 // Start starts the server.

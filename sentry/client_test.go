@@ -29,11 +29,11 @@ func TestNew(t *testing.T) {
 	assert.Nil(c)
 
 	c, err = New(Config{
-		DSN:		"https://foo@example.org/1",
-		Environment:	"test",
-		ServerName:	"go-sdk-server",
-		Release:	"v1.0.0",
-		Dist:		"deadbeef",
+		DSN:         "https://foo@example.org/1",
+		Environment: "test",
+		ServerName:  "go-sdk-server",
+		Release:     "v1.0.0",
+		Dist:        "deadbeef",
 	})
 	assert.Nil(err)
 	assert.Equal("test", c.Client.Options().Environment)
@@ -46,13 +46,13 @@ func TestErrEvent(t *testing.T) {
 	assert := assert.New(t)
 
 	event := errEvent(context.Background(), logger.ErrorEvent{
-		Flag:	logger.Fatal,
-		Err:	ex.New("this is a test", ex.OptMessage("a message")),
+		Flag: logger.Fatal,
+		Err:  ex.New("this is a test", ex.OptMessage("a message")),
 		State: &http.Request{
-			Method:	"POST",
-			Host:	"example.org",
-			TLS:	&tls.ConnectionState{},
-			URL:	webutil.MustParseURL("https://example.org/foo"),
+			Method: "POST",
+			Host:   "example.org",
+			TLS:    &tls.ConnectionState{},
+			URL:    webutil.MustParseURL("https://example.org/foo"),
 		},
 	})
 
@@ -77,13 +77,13 @@ func TestErrEvent_Inner(t *testing.T) {
 	err := ex.New("this is a test", ex.OptMessage("a message"))
 
 	event := errEvent(context.Background(), logger.ErrorEvent{
-		Flag:	logger.Fatal,
-		Err:	ex.Nest(err, inner0, inner1, inner2),
+		Flag: logger.Fatal,
+		Err:  ex.Nest(err, inner0, inner1, inner2),
 		State: &http.Request{
-			Method:	"POST",
-			Host:	"example.org",
-			TLS:	&tls.ConnectionState{},
-			URL:	webutil.MustParseURL("https://example.org/foo"),
+			Method: "POST",
+			Host:   "example.org",
+			TLS:    &tls.ConnectionState{},
+			URL:    webutil.MustParseURL("https://example.org/foo"),
 		},
 	})
 
@@ -107,10 +107,10 @@ func TestErrRequest(t *testing.T) {
 
 	res = errRequest(logger.ErrorEvent{
 		State: &http.Request{
-			Method:	"POST",
-			Host:	"example.org",
-			TLS:	&tls.ConnectionState{},
-			URL:	webutil.MustParseURL("https://example.org/foo"),
+			Method: "POST",
+			Host:   "example.org",
+			TLS:    &tls.ConnectionState{},
+			URL:    webutil.MustParseURL("https://example.org/foo"),
 		},
 	})
 	assert.Equal("POST", res.Method)
@@ -128,13 +128,13 @@ func TestErrEventFingerprintDefault(t *testing.T) {
 	assert := assert.New(t)
 
 	event := errEvent(context.Background(), logger.ErrorEvent{
-		Flag:	logger.Fatal,
-		Err:	ex.New("this is a test", ex.OptMessage("a message")),
+		Flag: logger.Fatal,
+		Err:  ex.New("this is a test", ex.OptMessage("a message")),
 		State: &http.Request{
-			Method:	"POST",
-			Host:	"example.org",
-			TLS:	&tls.ConnectionState{},
-			URL:	webutil.MustParseURL("https://example.org/foo"),
+			Method: "POST",
+			Host:   "example.org",
+			TLS:    &tls.ConnectionState{},
+			URL:    webutil.MustParseURL("https://example.org/foo"),
 		},
 	})
 
@@ -149,13 +149,13 @@ func TestErrEventFingerprintIgnoresPath(t *testing.T) {
 	ctx := logger.WithPath(context.Background(), "foo", "bar")
 
 	event := errEvent(ctx, logger.ErrorEvent{
-		Flag:	logger.Fatal,
-		Err:	ex.New("this is a test", ex.OptMessage("a message")),
+		Flag: logger.Fatal,
+		Err:  ex.New("this is a test", ex.OptMessage("a message")),
 		State: &http.Request{
-			Method:	"POST",
-			Host:	"example.org",
-			TLS:	&tls.ConnectionState{},
-			URL:	webutil.MustParseURL("https://example.org/foo"),
+			Method: "POST",
+			Host:   "example.org",
+			TLS:    &tls.ConnectionState{},
+			URL:    webutil.MustParseURL("https://example.org/foo"),
 		},
 	})
 
@@ -170,13 +170,13 @@ func TestErrEventFingerprintOverride(t *testing.T) {
 	ctx := WithFingerprint(context.Background(), "test", "fingerprint")
 
 	event := errEvent(ctx, logger.ErrorEvent{
-		Flag:	logger.Fatal,
-		Err:	ex.New("this is a test", ex.OptMessage("a message")),
+		Flag: logger.Fatal,
+		Err:  ex.New("this is a test", ex.OptMessage("a message")),
 		State: &http.Request{
-			Method:	"POST",
-			Host:	"example.org",
-			TLS:	&tls.ConnectionState{},
-			URL:	webutil.MustParseURL("https://example.org/foo"),
+			Method: "POST",
+			Host:   "example.org",
+			TLS:    &tls.ConnectionState{},
+			URL:    webutil.MustParseURL("https://example.org/foo"),
 		},
 	})
 	assert.NotNil(event)

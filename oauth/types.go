@@ -20,4 +20,4 @@ type Values = map[string]interface{}
 type Error string
 
 // Error returns the error as a string.
-func (e Error) Error() string	{ return string(e) }
+func (e Error) Error() string { return string(e) }

@@ -13,9 +13,9 @@ import (
 
 // Errors
 const (
-	ErrSomeNil		ex.Class	= "all references should be nil"
-	ErrSomeNotNil		ex.Class	= "at least one reference should not be nil"
-	ErrSomeOneNotNil	ex.Class	= "exactly one of a set of reference should not be nil"
+	ErrSomeNil       ex.Class = "all references should be nil"
+	ErrSomeNotNil    ex.Class = "at least one reference should not be nil"
+	ErrSomeOneNotNil ex.Class = "exactly one of a set of reference should not be nil"
 )
 
 // Many defines validator rules that apply to a variadic

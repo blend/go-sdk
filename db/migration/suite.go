@@ -34,13 +34,13 @@ func NewWithActions(actions ...Action) *Suite {
 
 // Suite is a migration suite.
 type Suite struct {
-	Log	logger.Log
-	Groups	[]*Group
+	Log    logger.Log
+	Groups []*Group
 
-	Applied	int
-	Skipped	int
-	Failed	int
-	Total	int
+	Applied int
+	Skipped int
+	Failed  int
+	Total   int
 }
 
 // Apply applies the suite.

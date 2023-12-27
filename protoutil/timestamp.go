@@ -21,8 +21,8 @@ func Timestamp(t time.Time) *timestamp.Timestamp {
 		return nil
 	}
 	return &timestamp.Timestamp{
-		Seconds:	int64(t.UTC().Unix()),
-		Nanos:		int32(t.UTC().Nanosecond()),
+		Seconds: int64(t.UTC().Unix()),
+		Nanos:   int32(t.UTC().Nanosecond()),
 	}
 }
 

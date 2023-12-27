@@ -19,7 +19,7 @@ func SplitSpace(text string) (output []string) {
 	var word string
 	for _, r := range text {
 		switch state {
-		case 0:	// word
+		case 0: // word
 			if unicode.IsSpace(r) {
 				if len(word) > 0 {
 					output = append(output, word)

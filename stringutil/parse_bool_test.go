@@ -19,9 +19,9 @@ func TestParseBool(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := [...]struct {
-		Input		string
-		Expected	bool
-		Err		error
+		Input    string
+		Expected bool
+		Err      error
 	}{
 		{"true", true, nil},
 		{"t", true, nil},

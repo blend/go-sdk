@@ -26,10 +26,10 @@ func NewLRUQueue() *LRUQueue {
 // a whole new node object for each element (which saves GC churn).
 // Enqueue can be O(n), Dequeue can be O(1).
 type LRUQueue struct {
-	array	[]*Value
-	head	int
-	tail	int
-	size	int
+	array []*Value
+	head  int
+	tail  int
+	size  int
 }
 
 // Len returns the length of the ring buffer (as it is currently populated).
@@ -58,7 +58,7 @@ func (lru *LRUQueue) Clear() {
 
 // Push adds an element to the "back" of the LRUQueue.
 func (lru *LRUQueue) Push(object *Value) {
-	if lru.size == len(lru.array) {	// if we're out of room
+	if lru.size == len(lru.array) { // if we're out of room
 		lru.setCapacity(lru.growCapacity())
 	}
 	lru.array[lru.tail] = object
@@ -270,6 +270,6 @@ func arrayCopy(source []*Value, sourceIndex int, destination []*Value, destinati
 }
 
 const (
-	ringBufferMinimumGrow		= 4
-	ringBufferDefaultCapacity	= 4
+	ringBufferMinimumGrow     = 4
+	ringBufferDefaultCapacity = 4
 )

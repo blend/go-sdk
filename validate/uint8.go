@@ -11,10 +11,10 @@ import "github.com/blend/go-sdk/ex"
 
 // Uint8 errors
 const (
-	ErrUint8Min	ex.Class	= "uint8 should be above a minimum value"
-	ErrUint8Max	ex.Class	= "uint8 should be below a maximum value"
-	ErrUint8Zero	ex.Class	= "uint8 should be zero"
-	ErrUint8NotZero	ex.Class	= "uint8 should not be zero"
+	ErrUint8Min     ex.Class = "uint8 should be above a minimum value"
+	ErrUint8Max     ex.Class = "uint8 should be below a maximum value"
+	ErrUint8Zero    ex.Class = "uint8 should be zero"
+	ErrUint8NotZero ex.Class = "uint8 should not be zero"
 )
 
 // Uint8 returns validators for uint8s.

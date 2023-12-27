@@ -20,8 +20,8 @@ import (
 //   - `IdentityProcessor.KubernetesIdentityFormatter` satisfies `IdentityFormatter`
 //   - `IdentityProcessor.IdentityProvider` satisfies `IdentityProvider`
 var (
-	_	IdentityFormatter	= IdentityProcessor{}.KubernetesIdentityFormatter
-	_	IdentityProvider	= IdentityProcessor{}.IdentityProvider
+	_ IdentityFormatter = IdentityProcessor{}.KubernetesIdentityFormatter
+	_ IdentityProvider  = IdentityProcessor{}.IdentityProvider
 )
 
 // IdentityProcessorOption mutates an identity processor.
@@ -83,9 +83,9 @@ type IdentityType int
 
 const (
 	// ClientIdentity represents client identity.
-	ClientIdentity	IdentityType	= 0
+	ClientIdentity IdentityType = 0
 	// ServerIdentity represents server identity.
-	ServerIdentity	IdentityType	= 1
+	ServerIdentity IdentityType = 1
 )
 
 // IdentityProcessor provides configurable fields that can be used to
@@ -93,12 +93,12 @@ const (
 // a parsed SPIFFE URI. The `Type` field determines if a client or server
 // identity should be provided; by default the type will be client identity.
 type IdentityProcessor struct {
-	Type			IdentityType
-	AllowedTrustDomains	[]string
-	DeniedTrustDomains	[]string
-	AllowedIdentities	collections.Set[string]
-	DeniedIdentities	collections.Set[string]
-	FormatIdentity		IdentityFormatter
+	Type                IdentityType
+	AllowedTrustDomains []string
+	DeniedTrustDomains  []string
+	AllowedIdentities   collections.Set[string]
+	DeniedIdentities    collections.Set[string]
+	FormatIdentity      IdentityFormatter
 }
 
 // IdentityProvider returns a client or server identity; it uses the configured
@@ -113,8 +113,8 @@ func (ip IdentityProcessor) IdentityProvider(xfcc XFCCElement) (string, error) {
 
 	if uriValue == "" {
 		return "", &XFCCValidationError{
-			Class:	ip.errInvalidIdentity(),
-			XFCC:	xfcc.String(),
+			Class: ip.errInvalidIdentity(),
+			XFCC:  xfcc.String(),
 		}
 	}
 
@@ -123,8 +123,8 @@ func (ip IdentityProcessor) IdentityProvider(xfcc XFCCElement) (string, error) {
 	//       not to violate the invariant that `pu != nil` when `err == nil`.
 	if err != nil || pu == nil {
 		return "", &XFCCExtractionError{
-			Class:	ip.errInvalidIdentity(),
-			XFCC:	xfcc.String(),
+			Class: ip.errInvalidIdentity(),
+			XFCC:  xfcc.String(),
 		}
 	}
 
@@ -157,8 +157,8 @@ func (ip IdentityProcessor) KubernetesIdentityFormatter(xfcc XFCCElement, pu *sp
 	kw, err := spiffeutil.ParseKubernetesWorkloadID(pu.WorkloadID)
 	if err != nil {
 		return "", &XFCCExtractionError{
-			Class:	ip.errInvalidIdentity(),
-			XFCC:	xfcc.String(),
+			Class: ip.errInvalidIdentity(),
+			XFCC:  xfcc.String(),
 		}
 	}
 	return fmt.Sprintf("%s.%s", kw.ServiceAccount, kw.Namespace), nil
@@ -178,8 +178,8 @@ func (ip IdentityProcessor) ProcessAllowedTrustDomains(xfcc XFCCElement, pu *spi
 		}
 	}
 	return &XFCCValidationError{
-		Class:	ip.errInvalidIdentity(),
-		XFCC:	xfcc.String(),
+		Class: ip.errInvalidIdentity(),
+		XFCC:  xfcc.String(),
 		Metadata: map[string]string{
 			"trustDomain": pu.TrustDomain,
 		},
@@ -193,8 +193,8 @@ func (ip IdentityProcessor) ProcessDeniedTrustDomains(xfcc XFCCElement, pu *spif
 	for _, denied := range ip.DeniedTrustDomains {
 		if strings.EqualFold(pu.TrustDomain, denied) {
 			return &XFCCValidationError{
-				Class:	ip.errInvalidIdentity(),
-				XFCC:	xfcc.String(),
+				Class: ip.errInvalidIdentity(),
+				XFCC:  xfcc.String(),
 				Metadata: map[string]string{
 					"trustDomain": pu.TrustDomain,
 				},
@@ -217,8 +217,8 @@ func (ip IdentityProcessor) ProcessAllowedIdentities(xfcc XFCCElement, identity 
 	}
 
 	return &XFCCValidationError{
-		Class:	ip.errDeniedIdentity(),
-		XFCC:	xfcc.String(),
+		Class: ip.errDeniedIdentity(),
+		XFCC:  xfcc.String(),
 		Metadata: map[string]string{
 			ip.getIdentityKey(): identity,
 		},
@@ -234,8 +234,8 @@ func (ip IdentityProcessor) ProcessDeniedIdentities(xfcc XFCCElement, identity s
 
 	if ip.DeniedIdentities.Contains(identity) {
 		return &XFCCValidationError{
-			Class:	ip.errDeniedIdentity(),
-			XFCC:	xfcc.String(),
+			Class: ip.errDeniedIdentity(),
+			XFCC:  xfcc.String(),
 			Metadata: map[string]string{
 				ip.getIdentityKey(): identity,
 			},

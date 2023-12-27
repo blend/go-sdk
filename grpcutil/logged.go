@@ -97,8 +97,8 @@ func LoggedClientStream(log logger.Triggerable) grpc.StreamClientInterceptor {
 
 type instrumentedServerStream struct {
 	grpc.ServerStream
-	Method	string
-	Log	logger.Triggerable
+	Method string
+	Log    logger.Triggerable
 }
 
 // RecvMessage overrides the underlying RecvMsg method.

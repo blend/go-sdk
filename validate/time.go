@@ -15,8 +15,8 @@ import (
 
 // String errors
 const (
-	ErrTimeBefore	ex.Class	= "time should be before"
-	ErrTimeAfter	ex.Class	= "time should be after"
+	ErrTimeBefore ex.Class = "time should be before"
+	ErrTimeAfter  ex.Class = "time should be after"
 )
 
 // Time validator singleton.
@@ -76,7 +76,7 @@ func (t TimeValidators) AfterNowUTC() Validator {
 		if t.Value == nil {
 			return Errorf(ErrTimeAfter, nil, "after: %v", nowUTC)
 		}
-		if t.Value.Before(nowUTC) {	// if value not after now == value is before now
+		if t.Value.Before(nowUTC) { // if value not after now == value is before now
 			return Errorf(ErrTimeAfter, *t.Value, "after: %v", nowUTC)
 		}
 		return nil

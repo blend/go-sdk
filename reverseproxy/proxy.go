@@ -39,13 +39,13 @@ func NewProxy(opts ...ProxyOption) (*Proxy, error) {
 
 // Proxy is a factory for a simple reverse proxy.
 type Proxy struct {
-	Headers			http.Header
-	Log			logger.Log
-	Upstreams		[]*Upstream
-	Resolver		Resolver
-	Tracer			webutil.HTTPTracer
-	TransformRequest	TransformRequest
-	Timeout			time.Duration
+	Headers          http.Header
+	Log              logger.Log
+	Upstreams        []*Upstream
+	Resolver         Resolver
+	Tracer           webutil.HTTPTracer
+	TransformRequest TransformRequest
+	Timeout          time.Duration
 }
 
 // ServeHTTP is the http entrypoint.

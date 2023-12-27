@@ -30,16 +30,16 @@ var (
 // New creates a new webhook sender.
 func New(cfg Config) *WebhookSender {
 	return &WebhookSender{
-		Transport:	new(http.Transport),
-		Config:		cfg,
+		Transport: new(http.Transport),
+		Config:    cfg,
 	}
 }
 
 // WebhookSender sends slack webhooks.
 type WebhookSender struct {
-	Transport	*http.Transport
-	RequestDefaults	[]r2.Option
-	Config		Config
+	Transport       *http.Transport
+	RequestDefaults []r2.Option
+	Config          Config
 }
 
 // MessageDefaults returns default message options.
@@ -100,8 +100,8 @@ func (whs WebhookSender) SendAndReadResponse(ctx context.Context, message Messag
 // PostMessage posts a basic message to a given channel.
 func (whs WebhookSender) PostMessage(channel, messageText string, options ...MessageOption) error {
 	message := Message{
-		Channel:	channel,
-		Text:		messageText,
+		Channel: channel,
+		Text:    messageText,
 	}
 	for _, option := range options {
 		option(&message)
@@ -112,8 +112,8 @@ func (whs WebhookSender) PostMessage(channel, messageText string, options ...Mes
 // PostMessageAndReadResponse posts a basic message to a given channel and returns the deserialized response
 func (whs WebhookSender) PostMessageAndReadResponse(channel, messageText string, options ...MessageOption) (*PostMessageResponse, error) {
 	message := Message{
-		Channel:	channel,
-		Text:		messageText,
+		Channel: channel,
+		Text:    messageText,
 	}
 	for _, option := range options {
 		option(&message)
@@ -124,8 +124,8 @@ func (whs WebhookSender) PostMessageAndReadResponse(channel, messageText string,
 // PostMessageContext posts a basic message to a given chanel with a given context.
 func (whs WebhookSender) PostMessageContext(ctx context.Context, channel, messageText string, options ...MessageOption) error {
 	message := Message{
-		Channel:	channel,
-		Text:		messageText,
+		Channel: channel,
+		Text:    messageText,
 	}
 	for _, option := range options {
 		option(&message)
@@ -136,8 +136,8 @@ func (whs WebhookSender) PostMessageContext(ctx context.Context, channel, messag
 // PostMessageAndReadResponseContext posts a basic message to a given channel and returns the deserialized response
 func (whs WebhookSender) PostMessageAndReadResponseContext(ctx context.Context, channel, messageText string, options ...MessageOption) (*PostMessageResponse, error) {
 	message := Message{
-		Channel:	channel,
-		Text:		messageText,
+		Channel: channel,
+		Text:    messageText,
 	}
 	for _, option := range options {
 		option(&message)

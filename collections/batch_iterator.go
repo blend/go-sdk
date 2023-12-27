@@ -9,9 +9,9 @@ package collections
 
 // BatchIterator is an iterator for T
 type BatchIterator[T any] struct {
-	Items		[]T
-	BatchSize	int
-	Cursor		int
+	Items     []T
+	BatchSize int
+	Cursor    int
 }
 
 // HasNext returns if we should process another batch.

@@ -22,10 +22,10 @@ func NewKeyPairFromPaths(certPath, keyPath string) KeyPair {
 
 // KeyPair is an x509 pem key pair as strings.
 type KeyPair struct {
-	Cert		string	`json:"cert,omitempty" yaml:"cert,omitempty"`
-	CertPath	string	`json:"certPath,omitempty" yaml:"certPath,omitempty"`
-	Key		string	`json:"key,omitempty" yaml:"key,omitempty"`
-	KeyPath		string	`json:"keyPath,omitempty" yaml:"keyPath,omitempty"`
+	Cert     string `json:"cert,omitempty" yaml:"cert,omitempty"`
+	CertPath string `json:"certPath,omitempty" yaml:"certPath,omitempty"`
+	Key      string `json:"key,omitempty" yaml:"key,omitempty"`
+	KeyPath  string `json:"keyPath,omitempty" yaml:"keyPath,omitempty"`
 }
 
 // IsZero returns if the key pair is set or not.

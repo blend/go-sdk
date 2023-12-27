@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package selector is a high performance selector parsing library, tightly coupled to the functionality of selectors found in Kubernetes.
 */
-package selector	// import "github.com/blend/go-sdk/selector"
+package selector // import "github.com/blend/go-sdk/selector"

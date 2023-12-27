@@ -38,11 +38,11 @@ func NewCachedStaticFile(path string) (*CachedStaticFile, error) {
 	}
 
 	return &CachedStaticFile{
-		Path:		path,
-		Contents:	bytes.NewReader(contents),
-		ModTime:	finfo.ModTime(),
-		ETag:		webutil.ETag(contents),
-		Size:		len(contents),
+		Path:     path,
+		Contents: bytes.NewReader(contents),
+		ModTime:  finfo.ModTime(),
+		ETag:     webutil.ETag(contents),
+		Size:     len(contents),
 	}, nil
 }
 
@@ -52,11 +52,11 @@ var (
 
 // CachedStaticFile is a memory mapped static file.
 type CachedStaticFile struct {
-	Path		string
-	Size		int
-	ETag		string
-	ModTime		time.Time
-	Contents	*bytes.Reader
+	Path     string
+	Size     int
+	ETag     string
+	ModTime  time.Time
+	Contents *bytes.Reader
 }
 
 // Render implements Result.

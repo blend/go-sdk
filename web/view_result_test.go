@@ -46,9 +46,9 @@ func TestViewResultRender(t *testing.T) {
 	assert.Nil(err)
 
 	vr := &ViewResult{
-		StatusCode:	http.StatusOK,
-		ViewModel:	testViewModel{Text: "bar"},
-		Template:	testView,
+		StatusCode: http.StatusOK,
+		ViewModel:  testViewModel{Text: "bar"},
+		Template:   testView,
 	}
 
 	err = vr.Render(rc)
@@ -72,9 +72,9 @@ func TestViewResultRender(t *testing.T) {
 	env.Env().Set("HELLO", expected)
 
 	vr = &ViewResult{
-		StatusCode:	http.StatusOK,
-		ViewModel:	nil,
-		Template:	testView,
+		StatusCode: http.StatusOK,
+		ViewModel:  nil,
+		Template:   testView,
 	}
 
 	err = vr.Render(rc)
@@ -97,9 +97,9 @@ func TestViewResultRenderErrorResponse(t *testing.T) {
 	assert.Nil(err)
 
 	vr := &ViewResult{
-		StatusCode:	http.StatusOK,
-		ViewModel:	testViewModel{Text: "bar"},
-		Template:	testView,
+		StatusCode: http.StatusOK,
+		ViewModel:  testViewModel{Text: "bar"},
+		Template:   testView,
 	}
 
 	rc.Response = &errorWriter{ResponseWriter: rc.Response}
@@ -119,9 +119,9 @@ func TestViewResultRenderError(t *testing.T) {
 	assert.Nil(err)
 
 	vr := &ViewResult{
-		StatusCode:	http.StatusOK,
-		ViewModel:	testViewModel{Text: "bar"},
-		Template:	testView,
+		StatusCode: http.StatusOK,
+		ViewModel:  testViewModel{Text: "bar"},
+		Template:   testView,
 	}
 
 	err = vr.Render(rc)
@@ -146,9 +146,9 @@ func TestViewResultRenderErrorTemplate(t *testing.T) {
 	assert.Nil(err)
 
 	vr := &ViewResult{
-		StatusCode:	http.StatusOK,
-		ViewModel:	testViewModel{Text: "bar"},
-		Template:	testView,
+		StatusCode: http.StatusOK,
+		ViewModel:  testViewModel{Text: "bar"},
+		Template:   testView,
 	}
 
 	err = vr.Render(rc)
@@ -176,9 +176,9 @@ func TestViewResultErrorNestedViews(t *testing.T) {
 	assert.Nil(err)
 
 	vr := &ViewResult{
-		StatusCode:	http.StatusOK,
-		ViewModel:	testViewModel{Text: "bar"},
-		Template:	outerView,
+		StatusCode: http.StatusOK,
+		ViewModel:  testViewModel{Text: "bar"},
+		Template:   outerView,
 	}
 
 	err = vr.Render(rc)

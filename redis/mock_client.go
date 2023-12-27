@@ -23,8 +23,8 @@ var (
 
 // MockClient is a mocked client.
 type MockClient struct {
-	DoMock	func(context.Context, interface{}, string, ...string) error
-	Ops	chan MockClientOp
+	DoMock func(context.Context, interface{}, string, ...string) error
+	Ops    chan MockClientOp
 }
 
 // Do applies a command.
@@ -45,11 +45,11 @@ func (mc *MockClient) Pipeline(_ context.Context, pipelineName string, ops ...Op
 }
 
 // Close closes the mock client.
-func (mc *MockClient) Close() error	{ return nil }
+func (mc *MockClient) Close() error { return nil }
 
 // MockClientOp is a mocked client op.
 type MockClientOp struct {
-	Out	interface{}
-	Op	string
-	Args	[]string
+	Out  interface{}
+	Op   string
+	Args []string
 }

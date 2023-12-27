@@ -42,10 +42,10 @@ func fakeHandler(val string) Handler {
 }
 
 type testRequests []struct {
-	path		string
-	nilHandler	bool
-	route		string
-	ps		RouteParameters
+	path       string
+	nilHandler bool
+	route      string
+	ps         RouteParameters
 }
 
 func checkRequests(t *testing.T, tree *RouteNode, requests testRequests) {
@@ -151,9 +151,9 @@ func TestTreeAddAndGet(t *testing.T) {
 		{"/hi", false, "/hi", nil},
 		{"/contact", false, "/contact", nil},
 		{"/co", false, "/co", nil},
-		{"/con", true, "", nil},	// key mismatch
-		{"/cona", true, "", nil},	// key mismatch
-		{"/no", true, "", nil},		// no matching child
+		{"/con", true, "", nil},  // key mismatch
+		{"/cona", true, "", nil}, // key mismatch
+		{"/no", true, "", nil},   // no matching child
 		{"/ab", false, "/ab", nil},
 		{"/α", false, "/α", nil},
 		{"/β", false, "/β", nil},
@@ -219,8 +219,8 @@ func catchPanic(testFunc func()) (recv interface{}) {
 }
 
 type testRoute struct {
-	path		string
-	conflict	bool
+	path     string
+	conflict bool
 }
 
 func testRoutes(t *testing.T, routes []testRoute) {
@@ -545,10 +545,10 @@ func TestTreeFindCaseInsensitivePath(t *testing.T) {
 	}
 
 	tests := []struct {
-		in	string
-		out	string
-		found	bool
-		slash	bool
+		in    string
+		out   string
+		found bool
+		slash bool
 	}{
 		{"/HI", "/hi", true, false},
 		{"/HI/", "/hi", true, true},
@@ -605,7 +605,7 @@ func TestTreeFindCaseInsensitivePath(t *testing.T) {
 	for _, test := range tests {
 		out, found := tree.findCaseInsensitivePath(test.in, false)
 		if test.slash {
-			if found {	// test needs a trailingSlash fix. It must not be found!
+			if found { // test needs a trailingSlash fix. It must not be found!
 				t.Errorf("Found without fixTrailingSlash: %s; got %s", test.in, string(out))
 			}
 		} else {

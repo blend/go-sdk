@@ -22,8 +22,8 @@ var (
 // NewMessageEvent returns a new message event.
 func NewMessageEvent(flag, text string, options ...MessageEventOption) MessageEvent {
 	me := MessageEvent{
-		Flag:	flag,
-		Text:	text,
+		Flag: flag,
+		Text: text,
 	}
 	for _, opt := range options {
 		opt(&me)
@@ -75,14 +75,14 @@ func OptMessageRestricted(restricted bool) MessageEventOption {
 
 // MessageEvent is a common type of message.
 type MessageEvent struct {
-	Flag		string
-	Text		string
-	Restricted	bool
-	Elapsed		time.Duration
+	Flag       string
+	Text       string
+	Restricted bool
+	Elapsed    time.Duration
 }
 
 // GetFlag implements Event.
-func (e MessageEvent) GetFlag() string	{ return e.Flag }
+func (e MessageEvent) GetFlag() string { return e.Flag }
 
 // WriteText implements TextWritable.
 func (e MessageEvent) WriteText(formatter TextFormatter, output io.Writer) {
@@ -96,8 +96,8 @@ func (e MessageEvent) WriteText(formatter TextFormatter, output io.Writer) {
 // Decompose implements json.Marshaler.
 func (e MessageEvent) Decompose() map[string]interface{} {
 	m := map[string]interface{}{
-		FieldText:		e.Text,
-		FieldRestricted:	e.Restricted,
+		FieldText:       e.Text,
+		FieldRestricted: e.Restricted,
 	}
 	if e.Elapsed > 0 {
 		m[FieldElapsed] = e.Elapsed

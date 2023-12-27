@@ -24,11 +24,11 @@ func (d Dialect) Is(others ...Dialect) bool {
 
 var (
 	// DialectUnknown is an unknown dialect, typically inferred as DialectPostgres.
-	DialectUnknown	Dialect	= ""
+	DialectUnknown Dialect = ""
 	// DialectPostgres is the postgres dialect.
-	DialectPostgres	Dialect	= "psql"
+	DialectPostgres Dialect = "psql"
 	// DialectCockroachDB is the crdb dialect.
-	DialectCockroachDB	Dialect	= "cockroachdb"
+	DialectCockroachDB Dialect = "cockroachdb"
 	// DialectRedshift is the redshift dialect.
-	DialectRedshift	Dialect	= "redshift"
+	DialectRedshift Dialect = "redshift"
 )

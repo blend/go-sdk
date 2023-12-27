@@ -37,10 +37,10 @@ func New(options ...Option) (*APIClient, error) {
 	}
 
 	client := &APIClient{
-		Timeout:	DefaultTimeout,
-		Mount:		DefaultMount,
-		Remote:		remote,
-		BufferPool:	bufferutil.NewPool(DefaultBufferPoolSize),
+		Timeout:    DefaultTimeout,
+		Mount:      DefaultMount,
+		Remote:     remote,
+		BufferPool: bufferutil.NewPool(DefaultBufferPoolSize),
 	}
 
 	client.KV1 = &KV1{Client: client}
@@ -67,8 +67,8 @@ func New(options ...Option) (*APIClient, error) {
 	}
 
 	client.Client = &http.Client{
-		Transport:	xport,
-		Timeout:	client.Timeout,
+		Transport: xport,
+		Timeout:   client.Timeout,
 	}
 
 	return client, nil
@@ -76,20 +76,20 @@ func New(options ...Option) (*APIClient, error) {
 
 // APIClient is a client to talk to vault.
 type APIClient struct {
-	Timeout		time.Duration
-	Transport	*http.Transport
-	Remote		*url.URL
-	Token		string
-	Mount		string
-	Log		logger.Log
-	BufferPool	*bufferutil.Pool
-	KV1		*KV1
-	KV2		*KV2
-	Transit		TransitClient
-	Client		HTTPClient
-	CertPool	*x509.CertPool
-	Tracer		Tracer
-	AWSAuth		*AWSAuth
+	Timeout    time.Duration
+	Transport  *http.Transport
+	Remote     *url.URL
+	Token      string
+	Mount      string
+	Log        logger.Log
+	BufferPool *bufferutil.Pool
+	KV1        *KV1
+	KV2        *KV2
+	Transit    TransitClient
+	Client     HTTPClient
+	CertPool   *x509.CertPool
+	Tracer     Tracer
+	AWSAuth    *AWSAuth
 }
 
 // Put puts a value.
@@ -282,8 +282,8 @@ func (c *APIClient) createRequest(method, path string, options ...CallOption) *h
 	remote := c.copyRemote()
 	remote.Path = path
 	req := &http.Request{
-		Method:	method,
-		URL:	remote,
+		Method: method,
+		URL:    remote,
 		Header: http.Header{
 			HeaderVaultToken: []string{c.Token},
 		},

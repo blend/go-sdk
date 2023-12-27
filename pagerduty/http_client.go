@@ -22,8 +22,8 @@ var (
 
 // HTTPClient is an implementation of the http client.
 type HTTPClient struct {
-	Config		Config
-	Defaults	[]r2.Option
+	Config   Config
+	Defaults []r2.Option
 }
 
 // Request creates a request with a context and a given set of options.

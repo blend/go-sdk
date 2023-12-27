@@ -24,11 +24,11 @@ func NewBuffer(contents []byte) *Buffer {
 type Buffer struct {
 	sync.RWMutex
 	// Size is the size of all bytes written to the buffer.
-	Size	int64
+	Size int64
 	// Lines are the string lines broken up by newlines with associated timestamps
-	Chunks	[]BufferChunk	`json:"chunks"`
+	Chunks []BufferChunk `json:"chunks"`
 	// Handler is an optional listener for new line events.
-	Handler	BufferChunkHandler	`json:"-"`
+	Handler BufferChunkHandler `json:"-"`
 }
 
 // Write writes the contents to the output buffer.

@@ -20,8 +20,8 @@ func TestNewCertManagerWithKeyPairs(t *testing.T) {
 	assert := assert.New(t)
 
 	mgr, err := NewCertManagerWithKeyPairs(KeyPair{
-		CertPath:	"testdata/server.cert.pem",
-		KeyPath:	"testdata/server.key.pem",
+		CertPath: "testdata/server.cert.pem",
+		KeyPath:  "testdata/server.key.pem",
 	}, []KeyPair{{
 		CertPath: "testdata/ca.cert.pem",
 	}}, KeyPair{

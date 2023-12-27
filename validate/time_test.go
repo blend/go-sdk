@@ -15,7 +15,7 @@ import (
 	"github.com/blend/go-sdk/ex"
 )
 
-func tv(t time.Time) *time.Time	{ return &t }
+func tv(t time.Time) *time.Time { return &t }
 
 func TestTimeBefore(t *testing.T) {
 	assert := assert.New(t)

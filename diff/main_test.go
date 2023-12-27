@@ -23,12 +23,12 @@ func TestDiffCommonPrefix(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Name	string
+		Name string
 
-		Text1	string
-		Text2	string
+		Text1 string
+		Text2 string
 
-		Expected	int
+		Expected int
 	}
 
 	dmp := New()
@@ -47,10 +47,10 @@ func TestCommonPrefixLength(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Text1	string
-		Text2	string
+		Text1 string
+		Text2 string
 
-		Expected	int
+		Expected int
 	}
 
 	for i, tc := range []TestCase{
@@ -67,12 +67,12 @@ func TestDiffCommonSuffix(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Name	string
+		Name string
 
-		Text1	string
-		Text2	string
+		Text1 string
+		Text2 string
 
-		Expected	int
+		Expected int
 	}
 
 	dmp := New()
@@ -91,10 +91,10 @@ func TestCommonSuffixLength(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Text1	string
-		Text2	string
+		Text1 string
+		Text2 string
 
-		Expected	int
+		Expected int
 	}
 
 	for i, tc := range []TestCase{
@@ -112,12 +112,12 @@ func TestDiffCommonOverlap(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Name	string
+		Name string
 
-		Text1	string
-		Text2	string
+		Text1 string
+		Text2 string
 
-		Expected	int
+		Expected int
 	}
 
 	dmp := New()
@@ -139,10 +139,10 @@ func TestDiffHalfMatch(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Text1	string
-		Text2	string
+		Text1 string
+		Text2 string
 
-		Expected	[]string
+		Expected []string
 	}
 
 	dmp := New()
@@ -186,8 +186,8 @@ func TestDiffBisectSplit(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Text1	string
-		Text2	string
+		Text1 string
+		Text2 string
 	}
 
 	dmp := New()
@@ -210,12 +210,12 @@ func TestDiffLinesToChars(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Text1	string
-		Text2	string
+		Text1 string
+		Text2 string
 
-		ExpectedChars1	string
-		ExpectedChars2	string
-		ExpectedLines	[]string
+		ExpectedChars1 string
+		ExpectedChars2 string
+		ExpectedLines  []string
 	}
 
 	dmp := New()
@@ -235,7 +235,7 @@ func TestDiffLinesToChars(t *testing.T) {
 	// More than 256 to reveal any 8-bit limitations.
 	n := 300
 	lineList := []string{
-		"",	// Account for the initial empty element of the lines array.
+		"", // Account for the initial empty element of the lines array.
 	}
 	var charList []string
 	for x := 1; x < n+1; x++ {
@@ -256,10 +256,10 @@ func TestDiffCharsToLines(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Diffs	[]Diff
-		Lines	[]string
+		Diffs []Diff
+		Lines []string
 
-		Expected	[]Diff
+		Expected []Diff
 	}
 
 	dmp := New()
@@ -270,7 +270,7 @@ func TestDiffCharsToLines(t *testing.T) {
 				{DiffEqual, "1,2,1"},
 				{DiffInsert, "2,1,2"},
 			},
-			Lines:	[]string{"", "alpha\n", "beta\n"},
+			Lines: []string{"", "alpha\n", "beta\n"},
 
 			Expected: []Diff{
 				{DiffEqual, "alpha\nbeta\nalpha\n"},
@@ -285,7 +285,7 @@ func TestDiffCharsToLines(t *testing.T) {
 	// More than 256 to reveal any 8-bit limitations.
 	n := 300
 	lineList := []string{
-		"",	// Account for the initial empty element of the lines array.
+		"", // Account for the initial empty element of the lines array.
 	}
 	charList := []string{}
 	for x := 1; x <= n; x++ {
@@ -303,11 +303,11 @@ func TestDiffCleanupMerge(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Name	string
+		Name string
 
-		Diffs	[]Diff
+		Diffs []Diff
 
-		Expected	[]Diff
+		Expected []Diff
 	}
 
 	dmp := New()
@@ -388,11 +388,11 @@ func TestDiffCleanupSemanticLossless(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Name	string
+		Name string
 
-		Diffs	[]Diff
+		Diffs []Diff
 
-		Expected	[]Diff
+		Expected []Diff
 	}
 
 	dmp := New()
@@ -528,11 +528,11 @@ func TestDiffCleanupSemantic(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Name	string
+		Name string
 
-		Diffs	[]Diff
+		Diffs []Diff
 
-		Expected	[]Diff
+		Expected []Diff
 	}
 
 	dmp := New()
@@ -786,11 +786,11 @@ func TestDiffCleanupEfficiency(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Name	string
+		Name string
 
-		Diffs	[]Diff
+		Diffs []Diff
 
-		Expected	[]Diff
+		Expected []Diff
 	}
 
 	dmp := New()
@@ -894,9 +894,9 @@ func Test_PrettyHTML(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Diffs	[]Diff
+		Diffs []Diff
 
-		Expected	string
+		Expected string
 	}
 
 	for i, tc := range []TestCase{
@@ -907,7 +907,7 @@ func Test_PrettyHTML(t *testing.T) {
 				{DiffInsert, "c&d"},
 			},
 
-			Expected:	"<span>a&para;<br></span><del style=\"background:#ffe6e6;\">&lt;B&gt;b&lt;/B&gt;</del><ins style=\"background:#e6ffe6;\">c&amp;d</ins>",
+			Expected: "<span>a&para;<br></span><del style=\"background:#ffe6e6;\">&lt;B&gt;b&lt;/B&gt;</del><ins style=\"background:#e6ffe6;\">c&amp;d</ins>",
 		},
 	} {
 		actual := PrettyHTML(tc.Diffs)
@@ -919,9 +919,9 @@ func Test_PrettyText(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Diffs	[]Diff
+		Diffs []Diff
 
-		Expected	string
+		Expected string
 	}
 
 	for i, tc := range []TestCase{
@@ -932,7 +932,7 @@ func Test_PrettyText(t *testing.T) {
 				{DiffInsert, "c&d"},
 			},
 
-			Expected:	"a\n\x1b[31m<B>b</B>\x1b[0m\x1b[32mc&d\x1b[0m",
+			Expected: "a\n\x1b[31m<B>b</B>\x1b[0m\x1b[32mc&d\x1b[0m",
 		},
 	} {
 		actual := PrettyText(tc.Diffs)
@@ -944,10 +944,10 @@ func Test_Text1_2(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Diffs	[]Diff
+		Diffs []Diff
 
-		ExpectedText1	string
-		ExpectedText2	string
+		ExpectedText1 string
+		ExpectedText2 string
 	}
 
 	for i, tc := range []TestCase{
@@ -962,8 +962,8 @@ func Test_Text1_2(t *testing.T) {
 				{DiffEqual, " lazy"},
 			},
 
-			ExpectedText1:	"jumps over the lazy",
-			ExpectedText2:	"jumped over a lazy",
+			ExpectedText1: "jumps over the lazy",
+			ExpectedText2: "jumped over a lazy",
 		},
 	} {
 		actualText1 := Text1(tc.Diffs)
@@ -978,12 +978,12 @@ func TestDiffDelta(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Name	string
+		Name string
 
-		Text	string
-		Delta	string
+		Text  string
+		Delta string
 
-		ErrorMessagePrefix	string
+		ErrorMessagePrefix string
 	}
 
 	for i, tc := range []TestCase{
@@ -1068,12 +1068,12 @@ func TestDiffXIndex(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Name	string
+		Name string
 
-		Diffs		[]Diff
-		Location	int
+		Diffs    []Diff
+		Location int
 
-		Expected	int
+		Expected int
 	}
 
 	dmp := New()
@@ -1091,11 +1091,11 @@ func TestDiffLevenshtein(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Name	string
+		Name string
 
-		Diffs	[]Diff
+		Diffs []Diff
 
-		Expected	int
+		Expected int
 	}
 
 	for i, tc := range []TestCase{
@@ -1112,19 +1112,19 @@ func TestDiffBisect(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Name	string
+		Name string
 
-		Time	time.Time
+		Time time.Time
 
-		Expected	[]Diff
+		Expected []Diff
 	}
 
 	dmp := New()
 
 	for i, tc := range []TestCase{
 		{
-			Name:	"normal",
-			Time:	time.Date(9999, time.December, 31, 23, 59, 59, 59, time.UTC),
+			Name: "normal",
+			Time: time.Date(9999, time.December, 31, 23, 59, 59, 59, time.UTC),
 
 			Expected: []Diff{
 				{DiffDelete, "c"},
@@ -1135,8 +1135,8 @@ func TestDiffBisect(t *testing.T) {
 			},
 		},
 		{
-			Name:	"Negative deadlines count as having infinite time",
-			Time:	time.Date(0001, time.January, 01, 00, 00, 00, 00, time.UTC),
+			Name: "Negative deadlines count as having infinite time",
+			Time: time.Date(0001, time.January, 01, 00, 00, 00, 00, time.UTC),
 
 			Expected: []Diff{
 				{DiffDelete, "c"},
@@ -1147,8 +1147,8 @@ func TestDiffBisect(t *testing.T) {
 			},
 		},
 		{
-			Name:	"Timeout",
-			Time:	time.Now().Add(time.Nanosecond),
+			Name: "Timeout",
+			Time: time.Now().Add(time.Nanosecond),
 
 			Expected: []Diff{
 				{DiffDelete, "cat"},
@@ -1170,10 +1170,10 @@ func TestDiff(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Text1	string
-		Text2	string
+		Text1 string
+		Text2 string
 
-		Expected	[]Diff
+		Expected []Diff
 	}
 
 	dmp := New()
@@ -1334,8 +1334,8 @@ func TestDiffMainWithCheckLines(t *testing.T) {
 	assert := assert.New(t)
 
 	type TestCase struct {
-		Text1	string
-		Text2	string
+		Text1 string
+		Text2 string
 	}
 
 	dmp := New()

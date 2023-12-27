@@ -54,11 +54,11 @@ func ParseGoComments(repoRoot, sourcePath, linePrefix string) (*Source, error) {
 		return nil, err
 	}
 	return &Source{
-		Source:	repoSourcePath,
+		Source: repoSourcePath,
 		Paths: []Path{
 			{
-				PathGlob:	pathGlob,
-				Owners:		owners,
+				PathGlob: pathGlob,
+				Owners:   owners,
 			},
 		},
 	}, nil

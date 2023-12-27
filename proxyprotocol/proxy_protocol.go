@@ -48,11 +48,11 @@ import (
 var (
 	// prefix is the string we look for at the start of a connection
 	// to check if this connection is using the proxy protocol
-	prefix		= []byte("PROXY ")
-	prefixLen	= len(prefix)
+	prefix    = []byte("PROXY ")
+	prefixLen = len(prefix)
 
 	// ErrInvalidUpstream is a common error.
-	ErrInvalidUpstream	ex.Class	= "upstream connection address not trusted for PROXY information"
+	ErrInvalidUpstream ex.Class = "upstream connection address not trusted for PROXY information"
 )
 
 // SourceChecker can be used to decide whether to trust the PROXY info or pass
@@ -77,22 +77,22 @@ type SourceChecker func(net.Addr) (bool, error)
 // Optionally define ProxyHeaderTimeout to set a maximum time to
 // receive the Proxy Protocol Header. Zero means no timeout.
 type Listener struct {
-	Listener		net.Listener
-	ProxyHeaderTimeout	time.Duration
-	SourceCheck		SourceChecker
+	Listener           net.Listener
+	ProxyHeaderTimeout time.Duration
+	SourceCheck        SourceChecker
 }
 
 // Conn is used to wrap and underlying connection which
 // may be speaking the Proxy Protocol. If it is, the RemoteAddr() will
 // return the address of the client instead of the proxy address.
 type Conn struct {
-	bufReader		*bufio.Reader
-	conn			net.Conn
-	dstAddr			*net.TCPAddr
-	srcAddr			*net.TCPAddr
-	useConnRemoteAddr	bool
-	once			sync.Once
-	proxyHeaderTimeout	time.Duration
+	bufReader          *bufio.Reader
+	conn               net.Conn
+	dstAddr            *net.TCPAddr
+	srcAddr            *net.TCPAddr
+	useConnRemoteAddr  bool
+	once               sync.Once
+	proxyHeaderTimeout time.Duration
 }
 
 // Accept waits for and returns the next connection to the listener.
@@ -131,9 +131,9 @@ func (p *Listener) Addr() net.Addr {
 // the proxy protocol into a proxyproto.Conn
 func NewConn(conn net.Conn, timeout time.Duration) *Conn {
 	pConn := &Conn{
-		bufReader:		bufio.NewReader(conn),
-		conn:			conn,
-		proxyHeaderTimeout:	timeout,
+		bufReader:          bufio.NewReader(conn),
+		conn:               conn,
+		proxyHeaderTimeout: timeout,
 	}
 	return pConn
 }

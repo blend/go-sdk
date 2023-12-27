@@ -20,10 +20,10 @@ import (
 type MultiCollectorOptions struct {
 	configmeta.Meta
 
-	DefaultTags	[]string
-	Datadog		datadog.Config
-	Prometheus	statsd.Config
-	Printer		bool
+	DefaultTags []string
+	Datadog     datadog.Config
+	Prometheus  statsd.Config
+	Printer     bool
 }
 
 // MultiCollectorOption mutates MultiCollectorOptions.

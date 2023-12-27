@@ -17,8 +17,8 @@ type BufferChunkHandler func(BufferChunk)
 
 // BufferChunk is a single write to a buffer with a timestamp.
 type BufferChunk struct {
-	Timestamp	time.Time
-	Data		[]byte
+	Timestamp time.Time
+	Data      []byte
 }
 
 // Copy returns a copy of the chunk.
@@ -26,16 +26,16 @@ func (bc BufferChunk) Copy() BufferChunk {
 	data := make([]byte, len(bc.Data))
 	copy(data, bc.Data)
 	return BufferChunk{
-		Timestamp:	bc.Timestamp,
-		Data:		data,
+		Timestamp: bc.Timestamp,
+		Data:      data,
 	}
 }
 
 // MarshalJSON implemnts json.Marshaler.
 func (bc BufferChunk) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
-		"_ts":	bc.Timestamp,
-		"data":	string(bc.Data),
+		"_ts":  bc.Timestamp,
+		"data": string(bc.Data),
 	})
 }
 

@@ -131,10 +131,10 @@ func TestExceptionFormatters(t *testing.T) {
 func TestMarshalJSON(t *testing.T) {
 
 	type ReadableStackTrace struct {
-		Class	string		`json:"Class"`
-		Message	string		`json:"Message"`
-		Inner	error		`json:"Inner"`
-		Stack	[]string	`json:"StackTrace"`
+		Class   string   `json:"Class"`
+		Message string   `json:"Message"`
+		Inner   error    `json:"Inner"`
+		Stack   []string `json:"StackTrace"`
 	}
 
 	a := assert.New(t)
@@ -237,7 +237,7 @@ func TestExceptionFormat(t *testing.T) {
 	assert.Equal("this is only a test", output)
 
 	e = &Ex{
-		Class:	fmt.Errorf("this is only a test"),
+		Class: fmt.Errorf("this is only a test"),
 		StackTrace: StackStrings([]string{
 			"foo",
 			"bar",
@@ -277,21 +277,21 @@ func (err structuredError) Error() string {
 func TestException_ErrorsIsCompatability(t *testing.T) {
 	assert := assert.New(t)
 
-	{	// Single nesting, Ex is outermost
+	{ // Single nesting, Ex is outermost
 		innerErr := errors.New("inner")
 		outerErr := New("outer", OptInnerClass(innerErr))
 
 		assert.True(errors.Is(outerErr, innerErr))
 	}
 
-	{	// Single nesting, Ex is innermost
+	{ // Single nesting, Ex is innermost
 		innerErr := New("inner")
 		outerErr := fmt.Errorf("outer: %w", innerErr)
 
 		assert.True(errors.Is(outerErr, Class("inner")))
 	}
 
-	{	// Triple nesting, including Ex and non-Ex
+	{ // Triple nesting, including Ex and non-Ex
 		firstErr := errors.New("inner most")
 		secondErr := fmt.Errorf("standard err: %w", firstErr)
 		thirdErr := New("ex err", OptInner(secondErr))
@@ -302,7 +302,7 @@ func TestException_ErrorsIsCompatability(t *testing.T) {
 		assert.True(errors.Is(fourthErr, Class("ex err")))
 	}
 
-	{	// Target is nested in an Ex class and not in Inner chain
+	{ // Target is nested in an Ex class and not in Inner chain
 		firstErr := errors.New("inner most")
 		secondErr := fmt.Errorf("standard err: %w", firstErr)
 		thirdErr := New(secondErr, OptInner(fmt.Errorf("another cause")))
@@ -315,7 +315,7 @@ func TestException_ErrorsIsCompatability(t *testing.T) {
 func TestException_ErrorsAsCompatability(t *testing.T) {
 	assert := assert.New(t)
 
-	{	// Single nesting, targeting non-Ex
+	{ // Single nesting, targeting non-Ex
 		innerErr := structuredError{"inner most"}
 		outerErr := New("outer", OptInner(innerErr))
 
@@ -324,7 +324,7 @@ func TestException_ErrorsAsCompatability(t *testing.T) {
 		assert.Equal("inner most", matchedErr.value)
 	}
 
-	{	// Single nesting, targeting Ex
+	{ // Single nesting, targeting Ex
 		innerErr := New("outer most")
 		outerErr := fmt.Errorf("outer err: %w", innerErr)
 
@@ -333,7 +333,7 @@ func TestException_ErrorsAsCompatability(t *testing.T) {
 		assert.Equal("outer most", matchedErr.Class.Error())
 	}
 
-	{	// Single nesting, targeting inner Ex class
+	{ // Single nesting, targeting inner Ex class
 		innerErr := New(structuredError{"inner most"})
 		outerErr := New("outer most", OptInner(innerErr))
 
@@ -342,7 +342,7 @@ func TestException_ErrorsAsCompatability(t *testing.T) {
 		assert.Equal("inner most", matchedErr.value)
 	}
 
-	{	// Triple Nesting, targeting non-Ex
+	{ // Triple Nesting, targeting non-Ex
 		firstErr := structuredError{"inner most"}
 		secondErr := fmt.Errorf("standard err: %w", firstErr)
 		thirdErr := New("ex err", OptInner(secondErr))

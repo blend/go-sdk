@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	_env		Vars
-	_envLock	= sync.Mutex{}
+	_env     Vars
+	_envLock = sync.Mutex{}
 )
 
 // Env returns the current env var set.

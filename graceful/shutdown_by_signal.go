@@ -39,8 +39,8 @@ func ShutdownBySignal(hosted []Graceful, opts ...ShutdownOption) error {
 		// start the instance
 		go func(instance Graceful) {
 			defer func() {
-				_ = safely(func() { close(serverExited) })	// close the server exited channel, but do so safely
-				waitServerExited.Done()				// signal the normal exit process is done
+				_ = safely(func() { close(serverExited) }) // close the server exited channel, but do so safely
+				waitServerExited.Done()                    // signal the normal exit process is done
 			}()
 			if err := instance.Start(); err != nil {
 				errors <- err
@@ -50,7 +50,7 @@ func ShutdownBySignal(hosted []Graceful, opts ...ShutdownOption) error {
 		// wait to stop the instance
 		go func(instance Graceful) {
 			defer waitShutdownComplete.Done()
-			<-shouldShutdown	// tell the hosted process to stop "gracefully"
+			<-shouldShutdown // tell the hosted process to stop "gracefully"
 			if err := instance.Stop(); err != nil {
 				errors <- err
 			}
@@ -58,14 +58,14 @@ func ShutdownBySignal(hosted []Graceful, opts ...ShutdownOption) error {
 	}
 
 	select {
-	case <-options.ShutdownSignal:	// if we've issued a shutdown, wait for the server to exit
-		signal.Stop(options.ShutdownSignal)	// unhook the process signal redirects, the next ^c will crash the process etc.
+	case <-options.ShutdownSignal: // if we've issued a shutdown, wait for the server to exit
+		signal.Stop(options.ShutdownSignal) // unhook the process signal redirects, the next ^c will crash the process etc.
 		close(shouldShutdown)
 		waitShutdownComplete.Wait()
 		waitServerExited.Wait()
 
-	case <-serverExited:	// if any of the servers exited on their own
-		close(shouldShutdown)	// quit the signal listener
+	case <-serverExited: // if any of the servers exited on their own
+		close(shouldShutdown) // quit the signal listener
 		waitShutdownComplete.Wait()
 	}
 	if len(errors) > 0 {

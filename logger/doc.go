@@ -14,4 +14,4 @@ The output is governed by the `LOG_FORMAT` environment variable. Text output is 
 is great for reading locally, but is less than optimal for search and automated ingestion. In
 production systems, `LOG_FORMAT=json` is recommended.
 */
-package logger	// import "github.com/blend/go-sdk/logger"
+package logger // import "github.com/blend/go-sdk/logger"

@@ -15,8 +15,8 @@ import (
 
 // Errors
 const (
-	ErrMessageFieldUnset	ex.Class	= "email; message required field unset"
-	ErrMessageFieldNewlines	ex.Class	= "email; message field contains newlines"
+	ErrMessageFieldUnset    ex.Class = "email; message required field unset"
+	ErrMessageFieldNewlines ex.Class = "email; message field contains newlines"
 )
 
 // MergeMessages merges a given set of messages, such that
@@ -60,13 +60,13 @@ func MergeMessages(messages ...Message) (output Message) {
 
 // Message is a message to send via. ses.
 type Message struct {
-	From		string		`json:"from" yaml:"from"`
-	To		[]string	`json:"to" yaml:"to"`
-	CC		[]string	`json:"cc" yaml:"cc"`
-	BCC		[]string	`json:"bcc" yaml:"bcc"`
-	Subject		string		`json:"subject" yaml:"subject"`
-	TextBody	string		`json:"textBody" yaml:"textBody"`
-	HTMLBody	string		`json:"htmlBody" yaml:"htmlBody"`
+	From     string   `json:"from" yaml:"from"`
+	To       []string `json:"to" yaml:"to"`
+	CC       []string `json:"cc" yaml:"cc"`
+	BCC      []string `json:"bcc" yaml:"bcc"`
+	Subject  string   `json:"subject" yaml:"subject"`
+	TextBody string   `json:"textBody" yaml:"textBody"`
+	HTMLBody string   `json:"htmlBody" yaml:"htmlBody"`
 }
 
 // IsZero returns if the object is set or not.

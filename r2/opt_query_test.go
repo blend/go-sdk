@@ -19,8 +19,8 @@ func TestOptQuery(t *testing.T) {
 
 	req := New(TestURL,
 		OptQuery(url.Values{
-			"huff":	[]string{"buff"},
-			"buzz":	[]string{"fuzz"},
+			"huff": []string{"buff"},
+			"buzz": []string{"fuzz"},
 		}),
 	)
 	assert.NotNil(req.Request.URL)

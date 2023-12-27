@@ -21,8 +21,8 @@ func NewMockEventCollector() *MockEventCollector {
 
 // MockEventCollector is a mocked collector for stats.
 type MockEventCollector struct {
-	defaultTags	[]string
-	Events		chan Event
+	defaultTags []string
+	Events      chan Event
 }
 
 // AddDefaultTag adds a default tag.
@@ -49,8 +49,8 @@ func (mec MockEventCollector) SendEvent(e Event) error {
 // CreateEvent creates a mock event with the default tags.
 func (mec MockEventCollector) CreateEvent(title, text string, tags ...string) Event {
 	return Event{
-		Title:	title,
-		Text:	text,
-		Tags:	append(mec.defaultTags, tags...),
+		Title: title,
+		Text:  text,
+		Tags:  append(mec.defaultTags, tags...),
 	}
 }

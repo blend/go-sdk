@@ -11,12 +11,12 @@ import "github.com/blend/go-sdk/ex"
 
 // Int32 errors
 const (
-	ErrInt32Min		ex.Class	= "int32 should be above a minimum value"
-	ErrInt32Max		ex.Class	= "int32 should be below a maximum value"
-	ErrInt32Positive	ex.Class	= "int32 should be positive"
-	ErrInt32Negative	ex.Class	= "int32 should be negative"
-	ErrInt32Zero		ex.Class	= "int32 should be zero"
-	ErrInt32NotZero		ex.Class	= "int32 should not be zero"
+	ErrInt32Min      ex.Class = "int32 should be above a minimum value"
+	ErrInt32Max      ex.Class = "int32 should be below a maximum value"
+	ErrInt32Positive ex.Class = "int32 should be positive"
+	ErrInt32Negative ex.Class = "int32 should be negative"
+	ErrInt32Zero     ex.Class = "int32 should be zero"
+	ErrInt32NotZero  ex.Class = "int32 should not be zero"
 )
 
 // Int32 returns validators for int32s.

@@ -18,10 +18,10 @@ import (
 
 // Webhook is a configurable request.
 type Webhook struct {
-	Method	string			`json:"method" yaml:"method"`
-	URL	string			`json:"url" yaml:"url"`
-	Headers	map[string]string	`json:"headers" yaml:"headers"`
-	Body	string			`json:"body" yaml:"body"`
+	Method  string            `json:"method" yaml:"method"`
+	URL     string            `json:"url" yaml:"url"`
+	Headers map[string]string `json:"headers" yaml:"headers"`
+	Body    string            `json:"body" yaml:"body"`
 }
 
 // IsZero returns if the webhook is set.
@@ -45,8 +45,8 @@ func (wh Webhook) Send() (*http.Response, error) {
 	}
 
 	req := &http.Request{
-		Method:	wh.MethodOrDefault(),
-		URL:	u,
+		Method: wh.MethodOrDefault(),
+		URL:    u,
 	}
 	headers := http.Header{}
 	for key, value := range wh.Headers {

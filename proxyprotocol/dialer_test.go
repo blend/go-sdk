@@ -26,8 +26,8 @@ func Test_Dialer(t *testing.T) {
 	defer listener.Close()
 
 	sourceAddr := &net.TCPAddr{
-		IP:	net.ParseIP("192.168.0.7"),
-		Port:	31234,
+		IP:   net.ParseIP("192.168.0.7"),
+		Port: 31234,
 	}
 	dialer := NewDialer(
 		OptDialerConstSourceAdddr(sourceAddr),

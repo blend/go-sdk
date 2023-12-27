@@ -15,17 +15,17 @@ import (
 
 // Interface assertions.
 var (
-	_	Schedule	= (*TimesSchedule)(nil)
-	_	fmt.Stringer	= (*TimesSchedule)(nil)
+	_ Schedule     = (*TimesSchedule)(nil)
+	_ fmt.Stringer = (*TimesSchedule)(nil)
 )
 
 // Times returns a new times schedule that returns a given
 // next run time from a schedule only a certain number of times.
 func Times(times int, schedule Schedule) *TimesSchedule {
 	return &TimesSchedule{
-		times:		times,
-		left:		times,
-		schedule:	schedule,
+		times:    times,
+		left:     times,
+		schedule: schedule,
 	}
 }
 
@@ -35,9 +35,9 @@ func Times(times int, schedule Schedule) *TimesSchedule {
 type TimesSchedule struct {
 	sync.Mutex
 
-	times		int
-	left		int
-	schedule	Schedule
+	times    int
+	left     int
+	schedule Schedule
 }
 
 // Next implements cron.Schedule.

@@ -14,10 +14,10 @@ import (
 
 const (
 	// DefaultSampleSize is the default number of steps to run per test.
-	DefaultSampleSize	= 10000
+	DefaultSampleSize = 10000
 
 	// DefaultStasisSize is the stasis size for the fixed length test.
-	DefaultStasisSize	= 512
+	DefaultStasisSize = 512
 )
 
 // QueueFactory is a function that emits a Queue[time.Time]

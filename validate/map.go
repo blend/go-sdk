@@ -16,8 +16,8 @@ import (
 
 // Errors
 const (
-	ErrInstanceNotMap	ex.Class	= "validated reference is not a map"
-	ErrMapKeys		ex.Class	= "map should have keys"
+	ErrInstanceNotMap ex.Class = "validated reference is not a map"
+	ErrMapKeys        ex.Class = "map should have keys"
 )
 
 // Map returns validators for a map type reference.

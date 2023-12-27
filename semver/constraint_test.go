@@ -18,9 +18,9 @@ func TestNewConstraint(t *testing.T) {
 	assert := assert.New(t)
 
 	cases := []struct {
-		input	string
-		count	int
-		err	bool
+		input string
+		count int
+		err   bool
 	}{
 		{">= 1.2", 1, false},
 		{"1.0", 1, false},
@@ -43,9 +43,9 @@ func TestConstraintCheck(t *testing.T) {
 	assert := assert.New(t)
 
 	cases := []struct {
-		constraint	string
-		version		string
-		check		bool
+		constraint string
+		version    string
+		check      bool
 	}{
 		{">= 1.0, < 1.2", "1.1.5", true},
 		{"< 1.0, < 1.2", "1.1.5", false},
@@ -101,8 +101,8 @@ func TestConstraintsString(t *testing.T) {
 	assert := assert.New(t)
 
 	cases := []struct {
-		constraint	string
-		result		string
+		constraint string
+		result     string
 	}{
 		{">= 1.0, < 1.2", ""},
 		{"~> 1.0.7", ""},

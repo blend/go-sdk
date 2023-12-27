@@ -20,34 +20,34 @@ func TestLinesWriterWrite(t *testing.T) {
 	assert := assert.New(t)
 
 	tests := []struct {
-		contents	[]byte
-		expectedBuf	string
-		expectedCount	int
+		contents      []byte
+		expectedBuf   string
+		expectedCount int
 	}{
 		{
-			contents:	[]byte("hello\nworld\n!"),
-			expectedBuf:	"helloworld!",
-			expectedCount:	3,
+			contents:      []byte("hello\nworld\n!"),
+			expectedBuf:   "helloworld!",
+			expectedCount: 3,
 		},
 		{
-			contents:	[]byte("asdfsafdsaf"),
-			expectedBuf:	"asdfsafdsaf",
-			expectedCount:	1,
+			contents:      []byte("asdfsafdsaf"),
+			expectedBuf:   "asdfsafdsaf",
+			expectedCount: 1,
 		},
 		{
-			contents:	[]byte("\n\n\n\n"),
-			expectedBuf:	"",
-			expectedCount:	5,
+			contents:      []byte("\n\n\n\n"),
+			expectedBuf:   "",
+			expectedCount: 5,
 		},
 		{
-			contents:	[]byte("trailing\n"),
-			expectedBuf:	"trailing",
-			expectedCount:	2,
+			contents:      []byte("trailing\n"),
+			expectedBuf:   "trailing",
+			expectedCount: 2,
 		},
 		{
-			contents:	[]byte(""),
-			expectedBuf:	"",
-			expectedCount:	1,
+			contents:      []byte(""),
+			expectedBuf:   "",
+			expectedCount: 1,
 		},
 	}
 
@@ -65,8 +65,8 @@ func TestLinesWriterWrite(t *testing.T) {
 }
 
 type writerSpy struct {
-	writer	io.Writer
-	count	int
+	writer io.Writer
+	count  int
 }
 
 func (ws *writerSpy) Write(p []byte) (int, error) {

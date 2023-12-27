@@ -25,5 +25,5 @@ func TestHasSuffixCaseless(t *testing.T) {
 
 	assert.False(HasSuffixCaseless("hello world", "hello hello world"))
 	assert.False(HasSuffixCaseless("hello world", "foobar"))
-	assert.False(HasSuffixCaseless("hello world", "hello"))	//this would pass prefix
+	assert.False(HasSuffixCaseless("hello world", "hello")) //this would pass prefix
 }

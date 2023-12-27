@@ -18,8 +18,8 @@ import (
 // It surfaces a subset of the template api.
 // It is set / accessed by the outer template.
 type Viewmodel struct {
-	vars	Vars
-	env	env.Vars
+	vars Vars
+	env  env.Vars
 }
 
 // Vars returns the vars collection.

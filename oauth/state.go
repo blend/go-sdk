@@ -18,14 +18,14 @@ import (
 // State is the oauth state.
 type State struct {
 	// Token is a plaintext random token.
-	Token	string
+	Token string
 	// SecureToken is the hashed version of the token.
 	// If a key is set, it validates that our app created the oauth state.
-	SecureToken	string
+	SecureToken string
 	// RedirectURI is the redirect uri.
-	RedirectURI	string
+	RedirectURI string
 	// Extra includes other state you might need to encode.
-	Extra	map[string]interface{}
+	Extra map[string]interface{}
 }
 
 // DeserializeState deserializes the oauth state.

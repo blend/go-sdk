@@ -14,8 +14,8 @@ import (
 
 // Interface assertions.
 var (
-	_	Schedule	= (*OnceAtUTCSchedule)(nil)
-	_	fmt.Stringer	= (*OnceAtUTCSchedule)(nil)
+	_ Schedule     = (*OnceAtUTCSchedule)(nil)
+	_ fmt.Stringer = (*OnceAtUTCSchedule)(nil)
 )
 
 // OnceAtUTC returns a schedule that fires once at a given time.

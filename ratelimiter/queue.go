@@ -16,19 +16,19 @@ import (
 // NewQueue returns a new queue based rate limiter.
 func NewQueue(numberOfActions int, quantum time.Duration) *Queue {
 	return &Queue{
-		NumberOfActions:	numberOfActions,
-		Quantum:		quantum,
-		Limits:			map[string]collections.Queue[any]{},
-		Now:			func() time.Time { return time.Now().UTC() },
+		NumberOfActions: numberOfActions,
+		Quantum:         quantum,
+		Limits:          map[string]collections.Queue[any]{},
+		Now:             func() time.Time { return time.Now().UTC() },
 	}
 }
 
 // Queue is a simple implementation of a rate checker.
 type Queue struct {
-	NumberOfActions	int
-	Quantum		time.Duration
-	Limits		map[string]collections.Queue[any]
-	Now		func() time.Time
+	NumberOfActions int
+	Quantum         time.Duration
+	Limits          map[string]collections.Queue[any]
+	Now             func() time.Time
 }
 
 // Check returns true if it has been called NumberOfActions times or more in Quantum or smaller duration.

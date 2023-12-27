@@ -11,12 +11,12 @@ import "github.com/blend/go-sdk/ex"
 
 // Int errors
 const (
-	ErrIntMin	ex.Class	= "int should be above a minimum value"
-	ErrIntMax	ex.Class	= "int should be below a maximum value"
-	ErrIntPositive	ex.Class	= "int should be positive"
-	ErrIntNegative	ex.Class	= "int should be negative"
-	ErrIntZero	ex.Class	= "int should be zero"
-	ErrIntNotZero	ex.Class	= "int should not be zero"
+	ErrIntMin      ex.Class = "int should be above a minimum value"
+	ErrIntMax      ex.Class = "int should be below a maximum value"
+	ErrIntPositive ex.Class = "int should be positive"
+	ErrIntNegative ex.Class = "int should be negative"
+	ErrIntZero     ex.Class = "int should be zero"
+	ErrIntNotZero  ex.Class = "int should not be zero"
 )
 
 // Int returns validators for ints.

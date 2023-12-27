@@ -11,12 +11,12 @@ import "github.com/blend/go-sdk/ex"
 
 // Int8 errors
 const (
-	ErrInt8Min	ex.Class	= "int8 should be above a minimum value"
-	ErrInt8Max	ex.Class	= "int8 should be below a maximum value"
-	ErrInt8Positive	ex.Class	= "int8 should be positive"
-	ErrInt8Negative	ex.Class	= "int8 should be negative"
-	ErrInt8Zero	ex.Class	= "int8 should be zero"
-	ErrInt8NotZero	ex.Class	= "int8 should not be zero"
+	ErrInt8Min      ex.Class = "int8 should be above a minimum value"
+	ErrInt8Max      ex.Class = "int8 should be below a maximum value"
+	ErrInt8Positive ex.Class = "int8 should be positive"
+	ErrInt8Negative ex.Class = "int8 should be negative"
+	ErrInt8Zero     ex.Class = "int8 should be zero"
+	ErrInt8NotZero  ex.Class = "int8 should not be zero"
 )
 
 // Int8 returns validators for int8s.

@@ -20,8 +20,8 @@ func TestIsDevlike(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := []struct {
-		Input		string
-		Expected	bool
+		Input    string
+		Expected bool
 	}{
 		{Input: env.ServiceEnvDev, Expected: false},
 		{Input: env.ServiceEnvCI, Expected: false},
@@ -43,8 +43,8 @@ func TestIsDev(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := []struct {
-		Input		string
-		Expected	bool
+		Input    string
+		Expected bool
 	}{
 		{Input: env.ServiceEnvDev, Expected: true},
 		{Input: env.ServiceEnvCI, Expected: false},
@@ -66,8 +66,8 @@ func TestIsDevTest(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := []struct {
-		Input		string
-		Expected	bool
+		Input    string
+		Expected bool
 	}{
 		{Input: env.ServiceEnvDev, Expected: true},
 		{Input: env.ServiceEnvCI, Expected: false},

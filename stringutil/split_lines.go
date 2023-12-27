@@ -9,8 +9,8 @@ package stringutil
 
 // SplitLinesOptions are options for the SplitLines function.
 type SplitLinesOptions struct {
-	IncludeNewline		bool
-	IncludeEmptyLines	bool
+	IncludeNewline    bool
+	IncludeEmptyLines bool
 }
 
 // SplitLinesOption is a mutator for SplitLinesOptions.

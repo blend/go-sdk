@@ -118,8 +118,8 @@ func Test_ColumnCollection_Add(t *testing.T) {
 	its.Len(newMeta.columns, 9)
 	its.False(newMeta.HasColumn("testo"))
 	newMeta.Add(Column{
-		FieldName:	"Testo",
-		ColumnName:	"testo",
+		FieldName:  "Testo",
+		ColumnName: "testo",
 	})
 	its.Len(newMeta.columns, 10)
 	its.True(newMeta.HasColumn("testo"))
@@ -157,11 +157,11 @@ func Test_ColumnCollection_Zero(t *testing.T) {
 	bytesValue := []byte(stringValue)
 	ts := time.Now().UTC()
 	setCols := cols.Zero(columnsZeroTest{
-		Int:		1,
-		Float64:	1,
-		TimePtr:	&ts,
-		StringPtr:	&stringValue,
-		Bytes:		bytesValue,
+		Int:       1,
+		Float64:   1,
+		TimePtr:   &ts,
+		StringPtr: &stringValue,
+		Bytes:     bytesValue,
 	})
 	its.Equal(2, len(setCols.columns))
 
@@ -175,13 +175,13 @@ func Test_ColumnCollection_Zero(t *testing.T) {
 	its.True(setCols.HasColumn("String"), setCols.String())
 
 	allCols := cols.Zero(columnsZeroTest{
-		Int:		1,
-		Float64:	1,
-		Time:		ts,
-		TimePtr:	&ts,
-		String:		stringValue,
-		StringPtr:	&stringValue,
-		Bytes:		bytesValue,
+		Int:       1,
+		Float64:   1,
+		Time:      ts,
+		TimePtr:   &ts,
+		String:    stringValue,
+		StringPtr: &stringValue,
+		Bytes:     bytesValue,
 	})
 	its.Empty(allCols.columns)
 }
@@ -197,11 +197,11 @@ func Test_ColumnCollection_NotZero(t *testing.T) {
 	bytesValue := []byte(stringValue)
 	ts := time.Now().UTC()
 	setCols := cols.NotZero(columnsZeroTest{
-		Int:		1,
-		Float64:	1,
-		TimePtr:	&ts,
-		StringPtr:	&stringValue,
-		Bytes:		bytesValue,
+		Int:       1,
+		Float64:   1,
+		TimePtr:   &ts,
+		StringPtr: &stringValue,
+		Bytes:     bytesValue,
 	})
 	its.Equal(5, len(setCols.columns))
 
@@ -215,13 +215,13 @@ func Test_ColumnCollection_NotZero(t *testing.T) {
 	its.False(setCols.HasColumn("String"), setCols.String())
 
 	allCols := cols.NotZero(columnsZeroTest{
-		Int:		1,
-		Float64:	1,
-		Time:		ts,
-		TimePtr:	&ts,
-		String:		stringValue,
-		StringPtr:	&stringValue,
-		Bytes:		bytesValue,
+		Int:       1,
+		Float64:   1,
+		Time:      ts,
+		TimePtr:   &ts,
+		String:    stringValue,
+		StringPtr: &stringValue,
+		Bytes:     bytesValue,
 	})
 	its.Len(allCols.columns, 7)
 }
@@ -242,8 +242,8 @@ func Test_ColumnCollection_ColumnNamesCSVFromAlias(t *testing.T) {
 	its.Equal("buzz.foo0,buzz.foo1,buzz.foo2", withoutPrefix.ColumnNamesCSVFromAlias("buzz"))
 
 	withPrefix := &ColumnCollection{
-		columns:	columns,
-		columnPrefix:	"bar_",
+		columns:      columns,
+		columnPrefix: "bar_",
 	}
 
 	its.Equal("buzz.foo0 as bar_foo0,buzz.foo1 as bar_foo1,buzz.foo2 as bar_foo2", withPrefix.ColumnNamesCSVFromAlias("buzz"))
@@ -265,7 +265,7 @@ type cacheKeyEmpty struct{}
 
 type cacheKeyWithTableName struct{}
 
-func (j cacheKeyWithTableName) TableName() string	{ return "with_table_name" }
+func (j cacheKeyWithTableName) TableName() string { return "with_table_name" }
 
 type cacheKeyWithColumMetaCacheKeyProvider struct{}
 
@@ -274,18 +274,18 @@ func (j cacheKeyWithColumMetaCacheKeyProvider) ColumnMetaCacheKey() string {
 }
 
 type columnsZeroTest struct {
-	Int		int
-	Float64		float64
-	String		string
-	StringPtr	*string
-	Time		time.Time
-	TimePtr		*time.Time
-	Bytes		[]byte
+	Int       int
+	Float64   float64
+	String    string
+	StringPtr *string
+	Time      time.Time
+	TimePtr   *time.Time
+	Bytes     []byte
 }
 
 type EmbeddedMeta struct {
-	PrimaryKeyCol	int	`json:"pk" db:"primary_key_column,pk,serial"`
-	AutoCol		string	`json:"auto" db:"auto_column,auto"`
+	PrimaryKeyCol int    `json:"pk" db:"primary_key_column,pk,serial"`
+	AutoCol       string `json:"auto" db:"auto_column,auto"`
 }
 
 type subStruct struct {
@@ -293,15 +293,15 @@ type subStruct struct {
 }
 
 type myStruct struct {
-	EmbeddedMeta		`db:",inline"`
-	InferredName		string		`json:"normal"`
-	Unique			string		`db:",uk"`
-	Excluded		string		`json:"-" db:"-"`
-	NullableCol		string		`json:"not_nullable" db:"nullable,nullable"`
-	InferredWithFlags	string		`db:",readonly"`
-	BigIntColumn		int64		`db:"big_int"`
-	PointerColumn		*int		`db:"pointer_col"`
-	JSONColumn		subStruct	`db:"json_col,json"`
+	EmbeddedMeta      `db:",inline"`
+	InferredName      string    `json:"normal"`
+	Unique            string    `db:",uk"`
+	Excluded          string    `json:"-" db:"-"`
+	NullableCol       string    `json:"not_nullable" db:"nullable,nullable"`
+	InferredWithFlags string    `db:",readonly"`
+	BigIntColumn      int64     `db:"big_int"`
+	PointerColumn     *int      `db:"pointer_col"`
+	JSONColumn        subStruct `db:"json_col,json"`
 }
 
 func (m myStruct) TableName() string {

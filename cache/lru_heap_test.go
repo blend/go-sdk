@@ -26,34 +26,34 @@ func TestLRUHeap(t *testing.T) {
 
 	h := NewLRUHeap()
 	h.Push(&Value{
-		Key:		"5",
-		Expires:	t5,
+		Key:     "5",
+		Expires: t5,
 	})
 	assert.Len(h.Values, 1)
 	assert.Equal(1, h.Len())
 	h.Push(&Value{
-		Key:		"2",
-		Expires:	t2,
+		Key:     "2",
+		Expires: t2,
 	})
 	assert.Len(h.Values, 2)
 	h.Push(&Value{
-		Key:		"3",
-		Expires:	t3,
+		Key:     "3",
+		Expires: t3,
 	})
 	assert.Len(h.Values, 3)
 	h.Push(&Value{
-		Key:		"0",
-		Expires:	t0,
+		Key:     "0",
+		Expires: t0,
 	})
 	assert.Len(h.Values, 4)
 	h.Push(&Value{
-		Key:		"4",
-		Expires:	t4,
+		Key:     "4",
+		Expires: t4,
 	})
 	assert.Len(h.Values, 5)
 	h.Push(&Value{
-		Key:		"1",
-		Expires:	t1,
+		Key:     "1",
+		Expires: t1,
 	})
 	assert.Len(h.Values, 6)
 	assert.Equal(t0, h.Values[0].Expires)

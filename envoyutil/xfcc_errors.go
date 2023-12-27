@@ -16,9 +16,9 @@ import (
 //   - `XFCCValidationError` satisfies `error`.
 //   - `XFCCFatalError` satisfies `error`.
 var (
-	_	error	= (*XFCCExtractionError)(nil)
-	_	error	= (*XFCCValidationError)(nil)
-	_	error	= (*XFCCFatalError)(nil)
+	_ error = (*XFCCExtractionError)(nil)
+	_ error = (*XFCCValidationError)(nil)
+	_ error = (*XFCCFatalError)(nil)
 )
 
 // XFCCExtractionError contains metadata about an XFCC header that could not
@@ -26,12 +26,12 @@ var (
 // Unauthorized response.
 type XFCCExtractionError struct {
 	// Class can be used to uniquely identify the type of the error.
-	Class	ex.Class	`json:"class" xml:"class"`
+	Class ex.Class `json:"class" xml:"class"`
 	// XFCC contains the XFCC header value that could not be parsed or was
 	// invalid in some way.
-	XFCC	string	`json:"xfcc,omitempty" xml:"xfcc,omitempty"`
+	XFCC string `json:"xfcc,omitempty" xml:"xfcc,omitempty"`
 	// Metadata contains extra information relevant to a specific failure.
-	Metadata	interface{}	`json:"metadata,omitempty" xml:"metadata,omitempty"`
+	Metadata interface{} `json:"metadata,omitempty" xml:"metadata,omitempty"`
 }
 
 // Error satisfies the `error` interface. It is intended to be a unique
@@ -51,12 +51,12 @@ func IsExtractionError(err error) bool {
 // Unauthorized response.
 type XFCCValidationError struct {
 	// Class can be used to uniquely identify the type of the error.
-	Class	ex.Class	`json:"class" xml:"class"`
+	Class ex.Class `json:"class" xml:"class"`
 	// XFCC contains the XFCC header value that could not be parsed or was
 	// invalid in some way.
-	XFCC	string	`json:"xfcc,omitempty" xml:"xfcc,omitempty"`
+	XFCC string `json:"xfcc,omitempty" xml:"xfcc,omitempty"`
 	// Metadata contains extra information relevant to a specific failure.
-	Metadata	interface{}	`json:"metadata,omitempty" xml:"metadata,omitempty"`
+	Metadata interface{} `json:"metadata,omitempty" xml:"metadata,omitempty"`
 }
 
 // Error satisfies the `error` interface. It is intended to be a unique
@@ -76,10 +76,10 @@ func IsValidationError(err error) bool {
 // such as providing a `nil` value for a function interface that must be invoked.
 type XFCCFatalError struct {
 	// Class can be used to uniquely identify the type of the error.
-	Class	ex.Class	`json:"class" xml:"class"`
+	Class ex.Class `json:"class" xml:"class"`
 	// XFCC contains the XFCC header value that could not be parsed or was
 	// invalid in some way.
-	XFCC	string	`json:"xfcc,omitempty" xml:"xfcc,omitempty"`
+	XFCC string `json:"xfcc,omitempty" xml:"xfcc,omitempty"`
 }
 
 // Error satisfies the `error` interface. It is intended to be a unique

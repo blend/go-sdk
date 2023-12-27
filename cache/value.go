@@ -44,9 +44,9 @@ func OptValueOnRemove(handler func(interface{}, RemovalReason)) ValueOption {
 
 // Value is a cached item.
 type Value struct {
-	Timestamp	time.Time
-	Expires		time.Time
-	Key		interface{}
-	Value		interface{}
-	OnRemove	func(interface{}, RemovalReason)
+	Timestamp time.Time
+	Expires   time.Time
+	Key       interface{}
+	Value     interface{}
+	OnRemove  func(interface{}, RemovalReason)
 }

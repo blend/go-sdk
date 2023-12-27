@@ -11,21 +11,21 @@ import "time"
 
 const (
 	// FlagAll enables all flags by default.
-	FlagAll	= "all"
+	FlagAll = "all"
 	// FlagNone disables all flags by default.
-	FlagNone	= "none"
+	FlagNone = "none"
 	// Fatal controls errors that should be considered process ending.
-	Fatal	= "fatal"
+	Fatal = "fatal"
 	// Error controls errors that should be logged by default and may affect user behavior.
-	Error	= "error"
+	Error = "error"
 	// Warning controls errors that should be skipped by default but may help debugging.
-	Warning	= "warning"
+	Warning = "warning"
 	// Debug controls output that is useful when diagnosing issues.
-	Debug	= "debug"
+	Debug = "debug"
 	// Info controls output that is useful for output by default.
-	Info	= "info"
+	Info = "info"
 	// Audit controls events that indiciate security related information.
-	Audit	= "audit"
+	Audit = "audit"
 )
 
 const (
@@ -35,41 +35,41 @@ const (
 
 // Output Formats
 const (
-	FormatJSON	= "json"
-	FormatText	= "text"
+	FormatJSON = "json"
+	FormatText = "text"
 )
 
 // Default flags
 var (
-	DefaultFlags		= []string{Info, Error, Fatal}
-	DefaultFlagsWritable	= []string{FlagAll}
-	DefaultScopes		= []string{ScopeAll}
-	DefaultWritableScopes	= []string{ScopeAll}
-	DefaultListenerName	= "default"
-	DefaultRecoverPanics	= true
+	DefaultFlags          = []string{Info, Error, Fatal}
+	DefaultFlagsWritable  = []string{FlagAll}
+	DefaultScopes         = []string{ScopeAll}
+	DefaultWritableScopes = []string{ScopeAll}
+	DefaultListenerName   = "default"
+	DefaultRecoverPanics  = true
 )
 
 // Environment Variable Names
 const (
-	EnvVarFlags		= "LOG_FLAGS"
-	EnvVarFormat		= "LOG_FORMAT"
-	EnvVarNoColor		= "NO_COLOR"
-	EnvVarHideTime		= "LOG_HIDE_TIME"
-	EnvVarTimeFormat	= "LOG_TIME_FORMAT"
-	EnvVarJSONPretty	= "LOG_JSON_PRETTY"
+	EnvVarFlags      = "LOG_FLAGS"
+	EnvVarFormat     = "LOG_FORMAT"
+	EnvVarNoColor    = "NO_COLOR"
+	EnvVarHideTime   = "LOG_HIDE_TIME"
+	EnvVarTimeFormat = "LOG_TIME_FORMAT"
+	EnvVarJSONPretty = "LOG_JSON_PRETTY"
 )
 
 const (
 	// DefaultBufferPoolSize is the default buffer pool size.
-	DefaultBufferPoolSize	= 1 << 8	// 256
+	DefaultBufferPoolSize = 1 << 8 // 256
 	// DefaultTextTimeFormat is the default time format.
-	DefaultTextTimeFormat	= time.RFC3339Nano
+	DefaultTextTimeFormat = time.RFC3339Nano
 	// DefaultTextWriterUseColor is a default setting for writers.
-	DefaultTextWriterUseColor	= true
+	DefaultTextWriterUseColor = true
 	// DefaultTextWriterShowHeadings is a default setting for writers.
-	DefaultTextWriterShowHeadings	= true
+	DefaultTextWriterShowHeadings = true
 	// DefaultTextWriterShowTimestamp is a default setting for writers.
-	DefaultTextWriterShowTimestamp	= true
+	DefaultTextWriterShowTimestamp = true
 )
 
 const (
@@ -80,20 +80,20 @@ const (
 
 // String constants
 const (
-	Space	= " "
-	Newline	= "\n"
+	Space   = " "
+	Newline = "\n"
 )
 
 // Common json fields
 const (
-	FieldFlag		= "flag"
-	FieldTimestamp		= "_timestamp"
-	FieldScopePath		= "scope_path"
-	FieldText		= "text"
-	FieldElapsed		= "elapsed"
-	FieldLabels		= "labels"
-	FieldAnnotations	= "annotations"
-	FieldRestricted		= "_restricted"
+	FieldFlag        = "flag"
+	FieldTimestamp   = "_timestamp"
+	FieldScopePath   = "scope_path"
+	FieldText        = "text"
+	FieldElapsed     = "elapsed"
+	FieldLabels      = "labels"
+	FieldAnnotations = "annotations"
+	FieldRestricted  = "_restricted"
 )
 
 // JSON Formatter defaults

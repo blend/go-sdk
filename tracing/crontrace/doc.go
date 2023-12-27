@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package crontrace contains tracer helpers for cron, our job management service.
 */
-package crontrace	// import "github.com/blend/go-sdk/tracing/crontrace"
+package crontrace // import "github.com/blend/go-sdk/tracing/crontrace"

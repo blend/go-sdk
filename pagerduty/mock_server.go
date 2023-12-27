@@ -21,9 +21,9 @@ var (
 
 // MockAPI implements methods that can be called with the client.
 type MockAPI struct {
-	ListIncidents	func() (ListIncidentsOutput, error)
-	UpdateIncident	func(string, UpdateIncidentInput) (Incident, error)
-	CreateIncident	func(CreateIncidentInput) (Incident, error)
+	ListIncidents  func() (ListIncidentsOutput, error)
+	UpdateIncident func(string, UpdateIncidentInput) (Incident, error)
+	CreateIncident func(CreateIncidentInput) (Incident, error)
 }
 
 // Handler implements http.Handler.

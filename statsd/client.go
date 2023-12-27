@@ -22,9 +22,9 @@ import (
 
 // Error classes.
 const (
-	ErrAddrUnset		ex.Class	= "statsd client address unset"
-	ErrMaxPacketSize	ex.Class	= "statsd max packet size exceeded"
-	ErrSampleRateInvalid	ex.Class	= "statsd invalid sample rate"
+	ErrAddrUnset         ex.Class = "statsd client address unset"
+	ErrMaxPacketSize     ex.Class = "statsd max packet size exceeded"
+	ErrSampleRateInvalid ex.Class = "statsd invalid sample rate"
 )
 
 var (
@@ -35,9 +35,9 @@ var (
 // the underlying UDP connection.
 func New(opts ...ClientOpt) (*Client, error) {
 	client := Client{
-		DialTimeout:	DefaultDialTimeout,
-		MaxPacketSize:	DefaultMaxPacketSize,
-		MaxBufferSize:	DefaultMaxBufferSize,
+		DialTimeout:   DefaultDialTimeout,
+		MaxPacketSize: DefaultMaxPacketSize,
+		MaxBufferSize: DefaultMaxBufferSize,
 	}
 
 	var err error
@@ -110,7 +110,7 @@ func OptSampleRate(rate float64) ClientOpt {
 		if rate < 0 || rate > 1.0 {
 			return ex.New(ErrSampleRateInvalid, ex.OptMessagef("rate: %0.2f", rate))
 		}
-		if rate == 1.0 {	// unset on 100%
+		if rate == 1.0 { // unset on 100%
 			c.SampleProvider = nil
 		} else {
 			c.SampleProvider = func() bool {
@@ -126,20 +126,20 @@ type ClientOpt func(*Client) error
 
 // Client is a statsd client.
 type Client struct {
-	Addr		string
-	DialTimeout	time.Duration
-	MaxPacketSize	int
-	SampleProvider	func() bool
-	MaxBufferSize	int
+	Addr           string
+	DialTimeout    time.Duration
+	MaxPacketSize  int
+	SampleProvider func() bool
+	MaxBufferSize  int
 
-	defaultTags	[]string
+	defaultTags []string
 
-	conn	io.WriteCloser
-	connMu	sync.Mutex
+	conn   io.WriteCloser
+	connMu sync.Mutex
 
-	bufferMu	sync.Mutex
-	buffer		[]byte
-	bufferCount	int
+	bufferMu    sync.Mutex
+	buffer      []byte
+	bufferCount int
 }
 
 // AddDefaultTag adds a new default tag.

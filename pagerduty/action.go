@@ -11,6 +11,6 @@ import "time"
 
 // Action is an api type.
 type Action struct {
-	Type	string		`json:"type,omitempty"`
-	At	time.Time	`json:"at,omitempty"`
+	Type string    `json:"type,omitempty"`
+	At   time.Time `json:"at,omitempty"`
 }

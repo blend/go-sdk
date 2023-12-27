@@ -24,8 +24,8 @@ func TestOptConfig(t *testing.T) {
 	assert := assert.New(t)
 
 	cfg := Config{
-		DefaultHeaders:	map[string]string{"X-Debug": "debug-value"},
-		CookieName:	"FOOBAR",
+		DefaultHeaders: map[string]string{"X-Debug": "debug-value"},
+		CookieName:     "FOOBAR",
 	}
 
 	var app App

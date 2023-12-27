@@ -22,8 +22,8 @@ const (
 // LimitBytes returns a new max bytes writer.
 func LimitBytes(maxBytes int, inner io.Writer) *MaxBytesWriter {
 	return &MaxBytesWriter{
-		max:	maxBytes,
-		inner:	inner,
+		max:   maxBytes,
+		inner: inner,
 	}
 }
 
@@ -31,9 +31,9 @@ func LimitBytes(maxBytes int, inner io.Writer) *MaxBytesWriter {
 type MaxBytesWriter struct {
 	sync.Mutex
 
-	max	int
-	count	int
-	inner	io.Writer
+	max   int
+	count int
+	inner io.Writer
 }
 
 // Max returns the maximum bytes allowed.

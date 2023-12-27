@@ -20,8 +20,8 @@ func TestIsProdlike(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := []struct {
-		Input		string
-		Expected	bool
+		Input    string
+		Expected bool
 	}{
 		{Input: env.ServiceEnvDev, Expected: false},
 		{Input: env.ServiceEnvCI, Expected: false},
@@ -43,8 +43,8 @@ func TestIsProduction(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := []struct {
-		Input		string
-		Expected	bool
+		Input    string
+		Expected bool
 	}{
 		{Input: env.ServiceEnvDev, Expected: false},
 		{Input: env.ServiceEnvCI, Expected: false},

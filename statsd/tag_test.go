@@ -17,9 +17,9 @@ func Test_Tag(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := []struct {
-		Key		string
-		Value		string
-		Expected	string
+		Key      string
+		Value    string
+		Expected string
 	}{
 		{Key: "foo", Value: "bar", Expected: "foo:bar"},
 		{Key: "foo1", Value: "bar:", Expected: "foo1:bar:"},

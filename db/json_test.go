@@ -26,11 +26,11 @@ func Test_JSON(t *testing.T) {
 	its.Nil(JSON(foo))
 
 	valid := struct {
-		Foo	string	`json:"foo"`
-		Bar	string	`json:"bar"`
+		Foo string `json:"foo"`
+		Bar string `json:"bar"`
 	}{
-		Foo:	"not-foo",
-		Bar:	"not-bar",
+		Foo: "not-foo",
+		Bar: "not-bar",
 	}
 
 	output := JSON(valid)

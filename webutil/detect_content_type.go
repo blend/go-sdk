@@ -18,14 +18,14 @@ import (
 // KnownExtenions are known extenions mapped to their content types.
 var (
 	KnownExtensions = map[string]string{
-		".html":	"text/html; charset=utf-8",
-		".xml":		"text/xml; charset",
-		".json":	"application/json; charset=utf-8",
-		".css":		"text/css; charset=utf-8",
-		".js":		"application/javascript",
-		".jpg":		"image/jpeg",
-		".jpeg":	"image/jpeg",
-		".png":		"image/png",
+		".html": "text/html; charset=utf-8",
+		".xml":  "text/xml; charset",
+		".json": "application/json; charset=utf-8",
+		".css":  "text/css; charset=utf-8",
+		".js":   "application/javascript",
+		".jpg":  "image/jpeg",
+		".jpeg": "image/jpeg",
+		".png":  "image/png",
 	}
 )
 

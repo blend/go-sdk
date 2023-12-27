@@ -21,31 +21,31 @@ import (
 )
 
 var (
-	flagFallbackNoticeTemplate	string
-	flagExtensionNoticeTemplates	flagStrings
-	flagNoticeBodyTemplate		string
-	flagCompany			string
-	flagYear			int
-	flagLicense			string
+	flagFallbackNoticeTemplate   string
+	flagExtensionNoticeTemplates flagStrings
+	flagNoticeBodyTemplate       string
+	flagCompany                  string
+	flagYear                     int
+	flagLicense                  string
 
-	flagRestrictions		string
-	flagRestrictionsOpenSource	bool
-	flagRestrictionsInternal	bool
+	flagRestrictions           string
+	flagRestrictionsOpenSource bool
+	flagRestrictionsInternal   bool
 
-	flagVerify	bool
-	flagInject	bool
-	flagRemove	bool
+	flagVerify bool
+	flagInject bool
+	flagRemove bool
 
-	flagExcludes		flagStrings
-	flagExcludesFrom	flagStrings
-	flagExcludeDefaults	bool
-	flagIncludeFiles	flagStrings
+	flagExcludes        flagStrings
+	flagExcludesFrom    flagStrings
+	flagExcludeDefaults bool
+	flagIncludeFiles    flagStrings
 
-	flagExitFirst	bool
-	flagQuiet	bool
-	flagVerbose	bool
-	flagDebug	bool
-	flagShowDiff	bool
+	flagExitFirst bool
+	flagQuiet     bool
+	flagVerbose   bool
+	flagDebug     bool
+	flagShowDiff  bool
 )
 
 func init() {
@@ -184,20 +184,20 @@ func main() {
 
 	engine := copyright.Copyright{
 		Config: copyright.Config{
-			FallbackNoticeTemplate:		tryReadFile(flagFallbackNoticeTemplate),
-			NoticeBodyTemplate:		tryReadFile(flagNoticeBodyTemplate),
-			Company:			flagCompany,
-			Restrictions:			restrictions,
-			Year:				flagYear,
-			License:			flagLicense,
-			ExtensionNoticeTemplates:	extensionNoticeTemplates,
-			Excludes:			flagExcludes,
-			IncludeFiles:			flagIncludeFiles,
-			ExitFirst:			&flagExitFirst,
-			Quiet:				&flagQuiet,
-			Verbose:			&flagVerbose,
-			Debug:				&flagDebug,
-			ShowDiff:			&flagShowDiff,
+			FallbackNoticeTemplate:   tryReadFile(flagFallbackNoticeTemplate),
+			NoticeBodyTemplate:       tryReadFile(flagNoticeBodyTemplate),
+			Company:                  flagCompany,
+			Restrictions:             restrictions,
+			Year:                     flagYear,
+			License:                  flagLicense,
+			ExtensionNoticeTemplates: extensionNoticeTemplates,
+			Excludes:                 flagExcludes,
+			IncludeFiles:             flagIncludeFiles,
+			ExitFirst:                &flagExitFirst,
+			Quiet:                    &flagQuiet,
+			Verbose:                  &flagVerbose,
+			Debug:                    &flagDebug,
+			ShowDiff:                 &flagShowDiff,
 		},
 	}
 

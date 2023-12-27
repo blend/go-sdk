@@ -11,7 +11,7 @@ import "github.com/blend/go-sdk/async"
 
 type (
 	// Checker is an alias to async.Checker
-	Checker	= async.Checker
+	Checker = async.Checker
 	// CheckerFunc is an alias to async.CheckerFunc
-	CheckerFunc	= async.CheckerFunc
+	CheckerFunc = async.CheckerFunc
 )

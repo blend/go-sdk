@@ -9,13 +9,13 @@ package configutil
 
 const (
 	// EnvVarConfigPath is the env var for configs.
-	EnvVarConfigPath	= "CONFIG_PATH"
+	EnvVarConfigPath = "CONFIG_PATH"
 	// ExtensionJSON is a file extension.
-	ExtensionJSON	= ".json"
+	ExtensionJSON = ".json"
 	// ExtensionYAML is a file extension.
-	ExtensionYAML	= ".yaml"
+	ExtensionYAML = ".yaml"
 	// ExtensionYML is a file extension.
-	ExtensionYML	= ".yml"
+	ExtensionYML = ".yml"
 )
 
 var (

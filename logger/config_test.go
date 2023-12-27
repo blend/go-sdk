@@ -26,8 +26,8 @@ func TestConfig(t *testing.T) {
 	assert.True(ok)
 
 	cfg = Config{
-		Flags:	[]string{Info, Error},
-		Format:	FormatJSON,
+		Flags:  []string{Info, Error},
+		Format: FormatJSON,
 	}
 
 	assert.Equal([]string{Info, Error}, cfg.FlagsOrDefault())

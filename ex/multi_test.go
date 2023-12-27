@@ -24,7 +24,7 @@ func TestMulti(t *testing.T) {
 
 	m := Append(ex0, ex1, ex2)
 
-	it.True(strings.HasPrefix(m.Error(), `3 errors occurred:`), m.Error())	//todo, make this test more strict
+	it.True(strings.HasPrefix(m.Error(), `3 errors occurred:`), m.Error()) //todo, make this test more strict
 
 	it.Len(m.(Multi).WrappedErrors(), 3)
 

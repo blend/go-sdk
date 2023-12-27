@@ -51,8 +51,8 @@ func ScopesNone() *Scopes {
 
 // Scopes is a set of scopes.
 type Scopes struct {
-	all	bool
-	scopes	map[string]bool
+	all    bool
+	scopes map[string]bool
 }
 
 // Enable enables a set of scopes.

@@ -131,7 +131,7 @@ func Test_Buffer_Stats(t *testing.T) {
 	afb.flushes = make(chan Flush, maxItems)
 
 	for x := 0; x < numFlushes; x++ {
-		afb.AddMany(todo, flushBlock...)	// should cause a queued flush
+		afb.AddMany(todo, flushBlock...) // should cause a queued flush
 	}
 
 	assert.Equal(numFlushes, len(afb.flushes))

@@ -27,4 +27,4 @@ Then, in your tests, you can create a new mock:
 
 This will then let you pass `new(clientMock)` to anywhere you need to set a `vault.Client`
 */
-package vault	// import "github.com/blend/go-sdk/vault"
+package vault // import "github.com/blend/go-sdk/vault"

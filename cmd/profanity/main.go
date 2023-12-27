@@ -21,13 +21,13 @@ import (
 )
 
 var (
-	flagRulesFile				*string
-	flagRulesInclude, flagRulesExclude	*[]string
-	flagFilesInclude, flagFilesExclude	*[]string
-	flagDirsInclude, flagDirsExclude	*[]string
-	flagVerbose				*bool
-	flagDebug				*bool
-	flagExitFirst				*bool
+	flagRulesFile                      *string
+	flagRulesInclude, flagRulesExclude *[]string
+	flagFilesInclude, flagFilesExclude *[]string
+	flagDirsInclude, flagDirsExclude   *[]string
+	flagVerbose                        *bool
+	flagDebug                          *bool
+	flagExitFirst                      *bool
 )
 
 var (
@@ -70,9 +70,9 @@ IMPORTS_EXAMPLE: # you can assert a go AST doesnt contains a given import by glo
 
 func command() *cobra.Command {
 	root := &cobra.Command{
-		Use:	"profanity",
-		Short:	"Enforce profanity rules in a directory tree.",
-		Long:	"Enforce profanity rules in a directory tree with inherited rules for each child directory.",
+		Use:   "profanity",
+		Short: "Enforce profanity rules in a directory tree.",
+		Long:  "Enforce profanity rules in a directory tree with inherited rules for each child directory.",
 		Example: fmt.Sprintf(`
 # Run a basic rules set
 profanity --rules=.profanity.yml 

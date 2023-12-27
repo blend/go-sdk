@@ -22,36 +22,36 @@ import (
 
 // Config is an object used to set up a web app.
 type Config struct {
-	Port				int32		`json:"port,omitempty" yaml:"port,omitempty" env:"PORT"`
-	BindAddr			string		`json:"bindAddr,omitempty" yaml:"bindAddr,omitempty" env:"BIND_ADDR"`
-	BaseURL				string		`json:"baseURL,omitempty" yaml:"baseURL,omitempty" env:"BASE_URL"`
-	SkipRedirectTrailingSlash	bool		`json:"skipRedirectTrailingSlash,omitempty" yaml:"skipRedirectTrailingSlash,omitempty"`
-	HandleOptions			bool		`json:"handleOptions,omitempty" yaml:"handleOptions,omitempty"`
-	HandleMethodNotAllowed		bool		`json:"handleMethodNotAllowed,omitempty" yaml:"handleMethodNotAllowed,omitempty"`
-	DisablePanicRecovery		bool		`json:"disablePanicRecovery,omitempty" yaml:"disablePanicRecovery,omitempty"`
-	SessionTimeout			time.Duration	`json:"sessionTimeout,omitempty" yaml:"sessionTimeout,omitempty" env:"SESSION_TIMEOUT"`
-	SessionTimeoutIsRelative	bool		`json:"sessionTimeoutIsRelative,omitempty" yaml:"sessionTimeoutIsRelative,omitempty"`
+	Port                      int32         `json:"port,omitempty" yaml:"port,omitempty" env:"PORT"`
+	BindAddr                  string        `json:"bindAddr,omitempty" yaml:"bindAddr,omitempty" env:"BIND_ADDR"`
+	BaseURL                   string        `json:"baseURL,omitempty" yaml:"baseURL,omitempty" env:"BASE_URL"`
+	SkipRedirectTrailingSlash bool          `json:"skipRedirectTrailingSlash,omitempty" yaml:"skipRedirectTrailingSlash,omitempty"`
+	HandleOptions             bool          `json:"handleOptions,omitempty" yaml:"handleOptions,omitempty"`
+	HandleMethodNotAllowed    bool          `json:"handleMethodNotAllowed,omitempty" yaml:"handleMethodNotAllowed,omitempty"`
+	DisablePanicRecovery      bool          `json:"disablePanicRecovery,omitempty" yaml:"disablePanicRecovery,omitempty"`
+	SessionTimeout            time.Duration `json:"sessionTimeout,omitempty" yaml:"sessionTimeout,omitempty" env:"SESSION_TIMEOUT"`
+	SessionTimeoutIsRelative  bool          `json:"sessionTimeoutIsRelative,omitempty" yaml:"sessionTimeoutIsRelative,omitempty"`
 
-	CookieSecure	*bool	`json:"cookieSecure,omitempty" yaml:"cookieSecure,omitempty" env:"COOKIE_SECURE"`
-	CookieHTTPOnly	*bool	`json:"cookieHTTPOnly,omitempty" yaml:"cookieHTTPOnly,omitempty" env:"COOKIE_HTTP_ONLY"`
-	CookieSameSite	string	`json:"cookieSameSite,omitempty" yaml:"cookieSameSite,omitempty" env:"COOKIE_SAME_SITE"`
-	CookieName	string	`json:"cookieName,omitempty" yaml:"cookieName,omitempty" env:"COOKIE_NAME"`
-	CookiePath	string	`json:"cookiePath,omitempty" yaml:"cookiePath,omitempty" env:"COOKIE_PATH"`
-	CookieDomain	string	`json:"cookieDomain,omitempty" yaml:"cookieDomain,omitempty" env:"COOKIE_DOMAIN"`
+	CookieSecure   *bool  `json:"cookieSecure,omitempty" yaml:"cookieSecure,omitempty" env:"COOKIE_SECURE"`
+	CookieHTTPOnly *bool  `json:"cookieHTTPOnly,omitempty" yaml:"cookieHTTPOnly,omitempty" env:"COOKIE_HTTP_ONLY"`
+	CookieSameSite string `json:"cookieSameSite,omitempty" yaml:"cookieSameSite,omitempty" env:"COOKIE_SAME_SITE"`
+	CookieName     string `json:"cookieName,omitempty" yaml:"cookieName,omitempty" env:"COOKIE_NAME"`
+	CookiePath     string `json:"cookiePath,omitempty" yaml:"cookiePath,omitempty" env:"COOKIE_PATH"`
+	CookieDomain   string `json:"cookieDomain,omitempty" yaml:"cookieDomain,omitempty" env:"COOKIE_DOMAIN"`
 
-	DefaultHeaders		map[string]string	`json:"defaultHeaders,omitempty" yaml:"defaultHeaders,omitempty"`
-	MaxHeaderBytes		int			`json:"maxHeaderBytes,omitempty" yaml:"maxHeaderBytes,omitempty" env:"MAX_HEADER_BYTES"`
-	ReadTimeout		time.Duration		`json:"readTimeout,omitempty" yaml:"readTimeout,omitempty" env:"READ_TIMEOUT"`
-	ReadHeaderTimeout	time.Duration		`json:"readHeaderTimeout,omitempty" yaml:"readHeaderTimeout,omitempty" env:"READ_HEADER_TIMEOUT"`
-	WriteTimeout		time.Duration		`json:"writeTimeout,omitempty" yaml:"writeTimeout,omitempty" env:"WRITE_TIMEOUT"`
-	IdleTimeout		time.Duration		`json:"idleTimeout,omitempty" yaml:"idleTimeout,omitempty" env:"IDLE_TIMEOUT"`
-	ShutdownGracePeriod	time.Duration		`json:"shutdownGracePeriod,omitempty" yaml:"shutdownGracePeriod,omitempty" env:"SHUTDOWN_GRACE_PERIOD"`
+	DefaultHeaders      map[string]string `json:"defaultHeaders,omitempty" yaml:"defaultHeaders,omitempty"`
+	MaxHeaderBytes      int               `json:"maxHeaderBytes,omitempty" yaml:"maxHeaderBytes,omitempty" env:"MAX_HEADER_BYTES"`
+	ReadTimeout         time.Duration     `json:"readTimeout,omitempty" yaml:"readTimeout,omitempty" env:"READ_TIMEOUT"`
+	ReadHeaderTimeout   time.Duration     `json:"readHeaderTimeout,omitempty" yaml:"readHeaderTimeout,omitempty" env:"READ_HEADER_TIMEOUT"`
+	WriteTimeout        time.Duration     `json:"writeTimeout,omitempty" yaml:"writeTimeout,omitempty" env:"WRITE_TIMEOUT"`
+	IdleTimeout         time.Duration     `json:"idleTimeout,omitempty" yaml:"idleTimeout,omitempty" env:"IDLE_TIMEOUT"`
+	ShutdownGracePeriod time.Duration     `json:"shutdownGracePeriod,omitempty" yaml:"shutdownGracePeriod,omitempty" env:"SHUTDOWN_GRACE_PERIOD"`
 
-	KeepAlive		*bool		`json:"keepAlive,omitempty" yaml:"keepAlive,omitempty" env:"KEEP_ALIVE"`
-	KeepAlivePeriod		time.Duration	`json:"keepAlivePeriod,omitempty" yaml:"keepAlivePeriod,omitempty" env:"KEEP_ALIVE_PERIOD"`
-	UseProxyProtocol	bool		`json:"useProxyProtocol,omitempty" yaml:"useProxyProtocol,omitempty"`
+	KeepAlive        *bool         `json:"keepAlive,omitempty" yaml:"keepAlive,omitempty" env:"KEEP_ALIVE"`
+	KeepAlivePeriod  time.Duration `json:"keepAlivePeriod,omitempty" yaml:"keepAlivePeriod,omitempty" env:"KEEP_ALIVE_PERIOD"`
+	UseProxyProtocol bool          `json:"useProxyProtocol,omitempty" yaml:"useProxyProtocol,omitempty"`
 
-	Views	ViewCacheConfig	`json:"views,omitempty" yaml:"views,omitempty"`
+	Views ViewCacheConfig `json:"views,omitempty" yaml:"views,omitempty"`
 }
 
 // IsZero returns if the config is unset or not.

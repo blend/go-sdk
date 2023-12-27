@@ -49,8 +49,8 @@ func TestKeyPairTLSCertificate(t *testing.T) {
 	its := assert.New(t)
 
 	kp := KeyPair{
-		CertPath:	"testdata/server.cert.pem",
-		KeyPath:	"testdata/server.key.pem",
+		CertPath: "testdata/server.cert.pem",
+		KeyPath:  "testdata/server.key.pem",
 	}
 
 	cert, err := kp.TLSCertificate()

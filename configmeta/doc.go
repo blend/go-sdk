@@ -31,4 +31,4 @@ This will pull `SERVICE_NAME` and `SERVICE_ENV` into relevant fields, as well as
 
 This type is used in a number of other packages for common fields like service name and service environment.
 */
-package configmeta	// import "github.com/blend/go-sdk/configmeta"
+package configmeta // import "github.com/blend/go-sdk/configmeta"

@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package dbstats provides shims for writing db logger events to a stats collector.
 */
-package dbstats	// import "github.com/blend/go-sdk/stats/dbstats"
+package dbstats // import "github.com/blend/go-sdk/stats/dbstats"

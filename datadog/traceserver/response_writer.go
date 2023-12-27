@@ -19,8 +19,8 @@ import (
 type ResponseWriter struct {
 	http.ResponseWriter
 
-	StatusCode	int
-	ContentLength	int
+	StatusCode    int
+	ContentLength int
 }
 
 // Write writes the data to the response.

@@ -11,10 +11,10 @@ import "github.com/blend/go-sdk/ex"
 
 // Errors
 const (
-	ErrInvalidSameSite		ex.Class	= "invalid cookie same site string value"
-	ErrParameterMissing		ex.Class	= "parameter missing"
-	ErrUnauthorized			ex.Class	= "unauthorized"
-	ErrInvalidSplitColonInput	ex.Class	= `split colon input string is not of the form "<first>:<second>"`
+	ErrInvalidSameSite        ex.Class = "invalid cookie same site string value"
+	ErrParameterMissing       ex.Class = "parameter missing"
+	ErrUnauthorized           ex.Class = "unauthorized"
+	ErrInvalidSplitColonInput ex.Class = `split colon input string is not of the form "<first>:<second>"`
 )
 
 // ErrIsInvalidSameSite returns if an error is `ErrInvalidSameSite`

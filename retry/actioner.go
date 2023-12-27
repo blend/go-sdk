@@ -13,7 +13,7 @@ import (
 
 type (
 	// Actioner is an alias to async.Actioner.
-	Actioner	= async.Actioner
+	Actioner = async.Actioner
 	// ActionerFunc is an alias to async.ActionerFunc.
-	ActionerFunc	= async.ActionerFunc
+	ActionerFunc = async.ActionerFunc
 )

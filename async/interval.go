@@ -25,10 +25,10 @@ Example:
 */
 func NewInterval(action ContextAction, interval time.Duration, options ...IntervalOption) *Interval {
 	i := Interval{
-		Latch:		NewLatch(),
-		Action:		action,
-		Context:	context.Background(),
-		Interval:	interval,
+		Latch:    NewLatch(),
+		Action:   action,
+		Context:  context.Background(),
+		Interval: interval,
 	}
 	for _, option := range options {
 		option(&i)
@@ -70,12 +70,12 @@ func OptIntervalErrors(errors chan error) IntervalOption {
 // Interval is a background worker that performs an action on an interval.
 type Interval struct {
 	*Latch
-	Context		context.Context
-	Interval	time.Duration
-	Action		ContextAction
-	Delay		time.Duration
-	StopOnError	bool
-	Errors		chan error
+	Context     context.Context
+	Interval    time.Duration
+	Action      ContextAction
+	Delay       time.Duration
+	StopOnError bool
+	Errors      chan error
 }
 
 /*
@@ -100,7 +100,7 @@ func (i *Interval) Stop() error {
 	}
 	i.Stopping()
 	<-i.NotifyStopped()
-	i.Latch.Reset()	// reset the latch in case we have to start again
+	i.Latch.Reset() // reset the latch in case we have to start again
 	return nil
 }
 

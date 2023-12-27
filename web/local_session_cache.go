@@ -15,16 +15,16 @@ import (
 // NewLocalSessionCache returns a new session cache.
 func NewLocalSessionCache() *LocalSessionCache {
 	return &LocalSessionCache{
-		SessionLock:	&sync.Mutex{},
-		Sessions:	map[string]*Session{},
+		SessionLock: &sync.Mutex{},
+		Sessions:    map[string]*Session{},
 	}
 }
 
 // LocalSessionCache is a memory cache of sessions.
 // It is meant to be used in tests.
 type LocalSessionCache struct {
-	SessionLock	*sync.Mutex
-	Sessions	map[string]*Session
+	SessionLock *sync.Mutex
+	Sessions    map[string]*Session
 }
 
 // Apply applies the local session cache to a given auth manager.

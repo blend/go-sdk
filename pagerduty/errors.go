@@ -11,6 +11,6 @@ import "github.com/blend/go-sdk/ex"
 
 // Errors
 const (
-	ErrNon200Status	ex.Class	= "non-200 status code from remote"
-	Err404Status	ex.Class	= "404 status code from remote"
+	ErrNon200Status ex.Class = "non-200 status code from remote"
+	Err404Status    ex.Class = "404 status code from remote"
 )

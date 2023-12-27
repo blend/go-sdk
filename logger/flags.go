@@ -43,16 +43,16 @@ func NewFlags(flags ...string) *Flags {
 }
 
 // FlagsAll returns a flags set with all enabled.
-func FlagsAll() *Flags	{ return &Flags{all: true, flags: make(map[string]bool)} }
+func FlagsAll() *Flags { return &Flags{all: true, flags: make(map[string]bool)} }
 
 // FlagsNone returns a flags set with no flags enabled.
-func FlagsNone() *Flags	{ return &Flags{none: true, flags: make(map[string]bool)} }
+func FlagsNone() *Flags { return &Flags{none: true, flags: make(map[string]bool)} }
 
 // Flags is a set of event flags.
 type Flags struct {
-	flags	map[string]bool
-	all	bool
-	none	bool
+	flags map[string]bool
+	all   bool
+	none  bool
 }
 
 // Enable enables an event flag.

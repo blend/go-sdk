@@ -28,10 +28,10 @@ const VersionRegexpRaw string = `v?([0-9]+(\.[0-9]+)*?)` +
 
 // Version represents a single version.
 type Version struct {
-	metadata	string
-	pre		string
-	segments	[]int64
-	si		int
+	metadata string
+	pre      string
+	segments []int64
+	si       int
 }
 
 func init() {
@@ -63,10 +63,10 @@ func NewVersion(v string) (*Version, error) {
 	}
 
 	return &Version{
-		metadata:	matches[7],
-		pre:		matches[4],
-		segments:	segments,
-		si:		si,
+		metadata: matches[7],
+		pre:      matches[4],
+		segments: segments,
+		si:       si,
 	}, nil
 }
 

@@ -11,8 +11,8 @@ import "github.com/blend/go-sdk/webutil"
 
 // JSONResult is a json result.
 type JSONResult struct {
-	StatusCode	int
-	Response	interface{}
+	StatusCode int
+	Response   interface{}
 }
 
 // Render renders the result

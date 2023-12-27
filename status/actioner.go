@@ -11,7 +11,7 @@ import "github.com/blend/go-sdk/async"
 
 type (
 	// Actioner is a type alias from async.
-	Actioner	= async.Actioner
+	Actioner = async.Actioner
 	// ActionerFunc is a type alias from async.
-	ActionerFunc	= async.ActionerFunc
+	ActionerFunc = async.ActionerFunc
 )

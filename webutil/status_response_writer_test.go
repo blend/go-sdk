@@ -17,9 +17,9 @@ import (
 )
 
 type mockResponseWriter struct {
-	Headers		http.Header
-	StatusCode	int
-	Output		io.Writer
+	Headers    http.Header
+	StatusCode int
+	Output     io.Writer
 }
 
 // Header returns the response headers.

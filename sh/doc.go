@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package sh includes helpers for writing programs that fork or run other programs.
 */
-package sh	// import "github.com/blend/go-sdk/sh"
+package sh // import "github.com/blend/go-sdk/sh"

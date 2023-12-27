@@ -18,8 +18,8 @@ import (
 )
 
 var (
-	_	autoflush.Tracer	= (*autoflushTracer)(nil)
-	_	autoflush.TraceFinisher	= (*autoflushTraceFinisher)(nil)
+	_ autoflush.Tracer        = (*autoflushTracer)(nil)
+	_ autoflush.TraceFinisher = (*autoflushTraceFinisher)(nil)
 )
 
 // Tracer returns a new tracer.

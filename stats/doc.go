@@ -10,4 +10,4 @@ Package stats includes helpers for writing stats to collectors by adding listene
 
 It also includes sub-packages for working with distributed tracing.
 */
-package stats	// import "github.com/blend/go-sdk/stats"
+package stats // import "github.com/blend/go-sdk/stats"

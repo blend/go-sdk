@@ -9,6 +9,6 @@ package pagerduty
 
 // ResolveReason is an api type.
 type ResolveReason struct {
-	Type		string		`json:"type,omitempty"`
-	Incident	APIObject	`json:"incident,omitempty"`
+	Type     string    `json:"type,omitempty"`
+	Incident APIObject `json:"incident,omitempty"`
 }

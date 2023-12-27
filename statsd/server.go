@@ -18,11 +18,11 @@ import (
 // It is meant to be used for diagnostic purposes, and is not suitable for
 // production anything.
 type Server struct {
-	Addr		string
-	Log		*log.Logger
-	MaxPacketSize	int
-	Listener	net.PacketConn
-	Handler		func(...Metric)
+	Addr          string
+	Log           *log.Logger
+	MaxPacketSize int
+	Listener      net.PacketConn
+	Handler       func(...Metric)
 }
 
 // MaxPacketSizeOrDefault returns the max packet size or a default.
@@ -96,11 +96,11 @@ func (s *Server) parseMetric(index *int, data []byte) (m Metric, err error) {
 	var tag []byte
 
 	const (
-		stateName	= iota
-		stateValue	= iota
-		stateMetricType	= iota
-		stateTags	= iota
-		stateTagValues	= iota
+		stateName       = iota
+		stateValue      = iota
+		stateMetricType = iota
+		stateTags       = iota
+		stateTagValues  = iota
 	)
 
 	var b byte
@@ -109,32 +109,32 @@ func (s *Server) parseMetric(index *int, data []byte) (m Metric, err error) {
 		b = data[*index]
 
 		if b == '\n' {
-			break	// drop out at newline
+			break // drop out at newline
 		}
 
 		switch state {
-		case stateName:	//name
+		case stateName: //name
 			if b == ':' {
 				state = stateValue
 				continue
 			}
 			name = append(name, b)
 			continue
-		case stateValue:	//value
+		case stateValue: //value
 			if b == '|' {
 				state = stateMetricType
 				continue
 			}
 			value = append(value, b)
 			continue
-		case stateMetricType:	// metric type
+		case stateMetricType: // metric type
 			if b == '|' {
 				state = stateTags
 				continue
 			}
 			metricType = append(metricType, b)
 			continue
-		case stateTags:	// tags
+		case stateTags: // tags
 			if b == '#' {
 				state = stateTagValues
 				continue

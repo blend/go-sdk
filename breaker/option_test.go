@@ -50,9 +50,9 @@ func TestOptConfig(t *testing.T) {
 	assert.Zero(b.ClosedExpiryInterval)
 	assert.Zero(b.OpenExpiryInterval)
 	OptConfig(Config{
-		HalfOpenMaxActions:	1,
-		ClosedExpiryInterval:	2 * time.Second,
-		OpenExpiryInterval:	3 * time.Second,
+		HalfOpenMaxActions:   1,
+		ClosedExpiryInterval: 2 * time.Second,
+		OpenExpiryInterval:   3 * time.Second,
 	})(b)
 	assert.Equal(1, b.HalfOpenMaxActions)
 	assert.Equal(2*time.Second, b.ClosedExpiryInterval)

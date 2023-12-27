@@ -65,45 +65,45 @@ func TestAnyRefZero(t *testing.T) {
 	assert := assert.New(t)
 
 	type zeroTest struct {
-		ID	int
-		Value	string
+		ID    int
+		Value string
 	}
 
 	testCases := [...]struct {
-		Input		interface{}
-		Expected	error
+		Input    interface{}
+		Expected error
 	}{
 		{
-			Input:		nil,
-			Expected:	nil,
+			Input:    nil,
+			Expected: nil,
 		},
 		{
-			Input:		(*string)(nil),
-			Expected:	nil,
+			Input:    (*string)(nil),
+			Expected: nil,
 		},
 		{
-			Input:		0,
-			Expected:	nil,
+			Input:    0,
+			Expected: nil,
 		},
 		{
-			Input:		1,
-			Expected:	ErrZero,
+			Input:    1,
+			Expected: ErrZero,
 		},
 		{
-			Input:		"",
-			Expected:	nil,
+			Input:    "",
+			Expected: nil,
 		},
 		{
-			Input:		"foo",
-			Expected:	ErrZero,
+			Input:    "foo",
+			Expected: ErrZero,
 		},
 		{
-			Input:		zeroTest{},
-			Expected:	nil,
+			Input:    zeroTest{},
+			Expected: nil,
 		},
 		{
-			Input:		zeroTest{ID: 2},
-			Expected:	ErrZero,
+			Input:    zeroTest{ID: 2},
+			Expected: ErrZero,
 		},
 	}
 
@@ -117,56 +117,56 @@ func TestAnyRefEmpty(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := [...]struct {
-		Input		interface{}
-		Expected	error
+		Input    interface{}
+		Expected error
 	}{
 		{
-			Input:		nil,
-			Expected:	ErrNonLengthType,
+			Input:    nil,
+			Expected: ErrNonLengthType,
 		},
 		{
-			Input:		0,
-			Expected:	ErrNonLengthType,
+			Input:    0,
+			Expected: ErrNonLengthType,
 		},
 		{
-			Input:		[]string{},
-			Expected:	nil,
+			Input:    []string{},
+			Expected: nil,
 		},
 		{
-			Input:		([]string)(nil),
-			Expected:	nil,
+			Input:    ([]string)(nil),
+			Expected: nil,
 		},
 		{
-			Input:		map[string]interface{}{},
-			Expected:	nil,
+			Input:    map[string]interface{}{},
+			Expected: nil,
 		},
 		{
-			Input:		(map[string]interface{})(nil),
-			Expected:	nil,
+			Input:    (map[string]interface{})(nil),
+			Expected: nil,
 		},
 		{
-			Input:		"",
-			Expected:	nil,
+			Input:    "",
+			Expected: nil,
 		},
 		{
-			Input:		make(chan struct{}),
-			Expected:	nil,
+			Input:    make(chan struct{}),
+			Expected: nil,
 		},
 		{
-			Input:		(chan struct{})(nil),
-			Expected:	nil,
+			Input:    (chan struct{})(nil),
+			Expected: nil,
 		},
 		{
-			Input:		[]string{"a", "b"},
-			Expected:	ErrEmpty,
+			Input:    []string{"a", "b"},
+			Expected: ErrEmpty,
 		},
 		{
-			Input:		map[string]int{"hi": 1},
-			Expected:	ErrEmpty,
+			Input:    map[string]int{"hi": 1},
+			Expected: ErrEmpty,
 		},
 		{
-			Input:		"foo",
-			Expected:	ErrEmpty,
+			Input:    "foo",
+			Expected: ErrEmpty,
 		},
 	}
 
@@ -180,56 +180,56 @@ func TestAnyRefNotEmpty(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := [...]struct {
-		Input		interface{}
-		Expected	error
+		Input    interface{}
+		Expected error
 	}{
 		{
-			Input:		nil,
-			Expected:	ErrNonLengthType,
+			Input:    nil,
+			Expected: ErrNonLengthType,
 		},
 		{
-			Input:		0,
-			Expected:	ErrNonLengthType,
+			Input:    0,
+			Expected: ErrNonLengthType,
 		},
 		{
-			Input:		[]string{},
-			Expected:	ErrNotEmpty,
+			Input:    []string{},
+			Expected: ErrNotEmpty,
 		},
 		{
-			Input:		([]string)(nil),
-			Expected:	ErrNotEmpty,
+			Input:    ([]string)(nil),
+			Expected: ErrNotEmpty,
 		},
 		{
-			Input:		map[string]interface{}{},
-			Expected:	ErrNotEmpty,
+			Input:    map[string]interface{}{},
+			Expected: ErrNotEmpty,
 		},
 		{
-			Input:		(map[string]interface{})(nil),
-			Expected:	ErrNotEmpty,
+			Input:    (map[string]interface{})(nil),
+			Expected: ErrNotEmpty,
 		},
 		{
-			Input:		"",
-			Expected:	ErrNotEmpty,
+			Input:    "",
+			Expected: ErrNotEmpty,
 		},
 		{
-			Input:		make(chan struct{}),
-			Expected:	ErrNotEmpty,
+			Input:    make(chan struct{}),
+			Expected: ErrNotEmpty,
 		},
 		{
-			Input:		(chan struct{})(nil),
-			Expected:	ErrNotEmpty,
+			Input:    (chan struct{})(nil),
+			Expected: ErrNotEmpty,
 		},
 		{
-			Input:		[]string{"a", "b"},
-			Expected:	nil,
+			Input:    []string{"a", "b"},
+			Expected: nil,
 		},
 		{
-			Input:		map[string]int{"hi": 1},
-			Expected:	nil,
+			Input:    map[string]int{"hi": 1},
+			Expected: nil,
 		},
 		{
-			Input:		"foo",
-			Expected:	nil,
+			Input:    "foo",
+			Expected: nil,
 		},
 	}
 

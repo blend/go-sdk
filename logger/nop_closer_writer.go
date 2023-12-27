@@ -15,4 +15,4 @@ type NopCloserWriter struct {
 }
 
 // Close does not close.
-func (ncw NopCloserWriter) Close() error	{ return nil }
+func (ncw NopCloserWriter) Close() error { return nil }

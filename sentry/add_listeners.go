@@ -37,8 +37,8 @@ func AddListeners(log logger.Listenable, meta configmeta.Meta, cfg Config, opts 
 	}
 
 	options := AddListenersOptions{
-		EnabledFlags:	DefaultListenerFlags,
-		Scopes:		logger.ScopesAll(),
+		EnabledFlags: DefaultListenerFlags,
+		Scopes:       logger.ScopesAll(),
 	}
 	for _, opt := range opts {
 		opt(&options)
@@ -54,8 +54,8 @@ func AddListeners(log logger.Listenable, meta configmeta.Meta, cfg Config, opts 
 // AddListenersOptions are all the options we can set when
 // adding Sentry error listeners
 type AddListenersOptions struct {
-	EnabledFlags	[]string
-	Scopes		*logger.Scopes
+	EnabledFlags []string
+	Scopes       *logger.Scopes
 }
 
 // AddListenersOption mutates AddListeners options

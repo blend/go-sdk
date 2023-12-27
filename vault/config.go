@@ -17,15 +17,15 @@ import (
 // Config is the secrets config object.
 type Config struct {
 	// Addr is the remote address of the secret store.
-	Addr	string	`json:"addr" yaml:"addr" env:"VAULT_ADDR"`
+	Addr string `json:"addr" yaml:"addr" env:"VAULT_ADDR"`
 	// Mount is the default mount path, it prefixes any paths.
-	Mount	string	`json:"mount" yaml:"mount" env:"VAULT_MOUNT"`
+	Mount string `json:"mount" yaml:"mount" env:"VAULT_MOUNT"`
 	// Token is the authentication token used to talk to the secret store.
-	Token	string	`json:"token" yaml:"token" env:"VAULT_TOKEN"`
+	Token string `json:"token" yaml:"token" env:"VAULT_TOKEN"`
 	// Timeout is the dial timeout for requests to the secrets store.
-	Timeout	time.Duration	`json:"timeout" yaml:"timeout" env:"VAULT_TIMEOUT"`
+	Timeout time.Duration `json:"timeout" yaml:"timeout" env:"VAULT_TIMEOUT"`
 	// RootCAs is a list of certificate authority paths.
-	RootCAs	[]string	`json:"rootCAs" yaml:"rootCAs" env:"VAULT_CA_CERT,csv"`
+	RootCAs []string `json:"rootCAs" yaml:"rootCAs" env:"VAULT_CA_CERT,csv"`
 }
 
 // IsZero returns if the config is set or not.

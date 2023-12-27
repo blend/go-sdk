@@ -128,9 +128,9 @@ func TestCtxPostedFiles(t *testing.T) {
 	assert.Empty(postedFiles)
 
 	context = MockCtx("GET", "/", OptCtxPostedFiles(webutil.PostedFile{
-		Key:		"file",
-		FileName:	"test.txt",
-		Contents:	[]byte("this is only a test"),
+		Key:      "file",
+		FileName: "test.txt",
+		Contents: []byte("this is only a test"),
 	}))
 
 	postedFiles, err = webutil.PostedFiles(context.Request)
@@ -183,20 +183,20 @@ func TestCtxExtendCookieByDuration(t *testing.T) {
 }
 
 type PostFormTest struct {
-	ID		string	`postForm:"id"`
-	Name		string	`postForm:"Name"`
-	Cost		float64	`postForm:"notCost"`
-	Excluded	string
+	ID       string  `postForm:"id"`
+	Name     string  `postForm:"Name"`
+	Cost     float64 `postForm:"notCost"`
+	Excluded string
 }
 
 func TestCtxPostBodyAsForm(t *testing.T) {
 	assert := assert.New(t)
 
 	formValues := url.Values{
-		"id":		[]string{uuid.V4().String()},
-		"Name":		[]string{"foobar"},
-		"notCost":	[]string{"3.14", "6.28"},
-		"Excluded":	[]string{"bad"},
+		"id":       []string{uuid.V4().String()},
+		"Name":     []string{"foobar"},
+		"notCost":  []string{"3.14", "6.28"},
+		"Excluded": []string{"bad"},
 	}
 	postBody := []byte(formValues.Encode())
 

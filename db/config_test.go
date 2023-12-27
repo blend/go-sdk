@@ -24,89 +24,89 @@ func TestConfigCreateDSN(t *testing.T) {
 	assert := assert.New(t)
 
 	cfg := &Config{
-		Host:			"bar",
-		Port:			"1234",
-		Username:		"example-string",
-		Password:		"dog",
-		Database:		"blend",
-		Schema:			"primary_schema",
-		ApplicationName:	"this-pod-7897744df9-v4bbx",
-		SSLMode:		SSLModeVerifyCA,
-		LockTimeout:		1704 * time.Millisecond,
-		StatementTimeout:	2704 * time.Millisecond,
-		ConnectTimeout:		7 * time.Second,
+		Host:             "bar",
+		Port:             "1234",
+		Username:         "example-string",
+		Password:         "dog",
+		Database:         "blend",
+		Schema:           "primary_schema",
+		ApplicationName:  "this-pod-7897744df9-v4bbx",
+		SSLMode:          SSLModeVerifyCA,
+		LockTimeout:      1704 * time.Millisecond,
+		StatementTimeout: 2704 * time.Millisecond,
+		ConnectTimeout:   7 * time.Second,
 	}
 
 	assert.Equal("postgres://example-string:dog@bar:1234/blend?application_name=this-pod-7897744df9-v4bbx&connect_timeout=7&lock_timeout=1704ms&search_path=primary_schema&sslmode=verify-ca&statement_timeout=2704ms", cfg.CreateDSN())
 
 	cfg = &Config{
-		DSN:			"foo",
-		Host:			"bar",
-		Username:		"example-string",
-		Password:		"dog",
-		Database:		"blend",
-		Schema:			"primary_schema",
-		ApplicationName:	"this-pod-7897744df9-v4bbx",
-		SSLMode:		SSLModeVerifyCA,
+		DSN:             "foo",
+		Host:            "bar",
+		Username:        "example-string",
+		Password:        "dog",
+		Database:        "blend",
+		Schema:          "primary_schema",
+		ApplicationName: "this-pod-7897744df9-v4bbx",
+		SSLMode:         SSLModeVerifyCA,
 	}
 
 	assert.Equal("foo", cfg.CreateDSN())
 
 	cfg = &Config{
-		Host:			"bar",
-		Port:			"1234",
-		Username:		"example-string",
-		Password:		"dog",
-		Database:		"blend",
-		Schema:			"primary_schema",
-		ApplicationName:	"this-pod-7897744df9-v4bbx",
-		SSLMode:		SSLModeVerifyCA,
+		Host:            "bar",
+		Port:            "1234",
+		Username:        "example-string",
+		Password:        "dog",
+		Database:        "blend",
+		Schema:          "primary_schema",
+		ApplicationName: "this-pod-7897744df9-v4bbx",
+		SSLMode:         SSLModeVerifyCA,
 	}
 
 	assert.Equal("postgres://example-string:dog@bar:1234/blend?application_name=this-pod-7897744df9-v4bbx&search_path=primary_schema&sslmode=verify-ca", cfg.CreateDSN())
 
 	cfg = &Config{
-		Host:			"bar",
-		Port:			"1234",
-		Username:		"example-string",
-		Password:		"dog",
-		Database:		"blend",
-		Schema:			"primary_schema",
-		ApplicationName:	"this-pod-7897744df9-v4bbx",
+		Host:            "bar",
+		Port:            "1234",
+		Username:        "example-string",
+		Password:        "dog",
+		Database:        "blend",
+		Schema:          "primary_schema",
+		ApplicationName: "this-pod-7897744df9-v4bbx",
 	}
 
 	assert.Equal("postgres://example-string:dog@bar:1234/blend?application_name=this-pod-7897744df9-v4bbx&search_path=primary_schema", cfg.CreateDSN())
 
 	cfg = &Config{
-		Host:		"bar",
-		Port:		"1234",
-		Username:	"example-string",
-		Password:	"dog",
-		Database:	"blend",
+		Host:     "bar",
+		Port:     "1234",
+		Username: "example-string",
+		Password: "dog",
+		Database: "blend",
 	}
 
 	assert.Equal("postgres://example-string:dog@bar:1234/blend", cfg.CreateDSN())
 
 	cfg = &Config{
-		Host:		"bar",
-		Port:		"1234",
-		Username:	"example-string",
-		Password:	"dog",
+		Host:     "bar",
+		Port:     "1234",
+		Username: "example-string",
+		Password: "dog",
 	}
 
 	assert.Equal("postgres://example-string:dog@bar:1234/postgres", cfg.CreateDSN())
 
 	cfg = &Config{
-		Host:		"bar",
-		Port:		"1234",
-		Username:	"example-string",
+		Host:     "bar",
+		Port:     "1234",
+		Username: "example-string",
 	}
 
 	assert.Equal("postgres://example-string@bar:1234/postgres", cfg.CreateDSN())
 
 	cfg = &Config{
-		Host:	"bar",
-		Port:	"1234",
+		Host: "bar",
+		Port: "1234",
 	}
 
 	assert.Equal("postgres://bar:1234/postgres", cfg.CreateDSN())
@@ -135,15 +135,15 @@ func TestNewConfigFromDSN(t *testing.T) {
 	parsed, err = NewConfigFromDSN(dsn)
 	assert.Nil(err)
 	expected := Config{
-		Host:			"bar",
-		Port:			"1234",
-		Database:		"blend",
-		Username:		"example-string",
-		Password:		"dog",
-		ConnectTimeout:		5 * time.Second,
-		LockTimeout:		4500 * time.Millisecond,
-		StatementTimeout:	5500 * time.Millisecond,
-		SSLMode:		SSLModeVerifyCA,
+		Host:             "bar",
+		Port:             "1234",
+		Database:         "blend",
+		Username:         "example-string",
+		Password:         "dog",
+		ConnectTimeout:   5 * time.Second,
+		LockTimeout:      4500 * time.Millisecond,
+		StatementTimeout: 5500 * time.Millisecond,
+		SSLMode:          SSLModeVerifyCA,
 	}
 	assert.Equal(expected, parsed)
 
@@ -151,8 +151,8 @@ func TestNewConfigFromDSN(t *testing.T) {
 	dsn = "postgres://bar:1234/blend?lock_timeout=1000"
 	parsed, err = NewConfigFromDSN(dsn)
 	partial := Config{
-		Host:		"bar",
-		Database:	"blend",
+		Host:     "bar",
+		Database: "blend",
 	}
 	assert.Equal(partial, parsed)
 	assert.Matches(`(?m)time: missing unit in duration (")?1000(")?; field: lock_timeout$`, fmt.Sprint(err))
@@ -161,9 +161,9 @@ func TestNewConfigFromDSN(t *testing.T) {
 	dsn = "postgres://bar:1234/blend?statement_timeout=2000"
 	parsed, err = NewConfigFromDSN(dsn)
 	partial = Config{
-		Host:		"bar",
-		Port:		"1234",
-		Database:	"blend",
+		Host:     "bar",
+		Port:     "1234",
+		Database: "blend",
 	}
 	assert.Equal(partial, parsed)
 	assert.Matches(`(?m)time: missing unit in duration (")?2000(")?; field: statement_timeout$`, fmt.Sprint(err))
@@ -178,15 +178,15 @@ func TestNewConfigFromDSNWithSchema(t *testing.T) {
 	assert.Nil(err)
 
 	expected := Config{
-		Host:			"bar",
-		Port:			"1234",
-		Database:		"blend",
-		Schema:			"primary_schema",
-		ApplicationName:	"this-pod-7897744df9-v4bbx",
-		Username:		"example-string",
-		Password:		"dog",
-		ConnectTimeout:		5 * time.Second,
-		SSLMode:		SSLModeVerifyCA,
+		Host:            "bar",
+		Port:            "1234",
+		Database:        "blend",
+		Schema:          "primary_schema",
+		ApplicationName: "this-pod-7897744df9-v4bbx",
+		Username:        "example-string",
+		Password:        "dog",
+		ConnectTimeout:  5 * time.Second,
+		SSLMode:         SSLModeVerifyCA,
 	}
 	assert.Equal(expected, parsed)
 }
@@ -218,16 +218,16 @@ func TestConfigReparse(t *testing.T) {
 	assert := assert.New(t)
 
 	cfg := &Config{
-		Host:			"bar",
-		Username:		"example-string",
-		Password:		"dog",
-		Database:		"blend",
-		Schema:			"primary_schema",
-		SSLMode:		SSLModeVerifyCA,
-		BufferPoolSize:		10,
-		MaxConnections:		10,
-		IdleConnections:	5,
-		MaxLifetime:		100,
+		Host:            "bar",
+		Username:        "example-string",
+		Password:        "dog",
+		Database:        "blend",
+		Schema:          "primary_schema",
+		SSLMode:         SSLModeVerifyCA,
+		BufferPoolSize:  10,
+		MaxConnections:  10,
+		IdleConnections: 5,
+		MaxLifetime:     100,
 	}
 
 	resolved, err := cfg.Reparse()

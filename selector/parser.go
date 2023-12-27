@@ -16,13 +16,13 @@ import (
 // Parser parses a selector incrementally.
 type Parser struct {
 	// s stores the string to be tokenized
-	s	string
+	s string
 	// pos is the position currently tokenized
-	pos	int
+	pos int
 	// m is an optional mark
-	m	int
+	m int
 
-	skipValidation	bool
+	skipValidation bool
 }
 
 // Parse does the actual parsing.
@@ -45,7 +45,7 @@ func (p *Parser) Parse() (Selector, error) {
 		b = p.current()
 
 		if b == Bang {
-			p.advance()	// we aren't going to use the '!'
+			p.advance() // we aren't going to use the '!'
 
 			// read off the !KEY
 			// readWord will leave us on the next non-alpha char
@@ -54,7 +54,7 @@ func (p *Parser) Parse() (Selector, error) {
 				return nil, err
 			}
 
-			selector = p.addAnd(selector, p.notHasKey(word))	// add the !KEY term
+			selector = p.addAnd(selector, p.notHasKey(word)) // add the !KEY term
 			if p.done() {
 				break
 			}
@@ -76,11 +76,11 @@ func (p *Parser) Parse() (Selector, error) {
 			return nil, err
 		}
 
-		p.mark()	// mark to revert if the sniff for the `KEY` form fails
+		p.mark() // mark to revert if the sniff for the `KEY` form fails
 
 		// sniff if the next character after the word is a comma
 		// this indicates it's a "key" form, or existence check on a key
-		b = p.skipToNonWhitespace()	// the comma is not whitespace
+		b = p.skipToNonWhitespace() // the comma is not whitespace
 		if b == Comma || p.done() {
 			selector = p.addAnd(selector, p.hasKey(word))
 
@@ -244,14 +244,14 @@ func (p *Parser) readOp() (string, error) {
 	p.skipWhiteSpace()
 
 	const (
-		stateFirstOpChar	= 0
-		stateEqual		= 1
-		stateBang		= 2
-		stateInI		= 3
-		stateNotInN		= 4
-		stateNotInO		= 5
-		stateNotInT		= 6
-		stateNotInI		= 7
+		stateFirstOpChar = 0
+		stateEqual       = 1
+		stateBang        = 2
+		stateInI         = 3
+		stateNotInN      = 4
+		stateNotInO      = 5
+		stateNotInT      = 6
+		stateNotInI      = 7
 	)
 
 	var state int
@@ -265,7 +265,7 @@ func (p *Parser) readOp() (string, error) {
 		ch = p.current()
 
 		switch state {
-		case stateFirstOpChar:	// initial state, determine what op we're reading for
+		case stateFirstOpChar: // initial state, determine what op we're reading for
 			if ch == Equal {
 				state = stateEqual
 				break
@@ -392,11 +392,11 @@ func (p *Parser) readCSV() (results []string, err error) {
 	p.skipWhiteSpace()
 
 	const (
-		stateBeforeParens		= 0
-		stateWord			= 1
-		stateWhitespaceAfterOpenParens	= 2
-		stateWhitespaceAfterComma	= 3
-		stateWhitespaceAfterWord	= 4
+		stateBeforeParens              = 0
+		stateWord                      = 1
+		stateWhitespaceAfterOpenParens = 2
+		stateWhitespaceAfterComma      = 3
+		stateWhitespaceAfterWord       = 4
 	)
 
 	var word []rune
@@ -485,7 +485,7 @@ func (p *Parser) readCSV() (results []string, err error) {
 			}
 			if ch == CloseParens {
 				p.advance()
-				return	// exit reading the csv
+				return // exit reading the csv
 			}
 
 			if state == stateWhitespaceAfterOpenParens {
@@ -561,9 +561,9 @@ func (p *Parser) isValidValue(ch rune) bool {
 
 func (p *Parser) parseError(message ...interface{}) error {
 	return &ParseError{
-		Err:		ErrInvalidSelector,
-		Input:		p.s,
-		Position:	p.pos,
-		Message:	fmt.Sprint(message...),
+		Err:      ErrInvalidSelector,
+		Input:    p.s,
+		Position: p.pos,
+		Message:  fmt.Sprint(message...),
 	}
 }

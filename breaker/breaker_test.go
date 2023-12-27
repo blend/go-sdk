@@ -89,23 +89,23 @@ func Test_Breaker(t *testing.T) {
 
 	// StateClosed to StateOpen
 	for i := 0; i < 5; i++ {
-		its.Nil(fail(b))	// 5 more consecutive failures
+		its.Nil(fail(b)) // 5 more consecutive failures
 	}
 	its.Equal(StateOpen, b.EvaluateState(ctx))
 	its.Equal(Counts{0, 0, 0, 0, 0}, b.Counts)
 	its.False(b.stateExpiresAt.IsZero())
 
 	err := succeed(b)
-	its.True(ErrIsOpen(err))	// this shouldn't have called the action, should yield closed
+	its.True(ErrIsOpen(err)) // this shouldn't have called the action, should yield closed
 	err = fail(b)
-	its.True(ErrIsOpen(err))	// this shouldn't have called the action either
+	its.True(ErrIsOpen(err)) // this shouldn't have called the action either
 	its.Equal(Counts{0, 0, 0, 0, 0}, b.Counts)
 
-	pseudoSleep(b, 59*time.Second)	// push forward time by 59s
+	pseudoSleep(b, 59*time.Second) // push forward time by 59s
 	its.Equal(StateOpen, b.EvaluateState(ctx))
 
 	// StateOpen to StateHalfOpen
-	pseudoSleep(b, 2*time.Second)	// over Timeout
+	pseudoSleep(b, 2*time.Second) // over Timeout
 	its.Equal(StateHalfOpen, b.EvaluateState(ctx))
 	its.True(b.stateExpiresAt.IsZero())
 

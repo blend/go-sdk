@@ -9,6 +9,6 @@ package diff
 
 // Diff represents one diff operation
 type Diff struct {
-	Type	Operation
-	Text	string
+	Type Operation
+	Text string
 }

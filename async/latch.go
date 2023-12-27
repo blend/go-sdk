@@ -37,12 +37,12 @@ In order to start a `stopped` latch, you must call `.Reset()` first to initializ
 type Latch struct {
 	sync.Mutex
 
-	state	int32
+	state int32
 
-	starting	chan struct{}
-	started		chan struct{}
-	stopping	chan struct{}
-	stopped		chan struct{}
+	starting chan struct{}
+	started  chan struct{}
+	stopping chan struct{}
+	stopped  chan struct{}
 }
 
 // Reset resets the latch.

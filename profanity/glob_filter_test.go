@@ -18,8 +18,8 @@ func Test_Glob_include(t *testing.T) {
 	its := assert.New(t)
 
 	testCases := [...]struct {
-		Input		string
-		Expected	bool
+		Input    string
+		Expected bool
 	}{
 		{Input: "foo.txt", Expected: false},
 		{Input: "foo.go", Expected: true},

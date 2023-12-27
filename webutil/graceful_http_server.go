@@ -21,8 +21,8 @@ import (
 // NewGracefulHTTPServer returns a new graceful http server wrapper.
 func NewGracefulHTTPServer(server *http.Server, options ...GracefulHTTPServerOption) *GracefulHTTPServer {
 	gs := &GracefulHTTPServer{
-		Latch:	async.NewLatch(),
-		Server:	server,
+		Latch:  async.NewLatch(),
+		Server: server,
 	}
 	for _, option := range options {
 		option(gs)
@@ -50,11 +50,11 @@ func OptGracefulHTTPServerLog(log logger.Log) GracefulHTTPServerOption {
 
 // GracefulHTTPServer is a wrapper for an http server that implements the graceful interface.
 type GracefulHTTPServer struct {
-	Log			logger.Log
-	Latch			*async.Latch
-	Server			*http.Server
-	ShutdownGracePeriod	time.Duration
-	Listener		net.Listener
+	Log                 logger.Log
+	Latch               *async.Latch
+	Server              *http.Server
+	ShutdownGracePeriod time.Duration
+	Listener            net.Listener
 }
 
 // Start implements graceful.Graceful.Start.

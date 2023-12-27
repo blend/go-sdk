@@ -42,16 +42,16 @@ func New(options ...Option) (*App, error) {
 		return nil, err
 	}
 	a := App{
-		RouteTree:		new(RouteTree),
-		Auth:			auth,
-		BaseContext:		func(_ net.Listener) context.Context { return context.Background() },
-		BaseHeaders:		BaseHeaders(),
-		BaseState:		new(SyncState),
-		DefaultProvider:	views,
-		Latch:			async.NewLatch(),
-		Server:			new(http.Server),
-		Statics:		map[string]*StaticFileServer{},
-		Views:			views,
+		RouteTree:       new(RouteTree),
+		Auth:            auth,
+		BaseContext:     func(_ net.Listener) context.Context { return context.Background() },
+		BaseHeaders:     BaseHeaders(),
+		BaseState:       new(SyncState),
+		DefaultProvider: views,
+		Latch:           async.NewLatch(),
+		Server:          new(http.Server),
+		Statics:         map[string]*StaticFileServer{},
+		Views:           views,
 	}
 
 	for _, option := range options {
@@ -67,28 +67,28 @@ type App struct {
 	*async.Latch
 	*RouteTree
 
-	Config	Config
+	Config Config
 
-	Auth		AuthManager
-	BaseContext	func(net.Listener) context.Context
+	Auth        AuthManager
+	BaseContext func(net.Listener) context.Context
 
-	BaseHeaders	http.Header
-	BaseMiddleware	[]Middleware
-	BaseState	State
+	BaseHeaders    http.Header
+	BaseMiddleware []Middleware
+	BaseState      State
 
-	Log	logger.Log
-	Tracer	Tracer
+	Log    logger.Log
+	Tracer Tracer
 
-	TLSConfig	*tls.Config
-	Server		*http.Server
-	Listener	net.Listener
+	TLSConfig *tls.Config
+	Server    *http.Server
+	Listener  net.Listener
 
-	Statics	map[string]*StaticFileServer
+	Statics map[string]*StaticFileServer
 
-	DefaultProvider	ResultProvider
-	Views		*ViewCache
+	DefaultProvider ResultProvider
+	Views           *ViewCache
 
-	PanicAction	PanicAction
+	PanicAction PanicAction
 }
 
 // Background returns a base context.
@@ -141,9 +141,9 @@ func (a *App) Start() (err error) {
 			return
 		}
 		a.Listener = webutil.TCPKeepAliveListener{
-			TCPListener:		typedListener,
-			KeepAlive:		a.Config.KeepAliveOrDefault(),
-			KeepAlivePeriod:	a.Config.KeepAlivePeriodOrDefault(),
+			TCPListener:     typedListener,
+			KeepAlive:       a.Config.KeepAliveOrDefault(),
+			KeepAlivePeriod: a.Config.KeepAlivePeriodOrDefault(),
 		}
 
 		if a.Config.UseProxyProtocol {

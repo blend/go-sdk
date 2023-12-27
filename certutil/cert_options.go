@@ -20,9 +20,9 @@ import (
 // CertOptions are required arguments when creating certificates.
 type CertOptions struct {
 	x509.Certificate
-	PrivateKey		*rsa.PrivateKey
-	NotBeforeProvider	func() time.Time
-	NotAfterProvider	func() time.Time
+	PrivateKey        *rsa.PrivateKey
+	NotBeforeProvider func() time.Time
+	NotAfterProvider  func() time.Time
 }
 
 // ResolveCertOptions resolves the common create cert options.

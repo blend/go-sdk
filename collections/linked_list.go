@@ -24,9 +24,9 @@ func NewLinkedListFromValues[T any](values []T) *LinkedList[T] {
 // LinkedList is an implementation of a fifo buffer using nodes and pointers.
 // Remarks; it is not thread safe. It is constant(ish) time in all ops.
 type LinkedList[T any] struct {
-	head	*listNode[T]
-	tail	*listNode[T]
-	length	int
+	head   *listNode[T]
+	tail   *listNode[T]
+	length int
 }
 
 // Len returns the length of the queue in constant time.
@@ -38,10 +38,10 @@ func (q *LinkedList[T]) Len() int {
 func (q *LinkedList[T]) Enqueue(value T) {
 	node := &listNode[T]{Value: value}
 
-	if q.head == nil {	// the queue is empty, that is to say head is nil
+	if q.head == nil { // the queue is empty, that is to say head is nil
 		q.head = node
 		q.tail = node
-	} else {	// the queue is not empty, we have a (valid) tail pointer
+	} else { // the queue is not empty, we have a (valid) tail pointer
 		q.tail.Previous = node
 		node.Next = q.tail
 		q.tail = node
@@ -215,7 +215,7 @@ func (q *LinkedList[T]) Contents() []T {
 }
 
 type listNode[T any] struct {
-	Next		*listNode[T]
-	Previous	*listNode[T]
-	Value		T
+	Next     *listNode[T]
+	Previous *listNode[T]
+	Value    T
 }

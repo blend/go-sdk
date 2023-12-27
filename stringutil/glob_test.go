@@ -18,9 +18,9 @@ func Test_Glob(t *testing.T) {
 	its := assert.New(t)
 
 	testCases := [...]struct {
-		Subj		string
-		Pattern		string
-		Expected	bool
+		Subj     string
+		Pattern  string
+		Expected bool
 	}{
 		{"", "", true},
 		{"test", "", false},

@@ -33,8 +33,8 @@ func NewCertFileWatcher(keyPair KeyPair, opts ...CertFileWatcherOption) (*CertFi
 		return nil, ex.New(ErrTLSPathsUnset)
 	}
 	cw := &CertFileWatcher{
-		latch:		async.NewLatch(),
-		keyPair:	keyPair,
+		latch:   async.NewLatch(),
+		keyPair: keyPair,
 	}
 	for _, opt := range opts {
 		if err := opt(cw); err != nil {
@@ -83,20 +83,20 @@ func OptCertFileWatcherPollInterval(d time.Duration) CertFileWatcherOption {
 
 // CertFileWatcher reloads a cert key pair when there is a change, e.g. cert renewal
 type CertFileWatcher struct {
-	latch		*async.Latch
-	certificateMu	sync.RWMutex
-	certificate	*tls.Certificate
-	keyPair		KeyPair
-	pollInterval	time.Duration
-	notifyReload	chan struct{}
-	onReload	CertFileWatcherOnReloadAction
+	latch         *async.Latch
+	certificateMu sync.RWMutex
+	certificate   *tls.Certificate
+	keyPair       KeyPair
+	pollInterval  time.Duration
+	notifyReload  chan struct{}
+	onReload      CertFileWatcherOnReloadAction
 }
 
 // CertPath returns the cert path.
-func (cw *CertFileWatcher) CertPath() string	{ return cw.keyPair.CertPath }
+func (cw *CertFileWatcher) CertPath() string { return cw.keyPair.CertPath }
 
 // KeyPath returns the cert path.
-func (cw *CertFileWatcher) KeyPath() string	{ return cw.keyPair.KeyPath }
+func (cw *CertFileWatcher) KeyPath() string { return cw.keyPair.KeyPath }
 
 // PollIntervalOrDefault returns the polling interval or a default.
 func (cw *CertFileWatcher) PollIntervalOrDefault() time.Duration {
@@ -143,10 +143,10 @@ func (cw *CertFileWatcher) GetCertificate(_ *tls.ClientHelloInfo) (*tls.Certific
 }
 
 // IsStarted returns if the underlying latch is started.
-func (cw *CertFileWatcher) IsStarted() bool	{ return cw.latch.IsStarted() }
+func (cw *CertFileWatcher) IsStarted() bool { return cw.latch.IsStarted() }
 
 // IsStopped returns if the underlying latch is stopped.
-func (cw *CertFileWatcher) IsStopped() bool	{ return cw.latch.IsStopped() }
+func (cw *CertFileWatcher) IsStopped() bool { return cw.latch.IsStopped() }
 
 // NotifyStarted returns the notify started channel.
 func (cw *CertFileWatcher) NotifyStarted() <-chan struct{} {

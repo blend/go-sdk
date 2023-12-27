@@ -15,9 +15,9 @@ import (
 )
 
 var (
-	_	error		= (*Ex)(nil)
-	_	fmt.Formatter	= (*Ex)(nil)
-	_	json.Marshaler	= (*Ex)(nil)
+	_ error          = (*Ex)(nil)
+	_ fmt.Formatter  = (*Ex)(nil)
+	_ json.Marshaler = (*Ex)(nil)
 )
 
 // New returns a new exception with a call stack.
@@ -47,19 +47,19 @@ func NewWithStackDepth(class interface{}, startDepth int, options ...Option) Exc
 		}
 
 		ex = &Ex{
-			Class:		typed,
-			Inner:		errors.Unwrap(typed),
-			StackTrace:	Callers(startDepth),
+			Class:      typed,
+			Inner:      errors.Unwrap(typed),
+			StackTrace: Callers(startDepth),
 		}
 	case string:
 		ex = &Ex{
-			Class:		Class(typed),
-			StackTrace:	Callers(startDepth),
+			Class:      Class(typed),
+			StackTrace: Callers(startDepth),
 		}
 	default:
 		ex = &Ex{
-			Class:		Class(fmt.Sprint(class)),
-			StackTrace:	Callers(startDepth),
+			Class:      Class(fmt.Sprint(class)),
+			StackTrace: Callers(startDepth),
 		}
 	}
 	for _, option := range options {
@@ -72,13 +72,13 @@ func NewWithStackDepth(class interface{}, startDepth int, options ...Option) Exc
 // It also can have an optional cause, it implements `Exception`
 type Ex struct {
 	// Class disambiguates between errors, it can be used to identify the type of the error.
-	Class	error
+	Class error
 	// Message adds further detail to the error, and shouldn't be used for disambiguation.
-	Message	string
+	Message string
 	// Inner holds the original error in cases where we're wrapping an error with a stack trace.
-	Inner	error
+	Inner error
 	// StackTrace is the call stack frames used to create the stack output.
-	StackTrace	StackTrace
+	StackTrace StackTrace
 }
 
 // WithMessage sets the exception message.

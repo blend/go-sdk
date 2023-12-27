@@ -58,7 +58,7 @@ func main() {
 		}
 
 		userID, _ := r.Param("userID")
-		if !strings.HasSuffix(userID, "_valid") {	//maximum security
+		if !strings.HasSuffix(userID, "_valid") { //maximum security
 			return web.Text.NotAuthorized()
 		}
 		_, err := r.Auth.Login(userID, r)

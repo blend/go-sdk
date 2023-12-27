@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package profanity is the rules engine that powers the command `profanity` found in `github.com/blend/go-sdk/cmd/profanity`.
 */
-package profanity	// import "github.com/blend/go-sdk/profanity"
+package profanity // import "github.com/blend/go-sdk/profanity"

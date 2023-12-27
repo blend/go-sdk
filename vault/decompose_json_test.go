@@ -14,31 +14,31 @@ import (
 )
 
 type testConfig struct {
-	Omitted		string		`json:"omitted"`
-	ExplicitOmit	string		`json:"explicitOmit" secret:"-"`
-	Included	string		`json:"included" secret:"included"`
-	Number		float64		`json:"number" secret:"number"`
-	Binary		[]byte		`json:"binary" secret:"binary"`
-	Nested		testConfigInner	`json:"nested" secret:"nested"`
+	Omitted      string          `json:"omitted"`
+	ExplicitOmit string          `json:"explicitOmit" secret:"-"`
+	Included     string          `json:"included" secret:"included"`
+	Number       float64         `json:"number" secret:"number"`
+	Binary       []byte          `json:"binary" secret:"binary"`
+	Nested       testConfigInner `json:"nested" secret:"nested"`
 }
 
 type testConfigInner struct {
-	Foo	string
-	Bar	string
+	Foo string
+	Bar string
 }
 
 func TestDecomposeRestore(t *testing.T) {
 	assert := assert.New(t)
 
 	config := testConfig{
-		Omitted:	"a",
-		ExplicitOmit:	"b",
-		Included:	"c",
-		Number:		3.14,
-		Binary:		[]byte("just a test"),
+		Omitted:      "a",
+		ExplicitOmit: "b",
+		Included:     "c",
+		Number:       3.14,
+		Binary:       []byte("just a test"),
 		Nested: testConfigInner{
-			Foo:	"is foo",
-			Bar:	"is bar",
+			Foo: "is foo",
+			Bar: "is bar",
 		},
 	}
 

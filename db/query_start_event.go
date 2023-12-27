@@ -24,16 +24,16 @@ const (
 
 // these are compile time assertions
 var (
-	_	logger.Event		= (*QueryEvent)(nil)
-	_	logger.TextWritable	= (*QueryEvent)(nil)
-	_	logger.JSONWritable	= (*QueryEvent)(nil)
+	_ logger.Event        = (*QueryEvent)(nil)
+	_ logger.TextWritable = (*QueryEvent)(nil)
+	_ logger.JSONWritable = (*QueryEvent)(nil)
 )
 
 // these are compile time assertions
 var (
-	_	logger.Event		= (*QueryEvent)(nil)
-	_	logger.TextWritable	= (*QueryEvent)(nil)
-	_	logger.JSONWritable	= (*QueryEvent)(nil)
+	_ logger.Event        = (*QueryEvent)(nil)
+	_ logger.TextWritable = (*QueryEvent)(nil)
+	_ logger.JSONWritable = (*QueryEvent)(nil)
 )
 
 // NewQueryStartEvent creates a new query start event.
@@ -96,15 +96,15 @@ func OptQueryStartEventLabel(label string) QueryStartEventOption {
 
 // QueryStartEvent represents the start of a database query.
 type QueryStartEvent struct {
-	Database	string
-	Engine		string
-	Username	string
-	Label		string
-	Body		string
+	Database string
+	Engine   string
+	Username string
+	Label    string
+	Body     string
 }
 
 // GetFlag implements Event.
-func (e QueryStartEvent) GetFlag() string	{ return QueryStartFlag }
+func (e QueryStartEvent) GetFlag() string { return QueryStartFlag }
 
 // WriteText writes the event text to the output.
 func (e QueryStartEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
@@ -134,10 +134,10 @@ func (e QueryStartEvent) WriteText(tf logger.TextFormatter, wr io.Writer) {
 // Decompose implements JSONWritable.
 func (e QueryStartEvent) Decompose() map[string]interface{} {
 	return map[string]interface{}{
-		"engine":	e.Engine,
-		"database":	e.Database,
-		"username":	e.Username,
-		"label":	e.Label,
-		"body":		e.Body,
+		"engine":   e.Engine,
+		"database": e.Database,
+		"username": e.Username,
+		"label":    e.Label,
+		"body":     e.Body,
 	}
 }

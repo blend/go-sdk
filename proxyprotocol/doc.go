@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package proxyprotocol implements network reader shims for terminating proxy protocol connections.
 */
-package proxyprotocol	// import "github.com/blend/go-sdk/proxyprotocol"
+package proxyprotocol // import "github.com/blend/go-sdk/proxyprotocol"

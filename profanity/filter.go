@@ -15,9 +15,9 @@ import (
 // Filter is the base rule helper.
 type Filter struct {
 	// Include sets a glob filter for file inclusion by name.
-	Include	[]string	`yaml:"include,omitempty"`
+	Include []string `yaml:"include,omitempty"`
 	// ExcludeGlob sets a glob filter for file exclusion by name.
-	Exclude	[]string	`yaml:"exclude,omitempty"`
+	Exclude []string `yaml:"exclude,omitempty"`
 }
 
 // IsZero returns if the filter is set or not.

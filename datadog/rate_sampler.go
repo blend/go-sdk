@@ -22,7 +22,7 @@ var (
 type RateSampler float64
 
 // SetRate is a no-op
-func (r RateSampler) SetRate(newRate float64)	{}
+func (r RateSampler) SetRate(newRate float64) {}
 
 // Rate returns the rate.
 func (r RateSampler) Rate() float64 {

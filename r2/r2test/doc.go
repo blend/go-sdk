@@ -32,4 +32,4 @@ During tests we can add a default option:
 
 We will now return the mocked response instead of reaching out to the remote for the call.
 */
-package r2test	// import "github.com/blend/go-sdk/r2/r2test"
+package r2test // import "github.com/blend/go-sdk/r2/r2test"

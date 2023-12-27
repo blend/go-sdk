@@ -15,16 +15,16 @@ import (
 
 func TestNoGenericDecls(t *testing.T) {
 	for _, tc := range []struct {
-		Name		string
-		Enabled		bool
-		Filename	string
-		Contents	string
-		ErrLine		int
+		Name     string
+		Enabled  bool
+		Filename string
+		Contents string
+		ErrLine  int
 	}{
 		{
-			Name:		"no generics",
-			Enabled:	true,
-			Filename:	"main.go",
+			Name:     "no generics",
+			Enabled:  true,
+			Filename: "main.go",
 			Contents: `package main
 
 func SumInts(m map[string]int) int {
@@ -35,12 +35,12 @@ func SumInts(m map[string]int) int {
 	return s
 }
 `,
-			ErrLine:	0,
+			ErrLine: 0,
 		},
 		{
-			Name:		"generic function",
-			Enabled:	true,
-			Filename:	"main.go",
+			Name:     "generic function",
+			Enabled:  true,
+			Filename: "main.go",
 			Contents: `package main
 
 func SumIntsOrFloats[K comparable, V int64 | float64](m map[K]V) V {
@@ -51,12 +51,12 @@ func SumIntsOrFloats[K comparable, V int64 | float64](m map[K]V) V {
 	return s
 }
 `,
-			ErrLine:	3,
+			ErrLine: 3,
 		},
 		{
-			Name:		"generic function when disabled",
-			Enabled:	false,
-			Filename:	"main.go",
+			Name:     "generic function when disabled",
+			Enabled:  false,
+			Filename: "main.go",
 			Contents: `package main
 
 func SumIntsOrFloats[K comparable, V int64 | float64](m map[K]V) V {
@@ -67,12 +67,12 @@ func SumIntsOrFloats[K comparable, V int64 | float64](m map[K]V) V {
 	return s
 }
 `,
-			ErrLine:	0,
+			ErrLine: 0,
 		},
 		{
-			Name:		"generic type",
-			Enabled:	true,
-			Filename:	"main.go",
+			Name:     "generic type",
+			Enabled:  true,
+			Filename: "main.go",
 			Contents: `package main
 
 type (
@@ -81,12 +81,12 @@ type (
 	}
 )
 `,
-			ErrLine:	4,
+			ErrLine: 4,
 		},
 		{
-			Name:		"generic type when disabled",
-			Enabled:	false,
-			Filename:	"main.go",
+			Name:     "generic type when disabled",
+			Enabled:  false,
+			Filename: "main.go",
 			Contents: `package main
 
 type (
@@ -95,12 +95,12 @@ type (
 	}
 )
 `,
-			ErrLine:	0,
+			ErrLine: 0,
 		},
 		{
-			Name:		"interface union",
-			Enabled:	true,
-			Filename:	"main.go",
+			Name:     "interface union",
+			Enabled:  true,
+			Filename: "main.go",
 			Contents: `package main
 
 type (
@@ -109,12 +109,12 @@ type (
 	}
 )
 `,
-			ErrLine:	5,
+			ErrLine: 5,
 		},
 		{
-			Name:		"underlying type in interface",
-			Enabled:	true,
-			Filename:	"main.go",
+			Name:     "underlying type in interface",
+			Enabled:  true,
+			Filename: "main.go",
 			Contents: `package main
 
 type (
@@ -123,26 +123,26 @@ type (
 	}
 )
 `,
-			ErrLine:	5,
+			ErrLine: 5,
 		},
 		{
-			Name:		"bitwise ops ok outside of interface",
-			Enabled:	true,
-			Filename:	"main.go",
+			Name:     "bitwise ops ok outside of interface",
+			Enabled:  true,
+			Filename: "main.go",
 			Contents: `package main
 
 func Foo() {
 	_ = 0 | 1
 }
 `,
-			ErrLine:	0,
+			ErrLine: 0,
 		},
 		{
-			Name:		"not go source file",
-			Enabled:	true,
-			Filename:	"README.txt",
-			Contents:	`README`,
-			ErrLine:	0,
+			Name:     "not go source file",
+			Enabled:  true,
+			Filename: "README.txt",
+			Contents: `README`,
+			ErrLine:  0,
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {

@@ -36,9 +36,9 @@ func (fs *flagStrings) Set(value string) error {
 func main() {
 	var to flagStrings
 	var (
-		from	= flag.String("from", "noreply@example.org", "The message `from` address")
-		subject	= flag.String("subject", "", "The message `subject`")
-		body	= flag.String(`body`, "", "The message `body`")
+		from    = flag.String("from", "noreply@example.org", "The message `from` address")
+		subject = flag.String("subject", "", "The message `subject`")
+		body    = flag.String(`body`, "", "The message `body`")
 	)
 	flag.Var(&to, "to", "The message `to` address(es), can be more than one.")
 	flag.Parse()
@@ -51,10 +51,10 @@ func main() {
 	}
 
 	message := email.Message{
-		From:		*from,
-		To:		to.Values(),
-		Subject:	*subject,
-		TextBody:	*body,
+		From:     *from,
+		To:       to.Values(),
+		Subject:  *subject,
+		TextBody: *body,
 	}
 
 	log.Infof("using smtp host:     %s", sender.Host)

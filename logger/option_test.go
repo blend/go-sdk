@@ -21,9 +21,9 @@ func TestOptConfig(t *testing.T) {
 
 	log := None()
 	assert.Nil(OptConfig(Config{
-		Flags:		[]string{"foo", "bar"},
-		Writable:	[]string{"foo"},
-		Format:		FormatJSON,
+		Flags:    []string{"foo", "bar"},
+		Writable: []string{"foo"},
+		Format:   FormatJSON,
 	})(log))
 
 	assert.Any(log.Flags.Flags(), func(v interface{}) bool { return v.(string) == "foo" })

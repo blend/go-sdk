@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package shamir includes an implementation of shamir's sharing scheme.
 */
-package shamir	// import "github.com/blend/go-sdk/shamir"
+package shamir // import "github.com/blend/go-sdk/shamir"

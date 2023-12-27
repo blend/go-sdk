@@ -17,9 +17,9 @@ import (
 )
 
 var (
-	_	IntSource	= (*Parser)(nil)
-	_	Float64Source	= (*Parser)(nil)
-	_	DurationSource	= (*Parser)(nil)
+	_ IntSource      = (*Parser)(nil)
+	_ Float64Source  = (*Parser)(nil)
+	_ DurationSource = (*Parser)(nil)
 )
 
 // Parse returns an int parser.

@@ -26,9 +26,9 @@ func main() {
 
 	ansi.TableForSlice(os.Stdout,
 		[]struct {
-			ID	int
-			Status	int
-			URL	string
+			ID     int
+			Status int
+			URL    string
 		}{
 			{0, 200, "http://google.com"},
 			{1, 200, "http://go.blend.com/foo"},

@@ -26,9 +26,9 @@ func NewChannelQueueFromValues[T any](values []T) *ChannelQueue[T] {
 
 // ChannelQueue is a thread safe queue.
 type ChannelQueue[T any] struct {
-	Capacity	int
-	storage		chan T
-	latch		sync.Mutex
+	Capacity int
+	storage  chan T
+	latch    sync.Mutex
 }
 
 // Len returns the number of items in the queue.

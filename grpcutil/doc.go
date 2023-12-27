@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package grpcutil provides helpers for writing GRPC clients and servers.
 */
-package grpcutil	// import "github.com/blend/go-sdk/grpcutil"
+package grpcutil // import "github.com/blend/go-sdk/grpcutil"

@@ -15,8 +15,8 @@ import (
 
 // HTTPRedirect redirects HTTP to HTTPS
 type HTTPRedirect struct {
-	RedirectScheme	string
-	RedirectHost	string
+	RedirectScheme string
+	RedirectHost   string
 }
 
 // ServeHTTP redirects HTTP to HTTPS

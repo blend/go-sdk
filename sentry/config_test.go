@@ -19,9 +19,9 @@ func Test_Config_Resolve(t *testing.T) {
 	its := assert.New(t)
 
 	vars := env.Vars{
-		"SENTRY_DSN":		"test-dsn",
-		env.VarServiceEnv:	env.ServiceEnvTest,
-		env.VarServiceName:	"sentry-test",
+		"SENTRY_DSN":       "test-dsn",
+		env.VarServiceEnv:  env.ServiceEnvTest,
+		env.VarServiceName: "sentry-test",
 	}
 
 	cfg := new(Config)
@@ -37,8 +37,8 @@ func Test_Config_Resolve_noDSN(t *testing.T) {
 	its := assert.New(t)
 
 	vars := env.Vars{
-		env.VarServiceEnv:	env.ServiceEnvTest,
-		env.VarServiceName:	"sentry-test",
+		env.VarServiceEnv:  env.ServiceEnvTest,
+		env.VarServiceName: "sentry-test",
 	}
 
 	cfg := new(Config)

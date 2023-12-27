@@ -72,8 +72,8 @@ func TestOutputChunkJSON(t *testing.T) {
 	assert := assert.New(t)
 
 	chunk := BufferChunk{
-		Timestamp:	time.Date(2019, 9, 21, 12, 11, 10, 9, time.UTC),
-		Data:		[]byte("this is just a test"),
+		Timestamp: time.Date(2019, 9, 21, 12, 11, 10, 9, time.UTC),
+		Data:      []byte("this is just a test"),
 	}
 
 	jsonContents, err := json.Marshal(chunk)

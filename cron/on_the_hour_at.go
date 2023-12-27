@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	_	Schedule	= (*OnTheHourAtUTCSchedule)(nil)
-	_	fmt.Stringer	= (*OnTheHourAtUTCSchedule)(nil)
+	_ Schedule     = (*OnTheHourAtUTCSchedule)(nil)
+	_ fmt.Stringer = (*OnTheHourAtUTCSchedule)(nil)
 )
 
 // EveryHourOnTheHour returns a schedule that fires every 60 minutes on the 00th minute.
@@ -29,8 +29,8 @@ func EveryHourAtUTC(minute, second int) Schedule {
 
 // OnTheHourAtUTCSchedule is a schedule that fires every hour on the given minute.
 type OnTheHourAtUTCSchedule struct {
-	Minute	int
-	Second	int
+	Minute int
+	Second int
 }
 
 // String returns a string representation of the schedule.

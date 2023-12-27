@@ -22,25 +22,25 @@ import (
 )
 
 const (
-	fullXFCCTest				= `By=spiffe://cluster.local/ns/blend/sa/yule;Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;Subject="/C=US/ST=CA/L=San Francisco/OU=Lyft/CN=Test Client";URI=spiffe://cluster.local/ns/blend/sa/cheer`
-	xfccElementByTest			= `By=spiffe://cluster.local/ns/blend/sa/tide`
-	xfccElementHashTest			= `Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688`
-	xfccElementCertTest			= `Cert=` + xfccElementTestCertEncoded
-	xfccElementChainTest			= `CHAIN=` + xfccElementTestCertEncoded
-	xfccElementSubjectTest			= `SUBJECT="/C=US/ST=CA/L=San Francisco/OU=Lyft/CN=Test Client"`
-	xfccElementURITest			= `URI=spiffe://cluster.local/ns/blend/sa/quasar`
-	xfccElementDNSTest			= `dns=http://frontend.lyft.com`
-	xfccElementEndTest			= `dns=http://frontend.lyft.com;`
-	xfccElementNoneTest			= `key=value;dns=http://frontend.lyft.com`
-	xfccElementMultiTest			= `By=spiffe://cluster.local/ns/blend/sa/laser;Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688`
-	xfccElementMalformedKeyTest		= `=value`
-	xfccElementMultiMalformedKeyTest	= `=value;dns=http://frontend.lyft.com`
-	xfccElementMultiCertTest		= `cert=` + xfccElementTestCertEncoded + xfccElementTestCert
+	fullXFCCTest                     = `By=spiffe://cluster.local/ns/blend/sa/yule;Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;Subject="/C=US/ST=CA/L=San Francisco/OU=Lyft/CN=Test Client";URI=spiffe://cluster.local/ns/blend/sa/cheer`
+	xfccElementByTest                = `By=spiffe://cluster.local/ns/blend/sa/tide`
+	xfccElementHashTest              = `Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688`
+	xfccElementCertTest              = `Cert=` + xfccElementTestCertEncoded
+	xfccElementChainTest             = `CHAIN=` + xfccElementTestCertEncoded
+	xfccElementSubjectTest           = `SUBJECT="/C=US/ST=CA/L=San Francisco/OU=Lyft/CN=Test Client"`
+	xfccElementURITest               = `URI=spiffe://cluster.local/ns/blend/sa/quasar`
+	xfccElementDNSTest               = `dns=http://frontend.lyft.com`
+	xfccElementEndTest               = `dns=http://frontend.lyft.com;`
+	xfccElementNoneTest              = `key=value;dns=http://frontend.lyft.com`
+	xfccElementMultiTest             = `By=spiffe://cluster.local/ns/blend/sa/laser;Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688`
+	xfccElementMalformedKeyTest      = `=value`
+	xfccElementMultiMalformedKeyTest = `=value;dns=http://frontend.lyft.com`
+	xfccElementMultiCertTest         = `cert=` + xfccElementTestCertEncoded + xfccElementTestCert
 
-	xfccElementMalformedEncoding	= "%"
+	xfccElementMalformedEncoding = "%"
 
-	xfccElementTestCertEncoded	= `-----BEGIN%20CERTIFICATE-----%0AMIIFKjCCAxICCQCA5%2FOCxg%2FqiDANBgkqhkiG9w0BAQsFADBXMQswCQYDVQQGEwJV%0AUzELMAkGA1UECAwCQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAoM%0ABEx5ZnQxFDASBgNVBAMMC1Rlc3QgQ2xpZW50MB4XDTIwMDYwNDE3NDkzNVoXDTIx%0AMDYwNDE3NDkzNVowVzELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMRYwFAYDVQQH%0ADA1TYW4gRnJhbmNpc2NvMQ0wCwYDVQQKDARMeWZ0MRQwEgYDVQQDDAtUZXN0IENs%0AaWVudDCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAKs6T8vcb8rIIkC4%0Aiz9h%2FOj6Iv%2BfazTLwNLK%2Fk58Ape5ZL0IdW6h8pWDlGnGz4X%2FTaJ5TwlamFo1h62v%0AsR8HPNOoLY0wmC2qHVquPF6eR9Lt5ejJiakr%2BYvf%2BU6LHXlOpOoot5rcTGoGBCf0%0AH3zmjdOE0o6hwJxMf54XQEVwNXqRrIDbY27mYS8eAVcSMrPUQVZ%2B3Vk1S56Imybz%0Adegi79IIoc6TzE5M7ChfJZBNNNZT08haJe6Oi%2FIgZhK3IexssY%2BQyD5uBSc7Mpas%0A6TstzeevIbeFy3Od2GhUy2Hz98qW%2FoO5iuerEArkNs4lB0J%2F0ARPHUDnmmH%2BqWYF%0APKealq2yEyXHHXrhDcSK%2FN5R64pp%2FVrxEas1qG20%2FCG4rixv36UJuEz5oUKNWyaR%0A268EI5Vecw%2BpK%2F0XC2%2Bhra9T%2FeP9JH0Fp43x7bdpQoxph8ZJZBsjbgCFMonf3ku1%0A9n74%2FxwvV6B0wp5C8jpwbGa85n%2BT8hogtO78mnpvxhTVJ7TOy596tI2apJ02edtD%0AJgsJV9MfZ%2FfGu3QZ6yN3rKVMPkZfC18cK04xy%2BroPo756CHkUHP5cz%2BKtJ7%2B8COR%0ArPDPxKBLOqwaSFcanQNONFIrffnZciiisCxjMHGoM4%2Fuix5gStlDC9%2FM5yyHt9He%0AldC8xL%2FyIalsa9Df7SL59Fd7T2JrAgMBAAEwDQYJKoZIhvcNAQELBQADggIBAGTb%0AOTddb6Yr37JigDYGKxSiidWfPgxTFr3DWTTE2aBhTi8K1Gr8Br1FAGRg4P114kxm%0AQBx3TxuCZcssMX2Z3GbL20DrHNExCl7hM%2FZVA2OCVhwfXGOHRQ6lcpmeQISWDNsN%0Atanlap%2FAgqKN%2F6At6JEYmuTSJnKc4Bfgk2GP5LPa63yJOlyvFb8ovKsCgb1ppVyw%0ARE%2B7AmB2DfDdVql4nHsDh5UBZRgVxMZ6xGnkYKaAUDKl4slejvKwXuzu2Xf%2BAd74%0AgjdLHzP0WmHlAggR5LIv%2F9xlvrsKCrNDDxWwOGeYk2WZl%2Fybud0RFKhLIqbbeMy7%0ADcdy04cJcqa9qRHYySgaWtM6Ab%2Fx9CJqdzR2NQZNnLgk6Vc3%2BoDjXMUuyM17WJAS%0ArenwJvanXvF9P1yPMByJQlXxkUehkCa%2FPs7E1O%2F%2BE2FJnvrtGVdYVR8Otbec1osS%0AmtJC6k7rgMhgvk63sCqQqaZwRWwLl2R5XcDZknUiqDKjuVHHA01II7jtGB1oyEIH%0Asp%2FrQlLNeyYlyhAlc3MhF5hu6nUjH%2B2%2BDuIHJsM0mEF0rjlbnp4bKJ%2FgF1COAIAL%0APzu2qAC%2BaOFldCmRonqUluayv6fQaQCeeh8sW2IjNVjA2ynKn2ybGIXH4mrH0KVa%0AJmUY%2B1YGMn7qbeHTma33N28Ec7hK%2BWByul746Nro%0A-----END%20CERTIFICATE-----`
-	xfccElementTestCert		= `-----BEGIN CERTIFICATE-----
+	xfccElementTestCertEncoded = `-----BEGIN%20CERTIFICATE-----%0AMIIFKjCCAxICCQCA5%2FOCxg%2FqiDANBgkqhkiG9w0BAQsFADBXMQswCQYDVQQGEwJV%0AUzELMAkGA1UECAwCQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAoM%0ABEx5ZnQxFDASBgNVBAMMC1Rlc3QgQ2xpZW50MB4XDTIwMDYwNDE3NDkzNVoXDTIx%0AMDYwNDE3NDkzNVowVzELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMRYwFAYDVQQH%0ADA1TYW4gRnJhbmNpc2NvMQ0wCwYDVQQKDARMeWZ0MRQwEgYDVQQDDAtUZXN0IENs%0AaWVudDCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAKs6T8vcb8rIIkC4%0Aiz9h%2FOj6Iv%2BfazTLwNLK%2Fk58Ape5ZL0IdW6h8pWDlGnGz4X%2FTaJ5TwlamFo1h62v%0AsR8HPNOoLY0wmC2qHVquPF6eR9Lt5ejJiakr%2BYvf%2BU6LHXlOpOoot5rcTGoGBCf0%0AH3zmjdOE0o6hwJxMf54XQEVwNXqRrIDbY27mYS8eAVcSMrPUQVZ%2B3Vk1S56Imybz%0Adegi79IIoc6TzE5M7ChfJZBNNNZT08haJe6Oi%2FIgZhK3IexssY%2BQyD5uBSc7Mpas%0A6TstzeevIbeFy3Od2GhUy2Hz98qW%2FoO5iuerEArkNs4lB0J%2F0ARPHUDnmmH%2BqWYF%0APKealq2yEyXHHXrhDcSK%2FN5R64pp%2FVrxEas1qG20%2FCG4rixv36UJuEz5oUKNWyaR%0A268EI5Vecw%2BpK%2F0XC2%2Bhra9T%2FeP9JH0Fp43x7bdpQoxph8ZJZBsjbgCFMonf3ku1%0A9n74%2FxwvV6B0wp5C8jpwbGa85n%2BT8hogtO78mnpvxhTVJ7TOy596tI2apJ02edtD%0AJgsJV9MfZ%2FfGu3QZ6yN3rKVMPkZfC18cK04xy%2BroPo756CHkUHP5cz%2BKtJ7%2B8COR%0ArPDPxKBLOqwaSFcanQNONFIrffnZciiisCxjMHGoM4%2Fuix5gStlDC9%2FM5yyHt9He%0AldC8xL%2FyIalsa9Df7SL59Fd7T2JrAgMBAAEwDQYJKoZIhvcNAQELBQADggIBAGTb%0AOTddb6Yr37JigDYGKxSiidWfPgxTFr3DWTTE2aBhTi8K1Gr8Br1FAGRg4P114kxm%0AQBx3TxuCZcssMX2Z3GbL20DrHNExCl7hM%2FZVA2OCVhwfXGOHRQ6lcpmeQISWDNsN%0Atanlap%2FAgqKN%2F6At6JEYmuTSJnKc4Bfgk2GP5LPa63yJOlyvFb8ovKsCgb1ppVyw%0ARE%2B7AmB2DfDdVql4nHsDh5UBZRgVxMZ6xGnkYKaAUDKl4slejvKwXuzu2Xf%2BAd74%0AgjdLHzP0WmHlAggR5LIv%2F9xlvrsKCrNDDxWwOGeYk2WZl%2Fybud0RFKhLIqbbeMy7%0ADcdy04cJcqa9qRHYySgaWtM6Ab%2Fx9CJqdzR2NQZNnLgk6Vc3%2BoDjXMUuyM17WJAS%0ArenwJvanXvF9P1yPMByJQlXxkUehkCa%2FPs7E1O%2F%2BE2FJnvrtGVdYVR8Otbec1osS%0AmtJC6k7rgMhgvk63sCqQqaZwRWwLl2R5XcDZknUiqDKjuVHHA01II7jtGB1oyEIH%0Asp%2FrQlLNeyYlyhAlc3MhF5hu6nUjH%2B2%2BDuIHJsM0mEF0rjlbnp4bKJ%2FgF1COAIAL%0APzu2qAC%2BaOFldCmRonqUluayv6fQaQCeeh8sW2IjNVjA2ynKn2ybGIXH4mrH0KVa%0AJmUY%2B1YGMn7qbeHTma33N28Ec7hK%2BWByul746Nro%0A-----END%20CERTIFICATE-----`
+	xfccElementTestCert        = `-----BEGIN CERTIFICATE-----
 MIIFKjCCAxICCQCA5/OCxg/qiDANBgkqhkiG9w0BAQsFADBXMQswCQYDVQQGEwJV
 UzELMAkGA1UECAwCQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAoM
 BEx5ZnQxFDASBgNVBAMMC1Rlc3QgQ2xpZW50MB4XDTIwMDYwNDE3NDkzNVoXDTIx
@@ -76,20 +76,20 @@ func TestXFCCElementDecodeBy(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	type testCase struct {
-		By		string
-		Expected	*url.URL
-		ErrorRegexp	*regexp.Regexp
+		By          string
+		Expected    *url.URL
+		ErrorRegexp *regexp.Regexp
 	}
 	testCases := []testCase{
 		{By: "", Expected: &url.URL{}},
 		// NOTE: Regex needed to support error format changes from go1.13 to go1.14
 		{By: "\n", ErrorRegexp: regexp.MustCompile(`(?m)^parse ("\\n"|\n): net/url: invalid control character in URL$`)},
 		{
-			By:	"spiffe://cluster.local/ns/blend/sa/yule",
+			By: "spiffe://cluster.local/ns/blend/sa/yule",
 			Expected: &url.URL{
-				Scheme:	"spiffe",
-				Host:	"cluster.local",
-				Path:	"/ns/blend/sa/yule",
+				Scheme: "spiffe",
+				Host:   "cluster.local",
+				Path:   "/ns/blend/sa/yule",
 			},
 		},
 	}
@@ -112,9 +112,9 @@ func TestXFCCElementDecodeHash(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	type testCase struct {
-		Hash		string
-		Expected	[]byte
-		Error		string
+		Hash     string
+		Expected []byte
+		Error    string
 	}
 	testCases := []testCase{
 		{Hash: "", Expected: []byte("")},
@@ -140,25 +140,25 @@ func TestXFCCElementDecodeCert(t *testing.T) {
 	assert.Nil(err)
 
 	type testCase struct {
-		Cert	string
-		Parsed	*x509.Certificate
-		Error	string
+		Cert   string
+		Parsed *x509.Certificate
+		Error  string
 	}
 	testCases := []testCase{
 		{Cert: ""},
 		{Cert: xfccElementTestCertEncoded, Parsed: parsedCert[0]},
 		{Cert: "%", Error: "Error Parsing X-Forwarded-Client-Cert\ninvalid URL escape \"%\""},
 		{
-			Cert:	"-----BEGIN CERTIFICATE-----\nnope\n-----END CERTIFICATE-----\n",
-			Error:	"Error Parsing X-Forwarded-Client-Cert\nx509: malformed certificate",
+			Cert:  "-----BEGIN CERTIFICATE-----\nnope\n-----END CERTIFICATE-----\n",
+			Error: "Error Parsing X-Forwarded-Client-Cert\nx509: malformed certificate",
 		},
 		{
-			Cert:	url.QueryEscape(xfccElementTestCert + "\n" + xfccElementTestCert),
-			Error:	"Error Parsing X-Forwarded-Client-Cert; Incorrect number of certificates; expected 1 got 2",
+			Cert:  url.QueryEscape(xfccElementTestCert + "\n" + xfccElementTestCert),
+			Error: "Error Parsing X-Forwarded-Client-Cert; Incorrect number of certificates; expected 1 got 2",
 		},
 		{
-			Cert:	xfccElementMultiCertTest,
-			Error:	"Error Parsing X-Forwarded-Client-Cert; Incorrect number of certificates; expected 1 got 0",
+			Cert:  xfccElementMultiCertTest,
+			Error: "Error Parsing X-Forwarded-Client-Cert; Incorrect number of certificates; expected 1 got 0",
 		},
 	}
 
@@ -181,20 +181,20 @@ func TestXFCCElementDecodeChain(t *testing.T) {
 	assert.Nil(err)
 
 	type testCase struct {
-		Chain	string
-		Parsed	[]*x509.Certificate
-		Error	string
+		Chain  string
+		Parsed []*x509.Certificate
+		Error  string
 	}
 	testCases := []testCase{
 		{Chain: ""},
 		{
-			Chain:	url.QueryEscape(xfccElementTestCert + "\n" + xfccElementTestCert),
-			Parsed:	parsedCerts,
+			Chain:  url.QueryEscape(xfccElementTestCert + "\n" + xfccElementTestCert),
+			Parsed: parsedCerts,
 		},
 		{Chain: "%", Error: "Error Parsing X-Forwarded-Client-Cert\ninvalid URL escape \"%\""},
 		{
-			Chain:	"-----BEGIN CERTIFICATE-----\nnope\n-----END CERTIFICATE-----\n",
-			Error:	"Error Parsing X-Forwarded-Client-Cert\nx509: malformed certificate",
+			Chain: "-----BEGIN CERTIFICATE-----\nnope\n-----END CERTIFICATE-----\n",
+			Error: "Error Parsing X-Forwarded-Client-Cert\nx509: malformed certificate",
 		},
 	}
 
@@ -214,20 +214,20 @@ func TestXFCCElementDecodeURI(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	type testCase struct {
-		URI		string
-		Expected	*url.URL
-		ErrorRegexp	*regexp.Regexp
+		URI         string
+		Expected    *url.URL
+		ErrorRegexp *regexp.Regexp
 	}
 	testCases := []testCase{
 		{URI: "", Expected: &url.URL{}},
 		// NOTE: Regex needed to support error format changes from go1.13 to go1.14
 		{URI: "\r", ErrorRegexp: regexp.MustCompile(`(?m)^parse ("\\r"|\r): net/url: invalid control character in URL$`)},
 		{
-			URI:	"spiffe://cluster.local/ns/first/sa/furst",
+			URI: "spiffe://cluster.local/ns/first/sa/furst",
 			Expected: &url.URL{
-				Scheme:	"spiffe",
-				Host:	"cluster.local",
-				Path:	"/ns/first/sa/furst",
+				Scheme: "spiffe",
+				Host:   "cluster.local",
+				Path:   "/ns/first/sa/furst",
 			},
 		},
 	}
@@ -250,8 +250,8 @@ func TestXFCCElementString(t *testing.T) {
 	assert := sdkAssert.New(t)
 
 	type testCase struct {
-		Element		envoyutil.XFCCElement
-		Expected	string
+		Element  envoyutil.XFCCElement
+		Expected string
 	}
 	testCases := []testCase{
 		{Element: envoyutil.XFCCElement{By: "hi"}, Expected: "By=hi"},
@@ -259,17 +259,17 @@ func TestXFCCElementString(t *testing.T) {
 		{Element: envoyutil.XFCCElement{Cert: "anything-goes"}, Expected: "Cert=anything-goes"},
 		{Element: envoyutil.XFCCElement{Chain: "anything-goes"}, Expected: "Chain=anything-goes"},
 		{
-			Element:	envoyutil.XFCCElement{Subject: "OU=Blent/CN=Test Client"},
-			Expected:	`Subject="OU=Blent/CN=Test Client"`,
+			Element:  envoyutil.XFCCElement{Subject: "OU=Blent/CN=Test Client"},
+			Expected: `Subject="OU=Blent/CN=Test Client"`,
 		},
 		{Element: envoyutil.XFCCElement{URI: "bye"}, Expected: "URI=bye"},
 		{
-			Element:	envoyutil.XFCCElement{DNS: []string{"web.invalid", "bye.invalid"}},
-			Expected:	"DNS=web.invalid;DNS=bye.invalid",
+			Element:  envoyutil.XFCCElement{DNS: []string{"web.invalid", "bye.invalid"}},
+			Expected: "DNS=web.invalid;DNS=bye.invalid",
 		},
 		{
-			Element:	envoyutil.XFCCElement{By: "a,b=10", URI: `c; "then" again`},
-			Expected:	"By=\"a,b=10\";URI=\"c; \\\"then\\\" again\"",
+			Element:  envoyutil.XFCCElement{By: "a,b=10", URI: `c; "then" again`},
+			Expected: "By=\"a,b=10\";URI=\"c; \\\"then\\\" again\"",
 		},
 	}
 	for _, tc := range testCases {
@@ -300,9 +300,9 @@ func TestParseXFCC(t *testing.T) {
 	assert.True(ok)
 	assert.NotNil(except)
 	expectedErr := &ex.Ex{
-		Class:		envoyutil.ErrXFCCParsing,
-		Message:	`Key already encountered "by"`,
-		StackTrace:	except.StackTrace,
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    `Key already encountered "by"`,
+		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
 	assert.Equal(envoyutil.XFCC{}, ele)
@@ -321,9 +321,9 @@ func TestParseXFCC(t *testing.T) {
 	assert.True(ok)
 	assert.NotNil(except)
 	expectedErr = &ex.Ex{
-		Class:		envoyutil.ErrXFCCParsing,
-		Message:	`Key already encountered "hash"`,
-		StackTrace:	except.StackTrace,
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    `Key already encountered "hash"`,
+		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
 	assert.Equal(envoyutil.XFCC{}, ele)
@@ -342,9 +342,9 @@ func TestParseXFCC(t *testing.T) {
 	assert.True(ok)
 	assert.NotNil(except)
 	expectedErr = &ex.Ex{
-		Class:		envoyutil.ErrXFCCParsing,
-		Message:	`Key already encountered "cert"`,
-		StackTrace:	except.StackTrace,
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    `Key already encountered "cert"`,
+		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
 	assert.Equal(envoyutil.XFCC{}, ele)
@@ -363,9 +363,9 @@ func TestParseXFCC(t *testing.T) {
 	assert.True(ok)
 	assert.NotNil(except)
 	expectedErr = &ex.Ex{
-		Class:		envoyutil.ErrXFCCParsing,
-		Message:	`Key already encountered "chain"`,
-		StackTrace:	except.StackTrace,
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    `Key already encountered "chain"`,
+		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
 	assert.Equal(envoyutil.XFCC{}, ele)
@@ -384,9 +384,9 @@ func TestParseXFCC(t *testing.T) {
 	assert.True(ok)
 	assert.NotNil(except)
 	expectedErr = &ex.Ex{
-		Class:		envoyutil.ErrXFCCParsing,
-		Message:	`Key already encountered "subject"`,
-		StackTrace:	except.StackTrace,
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    `Key already encountered "subject"`,
+		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
 	assert.Equal(envoyutil.XFCC{}, ele)
@@ -405,9 +405,9 @@ func TestParseXFCC(t *testing.T) {
 	assert.True(ok)
 	assert.NotNil(except)
 	expectedErr = &ex.Ex{
-		Class:		envoyutil.ErrXFCCParsing,
-		Message:	`Key already encountered "uri"`,
-		StackTrace:	except.StackTrace,
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    `Key already encountered "uri"`,
+		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
 	assert.Equal(envoyutil.XFCC{}, ele)
@@ -441,8 +441,8 @@ func TestParseXFCC(t *testing.T) {
 	assert.Nil(err)
 	expected = envoyutil.XFCC{
 		envoyutil.XFCCElement{
-			By:	"spiffe://cluster.local/ns/blend/sa/laser",
-			Hash:	"468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
+			By:   "spiffe://cluster.local/ns/blend/sa/laser",
+			Hash: "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
 		},
 	}
 	assert.Equal(expected, ele)
@@ -466,9 +466,9 @@ func TestParseXFCC(t *testing.T) {
 	assert.True(ok)
 	assert.NotNil(except)
 	expectedErr = &ex.Ex{
-		Class:		envoyutil.ErrXFCCParsing,
-		Message:	"Ends with separator character",
-		StackTrace:	except.StackTrace,
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    "Ends with separator character",
+		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
 	assert.Equal(envoyutil.XFCC{}, ele)
@@ -504,10 +504,10 @@ func TestParseXFCC(t *testing.T) {
 	assert.Nil(err)
 	expected = envoyutil.XFCC{
 		envoyutil.XFCCElement{
-			By:		"spiffe://cluster.local/ns/blend/sa/protocol",
-			Hash:		"52114972613efb0820c5e32bfee0f0ee2a84859f7169da6c222300ef852a1129",
-			Subject:	"",
-			URI:		"spiffe://cluster.local/ns/blend/sa/world",
+			By:      "spiffe://cluster.local/ns/blend/sa/protocol",
+			Hash:    "52114972613efb0820c5e32bfee0f0ee2a84859f7169da6c222300ef852a1129",
+			Subject: "",
+			URI:     "spiffe://cluster.local/ns/blend/sa/world",
 		},
 	}
 	assert.Equal(expected, ele)
@@ -519,9 +519,9 @@ func TestParseXFCC(t *testing.T) {
 	assert.True(ok)
 	assert.NotNil(except)
 	expectedErr = &ex.Ex{
-		Class:		envoyutil.ErrXFCCParsing,
-		Message:	"Key missing",
-		StackTrace:	except.StackTrace,
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    "Key missing",
+		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
 
@@ -532,9 +532,9 @@ func TestParseXFCC(t *testing.T) {
 	assert.True(ok)
 	assert.NotNil(except)
 	expectedErr = &ex.Ex{
-		Class:		envoyutil.ErrXFCCParsing,
-		Message:	`Unknown key "wrong"`,
-		StackTrace:	except.StackTrace,
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    `Unknown key "wrong"`,
+		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
 
@@ -545,9 +545,9 @@ func TestParseXFCC(t *testing.T) {
 	assert.True(ok)
 	assert.NotNil(except)
 	expectedErr = &ex.Ex{
-		Class:		envoyutil.ErrXFCCParsing,
-		Message:	"Closing quote not followed by `;`.",
-		StackTrace:	except.StackTrace,
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    "Closing quote not followed by `;`.",
+		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
 
@@ -556,8 +556,8 @@ func TestParseXFCC(t *testing.T) {
 	assert.Nil(err)
 	expected = envoyutil.XFCC{
 		envoyutil.XFCCElement{
-			By:	"a,b=10",
-			URI:	`c; "then" again`,
+			By:  "a,b=10",
+			URI: `c; "then" again`,
 		},
 	}
 	assert.Equal(expected, ele)
@@ -576,16 +576,16 @@ func TestParseXFCC(t *testing.T) {
 	assert.Nil(err)
 	expected = envoyutil.XFCC{
 		envoyutil.XFCCElement{
-			By:		"spiffe://cluster.local/ns/blend/sa/yule",
-			Hash:		"468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
-			Subject:	"/C=US/ST=CA/L=San Francisco/OU=Lyft/CN=Test Client",
-			URI:		"spiffe://cluster.local/ns/blend/sa/cheer",
+			By:      "spiffe://cluster.local/ns/blend/sa/yule",
+			Hash:    "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
+			Subject: "/C=US/ST=CA/L=San Francisco/OU=Lyft/CN=Test Client",
+			URI:     "spiffe://cluster.local/ns/blend/sa/cheer",
 		},
 		envoyutil.XFCCElement{
-			By:		"spiffe://cluster.local/ns/blend/sa/yule",
-			Hash:		"468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
-			Subject:	"/C=US/ST=CA/L=San Francisco/OU=Lyft/CN=Test Client",
-			URI:		"spiffe://cluster.local/ns/blend/sa/cheer",
+			By:      "spiffe://cluster.local/ns/blend/sa/yule",
+			Hash:    "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
+			Subject: "/C=US/ST=CA/L=San Francisco/OU=Lyft/CN=Test Client",
+			URI:     "spiffe://cluster.local/ns/blend/sa/cheer",
 		},
 	}
 	assert.Equal(expected, xfcc)
@@ -595,9 +595,9 @@ func TestParseXFCC(t *testing.T) {
 	assert.True(ok)
 	assert.NotNil(except)
 	expectedErr = &ex.Ex{
-		Class:		envoyutil.ErrXFCCParsing,
-		Message:	"Key or value found but not both",
-		StackTrace:	except.StackTrace,
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    "Key or value found but not both",
+		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
 	assert.Equal(envoyutil.XFCC{}, ele)
@@ -618,9 +618,9 @@ func TestParseXFCC(t *testing.T) {
 	assert.True(ok)
 	assert.NotNil(except)
 	expectedErr = &ex.Ex{
-		Class:		envoyutil.ErrXFCCParsing,
-		Message:	"Ends with separator character",
-		StackTrace:	except.StackTrace,
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    "Ends with separator character",
+		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
 	assert.Equal(envoyutil.XFCC{}, ele)
@@ -632,9 +632,9 @@ func TestParseXFCC(t *testing.T) {
 	assert.True(ok)
 	assert.NotNil(except)
 	expectedErr = &ex.Ex{
-		Class:		envoyutil.ErrXFCCParsing,
-		Message:	"Ends with separator character",
-		StackTrace:	except.StackTrace,
+		Class:      envoyutil.ErrXFCCParsing,
+		Message:    "Ends with separator character",
+		StackTrace: except.StackTrace,
 	}
 	assert.Equal(expectedErr, except)
 	assert.Equal(envoyutil.XFCC{}, ele)

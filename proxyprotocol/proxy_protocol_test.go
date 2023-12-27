@@ -16,9 +16,9 @@ import (
 )
 
 const (
-	goodAddr	= "127.0.0.1"
-	badAddr		= "127.0.0.2"
-	errAddr		= "9999.0.0.2"
+	goodAddr = "127.0.0.1"
+	badAddr  = "127.0.0.2"
+	errAddr  = "9999.0.0.2"
 )
 
 var (

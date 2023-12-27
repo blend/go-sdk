@@ -63,12 +63,12 @@ func Open(conn *Connection, err error) (*Connection, error) {
 
 // Connection is the basic wrapper for connection parameters and saves a reference to the created sql.Connection.
 type Connection struct {
-	Connection		*sql.DB
-	BufferPool		*bufferutil.Pool
-	Config			Config
-	Log			logger.Log
-	Tracer			Tracer
-	StatementInterceptor	StatementInterceptor
+	Connection           *sql.DB
+	BufferPool           *bufferutil.Pool
+	Config               Config
+	Log                  logger.Log
+	Tracer               Tracer
+	StatementInterceptor StatementInterceptor
 }
 
 // Close implements a closer.
@@ -155,12 +155,12 @@ func (dbc *Connection) PrepareContext(ctx context.Context, statement string, tx 
 // Invoke returns a new invocation.
 func (dbc *Connection) Invoke(options ...InvocationOption) *Invocation {
 	i := Invocation{
-		Config:			dbc.Config,
-		BufferPool:		dbc.BufferPool,
-		Context:		context.Background(),
-		Log:			dbc.Log,
-		Tracer:			dbc.Tracer,
-		StatementInterceptor:	dbc.StatementInterceptor,
+		Config:               dbc.Config,
+		BufferPool:           dbc.BufferPool,
+		Context:              context.Background(),
+		Log:                  dbc.Log,
+		Tracer:               dbc.Tracer,
+		StatementInterceptor: dbc.StatementInterceptor,
 	}
 	if dbc.Connection != nil {
 		i.DB = dbc.Connection

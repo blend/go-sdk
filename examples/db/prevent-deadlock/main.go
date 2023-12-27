@@ -19,8 +19,8 @@ import (
 )
 
 const (
-	updateRows	= "UPDATE might_deadlock SET counter = counter + 1 WHERE key = $1;"
-	separator	= "=================================================="
+	updateRows = "UPDATE might_deadlock SET counter = counter + 1 WHERE key = $1;"
+	separator  = "=================================================="
 )
 
 func createConn(ctx context.Context) (*db.Connection, error) {

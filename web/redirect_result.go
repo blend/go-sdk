@@ -31,23 +31,23 @@ func Redirectf(format string, args ...interface{}) *RedirectResult {
 // RedirectWithMethod returns a redirect result to a destination with a given method.
 func RedirectWithMethod(method, destination string) *RedirectResult {
 	return &RedirectResult{
-		Method:		method,
-		RedirectURI:	destination,
+		Method:      method,
+		RedirectURI: destination,
 	}
 }
 
 // RedirectWithMethodf returns a redirect result to a destination composed of a format and scan arguments with a given method.
 func RedirectWithMethodf(method, format string, args ...interface{}) *RedirectResult {
 	return &RedirectResult{
-		Method:		method,
-		RedirectURI:	fmt.Sprintf(format, args...),
+		Method:      method,
+		RedirectURI: fmt.Sprintf(format, args...),
 	}
 }
 
 // RedirectResult is a result that should cause the browser to redirect.
 type RedirectResult struct {
-	Method		string	`json:"redirect_method"`
-	RedirectURI	string	`json:"redirect_uri"`
+	Method      string `json:"redirect_method"`
+	RedirectURI string `json:"redirect_uri"`
 }
 
 // Render writes the result to the response.

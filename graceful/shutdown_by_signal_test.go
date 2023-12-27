@@ -17,15 +17,15 @@ import (
 
 func newHosted() *hosted {
 	return &hosted{
-		started:	make(chan struct{}),
-		stopped:	make(chan struct{}),
+		started: make(chan struct{}),
+		stopped: make(chan struct{}),
 	}
 }
 
 type hosted struct {
-	state	int32
-	started	chan struct{}
-	stopped	chan struct{}
+	state   int32
+	started chan struct{}
+	stopped chan struct{}
 }
 
 func (h *hosted) Start() error {

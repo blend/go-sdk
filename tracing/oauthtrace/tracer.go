@@ -21,8 +21,8 @@ import (
 )
 
 var (
-	_	oauth.Tracer		= (*oauthTracer)(nil)
-	_	oauth.TraceFinisher	= (*oauthTraceFinisher)(nil)
+	_ oauth.Tracer        = (*oauthTracer)(nil)
+	_ oauth.TraceFinisher = (*oauthTraceFinisher)(nil)
 )
 
 // Tracer returns a request tracer that also injects span context into outgoing headers.

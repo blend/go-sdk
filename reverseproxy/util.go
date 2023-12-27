@@ -27,7 +27,7 @@ func MustParseURL(rawURL string) *url.URL {
 // RequestCopy does a shallow copy of a request.
 func RequestCopy(req *http.Request) *http.Request {
 	outreq := new(http.Request)
-	*outreq = *req	// includes shallow copies of maps, but okay
+	*outreq = *req // includes shallow copies of maps, but okay
 	if req.ContentLength == 0 {
 		outreq.Body = nil
 	}

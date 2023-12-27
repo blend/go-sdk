@@ -24,7 +24,7 @@ func TestJSONResultRender(t *testing.T) {
 	r := NewCtx(w, webutil.NewMockRequest("GET", "/"))
 
 	jr := &JSONResult{
-		StatusCode:	http.StatusOK,
+		StatusCode: http.StatusOK,
 		Response: map[string]interface{}{
 			"foo": "bar",
 		},
@@ -43,7 +43,7 @@ func TestJSONResultRenderStatusCode(t *testing.T) {
 	r := NewCtx(w, webutil.NewMockRequest("GET", "/"))
 
 	jr := &JSONResult{
-		StatusCode:	http.StatusBadRequest,
+		StatusCode: http.StatusBadRequest,
 		Response: map[string]interface{}{
 			"foo": "bar",
 		},

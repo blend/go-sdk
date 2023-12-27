@@ -19,30 +19,30 @@ import (
 
 // PGXTimestampTest is a test object.
 type PGXTimestampTest struct {
-	ID	uuid.UUID	`db:"id,pk"`
+	ID uuid.UUID `db:"id,pk"`
 
-	IntValue	int	`db:"int_value"`
-	IntPtrValue	*int	`db:"int_ptr_value"`
+	IntValue    int  `db:"int_value"`
+	IntPtrValue *int `db:"int_ptr_value"`
 
-	JSONValue	PGXjson	`db:"json_value,json"`
+	JSONValue PGXjson `db:"json_value,json"`
 
-	Local	time.Time
-	UTC	time.Time
+	Local time.Time
+	UTC   time.Time
 
-	LocalWithTimezone	time.Time	`db:"local_with_timezone"`
-	LocalWithoutTimezone	time.Time	`db:"local_without_timezone"`
+	LocalWithTimezone    time.Time `db:"local_with_timezone"`
+	LocalWithoutTimezone time.Time `db:"local_without_timezone"`
 
-	UTCWithTimezone		time.Time	`db:"utc_with_timezone"`
-	UTCWithoutTimezone	time.Time	`db:"utc_without_timezone"`
+	UTCWithTimezone    time.Time `db:"utc_with_timezone"`
+	UTCWithoutTimezone time.Time `db:"utc_without_timezone"`
 }
 
 // TableName returns the mapped table name.
-func (pgt PGXTimestampTest) TableName() string	{ return "pgx_timestamp_test" }
+func (pgt PGXTimestampTest) TableName() string { return "pgx_timestamp_test" }
 
 // PGXjson is a json object test.
 type PGXjson struct {
-	Foo	string
-	Bar	string
+	Foo string
+	Bar string
 }
 
 func createPGXTimestampTestTable(conn *Connection, tx *sql.Tx) error {
@@ -83,19 +83,19 @@ func Test_PGX_Timestamp(t *testing.T) {
 	intValue := 1234
 
 	testObj := PGXTimestampTest{
-		ID:		uuid.V4(),
-		IntValue:	intValue,
-		IntPtrValue:	&intValue,
+		ID:          uuid.V4(),
+		IntValue:    intValue,
+		IntPtrValue: &intValue,
 		JSONValue: PGXjson{
-			Foo:	"foo",
-			Bar:	"bar",
+			Foo: "foo",
+			Bar: "bar",
 		},
-		Local:			now,
-		UTC:			now.UTC(),
-		LocalWithTimezone:	now,
-		LocalWithoutTimezone:	now,
-		UTCWithTimezone:	now.UTC(),
-		UTCWithoutTimezone:	now.UTC(),
+		Local:                now,
+		UTC:                  now.UTC(),
+		LocalWithTimezone:    now,
+		LocalWithoutTimezone: now,
+		UTCWithTimezone:      now.UTC(),
+		UTCWithoutTimezone:   now.UTC(),
 	}
 	assert.Nil(defaultDB().Invoke(OptTx(tx)).Create(&testObj))
 

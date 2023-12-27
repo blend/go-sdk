@@ -16,8 +16,8 @@ import (
 func TestTransitCreateOptConfig(t *testing.T) {
 	a := assert.New(t)
 	cfg := CreateTransitKeyConfig{
-		Derived:	true,
-		Convergent:	true,
+		Derived:    true,
+		Convergent: true,
 	}
 
 	empty := &CreateTransitKeyConfig{}
@@ -31,8 +31,8 @@ func TestTransitCreateOptConfig(t *testing.T) {
 func TestTransitUpdateOptConfig(t *testing.T) {
 	a := assert.New(t)
 	cfg := UpdateTransitKeyConfig{
-		Exportable:		true,
-		AllowPlaintextBackup:	true,
+		Exportable:           true,
+		AllowPlaintextBackup: true,
 	}
 
 	empty := &UpdateTransitKeyConfig{}

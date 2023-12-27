@@ -19,8 +19,8 @@ func TestEndOfMonth(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := [...]struct {
-		Input		time.Time
-		Expected	time.Time
+		Input    time.Time
+		Expected time.Time
 	}{
 		{Input: time.Date(2019, 9, 9, 17, 59, 44, 0, time.UTC), Expected: time.Date(2019, 9, 30, 23, 59, 59, 0, time.UTC)},
 		{Input: time.Date(2019, 9, 1, 0, 0, 0, 0, time.UTC), Expected: time.Date(2019, 9, 30, 23, 59, 59, 0, time.UTC)},

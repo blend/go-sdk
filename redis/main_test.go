@@ -11,6 +11,7 @@ import (
 	"context"
 
 	radix "github.com/mediocregopher/radix/v4"
+
 	"github.com/blend/go-sdk/logger"
 	"github.com/blend/go-sdk/redis"
 )
@@ -18,11 +19,11 @@ import (
 // MockRadixClient implements radix.Client for testing.
 type MockRadixClient struct {
 	radix.Client
-	Ops		chan radix.Action
-	PipelineOps	[][]redis.Operation
+	Ops         chan radix.Action
+	PipelineOps [][]redis.Operation
 
-	Log	logger.Triggerable
-	Tracer	redis.Tracer
+	Log    logger.Triggerable
+	Tracer redis.Tracer
 }
 
 // Do implements part of the radix client interface.

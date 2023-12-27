@@ -17,8 +17,8 @@ func TestOptTraceConfig(t *testing.T) {
 	a := assert.New(t)
 	var empty SecretTraceConfig
 	config := SecretTraceConfig{
-		KeyName:	"A_KEY",
-		VaultOperation:	"k1.put",
+		KeyName:        "A_KEY",
+		VaultOperation: "k1.put",
 	}
 
 	err := OptTraceConfig(config)(&empty)

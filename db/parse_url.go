@@ -78,6 +78,6 @@ func ParseURL(databaseURL string) (string, error) {
 		accrue(k, q.Get(k))
 	}
 
-	sort.Strings(kvs)	// Makes testing easier (not a performance concern)
+	sort.Strings(kvs) // Makes testing easier (not a performance concern)
 	return strings.Join(kvs, " "), nil
 }

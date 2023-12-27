@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package template implements helpers on-top of the stdlib `text/template`.
 */
-package template	// import "github.com/blend/go-sdk/template"
+package template // import "github.com/blend/go-sdk/template"

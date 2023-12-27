@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	_	Schedule	= (*IntervalSchedule)(nil)
-	_	fmt.Stringer	= (*IntervalSchedule)(nil)
+	_ Schedule     = (*IntervalSchedule)(nil)
+	_ fmt.Stringer = (*IntervalSchedule)(nil)
 )
 
 // EverySecond returns a schedule that fires every second.

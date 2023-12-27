@@ -157,7 +157,7 @@ func TestStringMatchesError(t *testing.T) {
 
 	var err error
 	good := "a foo"
-	err = String(&good).Matches("((")()	// this should be an invalid regex "(("
+	err = String(&good).Matches("((")() // this should be an invalid regex "(("
 	assert.NotNil(err)
 	assert.NotEqual(ErrValidation, ex.ErrClass(err))
 }

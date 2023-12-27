@@ -14,10 +14,10 @@ import (
 
 // Metric is a statsd metric.
 type Metric struct {
-	Name	string
-	Type	string
-	Value	string
-	Tags	[]string
+	Name  string
+	Type  string
+	Value string
+	Tags  []string
 }
 
 // Float64 returns the value parsed as a float64.

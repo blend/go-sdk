@@ -34,9 +34,9 @@ import (
 //   - `BadReadCloser` satisfies `io.ReadCloser`
 //   - `MockHTTPGetClient` satisfies `envoyutil.HTTPGetClient`
 var (
-	_	error			= (*TimeoutError)(nil)
-	_	io.ReadCloser		= (*BadReadCloser)(nil)
-	_	envoyutil.HTTPGetClient	= (*MockHTTPGetClient)(nil)
+	_ error                   = (*TimeoutError)(nil)
+	_ io.ReadCloser           = (*BadReadCloser)(nil)
+	_ envoyutil.HTTPGetClient = (*MockHTTPGetClient)(nil)
 )
 
 func TestMaybeWaitForAdmin(t *testing.T) {
@@ -85,9 +85,9 @@ func TestWaitForAdminExecute(t *testing.T) {
 
 	// Repeated failures with timeout
 	ue := &url.Error{
-		Op:	"Get",
-		URL:	"http://localhost:15000/ready",
-		Err:	&TimeoutError{},
+		Op:  "Get",
+		URL: "http://localhost:15000/ready",
+		Err: &TimeoutError{},
 	}
 	mhgc = &MockHTTPGetClient{Error: ue}
 	wfa = envoyutil.WaitForAdmin{HTTPClient: mhgc, Sleep: time.Nanosecond}
@@ -98,11 +98,11 @@ func TestWaitForAdminExecute(t *testing.T) {
 	var logBuffer bytes.Buffer
 	log := InMemoryLog(&logBuffer)
 	mhgc = &MockHTTPGetClient{
-		Error:		ue,
-		SwitchAfter:	3,
+		Error:       ue,
+		SwitchAfter: 3,
 		SwitchResponse: &http.Response{
-			StatusCode:	http.StatusOK,
-			Body:		io.NopCloser(bytes.NewReader([]byte(envoyutil.EnumStateLive + "\n"))),
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(bytes.NewReader([]byte(envoyutil.EnumStateLive + "\n"))),
 		},
 	}
 	wfa = envoyutil.WaitForAdmin{Log: log, HTTPClient: mhgc, Sleep: time.Nanosecond}
@@ -140,23 +140,23 @@ func TestIsReady(t *testing.T) {
 
 	port := strings.TrimPrefix(server.URL, "http://127.0.0.1:")
 	wfa := envoyutil.WaitForAdmin{
-		Port:		port,
-		Sleep:		time.Nanosecond,
-		HTTPClient:	&http.Client{Timeout: time.Second},
+		Port:       port,
+		Sleep:      time.Nanosecond,
+		HTTPClient: &http.Client{Timeout: time.Second},
 	}
 
 	// Non-200 response code.
 	responses <- web.RawResult{
-		Response:	[]byte("PRE_INITIALIZING\n"),
-		StatusCode:	http.StatusServiceUnavailable,
+		Response:   []byte("PRE_INITIALIZING\n"),
+		StatusCode: http.StatusServiceUnavailable,
 	}
 	ok := wfa.IsReady()
 	it.False(ok)
 
 	// 200 response code, but invalid body
 	responses <- web.RawResult{
-		Response:	[]byte("INITIALIZING\n"),
-		StatusCode:	http.StatusOK,
+		Response:   []byte("INITIALIZING\n"),
+		StatusCode: http.StatusOK,
 	}
 	ok = wfa.IsReady()
 	it.False(ok)
@@ -166,26 +166,26 @@ func TestIsReady(t *testing.T) {
 	body := &BadReadCloser{Error: bodyErr}
 	mhgc := &MockHTTPGetClient{Response: &http.Response{Body: body}}
 	wfa = envoyutil.WaitForAdmin{
-		Port:		port,
-		Sleep:		time.Nanosecond,
-		HTTPClient:	mhgc,
+		Port:       port,
+		Sleep:      time.Nanosecond,
+		HTTPClient: mhgc,
 	}
 	ok = wfa.IsReady()
 	it.False(ok)
 }
 
 type MockHTTPGetClient struct {
-	Response	*http.Response
-	Error		error
+	Response *http.Response
+	Error    error
 	// CallCount tracks the number of times `Get()` has been called.
-	CallCount	uint32
+	CallCount uint32
 
 	// SwitchAfter is a `CallCount` target. Once the `CallCount` reaches this
 	// value, the mocked response from `Get()` will change from `Response, Error`
 	// to `SwitchResponse, SwitchError`.
-	SwitchAfter	uint32
-	SwitchResponse	*http.Response
-	SwitchError	error
+	SwitchAfter    uint32
+	SwitchResponse *http.Response
+	SwitchError    error
 }
 
 func (mhgc *MockHTTPGetClient) Get(url string) (resp *http.Response, err error) {

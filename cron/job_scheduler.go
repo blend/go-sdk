@@ -23,9 +23,9 @@ import (
 // NewJobScheduler returns a job scheduler for a given job.
 func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 	js := &JobScheduler{
-		Latch:		async.NewLatch(),
-		BaseContext:	context.Background(),
-		Job:		job,
+		Latch:       async.NewLatch(),
+		BaseContext: context.Background(),
+		Job:         job,
 	}
 	if typed, ok := job.(ScheduleProvider); ok {
 		js.JobSchedule = typed.Schedule()
@@ -38,24 +38,24 @@ func NewJobScheduler(job Job, options ...JobSchedulerOption) *JobScheduler {
 
 // JobScheduler is a job instance.
 type JobScheduler struct {
-	Latch	*async.Latch
+	Latch *async.Latch
 
-	Job		Job
-	JobConfig	JobConfig
-	JobSchedule	Schedule
-	JobLifecycle	JobLifecycle
+	Job          Job
+	JobConfig    JobConfig
+	JobSchedule  Schedule
+	JobLifecycle JobLifecycle
 
-	BaseContext	context.Context
+	BaseContext context.Context
 
-	Tracer	Tracer
-	Log	logger.Log
+	Tracer Tracer
+	Log    logger.Log
 
-	NextRuntime	time.Time
+	NextRuntime time.Time
 
-	currentLock	sync.Mutex
-	current		*JobInvocation
-	lastLock	sync.Mutex
-	last		*JobInvocation
+	currentLock sync.Mutex
+	current     *JobInvocation
+	lastLock    sync.Mutex
+	last        *JobInvocation
 }
 
 // Name returns the job name.
@@ -106,10 +106,10 @@ func (js *JobScheduler) Disabled() bool {
 // automatically added ones like `name`.
 func (js *JobScheduler) Labels() map[string]string {
 	output := map[string]string{
-		"name":		stringutil.Slugify(js.Name()),
-		"scheduler":	string(js.State()),
-		"active":	fmt.Sprint(!js.IsIdle()),
-		"enabled":	fmt.Sprint(!js.Disabled()),
+		"name":      stringutil.Slugify(js.Name()),
+		"scheduler": string(js.State()),
+		"active":    fmt.Sprint(!js.IsIdle()),
+		"enabled":   fmt.Sprint(!js.Disabled()),
 	}
 	if js.Last() != nil {
 		output["last"] = stringutil.Slugify(string(js.Last().Status))
@@ -322,32 +322,32 @@ func (js *JobScheduler) RunAsyncContext(ctx context.Context) (*JobInvocation, <-
 		defer func() {
 			switch {
 			case err != nil && IsJobCanceled(err):
-				js.onJobCompleteCanceled(ctx)	// the job was canceled, either manually or by a timeout
+				js.onJobCompleteCanceled(ctx) // the job was canceled, either manually or by a timeout
 			case err != nil:
-				js.onJobCompleteError(ctx, err)	// the job completed with an error
+				js.onJobCompleteError(ctx, err) // the job completed with an error
 			default:
-				js.onJobCompleteSuccess(ctx)	// the job completed without error
+				js.onJobCompleteSuccess(ctx) // the job completed without error
 			}
 
 			if tracer != nil {
-				tracer.Finish(ctx, err)	// call the trace finisher if one was started
+				tracer.Finish(ctx, err) // call the trace finisher if one was started
 			}
-			ji.Cancel()	// if the job was created with a timeout, end the timeout
+			ji.Cancel() // if the job was created with a timeout, end the timeout
 
-			close(done)			// signal callers the job is done
-			js.assignCurrentToLast()	// rotate in the current to the last result
+			close(done)              // signal callers the job is done
+			js.assignCurrentToLast() // rotate in the current to the last result
 		}()
 
 		if js.Tracer != nil {
 			ctx, tracer = js.Tracer.Start(ctx, js.Name())
 		}
-		js.onJobBegin(ctx)	// signal the job is starting
+		js.onJobBegin(ctx) // signal the job is starting
 
 		select {
-		case <-ctx.Done():	// if the timeout or cancel is triggered
-			err = ErrJobCanceled	// set the error to a known error
+		case <-ctx.Done(): // if the timeout or cancel is triggered
+			err = ErrJobCanceled // set the error to a known error
 			return
-		case err = <-js.safeBackgroundExec(ctx):	// run the job in a background routine and catch pancis
+		case err = <-js.safeBackgroundExec(ctx): // run the job in a background routine and catch pancis
 			return
 		}
 	}()
@@ -444,7 +444,7 @@ func (js *JobScheduler) waitCurrentComplete(ctx context.Context) {
 			return
 		}
 		select {
-		case <-ctx.Done():	// once the timeout triggers
+		case <-ctx.Done(): // once the timeout triggers
 			return
 		case <-deadlinePoll.C:
 			// tick over the loop to check if the current job is complete

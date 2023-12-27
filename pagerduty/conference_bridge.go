@@ -9,6 +9,6 @@ package pagerduty
 
 // ConferenceBridge is an api type.
 type ConferenceBridge struct {
-	ConferenceNumber	string	`json:"conference_number,omitempty"`
-	ConferenceURL		string	`json:"conference_url,omitempty"`
+	ConferenceNumber string `json:"conference_number,omitempty"`
+	ConferenceURL    string `json:"conference_url,omitempty"`
 }

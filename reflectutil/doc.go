@@ -8,4 +8,4 @@ Use of this source code is governed by a MIT license that can be found in the LI
 /*
 Package reflectutil includes helpers for working with the golang reflection api.
 */
-package reflectutil	// import "github.com/blend/go-sdk/reflectutil"
+package reflectutil // import "github.com/blend/go-sdk/reflectutil"

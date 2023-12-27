@@ -14,8 +14,8 @@ type CanonicalizerAlgorithm string
 
 // Supported canonicalization algorithms
 const (
-	CanonicalXML10ExclusiveAlgorithmID	CanonicalizerAlgorithm	= "http://www.w3.org/2001/10/xml-exc-c14n#"
-	CanonicalXML11AlgorithmID		CanonicalizerAlgorithm	= "http://www.w3.org/2006/12/xml-c14n11"
+	CanonicalXML10ExclusiveAlgorithmID CanonicalizerAlgorithm = "http://www.w3.org/2001/10/xml-exc-c14n#"
+	CanonicalXML11AlgorithmID          CanonicalizerAlgorithm = "http://www.w3.org/2006/12/xml-c14n11"
 )
 
 // error classes

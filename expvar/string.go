@@ -19,7 +19,7 @@ var (
 
 // String is a string variable, and satisfies the Var interface.
 type String struct {
-	s atomic.Value	// string
+	s atomic.Value // string
 }
 
 // Value returns the underlying value.

@@ -15,9 +15,9 @@ import (
 
 // Config is the pagerduty config.
 type Config struct {
-	Addr	string	`yaml:"addr,omitempty"`
-	Token	string	`yaml:"token,omitempty"`
-	Email	string	`yaml:"email,omitempty"`
+	Addr  string `yaml:"addr,omitempty"`
+	Token string `yaml:"token,omitempty"`
+	Email string `yaml:"email,omitempty"`
 }
 
 // IsZero returns if the config is set or not.
