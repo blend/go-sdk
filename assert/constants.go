@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2024 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -38,7 +38,8 @@ type OutputFormat string
 
 // OutputFormats
 const (
-	OutputFormatDefault OutputFormat = ""
-	OutputFormatText    OutputFormat = "text"
-	OutputFormatJSON    OutputFormat = "json"
+	OutputFormatDefault  OutputFormat = ""
+	OutputFormatText     OutputFormat = "text"
+	OutputFormatJSON     OutputFormat = "json"
+	OutputFormatUnitTest OutputFormat = "unit-test"
 )

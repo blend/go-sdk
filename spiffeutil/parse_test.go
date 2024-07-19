@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2024 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -62,7 +62,7 @@ func TestParseKubernetesWorkloadID(t *testing.T) {
 		kw, err := spiffeutil.ParseKubernetesWorkloadID(tc.WorkloadID)
 
 		if tc.Namespace == "" {
-			assert.True(ex.Is(spiffeutil.ErrNonKubernetesWorkload, err))
+			assert.True(ex.Is(err, spiffeutil.ErrNonKubernetesWorkload))
 			assert.Nil(kw)
 		} else {
 			assert.Nil(err)

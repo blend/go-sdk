@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2024 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -254,7 +254,22 @@ func (e *Ex) Unwrap() error {
 // Enables errors.Is on Ex classes when an error
 // is wrapped using Ex.
 func (e *Ex) Is(target error) bool {
-	return Is(e, target)
+	if e == nil || e.Class == nil {
+		return false
+	}
+	// If target is a multi-error, never try to convert it to *Ex.
+	if _, ok := target.(Multi); ok {
+		return errors.Is(e.Class, target)
+	}
+	// Try to convert target to *Ex.
+	if targetTyped := As(target); targetTyped != nil {
+		if targetTyped.Class == nil {
+			return false
+		}
+		return e.Class == targetTyped.Class
+	}
+	// Otherwise, use the native `errors.Is()`.
+	return errors.Is(e.Class, target)
 }
 
 // As delegates to the errors.As to match on the Ex class.

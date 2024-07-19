@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2024 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -76,6 +76,17 @@ func (s Set[T]) Intersect(other Set[T]) Set[T] {
 		}
 	}
 	return intersection
+}
+
+// Subtract removes all elements of `other` set from `s`.
+func (s Set[T]) Subtract(other Set[T]) Set[T] {
+	subtracted := NewSet[T]()
+	for k := range s {
+		if !other.Contains(k) {
+			subtracted.Add(k)
+		}
+	}
+	return subtracted
 }
 
 // Difference returns non-shared elements between two sets.

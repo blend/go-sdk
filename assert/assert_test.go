@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2024 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -9,6 +9,7 @@ package assert
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -115,6 +116,143 @@ func Test_getLength(t *testing.T) {
 	if l != 3 {
 		t.Errorf("getLength incorrect.")
 	}
+}
+
+func Test_chanShouldHaveNonzeroCapacity(t *testing.T) {
+	t.Parallel()
+
+	var didFail bool
+	var msg string
+	const typeExpected = "Should be a channel"
+	const expected = "Should not have capacity 0"
+
+	didFail, msg = chanShouldHaveNonzeroCapacity(nil)
+	if !didFail {
+		t.Error("untyped nil is not a channel and should fail")
+	}
+	if msg != typeExpected {
+		t.Errorf("unexpected error message. expected=%q, actual=%q", expected, msg)
+	}
+
+	didFail, msg = chanShouldHaveNonzeroCapacity(map[string]string{})
+	if !didFail {
+		t.Error("map is not a channel and should fail")
+	}
+	if msg != typeExpected {
+		t.Errorf("unexpected error message. expected=%q, actual=%q", expected, msg)
+	}
+
+	var nilChan chan any
+	didFail, msg = chanShouldHaveNonzeroCapacity(nilChan)
+	if !didFail {
+		t.Error("nil has zero capacity and should fail")
+	}
+	if msg != expected {
+		t.Errorf("unexpected error message. expected=%q, actual=%q", expected, msg)
+	}
+
+	didFail, msg = chanShouldHaveNonzeroCapacity(make(chan any))
+	if !didFail {
+		t.Error("channel has zero capacity and should fail")
+	}
+	if msg != expected {
+		t.Errorf("unexpected error message. expected=%q, actual=%q", expected, msg)
+	}
+
+	didFail, msg = chanShouldHaveNonzeroCapacity(make(chan string))
+	if !didFail {
+		t.Error("channel has zero capacity and should fail")
+	}
+	if msg != expected {
+		t.Errorf("unexpected error message. expected=%q, actual=%q", expected, msg)
+	}
+
+	didFail, msg = chanShouldHaveNonzeroCapacity(make(chan any, 10))
+	if didFail {
+		t.Error("channel has non-zero capacity and should not fail")
+	}
+	if msg != "" {
+		t.Errorf("error message should be an empty string, found %q", msg)
+	}
+}
+
+func TestAssertions_EmptyBufferedChannel(t *testing.T) {
+	t.Parallel()
+
+	buf := bytes.NewBuffer(nil)
+	a := Empty(OptOutput(buf))
+	a.Optional = true // don't immediately panic for assertion failures
+	a.OutputFormat = OutputFormatUnitTest
+	if a.Output == nil {
+		t.Error("The empty assertion helper should have an output set")
+	}
+
+	var didPass bool
+	var msg string
+	var expected string
+	var ch chan any
+
+	ch = make(chan any)
+	didPass = a.EmptyBufferedChannel(ch)
+	if didPass {
+		t.Error("expected unbuffered channel to fail the assertion, but it succeeded")
+	}
+	msg = buf.String()
+	expected = "Should not have capacity 0"
+	if msg != expected {
+		t.Errorf("unexpected error message. expected=%q, actual=%q", expected, msg)
+	}
+	buf.Reset()
+
+	ch = make(chan any, 1)
+	ch <- "fill"
+	didPass = a.EmptyBufferedChannel(ch)
+	if didPass {
+		t.Error("expected buffered channel with length 1 to fail the assertion, but it succeeded")
+	}
+	msg = buf.String()
+	expected = "Should be empty\n\t\x1b[37;01mActual\x1b[0m: \t(chan interface {})("
+	if !strings.HasPrefix(msg, expected) {
+		t.Errorf("unexpected error message. expected prefix=%q, actual message=%q", expected, msg)
+	}
+	buf.Reset()
+
+	ch = make(chan any, 1)
+	didPass = a.EmptyBufferedChannel(ch)
+	if !didPass {
+		t.Error("expected buffered channel with length 0 to pass the assertion, but it failed")
+	}
+	msg = buf.String()
+	expected = ""
+	if msg != expected {
+		t.Errorf("unexpected error message. expected=%q, actual=%q", expected, msg)
+	}
+	buf.Reset()
+
+	errChan := make(chan error, 1)
+	errChan <- fmt.Errorf("fill")
+	didPass = a.EmptyBufferedChannel(errChan)
+	if didPass {
+		t.Error("expected buffered channel with length 1 to fail the assertion, but it succeeded")
+	}
+	msg = buf.String()
+	expected = "Should be empty\n\t\x1b[37;01mActual\x1b[0m: \t(chan error)("
+	if !strings.HasPrefix(msg, expected) {
+		t.Errorf("unexpected error message. expected prefix=%q, actual message=%q", expected, msg)
+	}
+	buf.Reset()
+
+	errChan = make(chan error, 1)
+	didPass = a.EmptyBufferedChannel(errChan)
+	if !didPass {
+		t.Error("expected buffered channel with length 0 to pass the assertion, but it failed")
+	}
+	msg = buf.String()
+	expected = ""
+	if msg != expected {
+		t.Errorf("unexpected error message. expected=%q, actual=%q", expected, msg)
+	}
+	buf.Reset()
 }
 
 type myNestedStruct struct {

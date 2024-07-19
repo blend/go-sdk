@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2024 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -20,53 +20,53 @@ import (
 func TestMessageValidate(t *testing.T) {
 	assert := assert.New(t)
 
-	assert.True(ex.Is(ErrMessageFieldUnset, Message{}.Validate()))
-	assert.True(ex.Is(ErrMessageFieldUnset, Message{
+	assert.True(ex.Is(Message{}.Validate(), ErrMessageFieldUnset))
+	assert.True(ex.Is(Message{
 		From: "foo@bar.com",
-	}.Validate()))
-	assert.True(ex.Is(ErrMessageFieldNewlines, Message{
+	}.Validate(), ErrMessageFieldUnset))
+	assert.True(ex.Is(Message{
 		From: "foo\r@bar.com",
-	}.Validate()))
-	assert.True(ex.Is(ErrMessageFieldNewlines, Message{
+	}.Validate(), ErrMessageFieldNewlines))
+	assert.True(ex.Is(Message{
 		From: "foo\n@bar.com",
-	}.Validate()))
-	assert.True(ex.Is(ErrMessageFieldNewlines, Message{
+	}.Validate(), ErrMessageFieldNewlines))
+	assert.True(ex.Is(Message{
 		From: "foo\r\n@bar.com",
-	}.Validate()))
-	assert.True(ex.Is(ErrMessageFieldNewlines, Message{
+	}.Validate(), ErrMessageFieldNewlines))
+	assert.True(ex.Is(Message{
 		From: "foo@bar.com",
 		To:   []string{"moo@bar.com", "bad\n@bar.com"},
-	}.Validate()))
-	assert.True(ex.Is(ErrMessageFieldNewlines, Message{
+	}.Validate(), ErrMessageFieldNewlines))
+	assert.True(ex.Is(Message{
 		From: "foo@bar.com",
 		To:   []string{"moo@bar.com"},
 		CC:   []string{"bad\n@bar.com"},
-	}.Validate()))
-	assert.True(ex.Is(ErrMessageFieldNewlines, Message{
+	}.Validate(), ErrMessageFieldNewlines))
+	assert.True(ex.Is(Message{
 		From: "foo@bar.com",
 		To:   []string{"moo@bar.com"},
 		CC:   []string{"ok@bar.com"},
 		BCC:  []string{"bad\n@bar.com"},
-	}.Validate()))
-	assert.True(ex.Is(ErrMessageFieldNewlines, Message{
+	}.Validate(), ErrMessageFieldNewlines))
+	assert.True(ex.Is(Message{
 		From:    "foo@bar.com",
 		To:      []string{"moo@bar.com"},
 		Subject: "this is \n bad",
-	}.Validate()))
-	assert.True(ex.Is(ErrMessageFieldNewlines, Message{
+	}.Validate(), ErrMessageFieldNewlines))
+	assert.True(ex.Is(Message{
 		From:    "foo@bar.com",
 		To:      []string{"moo@bar.com"},
 		Subject: "this is \r bad",
-	}.Validate()))
-	assert.True(ex.Is(ErrMessageFieldNewlines, Message{
+	}.Validate(), ErrMessageFieldNewlines))
+	assert.True(ex.Is(Message{
 		From:    "foo@bar.com",
 		To:      []string{"moo@bar.com"},
 		Subject: "this is \n\r bad",
-	}.Validate()))
-	assert.True(ex.Is(ErrMessageFieldUnset, Message{
+	}.Validate(), ErrMessageFieldNewlines))
+	assert.True(ex.Is(Message{
 		From: "foo@bar.com",
 		To:   []string{"moo@bar.com"},
-	}.Validate()))
+	}.Validate(), ErrMessageFieldUnset))
 
 	assert.Nil(Message{
 		From:     "foo@bar.com",

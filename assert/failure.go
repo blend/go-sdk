@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2024 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -56,4 +56,28 @@ func (f Failure) Text() string {
 func (f Failure) JSON() string {
 	contents, _ := json.Marshal(f)
 	return string(contents)
+}
+
+// TestString returns a plain text representation of the contents of a Failure, suitable for easy comparison within unit tests.
+// Only the first line of `Failure.CallerInfo` is included, if present, as an assertion of the entire call stack would be extremely verbose,
+// brittle, and offer little value.
+func (f Failure) TestString() string {
+	// this separator is unlikely to naturally occur in the formatted components, which aides the caller to disambiguate the failure internal state.
+	const separator = ";-- "
+	var res = f.Message
+	if f.UserMessage != "" {
+		if res == "" {
+			res = f.UserMessage
+		} else {
+			res = res + separator + f.UserMessage
+		}
+	}
+	if len(f.CallerInfo) >= 1 {
+		if res == "" {
+			res = f.CallerInfo[0]
+		} else {
+			res = res + separator + f.CallerInfo[0]
+		}
+	}
+	return res
 }

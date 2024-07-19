@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2024 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -132,6 +132,22 @@ func (a *Assertions) Len(collection interface{}, length int, userMessageComponen
 func (a *Assertions) Empty(collection interface{}, userMessageComponents ...interface{}) bool {
 	a.assertion()
 	if didFail, message := shouldBeEmpty(collection); didFail {
+		return a.fail(message, userMessageComponents...)
+	}
+	return true
+}
+
+// EmptyBufferedChannel asserts that a channel is buffered (has a non-zero capacity),
+// and that it is empty (has length zero). This is useful when using channels to mock API
+// interface responses; a `len(ch) == 0` check is necessary but not necessarily sufficient
+// to ensure consumption of the mock channel's contents because the assertion will give a
+// false negative when the channel is unbuffered.
+func (a *Assertions) EmptyBufferedChannel(ch any, userMessageComponents ...any) bool {
+	a.assertion()
+	if didFail, message := chanShouldHaveNonzeroCapacity(ch); didFail {
+		return a.fail(message, userMessageComponents...)
+	}
+	if didFail, message := shouldBeEmpty(ch); didFail {
 		return a.fail(message, userMessageComponents...)
 	}
 	return true
@@ -490,6 +506,8 @@ func fail(w io.Writer, t *testing.T, outputFormat OutputFormat, failure Failure)
 	case OutputFormatJSON:
 		output = fmt.Sprintf("\r%s", getLocationString())
 		output += failure.JSON()
+	case OutputFormatUnitTest:
+		output = failure.TestString()
 	default:
 		panic(fmt.Errorf("invalid output format: %s", outputFormat))
 	}
@@ -620,6 +638,19 @@ func randomString(length int) string {
 // --------------------------------------------------------------------------------
 // ASSERTION LOGIC
 // --------------------------------------------------------------------------------
+
+func chanShouldHaveNonzeroCapacity(ch interface{}) (bool, string) {
+	v := reflect.ValueOf(ch)
+	if v.Kind() != reflect.Chan {
+		message := "Should be a channel"
+		return true, message
+	}
+	if v.Cap() == 0 {
+		message := "Should not have capacity 0"
+		return true, message
+	}
+	return false, ""
+}
 
 func shouldHaveLength(collection interface{}, length int) (bool, string) {
 	if l := getLength(collection); l != length {

@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2024 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -88,7 +88,7 @@ func TestNewJWTManagerKeyFunc(t *testing.T) {
 		Claims: jwt.MapClaims{},
 	})
 
-	assert.True(ex.Is(ErrJWTNonstandardClaims, err))
+	assert.True(ex.Is(err, ErrJWTNonstandardClaims))
 
 	claims := &jwt.StandardClaims{
 		Id:        uuid.V4().String(),
