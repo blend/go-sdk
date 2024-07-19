@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2024 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -37,6 +37,10 @@ func TestSetOperations(t *testing.T) {
 	a.Len(union, 6)
 	intersect := s1.Intersect(s2)
 	a.Len(intersect, 2)
+	subtract := s1.Subtract(s3)
+	a.Len(subtract, 2)
+	subtract = s3.Subtract(s1)
+	a.Len(subtract, 2)
 	diff := s1.Difference(s3)
 	a.Len(diff, 4)
 	diff = s3.Difference(s1)

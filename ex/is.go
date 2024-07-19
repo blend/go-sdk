@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2024 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -14,40 +14,19 @@ import (
 // Is is a helper function that returns if an error is an ex.
 //
 // It will handle if the err is an exception, a multi-error or a regular error.
-// "Isness" is evaluated by if the class of the exception matches the class of the cause
-func Is(err interface{}, cause error) bool {
+// "Isness" is evaluated by if the class of the exception matches the class of the cause.
+//
+// Deprecated: Use [errors.Is]. Make sure `Is()` and `Unwrap()` are properly
+// implemented on your custom classes.
+func Is(err error, cause error) bool {
 	if err == nil || cause == nil {
 		return false
 	}
-	// handle the case of multi-exceptions first.
-	if multiTyped, ok := err.(Multi); ok {
-		for _, multiErr := range multiTyped {
-			if Is(multiErr, cause) {
-				return true
-			}
-		}
-		return false
+	// If it's a ClassProvider, try comparing with the class first.
+	if typed, ok := err.(ClassProvider); ok && Is(typed.Class(), cause) {
+		return true
 	}
-	if typed := As(err); typed != nil {
-		if typed.Class == nil {
-			return false
-		}
-		if causeTyped := As(cause); causeTyped != nil {
-			if causeTyped.Class == nil {
-				return false
-			}
-			return typed.Class == causeTyped.Class
-		}
-		return (typed.Class == cause) || (typed.Class.Error() == cause.Error()) || errors.Is(typed.Class, cause)
-	}
-	if typed, ok := err.(ClassProvider); ok {
-		return typed.Class() == cause || (typed.Class().Error() == cause.Error()) || errors.Is(typed.Class(), cause)
-	}
-
-	// handle regular errors
-	if typed, ok := err.(error); ok && typed != nil {
-		return (err == cause) || (typed.Error() == cause.Error()) || errors.Is(typed, cause)
-	}
-	// handle ???
-	return err == cause
+	// Otherwise, use the native `errors.Is()`. Ex and Multi errors are handled in
+	// this case as they implement the `Is` method.
+	return errors.Is(err, cause)
 }

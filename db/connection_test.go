@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2023 - Present. Blend Labs, Inc. All rights reserved
+Copyright (c) 2024 - Present. Blend Labs, Inc. All rights reserved
 Use of this source code is governed by a MIT license that can be found in the LICENSE file.
 
 */
@@ -26,7 +26,7 @@ func Test_Connection_useBeforeOpen(t *testing.T) {
 
 	tx, err := conn.Begin()
 	its.NotNil(err)
-	its.True(ex.Is(ErrConnectionClosed, err))
+	its.True(ex.Is(err, ErrConnectionClosed))
 	its.Nil(tx)
 
 	inv := conn.Invoke()
@@ -35,7 +35,7 @@ func Test_Connection_useBeforeOpen(t *testing.T) {
 
 	any, err := conn.Query("select 1").Any()
 	its.NotNil(err)
-	its.True(ex.Is(ErrConnectionClosed, err), err.Error())
+	its.True(ex.Is(err, ErrConnectionClosed), err.Error())
 	its.False(any)
 }
 
